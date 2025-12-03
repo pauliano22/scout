@@ -1,6 +1,6 @@
 'use client'
 
-import { Search } from 'lucide-react'
+import { Search, ChevronDown } from 'lucide-react'
 
 interface SearchFiltersProps {
   searchQuery: string
@@ -52,43 +52,58 @@ export default function SearchFilters({
 }: SearchFiltersProps) {
   return (
     <div className="flex gap-4 mb-8 flex-wrap">
-      <div className="relative flex-1 min-w-[300px]">
+      {/* Search Input with proper icon layering */}
+      <div className="search-input-wrapper relative flex-1 min-w-[300px]">
         <Search
           size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
+          className="search-icon"
         />
         <input
           type="text"
           placeholder="Search by name, company, or role..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="input-field pl-11"
+          className="input-field pl-12"
         />
       </div>
 
-      <select
-        value={industryFilter}
-        onChange={(e) => onIndustryChange(e.target.value)}
-        className="input-field w-auto min-w-[160px] cursor-pointer"
-      >
-        {industries.map((ind) => (
-          <option key={ind} value={ind}>
-            {ind}
-          </option>
-        ))}
-      </select>
+      {/* Industry Filter */}
+      <div className="relative">
+        <select
+          value={industryFilter}
+          onChange={(e) => onIndustryChange(e.target.value)}
+          className="input-field w-auto min-w-[160px] cursor-pointer appearance-none pr-10"
+        >
+          {industries.map((ind) => (
+            <option key={ind} value={ind}>
+              {ind}
+            </option>
+          ))}
+        </select>
+        <ChevronDown 
+          size={16} 
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+        />
+      </div>
 
-      <select
-        value={sportFilter}
-        onChange={(e) => onSportChange(e.target.value)}
-        className="input-field w-auto min-w-[160px] cursor-pointer"
-      >
-        {sports.map((sport) => (
-          <option key={sport} value={sport}>
-            {sport}
-          </option>
-        ))}
-      </select>
+      {/* Sport Filter */}
+      <div className="relative">
+        <select
+          value={sportFilter}
+          onChange={(e) => onSportChange(e.target.value)}
+          className="input-field w-auto min-w-[160px] cursor-pointer appearance-none pr-10"
+        >
+          {sports.map((sport) => (
+            <option key={sport} value={sport}>
+              {sport}
+            </option>
+          ))}
+        </select>
+        <ChevronDown 
+          size={16} 
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+        />
+      </div>
     </div>
   )
 }

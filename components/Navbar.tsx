@@ -6,6 +6,7 @@ import { Search, Users, LogOut, User, Flame, Trophy, ChevronDown } from 'lucide-
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import ThemeToggle from './ThemeToggle'
 
 interface NavbarProps {
   user?: {
@@ -31,33 +32,30 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
   const isActive = (path: string) => pathname === path
 
   return (
-    <nav className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-[#27272a] sticky top-0 z-50 bg-[#0a0a0b]">
+    <nav className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-[--border-primary] sticky top-0 z-50 bg-[--bg-primary]">
       {/* Logo & School Selector */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="logo-mark">
-            <span>S</span>
-          </div>
-          <span className="logo-text hidden sm:block">scout</span>
+          <img src="/favicon.svg" alt="Scout" className="w-8 h-8" />
         </Link>
         
         {/* School Badge/Selector */}
         <div className="relative">
           <button 
             onClick={() => setShowSchoolDropdown(!showSchoolDropdown)}
-            className="flex items-center gap-1.5 text-xs px-2.5 py-1 bg-[#18181b] border border-[#27272a] rounded-md text-[#a1a1aa] font-medium hover:bg-[#1f1f23] transition-colors"
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1 bg-[--bg-tertiary] border border-[--border-primary] rounded-md text-[--text-secondary] font-medium hover:bg-[--bg-hover] transition-colors"
           >
             CORNELL
             <ChevronDown size={12} className={`transition-transform ${showSchoolDropdown ? 'rotate-180' : ''}`} />
           </button>
           
           {showSchoolDropdown && (
-            <div className="absolute top-full mt-1 left-0 bg-[#111113] border border-[#27272a] rounded-lg shadow-lg overflow-hidden min-w-[160px] animate-fade-in">
+            <div className="absolute top-full mt-1 left-0 bg-[--bg-secondary] border border-[--border-primary] rounded-lg shadow-lg overflow-hidden min-w-[160px] animate-fade-in">
               <div className="p-1">
-                <button className="w-full text-left px-3 py-2 rounded-md bg-[#18181b] text-[#fafafa] text-sm font-medium">
+                <button className="w-full text-left px-3 py-2 rounded-md bg-[--bg-tertiary] text-[--text-primary] text-sm font-medium">
                   Cornell University
                 </button>
-                <div className="px-3 py-2 text-[#52525b] text-xs">
+                <div className="px-3 py-2 text-[--text-quaternary] text-xs">
                   More schools coming soon
                 </div>
               </div>
@@ -74,8 +72,8 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
               href="/discover" 
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/discover') 
-                  ? 'bg-[#18181b] text-[#fafafa]' 
-                  : 'text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b]'
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >
               <Search size={16} />
@@ -86,14 +84,14 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
               href="/network" 
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/network') 
-                  ? 'bg-[#18181b] text-[#fafafa]' 
-                  : 'text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b]'
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >
               <Users size={16} />
               <span className="hidden sm:inline">Network</span>
               {networkCount > 0 && (
-                <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-xs text-[#a1a1aa]">
+                <span className="bg-[--bg-active] px-1.5 py-0.5 rounded text-xs text-[--text-secondary]">
                   {networkCount}
                 </span>
               )}
@@ -103,25 +101,27 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
               href="/career-path" 
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive('/career-path') 
-                  ? 'bg-[#18181b] text-[#fafafa]' 
-                  : 'text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b]'
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >
               <Trophy size={16} />
               <span className="hidden sm:inline">Career Path</span>
               {currentStreak > 0 && (
-                <span className="flex items-center gap-1 bg-[#27272a] text-amber-500 px-1.5 py-0.5 rounded text-xs">
+                <span className="flex items-center gap-1 bg-[--bg-active] text-amber-500 px-1.5 py-0.5 rounded text-xs">
                   <Flame size={10} />
                   {currentStreak}
                 </span>
               )}
             </Link>
 
-            <div className="w-px h-5 bg-[#27272a] mx-2 hidden sm:block" />
+            <div className="w-px h-5 bg-[--border-primary] mx-2 hidden sm:block" />
+
+            <ThemeToggle />
 
             <Link
               href="/profile"
-              className="p-2 rounded-md text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b] transition-colors"
+              className="btn-ghost p-2"
               title="Profile"
             >
               <User size={16} />
@@ -129,7 +129,7 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
 
             <button
               onClick={handleSignOut}
-              className="p-2 rounded-md text-[#a1a1aa] hover:text-red-500 hover:bg-[#18181b] transition-colors"
+              className="btn-ghost p-2 hover:text-red-500"
               title="Sign Out"
             >
               <LogOut size={16} />
@@ -137,6 +137,7 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
           </>
         ) : (
           <>
+            <ThemeToggle />
             <Link
               href="/login"
               className="btn-ghost"

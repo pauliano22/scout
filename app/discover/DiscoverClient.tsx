@@ -68,13 +68,13 @@ export default function DiscoverClient({
   }
 
   return (
-    <main className="px-6 md:px-12 py-10 max-w-7xl mx-auto">
+    <main className="px-6 md:px-12 py-10 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold font-display mb-3 tracking-tight">
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">
           Discover Alumni
         </h1>
-        <p className="text-white/50 text-lg max-w-xl">
+        <p className="text-[--text-tertiary] text-sm">
           Search the Cornell athlete alumni network to find mentors in your target industry.
         </p>
       </div>
@@ -90,19 +90,19 @@ export default function DiscoverClient({
       />
 
       {/* Results count */}
-      <p className="text-white/40 text-sm mb-6">
+      <p className="text-[--text-quaternary] text-sm mb-6">
         Showing {filteredAlumni.length} alumni
       </p>
 
       {/* Alumni Grid */}
       {filteredAlumni.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-5xl mb-4">🔍</p>
-          <p className="text-xl text-white/60 mb-2">No alumni found</p>
-          <p className="text-white/40">Try adjusting your search or filters</p>
+        <div className="text-center py-16">
+          <p className="text-4xl mb-3">🔍</p>
+          <p className="text-base text-[--text-secondary] mb-1">No alumni found</p>
+          <p className="text-[--text-quaternary] text-sm">Try adjusting your search or filters</p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredAlumni.map((alumni) => (
             <AlumniCard
               key={alumni.id}

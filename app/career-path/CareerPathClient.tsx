@@ -77,16 +77,16 @@ export default function CareerPathClient({
   }
 
   const renderAchievementPath = (achievements: Achievement[], currentValue: number, icon: React.ReactNode, title: string) => (
-    <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5 mb-4">
+    <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4">
       <div className="flex items-center gap-3 mb-5">
         {icon}
         <h3 className="text-sm font-semibold">{title}</h3>
-        <span className="text-[#52525b] text-xs ml-auto">{currentValue} completed</span>
+        <span className="text-[--text-quaternary] text-xs ml-auto">{currentValue} completed</span>
       </div>
       
       <div className="relative">
         {/* Connection line */}
-        <div className="absolute top-6 left-6 right-6 h-0.5 bg-[#27272a] rounded-full" />
+        <div className="absolute top-6 left-6 right-6 h-0.5 bg-[--border-primary] rounded-full" />
         <div 
           className="absolute top-6 left-6 h-0.5 bg-emerald-500 rounded-full transition-all duration-1000"
           style={{ 
@@ -110,8 +110,8 @@ export default function CareerPathClient({
                     ${isUnlocked 
                       ? tierColors[achievement.tier]
                       : isNext 
-                        ? 'bg-[#18181b] border-[#3f3f46]'
-                        : 'bg-[#111113] border-[#27272a] opacity-40'
+                        ? 'bg-[--bg-tertiary] border-[--border-secondary]'
+                        : 'bg-[--bg-secondary] border-[--border-primary] opacity-40'
                     }
                   `}
                 >
@@ -120,14 +120,14 @@ export default function CareerPathClient({
                   ) : isNext ? (
                     <span className="opacity-50">{achievement.icon}</span>
                   ) : (
-                    <Lock size={16} className="text-[#52525b]" />
+                    <Lock size={16} className="text-[--text-quaternary]" />
                   )}
                   
                   {/* Tooltip */}
                   <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                    <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-3 min-w-[160px] text-center shadow-lg">
+                    <div className="bg-[--bg-tertiary] border border-[--border-primary] rounded-lg p-3 min-w-[160px] text-center shadow-lg">
                       <p className="font-medium text-xs mb-1">{achievement.name}</p>
-                      <p className="text-[#71717a] text-xs mb-2">{achievement.description}</p>
+                      <p className="text-[--text-tertiary] text-xs mb-2">{achievement.description}</p>
                       <div className="flex items-center justify-center gap-1 text-amber-400 text-xs">
                         <Zap size={10} />
                         +{achievement.xp_reward} XP
@@ -136,7 +136,7 @@ export default function CareerPathClient({
                   </div>
                 </div>
                 
-                <span className={`mt-2 text-xs ${isUnlocked ? 'text-[#a1a1aa]' : 'text-[#52525b]'}`}>
+                <span className={`mt-2 text-xs ${isUnlocked ? 'text-[--text-secondary]' : 'text-[--text-quaternary]'}`}>
                   {achievement.requirement_value}
                 </span>
               </div>
@@ -154,7 +154,7 @@ export default function CareerPathClient({
         <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">
           Career Path
         </h1>
-        <p className="text-[#71717a] text-sm">
+        <p className="text-[--text-tertiary] text-sm">
           Track your networking journey, maintain your streak, and unlock achievements.
         </p>
       </div>
@@ -162,49 +162,49 @@ export default function CareerPathClient({
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {/* Streak */}
-        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2 rounded-lg ${currentStreak > 0 ? 'bg-amber-500/10' : 'bg-[#18181b]'}`}>
-              <Flame size={18} className={currentStreak > 0 ? 'text-amber-400' : 'text-[#52525b]'} />
+            <div className={`p-2 rounded-lg ${currentStreak > 0 ? 'bg-amber-500/10' : 'bg-[--bg-tertiary]'}`}>
+              <Flame size={18} className={currentStreak > 0 ? 'text-amber-400' : 'text-[--text-quaternary]'} />
             </div>
             <div>
-              <p className="text-[#52525b] text-xs">Streak</p>
+              <p className="text-[--text-quaternary] text-xs">Streak</p>
               <p className="text-lg font-semibold">{currentStreak}d</p>
             </div>
           </div>
           {currentStreak > 0 && (
-            <p className="text-xs text-[#71717a]">Best: {longestStreak}d</p>
+            <p className="text-xs text-[--text-tertiary]">Best: {longestStreak}d</p>
           )}
         </div>
 
         {/* Level & XP */}
-        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-purple-500/10">
               <Star size={18} className="text-purple-400" />
             </div>
             <div>
-              <p className="text-[#52525b] text-xs">Level</p>
+              <p className="text-[--text-quaternary] text-xs">Level</p>
               <p className="text-lg font-semibold">{currentLevel}</p>
             </div>
           </div>
-          <div className="relative h-1.5 bg-[#27272a] rounded-full overflow-hidden">
+          <div className="relative h-1.5 bg-[--border-primary] rounded-full overflow-hidden">
             <div 
               className="bg-purple-500 h-full rounded-full transition-all duration-1000"
               style={{ width: `${xpProgress}%` }}
             />
           </div>
-          <p className="text-xs text-[#52525b] mt-1">{animatedXp.toLocaleString()} XP</p>
+          <p className="text-xs text-[--text-quaternary] mt-1">{animatedXp.toLocaleString()} XP</p>
         </div>
 
         {/* Connections */}
-        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-blue-500/10">
               <Users size={18} className="text-blue-400" />
             </div>
             <div>
-              <p className="text-[#52525b] text-xs">Connections</p>
+              <p className="text-[--text-quaternary] text-xs">Connections</p>
               <p className="text-lg font-semibold">{totalConnections}</p>
             </div>
           </div>
@@ -214,33 +214,33 @@ export default function CareerPathClient({
         </div>
 
         {/* Messages */}
-        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-emerald-500/10">
               <MessageSquare size={18} className="text-emerald-400" />
             </div>
             <div>
-              <p className="text-[#52525b] text-xs">Messages</p>
+              <p className="text-[--text-quaternary] text-xs">Messages</p>
               <p className="text-lg font-semibold">{totalMessages}</p>
             </div>
           </div>
-          <p className="text-xs text-[#52525b]">Keep going!</p>
+          <p className="text-xs text-[--text-quaternary]">Keep going!</p>
         </div>
       </div>
 
       {/* Daily Goals */}
-      <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5 mb-8">
+      <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-8">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#B31B1B]/10">
-              <Target size={18} className="text-[#B31B1B]" />
+            <div className="p-2 rounded-lg bg-[--school-primary]/10">
+              <Target size={18} className="text-[--school-primary]" />
             </div>
             <div>
               <h3 className="text-sm font-semibold">Today's Goals</h3>
-              <p className="text-[#52525b] text-xs">Complete daily tasks to maintain your streak</p>
+              <p className="text-[--text-quaternary] text-xs">Complete daily tasks to maintain your streak</p>
             </div>
           </div>
-          <p className="text-xs text-[#52525b]">
+          <p className="text-xs text-[--text-quaternary]">
             <Calendar size={10} className="inline mr-1" />
             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </p>
@@ -248,17 +248,17 @@ export default function CareerPathClient({
 
         <div className="grid md:grid-cols-2 gap-3">
           {/* Connection Goal */}
-          <div className="bg-[#0a0a0b] rounded-lg p-4 border border-[#27272a]">
+          <div className="bg-[--bg-primary] rounded-lg p-4 border border-[--border-primary]">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Users size={14} className="text-blue-400" />
                 <span className="text-sm">Add connections</span>
               </div>
-              <span className="text-xs text-[#52525b]">
+              <span className="text-xs text-[--text-quaternary]">
                 {dailyGoal?.connections_made || 0} / {dailyGoal?.connections_goal || 3}
               </span>
             </div>
-            <div className="h-1.5 bg-[#27272a] rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[--border-primary] rounded-full overflow-hidden">
               <div 
                 className="h-full bg-blue-500 rounded-full transition-all"
                 style={{ 
@@ -269,17 +269,17 @@ export default function CareerPathClient({
           </div>
 
           {/* Message Goal */}
-          <div className="bg-[#0a0a0b] rounded-lg p-4 border border-[#27272a]">
+          <div className="bg-[--bg-primary] rounded-lg p-4 border border-[--border-primary]">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <MessageSquare size={14} className="text-emerald-400" />
                 <span className="text-sm">Send messages</span>
               </div>
-              <span className="text-xs text-[#52525b]">
+              <span className="text-xs text-[--text-quaternary]">
                 {dailyGoal?.messages_sent || 0} / {dailyGoal?.messages_goal || 2}
               </span>
             </div>
-            <div className="h-1.5 bg-[#27272a] rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[--border-primary] rounded-full overflow-hidden">
               <div 
                 className="h-full bg-emerald-500 rounded-full transition-all"
                 style={{ 
@@ -338,11 +338,11 @@ export default function CareerPathClient({
       </div>
 
       {/* All Achievements Grid */}
-      <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5">
+      <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
           <Award size={16} className="text-purple-400" />
           All Achievements
-          <span className="text-[#52525b] text-xs font-normal ml-auto">
+          <span className="text-[--text-quaternary] text-xs font-normal ml-auto">
             {unlockedAchievementIds.length} / {allAchievements.length}
           </span>
         </h3>
@@ -358,7 +358,7 @@ export default function CareerPathClient({
                   p-3 rounded-lg border transition-colors
                   ${isUnlocked 
                     ? tierColors[achievement.tier]
-                    : 'bg-[#0a0a0b] border-[#27272a] opacity-40'
+                    : 'bg-[--bg-primary] border-[--border-primary] opacity-40'
                   }
                 `}
               >
@@ -366,7 +366,7 @@ export default function CareerPathClient({
                   {isUnlocked ? achievement.icon : '🔒'}
                 </div>
                 <p className="font-medium text-xs mb-0.5">{achievement.name}</p>
-                <p className="text-[#52525b] text-xs mb-2">{achievement.description}</p>
+                <p className="text-[--text-quaternary] text-xs mb-2">{achievement.description}</p>
                 <div className="flex items-center gap-1 text-amber-400 text-xs">
                   <Zap size={10} />
                   +{achievement.xp_reward}

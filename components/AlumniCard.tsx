@@ -26,18 +26,18 @@ export default function AlumniCard({
   isLoading = false,
 }: AlumniCardProps) {
   return (
-    <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5 hover:border-[#3f3f46] transition-colors">
+    <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 hover:border-[--border-secondary] transition-colors">
       <div className="flex justify-between items-start mb-3">
         <div>
           <h3 className="text-base font-semibold mb-0.5">{alumni.full_name}</h3>
-          <p className="text-[#71717a] text-sm">
+          <p className="text-[--text-tertiary] text-sm">
             {alumni.sport} • Class of {alumni.graduation_year}
           </p>
         </div>
         {alumni.industry && (
           <span
             className={`px-2 py-1 rounded text-xs font-medium ${
-              industryBadgeClass[alumni.industry] || 'bg-[#18181b] text-[#a1a1aa]'
+              industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary]'
             }`}
           >
             {alumni.industry}
@@ -46,10 +46,10 @@ export default function AlumniCard({
       </div>
 
       <div className="mb-4">
-        <p className="text-sm font-medium text-[#fafafa] mb-0.5">{alumni.role}</p>
-        <p className="text-[#71717a] text-sm">{alumni.company}</p>
+        <p className="text-sm font-medium text-[--text-primary] mb-0.5">{alumni.role}</p>
+        <p className="text-[--text-tertiary] text-sm">{alumni.company}</p>
         {alumni.location && (
-          <p className="text-[#52525b] text-sm mt-1 flex items-center gap-1">
+          <p className="text-[--text-quaternary] text-sm mt-1 flex items-center gap-1">
             <MapPin size={12} />
             {alumni.location}
           </p>
@@ -84,7 +84,7 @@ export default function AlumniCard({
             href={alumni.linkedin_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-ghost p-2.5"
+            className="btn-ghost p-2.5 hover:text-[#0077b5]"
             title="View LinkedIn"
           >
             <Linkedin size={16} />

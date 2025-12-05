@@ -76,17 +76,17 @@ export default function ProfileClient({ profile, userId }: ProfileClientProps) {
 
   return (
     <main className="px-6 md:px-12 py-10 max-w-2xl mx-auto">
-      <h1 className="text-4xl font-bold font-display mb-3">Profile</h1>
-      <p className="text-white/50 mb-10">
+      <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">Profile</h1>
+      <p className="text-[--text-tertiary] text-sm mb-8">
         Update your information to personalize your outreach messages
       </p>
 
       <form onSubmit={handleSave} className="space-y-6">
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 space-y-5">
-          <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-5">
+          <h2 className="text-base font-semibold">Personal Information</h2>
 
           <div>
-            <label className="block text-sm text-white/60 mb-2">Full Name</label>
+            <label className="block text-sm text-[--text-tertiary] mb-2">Full Name</label>
             <input
               type="text"
               value={fullName}
@@ -98,7 +98,7 @@ export default function ProfileClient({ profile, userId }: ProfileClientProps) {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-white/60 mb-2">Sport</label>
+              <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
               <select
                 value={sport}
                 onChange={(e) => setSport(e.target.value)}
@@ -114,7 +114,7 @@ export default function ProfileClient({ profile, userId }: ProfileClientProps) {
             </div>
 
             <div>
-              <label className="block text-sm text-white/60 mb-2">
+              <label className="block text-sm text-[--text-tertiary] mb-2">
                 Graduation Year
               </label>
               <select
@@ -133,9 +133,9 @@ export default function ProfileClient({ profile, userId }: ProfileClientProps) {
           </div>
         </div>
 
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Career Interests</h2>
-          <p className="text-white/50 text-sm mb-4">
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
+          <h2 className="text-base font-semibold mb-2">Career Interests</h2>
+          <p className="text-[--text-tertiary] text-sm mb-4">
             These will be used to personalize your AI-generated outreach messages.
           </p>
 
@@ -154,15 +154,15 @@ export default function ProfileClient({ profile, userId }: ProfileClientProps) {
           className="btn-primary flex items-center justify-center gap-2 w-full md:w-auto"
         >
           {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
           ) : saved ? (
             <>
-              <Check size={18} />
+              <Check size={16} />
               Saved!
             </>
           ) : (
             <>
-              <Save size={18} />
+              <Save size={16} />
               Save Changes
             </>
           )}

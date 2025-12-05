@@ -51,19 +51,16 @@ export default function SearchFilters({
   onSportChange,
 }: SearchFiltersProps) {
   return (
-    <div className="flex gap-4 mb-8 flex-wrap">
-      {/* Search Input with proper icon layering */}
-      <div className="search-input-wrapper relative flex-1 min-w-[300px]">
-        <Search
-          size={18}
-          className="search-icon"
-        />
+    <div className="flex gap-3 mb-8 flex-wrap">
+      {/* Search Input */}
+      <div className="search-input-wrapper flex-1 min-w-[280px]">
+        <Search size={16} className="search-icon" />
         <input
           type="text"
           placeholder="Search by name, company, or role..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="input-field pl-12"
+          className="input-field"
         />
       </div>
 
@@ -72,7 +69,7 @@ export default function SearchFilters({
         <select
           value={industryFilter}
           onChange={(e) => onIndustryChange(e.target.value)}
-          className="input-field w-auto min-w-[160px] cursor-pointer appearance-none pr-10"
+          className="input-field w-auto min-w-[150px] cursor-pointer appearance-none pr-9"
         >
           {industries.map((ind) => (
             <option key={ind} value={ind}>
@@ -81,8 +78,8 @@ export default function SearchFilters({
           ))}
         </select>
         <ChevronDown 
-          size={16} 
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+          size={14} 
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
         />
       </div>
 
@@ -91,7 +88,7 @@ export default function SearchFilters({
         <select
           value={sportFilter}
           onChange={(e) => onSportChange(e.target.value)}
-          className="input-field w-auto min-w-[160px] cursor-pointer appearance-none pr-10"
+          className="input-field w-auto min-w-[150px] cursor-pointer appearance-none pr-9"
         >
           {sports.map((sport) => (
             <option key={sport} value={sport}>
@@ -100,8 +97,8 @@ export default function SearchFilters({
           ))}
         </select>
         <ChevronDown 
-          size={16} 
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+          size={14} 
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
         />
       </div>
     </div>

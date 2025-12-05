@@ -1,12 +1,15 @@
 'use client'
 
+import { useState } from 'react'
 import { UserNetwork } from '@/types/database'
-import { Check, Mail, X, Linkedin } from 'lucide-react'
+import { Check, Mail, X, Linkedin, StickyNote, Calendar } from 'lucide-react'
 
 interface NetworkRowProps {
   connection: UserNetwork
   onSendMessage: (connection: UserNetwork) => void
   onRemove: (id: string) => void
+  onOpenNotes: (connection: UserNetwork) => void
+  onUpdateContactedDate: (connectionId: string, date: string | null) => void
   isRemoving?: boolean
 }
 
@@ -19,25 +22,57 @@ const industryBadgeClass: Record<string, string> = {
   Media: 'bg-orange-500/10 text-orange-400',
 }
 
+function formatDate(dateString: string | null): string {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function toInputDate(dateString: string | null): string {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  // Use local date parts to avoid timezone shift
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export default function NetworkRow({
   connection,
   onSendMessage,
   onRemove,
+  onOpenNotes,
+  onUpdateContactedDate,
   isRemoving = false,
 }: NetworkRowProps) {
+  const [showDatePicker, setShowDatePicker] = useState(false)
   const alumni = connection.alumni
 
   if (!alumni) return null
 
+  const hasNotes = connection.notes && connection.notes.trim().length > 0
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value
+    if (newDate) {
+      // Parse as local date, set to noon local time, then convert to ISO
+      const [year, month, day] = newDate.split('-').map(Number)
+      const localDate = new Date(year, month - 1, day, 12, 0, 0)
+      onUpdateContactedDate(connection.id, localDate.toISOString())
+    }
+    setShowDatePicker(false)
+  }
+
   return (
-    <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap hover:border-[#3f3f46] transition-colors">
+    <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap hover:border-[--border-secondary] transition-colors">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Contacted status indicator */}
         <div
           className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${
             connection.contacted
               ? 'bg-emerald-500/20 text-emerald-400'
-              : 'bg-[#18181b] border border-[#27272a]'
+              : 'bg-[--bg-tertiary] border border-[--border-primary]'
           }`}
         >
           {connection.contacted && <Check size={12} />}
@@ -45,7 +80,7 @@ export default function NetworkRow({
 
         <div className="min-w-0">
           <h3 className="text-sm font-semibold truncate">{alumni.full_name}</h3>
-          <p className="text-[#71717a] text-sm truncate">
+          <p className="text-[--text-tertiary] text-sm truncate">
             {alumni.role} at {alumni.company}
           </p>
         </div>
@@ -55,7 +90,7 @@ export default function NetworkRow({
         {alumni.industry && (
           <span
             className={`px-2 py-1 rounded text-xs font-medium hidden sm:block ${
-              industryBadgeClass[alumni.industry] || 'bg-[#18181b] text-[#a1a1aa]'
+              industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary]'
             }`}
           >
             {alumni.industry}
@@ -74,34 +109,74 @@ export default function NetworkRow({
           </a>
         )}
 
+        {/* Notes button */}
         <button
-          onClick={() => onSendMessage(connection)}
-          disabled={connection.contacted}
-          className={`flex items-center gap-1.5 ${
-            connection.contacted ? 'btn-success' : 'btn-primary'
-          }`}
+          onClick={() => onOpenNotes(connection)}
+          className={`btn-ghost p-2 ${hasNotes ? 'text-amber-400' : ''}`}
+          title={hasNotes ? 'View notes' : 'Add notes'}
         >
-          {connection.contacted ? (
-            <>
-              <Check size={14} />
-              Contacted
-            </>
-          ) : (
-            <>
-              <Mail size={14} />
-              Message
-            </>
-          )}
+          <StickyNote size={14} />
         </button>
+
+        {/* Contacted button with date */}
+        <div className="relative">
+          <button
+            onClick={() => {
+              if (connection.contacted) {
+                setShowDatePicker(!showDatePicker)
+              } else {
+                onSendMessage(connection)
+              }
+            }}
+            className={`flex items-center gap-1.5 ${
+              connection.contacted ? 'btn-success' : 'btn-primary'
+            }`}
+          >
+            {connection.contacted ? (
+              <>
+                <Check size={14} />
+                <span className="hidden sm:inline">
+                  {connection.contacted_at ? formatDate(connection.contacted_at) : 'Contacted'}
+                </span>
+                <span className="sm:hidden">
+                  {connection.contacted_at ? formatDate(connection.contacted_at) : '✓'}
+                </span>
+              </>
+            ) : (
+              <>
+                <Mail size={14} />
+                Message
+              </>
+            )}
+          </button>
+
+          {/* Date picker dropdown */}
+          {showDatePicker && connection.contacted && (
+            <div className="absolute top-full mt-1 right-0 bg-[--bg-secondary] border border-[--border-primary] rounded-lg p-3 shadow-lg z-10 animate-fade-in">
+              <label className="block text-xs text-[--text-tertiary] mb-1.5">
+                <Calendar size={10} className="inline mr-1" />
+                Contacted on
+              </label>
+              <input
+                type="date"
+                value={toInputDate(connection.contacted_at)}
+                onChange={handleDateChange}
+                className="input-field text-sm py-1.5 px-2"
+                autoFocus
+                onBlur={() => setShowDatePicker(false)}
+              />
+            </div>
+          )}
+        </div>
 
         <button
           onClick={() => onRemove(connection.id)}
           disabled={isRemoving}
-          className="btn-ghost p-2 text-[#52525b] hover:text-red-500"
+          className="btn-ghost p-2 text-[--text-quaternary] hover:text-red-500"
           title="Remove from network"
         >
           {isRemoving ? (
-            <div className="w-3.5 h-3.5 border-2 border-[#52525b] border-t-[#a1a1aa] rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
           ) : (
             <X size={14} />
           )}

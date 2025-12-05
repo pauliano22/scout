@@ -10,7 +10,7 @@
    ============================================ */
 
 :root {
-  /* Monochromatic background scale */
+  /* Monochromatic background scale - Dark Mode (default) */
   --bg-primary: #0a0a0b;
   --bg-secondary: #111113;
   --bg-tertiary: #18181b;
@@ -31,6 +31,27 @@
   --school-primary: #B31B1B;
   --school-primary-hover: #dc2626;
   --school-name: 'Cornell';
+  
+  color-scheme: dark;
+}
+
+/* Light Mode */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9f9f9;
+  --bg-tertiary: #f4f4f5;
+  --bg-hover: #e4e4e7;
+  --bg-active: #d4d4d8;
+  
+  --text-primary: #09090b;
+  --text-secondary: #3f3f46;
+  --text-tertiary: #71717a;
+  --text-quaternary: #a1a1aa;
+  
+  --border-primary: #e4e4e7;
+  --border-secondary: #d4d4d8;
+  
+  color-scheme: light;
 }
 
 /* School theme variations */
@@ -88,6 +109,7 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   letter-spacing: -0.011em;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 /* ============================================

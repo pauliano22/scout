@@ -67,7 +67,7 @@ Cornell ${userSport || '[Sport]'}`
       onClick={onClose}
     >
       <div
-        className="bg-[#111113] border border-[#27272a] rounded-xl p-6 max-w-lg w-full max-h-[85vh] overflow-auto animate-fade-in"
+        className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 max-w-lg w-full max-h-[85vh] overflow-auto animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-5">
@@ -76,19 +76,19 @@ Cornell ${userSport || '[Sport]'}`
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-[#52525b] hover:text-[#a1a1aa] transition-colors"
+            className="btn-ghost p-1"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Generated message preview */}
-        <div className="bg-[#0a0a0b] border border-[#27272a] rounded-lg p-4 mb-4 text-sm leading-relaxed text-[#a1a1aa] whitespace-pre-wrap">
+        <div className="bg-[--bg-primary] border border-[--border-primary] rounded-lg p-4 mb-4 text-sm leading-relaxed text-[--text-secondary] whitespace-pre-wrap">
           {message}
         </div>
 
         {/* Personalization note */}
-        <p className="text-[#52525b] text-xs mb-5">
+        <p className="text-[--text-quaternary] text-xs mb-5">
           Tip: Update your interests in settings to personalize messages further.
         </p>
 

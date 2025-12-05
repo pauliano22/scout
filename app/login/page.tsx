@@ -63,7 +63,7 @@ export default function LoginPage() {
             <div className="relative">
               <Mail
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-quaternary]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
               />
               <input
                 type="email"
@@ -71,14 +71,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="input-field pl-10"
+                className="input-field !pl-11"
               />
             </div>
 
             <div className="relative">
               <Lock
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-quaternary]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
               />
               <input
                 type="password"
@@ -86,7 +86,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="input-field pl-10"
+                className="input-field !pl-11"
               />
             </div>
 

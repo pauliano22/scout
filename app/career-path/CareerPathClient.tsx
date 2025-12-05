@@ -8,10 +8,8 @@ import {
   Zap, 
   Star, 
   Lock,
-  CheckCircle2,
   ChevronRight,
   Sparkles,
-  TrendingUp,
   Calendar,
   Users,
   MessageSquare,
@@ -29,17 +27,10 @@ interface CareerPathClientProps {
 }
 
 const tierColors = {
-  bronze: 'from-amber-700 to-amber-500',
-  silver: 'from-gray-400 to-gray-300',
-  gold: 'from-yellow-500 to-yellow-300',
-  platinum: 'from-purple-500 to-pink-400',
-}
-
-const tierBgColors = {
-  bronze: 'bg-amber-500/10 border-amber-500/30',
-  silver: 'bg-gray-400/10 border-gray-400/30',
-  gold: 'bg-yellow-500/10 border-yellow-500/30',
-  platinum: 'bg-purple-500/10 border-purple-500/30',
+  bronze: 'border-amber-600 bg-amber-500/10',
+  silver: 'border-gray-400 bg-gray-400/10',
+  gold: 'border-yellow-500 bg-yellow-500/10',
+  platinum: 'border-purple-400 bg-purple-500/10',
 }
 
 export default function CareerPathClient({
@@ -49,7 +40,6 @@ export default function CareerPathClient({
   unlockedAchievementIds,
   dailyGoal,
 }: CareerPathClientProps) {
-  const [showCelebration, setShowCelebration] = useState(false)
   const [animatedXp, setAnimatedXp] = useState(0)
   
   const currentStreak = stats.current_streak || 0
@@ -59,7 +49,6 @@ export default function CareerPathClient({
   const totalConnections = stats.total_connections || 0
   const totalMessages = stats.total_messages_sent || 0
 
-  // Animate XP counter on mount
   useEffect(() => {
     const duration = 1500
     const steps = 60
@@ -81,7 +70,6 @@ export default function CareerPathClient({
 
   const xpProgress = getXpProgress(totalXp, currentLevel)
 
-  // Group achievements by type
   const achievementsByType = {
     streak: allAchievements.filter(a => a.requirement_type === 'streak'),
     connections: allAchievements.filter(a => a.requirement_type === 'connections'),
@@ -89,21 +77,21 @@ export default function CareerPathClient({
   }
 
   const renderAchievementPath = (achievements: Achievement[], currentValue: number, icon: React.ReactNode, title: string) => (
-    <div className="glass-card p-6 mb-6">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5 mb-4">
+      <div className="flex items-center gap-3 mb-5">
         {icon}
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <span className="text-white/50 text-sm ml-auto">{currentValue} completed</span>
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <span className="text-[#52525b] text-xs ml-auto">{currentValue} completed</span>
       </div>
       
       <div className="relative">
         {/* Connection line */}
-        <div className="absolute top-8 left-8 right-8 h-1 bg-white/10 rounded-full" />
+        <div className="absolute top-6 left-6 right-6 h-0.5 bg-[#27272a] rounded-full" />
         <div 
-          className="absolute top-8 left-8 h-1 bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-1000"
+          className="absolute top-6 left-6 h-0.5 bg-emerald-500 rounded-full transition-all duration-1000"
           style={{ 
             width: `${Math.min(100, (currentValue / achievements[achievements.length - 1]?.requirement_value || 1) * 100)}%`,
-            maxWidth: 'calc(100% - 64px)'
+            maxWidth: 'calc(100% - 48px)'
           }}
         />
         
@@ -112,58 +100,43 @@ export default function CareerPathClient({
           {achievements.map((achievement, index) => {
             const isUnlocked = unlockedAchievementIds.includes(achievement.id)
             const isNext = !isUnlocked && (index === 0 || unlockedAchievementIds.includes(achievements[index - 1]?.id))
-            const progress = Math.min(100, (currentValue / achievement.requirement_value) * 100)
             
             return (
-              <div 
-                key={achievement.id}
-                className={`flex flex-col items-center ${index === 0 ? '' : ''}`}
-              >
-                {/* Node */}
+              <div key={achievement.id} className="flex flex-col items-center">
                 <div 
                   className={`
-                    relative w-16 h-16 rounded-2xl flex items-center justify-center text-2xl
-                    transition-all duration-500 cursor-pointer group
+                    relative w-12 h-12 rounded-lg flex items-center justify-center text-lg
+                    transition-all cursor-pointer group border
                     ${isUnlocked 
-                      ? `bg-gradient-to-br ${tierColors[achievement.tier]} shadow-lg path-node completed` 
+                      ? tierColors[achievement.tier]
                       : isNext 
-                        ? 'bg-white/10 border-2 border-white/30 path-node current'
-                        : 'bg-white/5 border border-white/10 path-node locked'
+                        ? 'bg-[#18181b] border-[#3f3f46]'
+                        : 'bg-[#111113] border-[#27272a] opacity-40'
                     }
                   `}
                 >
                   {isUnlocked ? (
-                    <span className="animate-bounce">{achievement.icon}</span>
+                    <span>{achievement.icon}</span>
                   ) : isNext ? (
-                    <div className="relative">
-                      <span className="opacity-50">{achievement.icon}</span>
-                      <div 
-                        className="absolute inset-0 flex items-center justify-center"
-                        style={{
-                          background: `conic-gradient(from 0deg, rgba(255,255,255,0.3) ${progress}%, transparent ${progress}%)`,
-                          borderRadius: '16px',
-                        }}
-                      />
-                    </div>
+                    <span className="opacity-50">{achievement.icon}</span>
                   ) : (
-                    <Lock size={20} className="text-white/30" />
+                    <Lock size={16} className="text-[#52525b]" />
                   )}
                   
                   {/* Tooltip */}
                   <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                    <div className="bg-gray-900 border border-white/20 rounded-xl p-3 min-w-[180px] text-center shadow-xl">
-                      <p className="font-semibold text-sm mb-1">{achievement.name}</p>
-                      <p className="text-white/60 text-xs mb-2">{achievement.description}</p>
-                      <div className="flex items-center justify-center gap-1 text-yellow-400 text-xs">
-                        <Zap size={12} />
+                    <div className="bg-[#18181b] border border-[#27272a] rounded-lg p-3 min-w-[160px] text-center shadow-lg">
+                      <p className="font-medium text-xs mb-1">{achievement.name}</p>
+                      <p className="text-[#71717a] text-xs mb-2">{achievement.description}</p>
+                      <div className="flex items-center justify-center gap-1 text-amber-400 text-xs">
+                        <Zap size={10} />
                         +{achievement.xp_reward} XP
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                {/* Label */}
-                <span className={`mt-2 text-xs font-medium ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
+                <span className={`mt-2 text-xs ${isUnlocked ? 'text-[#a1a1aa]' : 'text-[#52525b]'}`}>
                   {achievement.requirement_value}
                 </span>
               </div>
@@ -175,123 +148,119 @@ export default function CareerPathClient({
   )
 
   return (
-    <main className="px-6 md:px-12 py-10 max-w-6xl mx-auto">
+    <main className="px-6 md:px-12 py-10 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-10 animate-fade-in-up">
-        <h1 className="text-4xl md:text-5xl font-bold font-display mb-3 tracking-tight">
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">
           Career Path
         </h1>
-        <p className="text-white/50 text-lg max-w-xl">
+        <p className="text-[#71717a] text-sm">
           Track your networking journey, maintain your streak, and unlock achievements.
         </p>
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {/* Streak */}
-        <div className="glass-card p-5 animate-fade-in-up stagger-1 opacity-0">
-          <div className="flex items-center gap-3 mb-3">
-            <div className={`p-2.5 rounded-xl ${currentStreak > 0 ? 'streak-counter' : 'bg-white/10'}`}>
-              <Flame size={22} className={currentStreak > 0 ? 'streak-fire text-white' : 'text-white/50'} />
+        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className={`p-2 rounded-lg ${currentStreak > 0 ? 'bg-amber-500/10' : 'bg-[#18181b]'}`}>
+              <Flame size={18} className={currentStreak > 0 ? 'text-amber-400' : 'text-[#52525b]'} />
             </div>
             <div>
-              <p className="text-white/50 text-xs">Current Streak</p>
-              <p className="text-2xl font-bold">{currentStreak} <span className="text-sm font-normal text-white/50">days</span></p>
+              <p className="text-[#52525b] text-xs">Streak</p>
+              <p className="text-lg font-semibold">{currentStreak}d</p>
             </div>
           </div>
           {currentStreak > 0 && (
-            <p className="text-xs text-amber-400">
-              🔥 Keep it going! Best: {longestStreak} days
-            </p>
+            <p className="text-xs text-[#71717a]">Best: {longestStreak}d</p>
           )}
         </div>
 
         {/* Level & XP */}
-        <div className="glass-card p-5 animate-fade-in-up stagger-2 opacity-0">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="level-badge p-2.5 rounded-xl">
-              <Star size={22} className="text-white" />
+        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-purple-500/10">
+              <Star size={18} className="text-purple-400" />
             </div>
             <div>
-              <p className="text-white/50 text-xs">Level</p>
-              <p className="text-2xl font-bold">{currentLevel}</p>
+              <p className="text-[#52525b] text-xs">Level</p>
+              <p className="text-lg font-semibold">{currentLevel}</p>
             </div>
           </div>
-          <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+          <div className="relative h-1.5 bg-[#27272a] rounded-full overflow-hidden">
             <div 
-              className="xp-bar h-full rounded-full transition-all duration-1000"
+              className="bg-purple-500 h-full rounded-full transition-all duration-1000"
               style={{ width: `${xpProgress}%` }}
             />
           </div>
-          <p className="text-xs text-white/40 mt-1">{animatedXp.toLocaleString()} XP</p>
+          <p className="text-xs text-[#52525b] mt-1">{animatedXp.toLocaleString()} XP</p>
         </div>
 
         {/* Connections */}
-        <div className="glass-card p-5 animate-fade-in-up stagger-3 opacity-0">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="bg-blue-500/20 p-2.5 rounded-xl">
-              <Users size={22} className="text-blue-400" />
+        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <Users size={18} className="text-blue-400" />
             </div>
             <div>
-              <p className="text-white/50 text-xs">Connections</p>
-              <p className="text-2xl font-bold">{totalConnections}</p>
+              <p className="text-[#52525b] text-xs">Connections</p>
+              <p className="text-lg font-semibold">{totalConnections}</p>
             </div>
           </div>
-          <Link href="/network" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
-            View network <ChevronRight size={12} />
+          <Link href="/network" className="text-xs text-blue-400 hover:underline flex items-center gap-0.5">
+            View <ChevronRight size={10} />
           </Link>
         </div>
 
         {/* Messages */}
-        <div className="glass-card p-5 animate-fade-in-up stagger-4 opacity-0">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="bg-green-500/20 p-2.5 rounded-xl">
-              <MessageSquare size={22} className="text-green-400" />
+        <div className="bg-[#111113] border border-[#27272a] rounded-xl p-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <MessageSquare size={18} className="text-emerald-400" />
             </div>
             <div>
-              <p className="text-white/50 text-xs">Messages Sent</p>
-              <p className="text-2xl font-bold">{totalMessages}</p>
+              <p className="text-[#52525b] text-xs">Messages</p>
+              <p className="text-lg font-semibold">{totalMessages}</p>
             </div>
           </div>
-          <p className="text-xs text-white/40">Keep reaching out!</p>
+          <p className="text-xs text-[#52525b]">Keep going!</p>
         </div>
       </div>
 
       {/* Daily Goals */}
-      <div className="glass-card p-6 mb-10 animate-fade-in-up stagger-5 opacity-0">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5 mb-8">
+        <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-orange-500 to-pink-500 p-2.5 rounded-xl">
-              <Target size={22} className="text-white" />
+            <div className="p-2 rounded-lg bg-[#B31B1B]/10">
+              <Target size={18} className="text-[#B31B1B]" />
             </div>
             <div>
-              <h3 className="font-semibold">Today's Goals</h3>
-              <p className="text-white/50 text-sm">Complete daily tasks to maintain your streak</p>
+              <h3 className="text-sm font-semibold">Today's Goals</h3>
+              <p className="text-[#52525b] text-xs">Complete daily tasks to maintain your streak</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-white/50">
-              <Calendar size={12} className="inline mr-1" />
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-            </p>
-          </div>
+          <p className="text-xs text-[#52525b]">
+            <Calendar size={10} className="inline mr-1" />
+            {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-3">
           {/* Connection Goal */}
-          <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-[#0a0a0b] rounded-lg p-4 border border-[#27272a]">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Users size={16} className="text-blue-400" />
-                <span className="text-sm font-medium">Add connections</span>
+                <Users size={14} className="text-blue-400" />
+                <span className="text-sm">Add connections</span>
               </div>
-              <span className="text-sm text-white/50">
+              <span className="text-xs text-[#52525b]">
                 {dailyGoal?.connections_made || 0} / {dailyGoal?.connections_goal || 3}
               </span>
             </div>
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[#27272a] rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500"
+                className="h-full bg-blue-500 rounded-full transition-all"
                 style={{ 
                   width: `${Math.min(100, ((dailyGoal?.connections_made || 0) / (dailyGoal?.connections_goal || 3)) * 100)}%` 
                 }}
@@ -300,19 +269,19 @@ export default function CareerPathClient({
           </div>
 
           {/* Message Goal */}
-          <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-[#0a0a0b] rounded-lg p-4 border border-[#27272a]">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <MessageSquare size={16} className="text-green-400" />
-                <span className="text-sm font-medium">Send messages</span>
+                <MessageSquare size={14} className="text-emerald-400" />
+                <span className="text-sm">Send messages</span>
               </div>
-              <span className="text-sm text-white/50">
+              <span className="text-xs text-[#52525b]">
                 {dailyGoal?.messages_sent || 0} / {dailyGoal?.messages_goal || 2}
               </span>
             </div>
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[#27272a] rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-500"
+                className="h-full bg-emerald-500 rounded-full transition-all"
                 style={{ 
                   width: `${Math.min(100, ((dailyGoal?.messages_sent || 0) / (dailyGoal?.messages_goal || 2)) * 100)}%` 
                 }}
@@ -321,65 +290,64 @@ export default function CareerPathClient({
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="mt-6 flex gap-3">
+        <div className="mt-5 flex gap-2">
           <Link 
             href="/discover"
             className="btn-primary flex-1 flex items-center justify-center gap-2"
           >
-            <Sparkles size={18} />
-            Find Alumni to Connect
+            <Sparkles size={16} />
+            Find Alumni
           </Link>
           <Link 
             href="/network"
             className="btn-secondary flex-1 flex items-center justify-center gap-2"
           >
-            <MessageSquare size={18} />
-            Message Your Network
+            <MessageSquare size={16} />
+            Message Network
           </Link>
         </div>
       </div>
 
       {/* Achievement Paths */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold font-display mb-6 flex items-center gap-3">
-          <Trophy className="text-yellow-400" />
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Trophy size={18} className="text-amber-400" />
           Achievement Paths
         </h2>
 
         {renderAchievementPath(
           achievementsByType.streak,
           currentStreak,
-          <Flame className="text-orange-400" size={24} />,
+          <Flame className="text-amber-400" size={18} />,
           'Streak Master'
         )}
 
         {renderAchievementPath(
           achievementsByType.connections,
           totalConnections,
-          <Users className="text-blue-400" size={24} />,
+          <Users className="text-blue-400" size={18} />,
           'Network Builder'
         )}
 
         {renderAchievementPath(
           achievementsByType.messages,
           totalMessages,
-          <MessageSquare className="text-green-400" size={24} />,
+          <MessageSquare className="text-emerald-400" size={18} />,
           'Outreach Pro'
         )}
       </div>
 
       {/* All Achievements Grid */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-          <Award className="text-purple-400" />
+      <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5">
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+          <Award size={16} className="text-purple-400" />
           All Achievements
-          <span className="text-white/50 text-sm font-normal ml-auto">
-            {unlockedAchievementIds.length} / {allAchievements.length} unlocked
+          <span className="text-[#52525b] text-xs font-normal ml-auto">
+            {unlockedAchievementIds.length} / {allAchievements.length}
           </span>
         </h3>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {allAchievements.map((achievement) => {
             const isUnlocked = unlockedAchievementIds.includes(achievement.id)
             
@@ -387,21 +355,21 @@ export default function CareerPathClient({
               <div 
                 key={achievement.id}
                 className={`
-                  p-4 rounded-xl border transition-all duration-300
+                  p-3 rounded-lg border transition-colors
                   ${isUnlocked 
-                    ? tierBgColors[achievement.tier]
-                    : 'bg-white/5 border-white/10 opacity-50 grayscale'
+                    ? tierColors[achievement.tier]
+                    : 'bg-[#0a0a0b] border-[#27272a] opacity-40'
                   }
                 `}
               >
-                <div className="text-3xl mb-2">
+                <div className="text-2xl mb-2">
                   {isUnlocked ? achievement.icon : '🔒'}
                 </div>
-                <p className="font-medium text-sm mb-1">{achievement.name}</p>
-                <p className="text-white/50 text-xs mb-2">{achievement.description}</p>
-                <div className="flex items-center gap-1 text-yellow-400 text-xs">
-                  <Zap size={12} />
-                  +{achievement.xp_reward} XP
+                <p className="font-medium text-xs mb-0.5">{achievement.name}</p>
+                <p className="text-[#52525b] text-xs mb-2">{achievement.description}</p>
+                <div className="flex items-center gap-1 text-amber-400 text-xs">
+                  <Zap size={10} />
+                  +{achievement.xp_reward}
                 </div>
               </div>
             )

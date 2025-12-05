@@ -28,44 +28,37 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
     router.refresh()
   }
 
-  const navLinkClass = (path: string) => `
-    flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200
-    ${pathname === path
-      ? 'bg-gradient-to-r from-[var(--school-primary)] to-[var(--school-primary-light)] shadow-lg'
-      : 'bg-white/5 hover:bg-white/10'
-    }
-  `
+  const isActive = (path: string) => pathname === path
 
   return (
-    <nav className="flex justify-between items-center px-4 md:px-10 py-4 border-b border-white/[0.08] backdrop-blur-xl sticky top-0 z-50 bg-[#0f0f0f]/80">
+    <nav className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-[#27272a] sticky top-0 z-50 bg-[#0a0a0b]">
       {/* Logo & School Selector */}
-      <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-gradient-to-br from-[var(--school-primary)] to-[var(--school-primary-light)] rounded-xl flex items-center justify-center text-lg font-bold font-display shadow-lg">
-            S
+      <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="logo-mark">
+            <span>S</span>
           </div>
-          <span className="text-xl font-bold font-display tracking-tight hidden sm:block">Scout</span>
+          <span className="logo-text hidden sm:block">scout</span>
         </Link>
         
         {/* School Badge/Selector */}
         <div className="relative">
           <button 
             onClick={() => setShowSchoolDropdown(!showSchoolDropdown)}
-            className="flex items-center gap-1.5 text-[11px] px-3 py-1.5 bg-[var(--school-primary)]/20 border border-[var(--school-primary)]/40 rounded-full text-[var(--school-primary-light)] font-semibold hover:bg-[var(--school-primary)]/30 transition-all"
+            className="flex items-center gap-1.5 text-xs px-2.5 py-1 bg-[#18181b] border border-[#27272a] rounded-md text-[#a1a1aa] font-medium hover:bg-[#1f1f23] transition-colors"
           >
             CORNELL
             <ChevronDown size={12} className={`transition-transform ${showSchoolDropdown ? 'rotate-180' : ''}`} />
           </button>
           
-          {/* Dropdown - for future multi-school */}
           {showSchoolDropdown && (
-            <div className="absolute top-full mt-2 left-0 bg-gray-900 border border-white/10 rounded-xl shadow-xl overflow-hidden min-w-[180px] animate-fade-in-scale">
-              <div className="p-2">
-                <button className="w-full text-left px-3 py-2 rounded-lg bg-[var(--school-primary)]/20 text-[var(--school-primary-light)] text-sm font-medium">
+            <div className="absolute top-full mt-1 left-0 bg-[#111113] border border-[#27272a] rounded-lg shadow-lg overflow-hidden min-w-[160px] animate-fade-in">
+              <div className="p-1">
+                <button className="w-full text-left px-3 py-2 rounded-md bg-[#18181b] text-[#fafafa] text-sm font-medium">
                   Cornell University
                 </button>
-                <div className="px-3 py-2 text-white/30 text-xs">
-                  More schools coming soon...
+                <div className="px-3 py-2 text-[#52525b] text-xs">
+                  More schools coming soon
                 </div>
               </div>
             </div>
@@ -74,64 +67,85 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
       </div>
 
       {/* Navigation Links */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         {user ? (
           <>
-            <Link href="/discover" className={navLinkClass('/discover')}>
+            <Link 
+              href="/discover" 
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/discover') 
+                  ? 'bg-[#18181b] text-[#fafafa]' 
+                  : 'text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b]'
+              }`}
+            >
               <Search size={16} />
               <span className="hidden sm:inline">Discover</span>
             </Link>
             
-            <Link href="/network" className={navLinkClass('/network')}>
+            <Link 
+              href="/network" 
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/network') 
+                  ? 'bg-[#18181b] text-[#fafafa]' 
+                  : 'text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b]'
+              }`}
+            >
               <Users size={16} />
               <span className="hidden sm:inline">Network</span>
               {networkCount > 0 && (
-                <span className="bg-white/20 px-1.5 py-0.5 rounded-md text-xs">
+                <span className="bg-[#27272a] px-1.5 py-0.5 rounded text-xs text-[#a1a1aa]">
                   {networkCount}
                 </span>
               )}
             </Link>
 
-            <Link href="/career-path" className={navLinkClass('/career-path')}>
+            <Link 
+              href="/career-path" 
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/career-path') 
+                  ? 'bg-[#18181b] text-[#fafafa]' 
+                  : 'text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b]'
+              }`}
+            >
               <Trophy size={16} />
               <span className="hidden sm:inline">Career Path</span>
               {currentStreak > 0 && (
-                <span className="flex items-center gap-1 bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-md text-xs">
+                <span className="flex items-center gap-1 bg-[#27272a] text-amber-500 px-1.5 py-0.5 rounded text-xs">
                   <Flame size={10} />
                   {currentStreak}
                 </span>
               )}
             </Link>
 
-            <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block" />
+            <div className="w-px h-5 bg-[#27272a] mx-2 hidden sm:block" />
 
             <Link
               href="/profile"
-              className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-all"
+              className="p-2 rounded-md text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[#18181b] transition-colors"
               title="Profile"
             >
-              <User size={18} />
+              <User size={16} />
             </Link>
 
             <button
               onClick={handleSignOut}
-              className="p-2.5 rounded-xl bg-white/5 hover:bg-red-500/20 hover:text-red-400 transition-all"
+              className="p-2 rounded-md text-[#a1a1aa] hover:text-red-500 hover:bg-[#18181b] transition-colors"
               title="Sign Out"
             >
-              <LogOut size={18} />
+              <LogOut size={16} />
             </button>
           </>
         ) : (
           <>
             <Link
               href="/login"
-              className="px-4 py-2.5 rounded-xl font-medium text-sm bg-white/5 hover:bg-white/10 transition-all"
+              className="btn-ghost"
             >
               Log In
             </Link>
             <Link
               href="/signup"
-              className="px-4 py-2.5 rounded-xl font-medium text-sm bg-gradient-to-r from-[var(--school-primary)] to-[var(--school-primary-light)] shadow-lg transition-all hover:shadow-xl"
+              className="btn-primary"
             >
               Sign Up
             </Link>

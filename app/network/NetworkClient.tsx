@@ -122,70 +122,67 @@ export default function NetworkClient({
   return (
     <main className="px-6 md:px-12 py-10 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="mb-10">
-        <h1 className="text-4xl md:text-5xl font-bold font-display mb-3 tracking-tight">
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">
           My Network
         </h1>
-        <p className="text-white/50 text-lg max-w-xl">
+        <p className="text-[#71717a] text-sm">
           Manage your connections and send personalized outreach messages.
         </p>
       </div>
 
       {/* Interests Setting */}
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-5 mb-8 flex items-center gap-4 flex-wrap">
-        <span className="text-white/60 text-sm">Your interests (for AI messages):</span>
+      <div className="card p-4 mb-6 flex items-center gap-4 flex-wrap">
+        <span className="text-[#71717a] text-sm">Your interests:</span>
         <input
           type="text"
           value={interests}
           onChange={(e) => setInterests(e.target.value)}
           onBlur={handleUpdateInterests}
           placeholder="e.g., investment banking, product management..."
-          className="flex-1 min-w-[250px] px-4 py-2.5 rounded-lg border border-white/15 bg-white/5 text-white text-sm outline-none focus:border-cornell-red/50"
+          className="input-field flex-1 min-w-[250px]"
         />
       </div>
 
       {/* Stats */}
-      <div className="flex gap-6 mb-8">
-        <div className="flex items-center gap-2 text-white/50 text-sm">
-          <Users size={16} />
+      <div className="flex gap-6 mb-6">
+        <div className="flex items-center gap-2 text-[#71717a] text-sm">
+          <Users size={14} />
           <span>{network.length} connections</span>
         </div>
-        <div className="flex items-center gap-2 text-green-500/80 text-sm">
-          <span className="w-2 h-2 rounded-full bg-green-500" />
+        <div className="flex items-center gap-2 text-emerald-400 text-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
           <span>{contactedCount} contacted</span>
         </div>
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md mb-6">
-        <Search
-          size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
-        />
+      <div className="search-input-wrapper max-w-sm mb-6">
+        <Search size={16} className="search-icon" />
         <input
           type="text"
           placeholder="Search your network..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="input-field pl-11"
+          className="input-field"
         />
       </div>
 
       {/* Network List */}
       {filteredNetwork.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-5xl mb-4">👥</p>
+        <div className="text-center py-16">
+          <p className="text-4xl mb-3">👥</p>
           {network.length === 0 ? (
             <>
-              <p className="text-xl text-white/60 mb-2">Your network is empty</p>
-              <p className="text-white/40">
+              <p className="text-base text-[#a1a1aa] mb-1">Your network is empty</p>
+              <p className="text-[#52525b] text-sm">
                 Go to Discover to add alumni to your network
               </p>
             </>
           ) : (
             <>
-              <p className="text-xl text-white/60 mb-2">No matches found</p>
-              <p className="text-white/40">Try a different search term</p>
+              <p className="text-base text-[#a1a1aa] mb-1">No matches found</p>
+              <p className="text-[#52525b] text-sm">Try a different search term</p>
             </>
           )}
         </div>

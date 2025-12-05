@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { UserNetwork } from '@/types/database'
-import { X, Send, Copy, Check, Linkedin } from 'lucide-react'
+import { X, Copy, Check, Linkedin } from 'lucide-react'
 
 interface MessageModalProps {
   connection: UserNetwork
@@ -27,7 +27,6 @@ export default function MessageModal({
 
   if (!alumni) return null
 
-  // Generate personalized message
   const generateMessage = () => {
     const firstName = alumni.full_name.split(' ')[0]
     return `Hi ${firstName},
@@ -64,58 +63,58 @@ Cornell ${userSport || '[Sport]'}`
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
-        className="bg-gradient-to-b from-[#1a1a2e] to-[#16213e] border border-white/10 rounded-2xl p-8 max-w-xl w-full max-h-[85vh] overflow-auto animate-fade-in"
+        className="bg-[#111113] border border-[#27272a] rounded-xl p-6 max-w-lg w-full max-h-[85vh] overflow-auto animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-lg font-semibold">
             Message to {alumni.full_name}
           </h2>
           <button
             onClick={onClose}
-            className="text-white/50 hover:text-white transition-colors text-2xl"
+            className="p-1 text-[#52525b] hover:text-[#a1a1aa] transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
         {/* Generated message preview */}
-        <div className="bg-black/30 rounded-xl p-5 mb-6 text-sm leading-relaxed text-white/85 whitespace-pre-wrap font-sans">
+        <div className="bg-[#0a0a0b] border border-[#27272a] rounded-lg p-4 mb-4 text-sm leading-relaxed text-[#a1a1aa] whitespace-pre-wrap">
           {message}
         </div>
 
         {/* Personalization note */}
-        <p className="text-white/40 text-xs mb-6">
-          💡 Tip: Update your interests in the settings above to personalize messages further.
+        <p className="text-[#52525b] text-xs mb-5">
+          Tip: Update your interests in settings to personalize messages further.
         </p>
 
         {/* Action buttons */}
-        <div className="flex gap-3 justify-end">
+        <div className="flex gap-2 justify-end">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl border border-white/15 bg-transparent text-white font-semibold text-sm hover:bg-white/5 transition-all"
+            className="btn-secondary flex items-center gap-2"
           >
-            {isCopied ? <Check size={16} /> : <Copy size={16} />}
+            {isCopied ? <Check size={14} /> : <Copy size={14} />}
             {isCopied ? 'Copied!' : 'Copy'}
           </button>
 
           <button
             onClick={handleSend}
             disabled={isSending}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cornell-red to-cornell-red-light shadow-lg shadow-cornell-red/40 font-semibold text-sm transition-all hover:shadow-cornell-red/60"
+            className="btn-primary flex items-center gap-2"
           >
             {isSending ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
                 Sending...
               </>
             ) : (
               <>
-                <Linkedin size={16} />
+                <Linkedin size={14} />
                 Mark as Sent
               </>
             )}

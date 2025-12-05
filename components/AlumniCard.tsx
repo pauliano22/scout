@@ -11,12 +11,12 @@ interface AlumniCardProps {
 }
 
 const industryBadgeClass: Record<string, string> = {
-  Finance: 'badge-finance',
-  Technology: 'badge-technology',
-  Consulting: 'badge-consulting',
-  Healthcare: 'badge-healthcare',
-  Law: 'badge-law',
-  Media: 'badge-media',
+  Finance: 'bg-emerald-500/10 text-emerald-400',
+  Technology: 'bg-blue-500/10 text-blue-400',
+  Consulting: 'bg-purple-500/10 text-purple-400',
+  Healthcare: 'bg-pink-500/10 text-pink-400',
+  Law: 'bg-amber-500/10 text-amber-400',
+  Media: 'bg-orange-500/10 text-orange-400',
 }
 
 export default function AlumniCard({
@@ -26,18 +26,18 @@ export default function AlumniCard({
   isLoading = false,
 }: AlumniCardProps) {
   return (
-    <div className="alumni-card bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-[#111113] border border-[#27272a] rounded-xl p-5 hover:border-[#3f3f46] transition-colors">
+      <div className="flex justify-between items-start mb-3">
         <div>
-          <h3 className="text-lg font-semibold mb-1">{alumni.full_name}</h3>
-          <p className="text-white/50 text-sm">
+          <h3 className="text-base font-semibold mb-0.5">{alumni.full_name}</h3>
+          <p className="text-[#71717a] text-sm">
             {alumni.sport} • Class of {alumni.graduation_year}
           </p>
         </div>
         {alumni.industry && (
           <span
-            className={`px-3 py-1 rounded-md text-xs font-semibold ${
-              industryBadgeClass[alumni.industry] || 'bg-white/10 text-white/70'
+            className={`px-2 py-1 rounded text-xs font-medium ${
+              industryBadgeClass[alumni.industry] || 'bg-[#18181b] text-[#a1a1aa]'
             }`}
           >
             {alumni.industry}
@@ -45,11 +45,11 @@ export default function AlumniCard({
         )}
       </div>
 
-      <div className="mb-5">
-        <p className="text-[15px] font-medium mb-0.5">{alumni.role}</p>
-        <p className="text-white/50 text-sm">{alumni.company}</p>
+      <div className="mb-4">
+        <p className="text-sm font-medium text-[#fafafa] mb-0.5">{alumni.role}</p>
+        <p className="text-[#71717a] text-sm">{alumni.company}</p>
         {alumni.location && (
-          <p className="text-white/35 text-sm mt-1 flex items-center gap-1">
+          <p className="text-[#52525b] text-sm mt-1 flex items-center gap-1">
             <MapPin size={12} />
             {alumni.location}
           </p>
@@ -60,14 +60,12 @@ export default function AlumniCard({
         <button
           onClick={() => onAddToNetwork?.(alumni.id)}
           disabled={isInNetwork || isLoading}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all ${
-            isInNetwork
-              ? 'bg-green-500/15 text-green-500 cursor-default'
-              : 'bg-gradient-to-r from-cornell-red to-cornell-red-light shadow-lg shadow-cornell-red/30 hover:shadow-cornell-red/50'
+          className={`flex-1 flex items-center justify-center gap-2 ${
+            isInNetwork ? 'btn-success' : 'btn-primary'
           }`}
         >
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
           ) : isInNetwork ? (
             <>
               <Check size={16} />
@@ -86,10 +84,10 @@ export default function AlumniCard({
             href={alumni.linkedin_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 rounded-xl bg-white/5 hover:bg-[#0077b5]/20 hover:text-[#0077b5] transition-all"
+            className="btn-ghost p-2.5"
             title="View LinkedIn"
           >
-            <Linkedin size={18} />
+            <Linkedin size={16} />
           </a>
         )}
       </div>

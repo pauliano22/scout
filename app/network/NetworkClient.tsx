@@ -6,6 +6,7 @@ import { UserNetwork } from '@/types/database'
 import NetworkRow from '@/components/NetworkRow'
 import MessageModal from '@/components/MessageModal'
 import NotesModal from '@/components/NotesModal'
+import ConnectionDetailModal from '@/components/ConnectionDetailModal'
 import { Search, Users } from 'lucide-react'
 
 interface NetworkClientProps {
@@ -30,6 +31,7 @@ export default function NetworkClient({
   const [interests, setInterests] = useState(userProfile.interests)
   const [selectedConnection, setSelectedConnection] = useState<UserNetwork | null>(null)
   const [notesConnection, setNotesConnection] = useState<UserNetwork | null>(null)
+  const [detailConnection, setDetailConnection] = useState<UserNetwork | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
 
   const filteredNetwork = useMemo(() => {
@@ -68,7 +70,6 @@ export default function NetworkClient({
   }
 
   const handleSendMessage = async (connectionId: string, message: string) => {
-    // Mark as contacted with current timestamp
     try {
       const now = new Date().toISOString()
       const { error } = await supabase
@@ -142,6 +143,18 @@ export default function NetworkClient({
       )
     } catch (error) {
       console.error('Error updating contacted date:', error)
+    }
+  }
+
+  const handleUpdateConnection = (updatedConnection: UserNetwork) => {
+    setNetwork((prev) =>
+      prev.map((c) =>
+        c.id === updatedConnection.id ? updatedConnection : c
+      )
+    )
+    // Also update the detail connection if it's open
+    if (detailConnection?.id === updatedConnection.id) {
+      setDetailConnection(updatedConnection)
     }
   }
 
@@ -222,6 +235,7 @@ export default function NetworkClient({
               onRemove={handleRemove}
               onOpenNotes={setNotesConnection}
               onUpdateContactedDate={handleUpdateContactedDate}
+              onOpenDetail={setDetailConnection}
               isRemoving={removingId === connection.id}
             />
           ))}
@@ -246,6 +260,15 @@ export default function NetworkClient({
           connection={notesConnection}
           onClose={() => setNotesConnection(null)}
           onSave={handleSaveNotes}
+        />
+      )}
+
+      {/* Connection Detail Modal */}
+      {detailConnection && (
+        <ConnectionDetailModal
+          connection={detailConnection}
+          onClose={() => setDetailConnection(null)}
+          onUpdate={handleUpdateConnection}
         />
       )}
     </main>

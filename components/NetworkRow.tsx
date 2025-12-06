@@ -10,6 +10,7 @@ interface NetworkRowProps {
   onRemove: (id: string) => void
   onOpenNotes: (connection: UserNetwork) => void
   onUpdateContactedDate: (connectionId: string, date: string | null) => void
+  onOpenDetail: (connection: UserNetwork) => void
   isRemoving?: boolean
 }
 
@@ -31,7 +32,6 @@ function formatDate(dateString: string | null): string {
 function toInputDate(dateString: string | null): string {
   if (!dateString) return ''
   const date = new Date(dateString)
-  // Use local date parts to avoid timezone shift
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
@@ -44,6 +44,7 @@ export default function NetworkRow({
   onRemove,
   onOpenNotes,
   onUpdateContactedDate,
+  onOpenDetail,
   isRemoving = false,
 }: NetworkRowProps) {
   const [showDatePicker, setShowDatePicker] = useState(false)
@@ -56,7 +57,6 @@ export default function NetworkRow({
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value
     if (newDate) {
-      // Parse as local date, set to noon local time, then convert to ISO
       const [year, month, day] = newDate.split('-').map(Number)
       const localDate = new Date(year, month - 1, day, 12, 0, 0)
       onUpdateContactedDate(connection.id, localDate.toISOString())
@@ -65,7 +65,10 @@ export default function NetworkRow({
   }
 
   return (
-    <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap hover:border-[--border-secondary] transition-colors">
+    <div 
+      className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 flex items-center justify-between gap-4 flex-wrap hover:border-[--border-secondary] transition-colors cursor-pointer"
+      onClick={() => onOpenDetail(connection)}
+    >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Contacted status indicator */}
         <div
@@ -86,7 +89,7 @@ export default function NetworkRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         {alumni.industry && (
           <span
             className={`px-2 py-1 rounded text-xs font-medium hidden sm:block ${

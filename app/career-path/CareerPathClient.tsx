@@ -70,82 +70,134 @@ export default function CareerPathClient({
 
   const xpProgress = getXpProgress(totalXp, currentLevel)
 
+  // Sort achievements by requirement_value within each type
   const achievementsByType = {
-    streak: allAchievements.filter(a => a.requirement_type === 'streak'),
-    connections: allAchievements.filter(a => a.requirement_type === 'connections'),
-    messages: allAchievements.filter(a => a.requirement_type === 'messages'),
+    streak: allAchievements
+      .filter(a => a.requirement_type === 'streak')
+      .sort((a, b) => a.requirement_value - b.requirement_value),
+    connections: allAchievements
+      .filter(a => a.requirement_type === 'connections')
+      .sort((a, b) => a.requirement_value - b.requirement_value),
+    messages: allAchievements
+      .filter(a => a.requirement_type === 'messages')
+      .sort((a, b) => a.requirement_value - b.requirement_value),
   }
 
-  const renderAchievementPath = (achievements: Achievement[], currentValue: number, icon: React.ReactNode, title: string) => (
-    <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4">
-      <div className="flex items-center gap-3 mb-5">
-        {icon}
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <span className="text-[--text-quaternary] text-xs ml-auto">{currentValue} completed</span>
-      </div>
-      
-      <div className="relative">
-        {/* Connection line */}
-        <div className="absolute top-6 left-6 right-6 h-0.5 bg-[--border-primary] rounded-full" />
-        <div 
-          className="absolute top-6 left-6 h-0.5 bg-emerald-500 rounded-full transition-all duration-1000"
-          style={{ 
-            width: `${Math.min(100, (currentValue / achievements[achievements.length - 1]?.requirement_value || 1) * 100)}%`,
-            maxWidth: 'calc(100% - 48px)'
-          }}
-        />
+  const renderAchievementPath = (achievements: Achievement[], currentValue: number, icon: React.ReactNode, title: string) => {
+    if (achievements.length === 0) return null
+    
+    // Find where we are in the progression
+    const maxValue = achievements[achievements.length - 1]?.requirement_value || 1
+    const completedCount = achievements.filter(a => currentValue >= a.requirement_value).length
+    
+    // Calculate progress percentage based on milestones, not raw value
+    // This makes the line stop AT milestones rather than between them
+    let progressPercent = 0
+    if (achievements.length > 1) {
+      const nodeWidth = 100 / (achievements.length - 1)
+      for (let i = 0; i < achievements.length; i++) {
+        if (currentValue >= achievements[i].requirement_value) {
+          progressPercent = i * nodeWidth
+        } else if (i > 0) {
+          // Partial progress between last completed and next
+          const prevValue = achievements[i - 1].requirement_value
+          const nextValue = achievements[i].requirement_value
+          const partialProgress = (currentValue - prevValue) / (nextValue - prevValue)
+          progressPercent = ((i - 1) + partialProgress) * nodeWidth
+          break
+        } else {
+          // Haven't reached first milestone
+          const partialProgress = currentValue / achievements[0].requirement_value
+          progressPercent = partialProgress * nodeWidth * 0.5 // Only go halfway to first node
+          break
+        }
+      }
+    }
+    
+    return (
+      <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4">
+        <div className="flex items-center gap-3 mb-5">
+          {icon}
+          <h3 className="text-sm font-semibold">{title}</h3>
+          <span className="text-[--text-quaternary] text-xs ml-auto">{completedCount} completed</span>
+        </div>
         
-        {/* Nodes */}
-        <div className="flex justify-between relative z-10">
-          {achievements.map((achievement, index) => {
-            const isUnlocked = unlockedAchievementIds.includes(achievement.id)
-            const isNext = !isUnlocked && (index === 0 || unlockedAchievementIds.includes(achievements[index - 1]?.id))
-            
-            return (
-              <div key={achievement.id} className="flex flex-col items-center">
-                <div 
-                  className={`
-                    relative w-12 h-12 rounded-lg flex items-center justify-center text-lg
-                    transition-all cursor-pointer group border
-                    ${isUnlocked 
-                      ? tierColors[achievement.tier]
-                      : isNext 
-                        ? 'bg-[--bg-tertiary] border-[--border-secondary]'
-                        : 'bg-[--bg-secondary] border-[--border-primary] opacity-40'
-                    }
-                  `}
-                >
-                  {isUnlocked ? (
-                    <span>{achievement.icon}</span>
-                  ) : isNext ? (
-                    <span className="opacity-50">{achievement.icon}</span>
-                  ) : (
-                    <Lock size={16} className="text-[--text-quaternary]" />
-                  )}
-                  
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                    <div className="bg-[--bg-tertiary] border border-[--border-primary] rounded-lg p-3 min-w-[160px] text-center shadow-lg">
-                      <p className="font-medium text-xs mb-1">{achievement.name}</p>
-                      <p className="text-[--text-tertiary] text-xs mb-2">{achievement.description}</p>
-                      <div className="flex items-center justify-center gap-1 text-amber-400 text-xs">
-                        <Zap size={10} />
-                        +{achievement.xp_reward} XP
+        <div className="relative">
+          {/* Connection line - background */}
+          <div className="absolute top-6 left-6 right-6 h-0.5 bg-[--border-primary] rounded-full" />
+          {/* Connection line - progress */}
+          <div 
+            className="absolute top-6 left-6 h-0.5 bg-emerald-500 rounded-full transition-all duration-1000"
+            style={{ 
+              width: `calc(${Math.min(100, progressPercent)}% * (100% - 48px) / 100)`,
+            }}
+          />
+          
+          {/* Nodes */}
+          <div className="flex justify-between relative z-10">
+            {achievements.map((achievement, index) => {
+              // Check if unlocked based on actual current value, not just database
+              const isUnlocked = currentValue >= achievement.requirement_value
+              const isInDatabase = unlockedAchievementIds.includes(achievement.id)
+              const isNext = !isUnlocked && (index === 0 || currentValue >= achievements[index - 1]?.requirement_value)
+              
+              return (
+                <div key={achievement.id} className="flex flex-col items-center">
+                  <div 
+                    className={`
+                      relative w-12 h-12 rounded-lg flex items-center justify-center text-lg
+                      transition-all cursor-pointer group border
+                      ${isUnlocked 
+                        ? tierColors[achievement.tier]
+                        : isNext 
+                          ? 'bg-[--bg-tertiary] border-[--border-secondary]'
+                          : 'bg-[--bg-secondary] border-[--border-primary] opacity-40'
+                      }
+                    `}
+                  >
+                    {isUnlocked ? (
+                      <span>{achievement.icon}</span>
+                    ) : isNext ? (
+                      <span className="opacity-50">{achievement.icon}</span>
+                    ) : (
+                      <Lock size={16} className="text-[--text-quaternary]" />
+                    )}
+                    
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+                      <div className="bg-[--bg-tertiary] border border-[--border-primary] rounded-lg p-3 min-w-[160px] text-center shadow-lg">
+                        <p className="font-medium text-xs mb-1">{achievement.name}</p>
+                        <p className="text-[--text-tertiary] text-xs mb-2">{achievement.description}</p>
+                        {isUnlocked ? (
+                          <div className="flex items-center justify-center gap-1 text-emerald-400 text-xs">
+                            <span>✓ Unlocked!</span>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="text-[--text-quaternary] text-xs mb-1">
+                              {currentValue} / {achievement.requirement_value}
+                            </p>
+                            <div className="flex items-center justify-center gap-1 text-amber-400 text-xs">
+                              <Zap size={10} />
+                              +{achievement.xp_reward} XP
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
+                  
+                  <span className={`mt-2 text-xs ${isUnlocked ? 'text-[--text-secondary]' : 'text-[--text-quaternary]'}`}>
+                    {achievement.requirement_value}
+                  </span>
                 </div>
-                
-                <span className={`mt-2 text-xs ${isUnlocked ? 'text-[--text-secondary]' : 'text-[--text-quaternary]'}`}>
-                  {achievement.requirement_value}
-                </span>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <main className="px-6 md:px-12 py-10 max-w-5xl mx-auto">

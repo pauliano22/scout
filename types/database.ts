@@ -166,3 +166,16 @@ export function getXpProgress(currentXp: number, currentLevel: number): number {
   const progress = ((currentXp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100
   return Math.min(100, Math.max(0, progress))
 }
+
+export interface Interaction {
+  id: string
+  user_id: string
+  alumni_id: string
+  network_id: string | null
+  type: 'email' | 'linkedin' | 'phone' | 'coffee' | 'video_call' | 'in_person' | 'other'
+  title: string | null
+  notes: string | null
+  interaction_date: string
+  created_at: string
+  updated_at: string
+}

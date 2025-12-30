@@ -12,21 +12,25 @@ interface DiscoverClientProps {
   userId: string
 }
 
+const ITEMS_PER_PAGE = 99 // Show 99 at a time (3x33 grid friendly)
+
 export default function DiscoverClient({
   initialAlumni,
   networkAlumniIds: initialNetworkIds,
   userId,
 }: DiscoverClientProps) {
   const supabase = createClient()
-  
+
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState('All Industries')
   const [sportFilter, setSportFilter] = useState('All Sports')
   const [networkIds, setNetworkIds] = useState<Set<string>>(new Set(initialNetworkIds))
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
 
   // Filter alumni based on search and filters
   const filteredAlumni = useMemo(() => {
+    // Reset visible count when filters change
     return initialAlumni.filter((person) => {
       const searchLower = searchQuery.toLowerCase()
       const matchesSearch =
@@ -45,9 +49,25 @@ export default function DiscoverClient({
     })
   }, [initialAlumni, searchQuery, industryFilter, sportFilter])
 
+  // Reset visible count when filters/search change
+  useMemo(() => {
+    setVisibleCount(ITEMS_PER_PAGE)
+  }, [searchQuery, industryFilter, sportFilter])
+
+  // Get only the visible portion of filtered alumni
+  const visibleAlumni = useMemo(() => {
+    return filteredAlumni.slice(0, visibleCount)
+  }, [filteredAlumni, visibleCount])
+
+  const hasMore = visibleCount < filteredAlumni.length
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + ITEMS_PER_PAGE)
+  }
+
   const handleAddToNetwork = async (alumniId: string) => {
     setLoadingId(alumniId)
-    
+
     try {
       const { error } = await supabase
         .from('user_networks')
@@ -91,7 +111,7 @@ export default function DiscoverClient({
 
       {/* Results count */}
       <p className="text-[--text-quaternary] text-sm mb-6">
-        Showing {filteredAlumni.length} alumni
+        Showing {visibleAlumni.length} of {filteredAlumni.length} alumni
       </p>
 
       {/* Alumni Grid */}
@@ -102,17 +122,31 @@ export default function DiscoverClient({
           <p className="text-[--text-quaternary] text-sm">Try adjusting your search or filters</p>
         </div>
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAlumni.map((alumni) => (
-            <AlumniCard
-              key={alumni.id}
-              alumni={alumni}
-              isInNetwork={networkIds.has(alumni.id)}
-              onAddToNetwork={handleAddToNetwork}
-              isLoading={loadingId === alumni.id}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {visibleAlumni.map((alumni) => (
+              <AlumniCard
+                key={alumni.id}
+                alumni={alumni}
+                isInNetwork={networkIds.has(alumni.id)}
+                onAddToNetwork={handleAddToNetwork}
+                isLoading={loadingId === alumni.id}
+              />
+            ))}
+          </div>
+
+          {/* Load More Button */}
+          {hasMore && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={handleLoadMore}
+                className="px-6 py-3 bg-[--bg-tertiary] hover:bg-[--bg-quaternary] text-[--text-secondary] rounded-lg transition-colors text-sm font-medium"
+              >
+                Load More ({filteredAlumni.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
+        </>
       )}
     </main>
   )

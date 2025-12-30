@@ -23,23 +23,39 @@ const industries = [
 
 const sports = [
   'All Sports',
-  'Basketball',
-  'Soccer',
-  'Football',
-  'Lacrosse',
-  'Tennis',
-  'Swimming',
   'Baseball',
-  'Volleyball',
-  'Hockey',
-  'Track & Field',
-  'Rowing',
-  'Wrestling',
-  'Golf',
-  'Field Hockey',
-  'Cross Country',
+  'Equestrian',
   'Fencing',
-  'Gymnastics',
+  'Field Hockey',
+  'Football',
+  "Men's Basketball",
+  "Men's Cross Country",
+  "Men's Golf",
+  "Men's Ice Hockey",
+  "Men's Lacrosse",
+  "Men's Rowing",
+  "Men's Soccer",
+  "Men's Squash",
+  "Men's Swimming And Diving",
+  "Men's Tennis",
+  "Men's Track And Field",
+  'Rowing',
+  'Softball',
+  'Sprint Football',
+  "Women's Basketball",
+  "Women's Cross Country",
+  "Women's Gymnastics",
+  "Women's Ice Hockey",
+  "Women's Lacrosse",
+  "Women's Rowing",
+  "Women's Sailing",
+  "Women's Soccer",
+  "Women's Squash",
+  "Women's Swimming And Diving",
+  "Women's Tennis",
+  "Women's Track And Field",
+  "Women's Volleyball",
+  'Wrestling',
 ]
 
 export default function SearchFilters({
@@ -77,8 +93,8 @@ export default function SearchFilters({
             </option>
           ))}
         </select>
-        <ChevronDown 
-          size={14} 
+        <ChevronDown
+          size={14}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
         />
       </div>
@@ -96,8 +112,8 @@ export default function SearchFilters({
             </option>
           ))}
         </select>
-        <ChevronDown 
-          size={14} 
+        <ChevronDown
+          size={14}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
         />
       </div>

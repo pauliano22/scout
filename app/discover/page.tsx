@@ -5,19 +5,21 @@ import DiscoverClient from './DiscoverClient'
 
 export default async function DiscoverPage() {
   const supabase = createClient()
-  
+
   // Check authentication
   const { data: { user } } = await supabase.auth.getUser()
+
   if (!user) {
     redirect('/login')
   }
 
-  // Fetch alumni
+  // Fetch ALL alumni (increase limit from default 1000)
   const { data: alumni, error: alumniError } = await supabase
     .from('alumni')
     .select('*')
     .eq('is_public', true)
     .order('graduation_year', { ascending: false })
+    .limit(30000)
 
   // Fetch user's network to know which alumni are already added
   const { data: network } = await supabase
@@ -34,12 +36,12 @@ export default async function DiscoverPage() {
 
   return (
     <>
-      <Navbar 
-        user={{ email: user.email! }} 
+      <Navbar
+        user={{ email: user.email! }}
         networkCount={networkCount}
       />
-      <DiscoverClient 
-        initialAlumni={alumni || []} 
+      <DiscoverClient
+        initialAlumni={alumni || []}
         networkAlumniIds={Array.from(networkAlumniIds)}
         userId={user.id}
       />

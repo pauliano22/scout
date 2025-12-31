@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { UserNetwork } from '@/types/database'
 import NetworkRow from '@/components/NetworkRow'
@@ -25,6 +26,8 @@ export default function NetworkClient({
   userProfile,
 }: NetworkClientProps) {
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const highlightId = searchParams.get('highlight')
   
   const [network, setNetwork] = useState<UserNetwork[]>(initialNetwork)
   const [searchQuery, setSearchQuery] = useState('')
@@ -33,6 +36,34 @@ export default function NetworkClient({
   const [notesConnection, setNotesConnection] = useState<UserNetwork | null>(null)
   const [detailConnection, setDetailConnection] = useState<UserNetwork | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const [highlightedId, setHighlightedId] = useState<string | null>(null)
+  
+  // Refs for scrolling to highlighted item
+  const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+  // Handle highlight parameter - scroll to and highlight the connection
+  useEffect(() => {
+    if (highlightId) {
+      // Find the connection with this alumni_id
+      const connection = network.find(c => c.alumni_id === highlightId)
+      if (connection) {
+        setHighlightedId(connection.id)
+        
+        // Scroll to the element after a short delay to ensure render
+        setTimeout(() => {
+          const element = rowRefs.current.get(connection.id)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }, 100)
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          setHighlightedId(null)
+        }, 3000)
+      }
+    }
+  }, [highlightId, network])
 
   const filteredNetwork = useMemo(() => {
     if (!searchQuery) return network
@@ -146,6 +177,44 @@ export default function NetworkClient({
     }
   }
 
+  const handleUpdateStatus = async (connectionId: string, status: 'cold' | 'warm' | 'hot') => {
+    try {
+      const { error } = await supabase
+        .from('user_networks')
+        .update({ status })
+        .eq('id', connectionId)
+
+      if (error) throw error
+
+      setNetwork((prev) =>
+        prev.map((c) =>
+          c.id === connectionId ? { ...c, status } : c
+        )
+      )
+    } catch (error) {
+      console.error('Error updating status:', error)
+    }
+  }
+
+  const handleUndoContacted = async (connectionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_networks')
+        .update({ contacted: false, contacted_at: null })
+        .eq('id', connectionId)
+
+      if (error) throw error
+
+      setNetwork((prev) =>
+        prev.map((c) =>
+          c.id === connectionId ? { ...c, contacted: false, contacted_at: null } : c
+        )
+      )
+    } catch (error) {
+      console.error('Error undoing contacted status:', error)
+    }
+  }
+
   const handleUpdateConnection = (updatedConnection: UserNetwork) => {
     setNetwork((prev) =>
       prev.map((c) =>
@@ -155,6 +224,15 @@ export default function NetworkClient({
     // Also update the detail connection if it's open
     if (detailConnection?.id === updatedConnection.id) {
       setDetailConnection(updatedConnection)
+    }
+  }
+
+  // Helper to set ref for each row
+  const setRowRef = (id: string, element: HTMLDivElement | null) => {
+    if (element) {
+      rowRefs.current.set(id, element)
+    } else {
+      rowRefs.current.delete(id)
     }
   }
 
@@ -228,16 +306,27 @@ export default function NetworkClient({
       ) : (
         <div className="flex flex-col gap-3">
           {filteredNetwork.map((connection) => (
-            <NetworkRow
+            <div
               key={connection.id}
-              connection={connection}
-              onSendMessage={setSelectedConnection}
-              onRemove={handleRemove}
-              onOpenNotes={setNotesConnection}
-              onUpdateContactedDate={handleUpdateContactedDate}
-              onOpenDetail={setDetailConnection}
-              isRemoving={removingId === connection.id}
-            />
+              ref={(el) => setRowRef(connection.id, el)}
+              className={`transition-all duration-500 rounded-xl ${
+                highlightedId === connection.id 
+                  ? 'ring-2 ring-[--school-primary] bg-[--school-primary]/5' 
+                  : ''
+              }`}
+            >
+              <NetworkRow
+                connection={connection}
+                onSendMessage={setSelectedConnection}
+                onRemove={handleRemove}
+                onOpenNotes={setNotesConnection}
+                onUpdateContactedDate={handleUpdateContactedDate}
+                onUpdateStatus={handleUpdateStatus}
+                onUndoContacted={handleUndoContacted}
+                onOpenDetail={setDetailConnection}
+                isRemoving={removingId === connection.id}
+              />
+            </div>
           ))}
         </div>
       )}

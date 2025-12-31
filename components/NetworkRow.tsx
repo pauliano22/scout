@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { UserNetwork } from '@/types/database'
-import { Check, Mail, X, Linkedin, StickyNote, Calendar } from 'lucide-react'
+import { Check, Mail, X, Linkedin, StickyNote, Calendar, Flame, Snowflake, Sun } from 'lucide-react'
 
 interface NetworkRowProps {
   connection: UserNetwork
@@ -10,6 +10,8 @@ interface NetworkRowProps {
   onRemove: (id: string) => void
   onOpenNotes: (connection: UserNetwork) => void
   onUpdateContactedDate: (connectionId: string, date: string | null) => void
+  onUpdateStatus: (connectionId: string, status: 'cold' | 'warm' | 'hot') => void
+  onUndoContacted: (connectionId: string) => void
   onOpenDetail: (connection: UserNetwork) => void
   isRemoving?: boolean
 }
@@ -21,6 +23,24 @@ const industryBadgeClass: Record<string, string> = {
   Healthcare: 'bg-pink-500/10 text-pink-400',
   Law: 'bg-amber-500/10 text-amber-400',
   Media: 'bg-orange-500/10 text-orange-400',
+}
+
+const statusConfig = {
+  cold: {
+    icon: Snowflake,
+    label: 'Cold',
+    class: 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20',
+  },
+  warm: {
+    icon: Sun,
+    label: 'Warm',
+    class: 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20',
+  },
+  hot: {
+    icon: Flame,
+    label: 'Hot',
+    class: 'bg-red-500/10 text-red-400 hover:bg-red-500/20',
+  },
 }
 
 function formatDate(dateString: string | null): string {
@@ -44,6 +64,8 @@ export default function NetworkRow({
   onRemove,
   onOpenNotes,
   onUpdateContactedDate,
+  onUpdateStatus,
+  onUndoContacted,
   onOpenDetail,
   isRemoving = false,
 }: NetworkRowProps) {
@@ -53,6 +75,15 @@ export default function NetworkRow({
   if (!alumni) return null
 
   const hasNotes = connection.notes && connection.notes.trim().length > 0
+  const currentStatus = (connection.status as 'cold' | 'warm' | 'hot') || 'cold'
+  const status = statusConfig[currentStatus]
+  const StatusIcon = status.icon
+
+  // Cycle through statuses: cold -> warm -> hot -> cold
+  const handleStatusClick = () => {
+    const nextStatus = currentStatus === 'cold' ? 'warm' : currentStatus === 'warm' ? 'hot' : 'cold'
+    onUpdateStatus(connection.id, nextStatus)
+  }
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newDate = e.target.value
@@ -84,15 +115,32 @@ export default function NetworkRow({
         <div className="min-w-0">
           <h3 className="text-sm font-semibold truncate">{alumni.full_name}</h3>
           <p className="text-[--text-tertiary] text-sm truncate">
-            {alumni.role} at {alumni.company}
+            {alumni.role && alumni.company 
+              ? `${alumni.role} at ${alumni.company}`
+              : alumni.role 
+                ? alumni.role
+                : alumni.company 
+                  ? alumni.company
+                  : `${alumni.sport} • Class of ${alumni.graduation_year}`
+            }
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        {/* Status badge - clickable to cycle */}
+        <button
+          onClick={handleStatusClick}
+          className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${status.class}`}
+          title={`Status: ${status.label} (click to change)`}
+        >
+          <StatusIcon size={12} />
+          <span className="hidden sm:inline">{status.label}</span>
+        </button>
+
         {alumni.industry && (
           <span
-            className={`px-2 py-1 rounded text-xs font-medium hidden sm:block ${
+            className={`px-2 py-1 rounded text-xs font-medium hidden md:block ${
               industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary]'
             }`}
           >
@@ -153,9 +201,9 @@ export default function NetworkRow({
             )}
           </button>
 
-          {/* Date picker dropdown */}
+          {/* Date picker dropdown with undo option */}
           {showDatePicker && connection.contacted && (
-            <div className="absolute top-full mt-1 right-0 bg-[--bg-secondary] border border-[--border-primary] rounded-lg p-3 shadow-lg z-10 animate-fade-in">
+            <div className="absolute top-full mt-1 right-0 bg-[--bg-secondary] border border-[--border-primary] rounded-lg p-3 shadow-lg z-10 animate-fade-in min-w-[180px]">
               <label className="block text-xs text-[--text-tertiary] mb-1.5">
                 <Calendar size={10} className="inline mr-1" />
                 Contacted on
@@ -164,10 +212,18 @@ export default function NetworkRow({
                 type="date"
                 value={toInputDate(connection.contacted_at)}
                 onChange={handleDateChange}
-                className="input-field text-sm py-1.5 px-2"
+                className="input-field text-sm py-1.5 px-2 w-full mb-2"
                 autoFocus
-                onBlur={() => setShowDatePicker(false)}
               />
+              <button
+                onClick={() => {
+                  onUndoContacted(connection.id)
+                  setShowDatePicker(false)
+                }}
+                className="w-full text-xs text-red-400 hover:text-red-300 py-1.5 border border-red-500/30 rounded-lg hover:bg-red-500/10 transition-colors"
+              >
+                Mark as not sent
+              </button>
             </div>
           )}
         </div>

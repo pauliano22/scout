@@ -41,6 +41,7 @@ export interface UserNetwork {
   created_at: string
   // Joined data
   alumni?: Alumni
+  status?: 'cold' | 'warm' | 'hot'
 }
 
 export interface Message {

@@ -1,7 +1,8 @@
 'use client'
 
 import { Alumni } from '@/types/database'
-import { MapPin, Plus, Check, Linkedin } from 'lucide-react'
+import { MapPin, Plus, Check, Linkedin, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 interface AlumniCardProps {
   alumni: Alumni
@@ -46,8 +47,18 @@ export default function AlumniCard({
       </div>
 
       <div className="mb-4">
-        <p className="text-sm font-medium text-[--text-primary] mb-0.5">{alumni.role}</p>
-        <p className="text-[--text-tertiary] text-sm">{alumni.company}</p>
+        {(alumni.role || alumni.company) ? (
+          <>
+            {alumni.role && (
+              <p className="text-sm font-medium text-[--text-primary] mb-0.5">{alumni.role}</p>
+            )}
+            {alumni.company && (
+              <p className="text-[--text-tertiary] text-sm">{alumni.company}</p>
+            )}
+          </>
+        ) : (
+          <p className="text-[--text-quaternary] text-sm italic">No career info yet</p>
+        )}
         {alumni.location && (
           <p className="text-[--text-quaternary] text-sm mt-1 flex items-center gap-1">
             <MapPin size={12} />
@@ -57,27 +68,33 @@ export default function AlumniCard({
       </div>
 
       <div className="flex gap-2">
-        <button
-          onClick={() => onAddToNetwork?.(alumni.id)}
-          disabled={isInNetwork || isLoading}
-          className={`flex-1 flex items-center justify-center gap-2 ${
-            isInNetwork ? 'btn-success' : 'btn-primary'
-          }`}
-        >
-          {isLoading ? (
-            <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-          ) : isInNetwork ? (
-            <>
-              <Check size={16} />
-              In Network
-            </>
-          ) : (
-            <>
-              <Plus size={16} />
-              Add to Network
-            </>
-          )}
-        </button>
+        {isInNetwork ? (
+          // Show "View in Network" button when already added
+          <Link
+            href={`/network?highlight=${alumni.id}`}
+            className="flex-1 btn-success flex items-center justify-center gap-2"
+          >
+            <Check size={16} />
+            View in Network
+            <ArrowRight size={14} />
+          </Link>
+        ) : (
+          // Show "Add to Network" button when not added
+          <button
+            onClick={() => onAddToNetwork?.(alumni.id)}
+            disabled={isLoading}
+            className="flex-1 flex items-center justify-center gap-2 btn-primary"
+          >
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+            ) : (
+              <>
+                <Plus size={16} />
+                Add to Network
+              </>
+            )}
+          </button>
+        )}
         
         {alumni.linkedin_url && (
           <a

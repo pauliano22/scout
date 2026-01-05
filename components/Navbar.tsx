@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Search, Users, LogOut, User, Flame, Trophy, ChevronDown } from 'lucide-react'
+import { Search, Users, LogOut, User, Flame, Trophy, ChevronDown, Info } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -115,6 +115,18 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
               )}
             </Link>
 
+            <Link 
+              href="/about" 
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/about') 
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
+              }`}
+            >
+              <Info size={16} />
+              <span className="hidden sm:inline">About</span>
+            </Link>
+
             <div className="w-px h-5 bg-[--border-primary] mx-2 hidden sm:block" />
 
             <ThemeToggle />
@@ -137,6 +149,16 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
           </>
         ) : (
           <>
+            <Link 
+              href="/about" 
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/about') 
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
+              }`}
+            >
+              About
+            </Link>
             <ThemeToggle />
             <Link
               href="/login"

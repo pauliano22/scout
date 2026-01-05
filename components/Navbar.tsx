@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/Link'
 import { usePathname } from 'next/navigation'
 import { Search, Users, LogOut, User, Flame, Trophy, ChevronDown, Info } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'

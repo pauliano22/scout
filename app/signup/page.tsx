@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import Link from '@/components/Link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, User, ArrowRight } from 'lucide-react'
@@ -15,7 +15,6 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,31 +34,12 @@ export default function SignupPage() {
 
       if (error) throw error
 
-      setSuccess(true)
+      // Redirect directly to profile page
+      router.push('/profile')
     } catch (err: any) {
       setError(err.message || 'Failed to sign up')
-    } finally {
       setIsLoading(false)
     }
-  }
-
-  if (success) {
-    return (
-      <main className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-3xl">✓</span>
-          </div>
-          <h1 className="text-2xl font-semibold mb-2">Check your email</h1>
-          <p className="text-[--text-tertiary] mb-6">
-            We sent a confirmation link to <strong className="text-[--text-primary]">{email}</strong>
-          </p>
-          <Link href="/login" className="text-[--school-primary] hover:underline">
-            Back to login
-          </Link>
-        </div>
-      </main>
-    )
   }
 
   return (
@@ -96,6 +76,7 @@ export default function SignupPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
+                disabled={isLoading}
                 className="input-field !pl-11"
               />
             </div>
@@ -111,6 +92,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
                 className="input-field !pl-11"
               />
             </div>
@@ -126,6 +108,7 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 minLength={6}
                 className="input-field !pl-11"
               />
@@ -137,7 +120,10 @@ export default function SignupPage() {
               className="w-full btn-primary flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                <>
+                  <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                  Creating account...
+                </>
               ) : (
                 <>
                   Create Account

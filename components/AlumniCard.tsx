@@ -2,7 +2,7 @@
 
 import { Alumni } from '@/types/database'
 import { MapPin, Plus, Check, Linkedin, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
+import Link from '@/components/Link'
 
 interface AlumniCardProps {
   alumni: Alumni

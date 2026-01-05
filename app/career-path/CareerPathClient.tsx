@@ -11,7 +11,7 @@ import {
   Lock,
   Calendar
 } from 'lucide-react'
-import Link from 'next/link'
+import Link from '@/components/Link'
 
 interface CareerPathClientProps {
   userId: string

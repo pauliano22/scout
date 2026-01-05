@@ -28,7 +28,7 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      router.push('/')  // Changed: redirect to home
+      router.push('/discover')  // Changed: redirect to home
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')

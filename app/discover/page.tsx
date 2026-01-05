@@ -21,6 +21,19 @@ export default async function DiscoverPage() {
     .order('graduation_year', { ascending: false })
     .limit(30000)
 
+  // Sort alumni to prioritize those with career info
+  const sortedAlumni = (alumni || []).sort((a, b) => {
+    const aHasInfo = a.company && a.company.trim() !== ''
+    const bHasInfo = b.company && b.company.trim() !== ''
+    
+    // Prioritize those with company info
+    if (aHasInfo && !bHasInfo) return -1
+    if (!aHasInfo && bHasInfo) return 1
+    
+    // Then sort by graduation year (most recent first)
+    return (b.graduation_year || 0) - (a.graduation_year || 0)
+  })
+
   // Fetch user's network to know which alumni are already added
   const { data: network } = await supabase
     .from('user_networks')
@@ -41,7 +54,7 @@ export default async function DiscoverPage() {
         networkCount={networkCount}
       />
       <DiscoverClient
-        initialAlumni={alumni || []}
+        initialAlumni={sortedAlumni}
         networkAlumniIds={Array.from(networkAlumniIds)}
         userId={user.id}
       />

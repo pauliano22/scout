@@ -5,6 +5,8 @@
 Connect with Cornell athlete alumni who've made it in finance, tech, consulting, and more. Get personalized introductions and insider advice.
 
 ![Scout Screenshot](./screenshot.png)
+<img width="1919" height="957" alt="image" src="https://github.com/user-attachments/assets/62b5fe5d-1677-49a1-8ba5-7e21244dada6" />
+
 
 ## Features
 

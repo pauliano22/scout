@@ -22,14 +22,15 @@ export default async function DiscoverPage() {
     .limit(30000)
 
   // Sort alumni to prioritize those with career info
+  // Sort alumni to prioritize those with industry info
   const sortedAlumni = (alumni || []).sort((a, b) => {
-    const aHasInfo = a.company && a.company.trim() !== ''
-    const bHasInfo = b.company && b.company.trim() !== ''
-    
-    // Prioritize those with company info
+    const aHasInfo = a.industry && a.industry.trim() !== ''
+    const bHasInfo = b.industry && b.industry.trim() !== ''
+
+    // Prioritize those with industry info
     if (aHasInfo && !bHasInfo) return -1
     if (!aHasInfo && bHasInfo) return 1
-    
+
     // Then sort by graduation year (most recent first)
     return (b.graduation_year || 0) - (a.graduation_year || 0)
   })

@@ -14,6 +14,7 @@ interface NavbarProps {
     full_name?: string
   } | null
   networkCount?: number
+  currentStreak?: number
 }
 
 export default function Navbar({ user, networkCount = 0 }: NavbarProps) {

@@ -1,106 +1,81 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { UserNetwork } from '@/types/database'
 import { 
   X, 
-  Mail, 
   Linkedin, 
-  Phone, 
-  Coffee, 
-  Video, 
-  Users, 
-  MessageSquare,
-  Plus,
+  Mail, 
+  MessageSquare, 
+  Copy, 
+  Check,
+  Phone,
+  Coffee,
+  Users,
+  MoreHorizontal,
   Calendar,
-  MapPin,
-  Briefcase,
-  GraduationCap,
-  StickyNote,
-  Trash2,
-  Edit2,
-  Check
+  Trash2
 } from 'lucide-react'
-
-interface Interaction {
-  id: string
-  type: 'email' | 'linkedin' | 'phone' | 'coffee' | 'video_call' | 'in_person' | 'other'
-  title: string | null
-  notes: string | null
-  interaction_date: string
-  created_at: string
-}
 
 interface ConnectionDetailModalProps {
   connection: UserNetwork
+  userProfile: {
+    name: string
+    sport: string
+    interests: string
+  }
   onClose: () => void
-  onUpdate: (updatedConnection: UserNetwork) => void
+  onUpdate: (connection: UserNetwork) => void
+  onRemove: (connectionId: string) => void
 }
 
-const interactionTypes = [
-  { value: 'email', label: 'Email', icon: Mail },
-  { value: 'linkedin', label: 'LinkedIn', icon: Linkedin },
-  { value: 'phone', label: 'Phone Call', icon: Phone },
-  { value: 'coffee', label: 'Coffee Chat', icon: Coffee },
-  { value: 'video_call', label: 'Video Call', icon: Video },
-  { value: 'in_person', label: 'In Person', icon: Users },
-  { value: 'other', label: 'Other', icon: MessageSquare },
-]
+type ConnectionStatus = 'cold' | 'warm' | 'hot'
+type InteractionType = 'email' | 'call' | 'coffee' | 'meeting' | 'other'
 
-const getInteractionIcon = (type: string) => {
-  const found = interactionTypes.find(t => t.value === type)
-  return found ? found.icon : MessageSquare
+interface Interaction {
+  id: string
+  type: InteractionType
+  date: string
+  created_at: string
 }
 
-const getInteractionLabel = (type: string) => {
-  const found = interactionTypes.find(t => t.value === type)
-  return found ? found.label : 'Other'
-}
-
-export default function ConnectionDetailModal({ 
-  connection, 
+export default function ConnectionDetailModal({
+  connection,
+  userProfile,
   onClose,
-  onUpdate 
+  onUpdate,
+  onRemove,
 }: ConnectionDetailModalProps) {
   const supabase = createClient()
   const alumni = connection.alumni
-
-  const [interactions, setInteractions] = useState<Interaction[]>([])
-  const [isLoadingInteractions, setIsLoadingInteractions] = useState(true)
-  const [notes, setNotes] = useState(connection.notes || '')
-  const [isEditingNotes, setIsEditingNotes] = useState(false)
-  const [isSavingNotes, setIsSavingNotes] = useState(false)
   
-  // New interaction form
-  const [showAddInteraction, setShowAddInteraction] = useState(false)
-  const [newInteraction, setNewInteraction] = useState({
-    type: 'email' as Interaction['type'],
-    title: '',
-    notes: '',
-    interaction_date: new Date().toISOString().split('T')[0]
-  })
-  const [isAddingInteraction, setIsAddingInteraction] = useState(false)
+  const [status, setStatus] = useState<ConnectionStatus>(connection.status || 'cold')
+  const [notes, setNotes] = useState(connection.notes || '')
+  const [isSavingNotes, setIsSavingNotes] = useState(false)
+  const [copiedEmail, setCopiedEmail] = useState(false)
+  const [showMessageModal, setShowMessageModal] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false)
+  
+  // Interaction tracking
+  const [interactions, setInteractions] = useState<Interaction[]>(
+    connection.interactions ? JSON.parse(connection.interactions) : []
+  )
+  const [selectedInteractionType, setSelectedInteractionType] = useState<InteractionType>('email')
+  const [interactionDate, setInteractionDate] = useState(new Date().toISOString().split('T')[0])
 
-  useEffect(() => {
-    loadInteractions()
-  }, [connection.id])
-
-  const loadInteractions = async () => {
-    setIsLoadingInteractions(true)
+  const handleStatusChange = async (newStatus: ConnectionStatus) => {
+    setStatus(newStatus)
     try {
-      const { data, error } = await supabase
-        .from('interactions')
-        .select('*')
-        .eq('network_id', connection.id)
-        .order('interaction_date', { ascending: false })
+      const { error } = await supabase
+        .from('user_networks')
+        .update({ status: newStatus })
+        .eq('id', connection.id)
 
       if (error) throw error
-      setInteractions(data || [])
+      onUpdate({ ...connection, status: newStatus })
     } catch (error) {
-      console.error('Error loading interactions:', error)
-    } finally {
-      setIsLoadingInteractions(false)
+      console.error('Error updating status:', error)
     }
   }
 
@@ -113,9 +88,7 @@ export default function ConnectionDetailModal({
         .eq('id', connection.id)
 
       if (error) throw error
-      
       onUpdate({ ...connection, notes })
-      setIsEditingNotes(false)
     } catch (error) {
       console.error('Error saving notes:', error)
     } finally {
@@ -123,359 +96,387 @@ export default function ConnectionDetailModal({
     }
   }
 
-  const handleAddInteraction = async () => {
-    if (!newInteraction.type) return
-    
-    setIsAddingInteraction(true)
-    try {
-      const { data, error } = await supabase
-        .from('interactions')
-        .insert({
-          user_id: connection.user_id,
-          alumni_id: connection.alumni_id,
-          network_id: connection.id,
-          type: newInteraction.type,
-          title: newInteraction.title || null,
-          notes: newInteraction.notes || null,
-          interaction_date: new Date(newInteraction.interaction_date + 'T12:00:00').toISOString()
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      setInteractions([data, ...interactions])
-      setShowAddInteraction(false)
-      setNewInteraction({
-        type: 'email',
-        title: '',
-        notes: '',
-        interaction_date: new Date().toISOString().split('T')[0]
-      })
-
-      // Update contacted status if not already
-      if (!connection.contacted) {
-        await supabase
-          .from('user_networks')
-          .update({ 
-            contacted: true, 
-            contacted_at: new Date(newInteraction.interaction_date + 'T12:00:00').toISOString() 
-          })
-          .eq('id', connection.id)
-        
-        onUpdate({ 
-          ...connection, 
-          contacted: true, 
-          contacted_at: new Date(newInteraction.interaction_date + 'T12:00:00').toISOString() 
-        })
-      }
-    } catch (error) {
-      console.error('Error adding interaction:', error)
-    } finally {
-      setIsAddingInteraction(false)
+  const handleCopyEmail = async () => {
+    if (alumni?.email) {
+      await navigator.clipboard.writeText(alumni.email)
+      setCopiedEmail(true)
+      setTimeout(() => setCopiedEmail(false), 2000)
     }
   }
 
-  const handleDeleteInteraction = async (interactionId: string) => {
-    if (!confirm('Delete this interaction?')) return
-
+  const handleAddInteraction = async () => {
+    const newInteraction: Interaction = {
+      id: Date.now().toString(),
+      type: selectedInteractionType,
+      date: interactionDate,
+      created_at: new Date().toISOString()
+    }
+    
+    const updatedInteractions = [...interactions, newInteraction]
+    setInteractions(updatedInteractions)
+    
     try {
       const { error } = await supabase
-        .from('interactions')
-        .delete()
-        .eq('id', interactionId)
+        .from('user_networks')
+        .update({ 
+          interactions: JSON.stringify(updatedInteractions),
+          contacted: true,
+          contacted_at: new Date().toISOString()
+        })
+        .eq('id', connection.id)
 
       if (error) throw error
-
-      setInteractions(interactions.filter(i => i.id !== interactionId))
+      onUpdate({ 
+        ...connection, 
+        interactions: JSON.stringify(updatedInteractions),
+        contacted: true,
+        contacted_at: new Date().toISOString()
+      })
     } catch (error) {
-      console.error('Error deleting interaction:', error)
+      console.error('Error adding interaction:', error)
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
+  const handleRemove = async () => {
+    if (!confirm('Are you sure you want to remove this connection?')) return
+    
+    setIsRemoving(true)
+    try {
+      const { error } = await supabase
+        .from('user_networks')
+        .delete()
+        .eq('id', connection.id)
+
+      if (error) throw error
+      onRemove(connection.id)
+    } catch (error) {
+      console.error('Error removing connection:', error)
+      setIsRemoving(false)
+    }
   }
 
-  if (!alumni) return null
+  const interactionIcons: Record<InteractionType, typeof Mail> = {
+    email: Mail,
+    call: Phone,
+    coffee: Coffee,
+    meeting: Users,
+    other: MoreHorizontal
+  }
+
+  const interactionLabels: Record<InteractionType, string> = {
+    email: 'Email',
+    call: 'Call',
+    coffee: 'Coffee Chat',
+    meeting: 'Meeting',
+    other: 'Other'
+  }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden animate-fade-in"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="p-6 border-b border-[--border-primary]">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-xl font-semibold mb-1">{alumni.full_name}</h2>
-              <p className="text-[--text-secondary] text-sm">
-                {alumni.role} at {alumni.company}
-              </p>
-            </div>
-            <button onClick={onClose} className="btn-ghost p-1.5">
-              <X size={20} />
-            </button>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      
+      {/* Modal */}
+      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl">
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-[--text-quaternary] hover:text-[--text-primary] hover:bg-[--bg-tertiary] rounded-lg transition-colors z-10"
+        >
+          <X size={20} />
+        </button>
 
-          {/* Quick info */}
-          <div className="flex flex-wrap gap-4 mt-4 text-sm">
-            {alumni.industry && (
-              <div className="flex items-center gap-1.5 text-[--text-tertiary]">
-                <Briefcase size={14} />
-                {alumni.industry}
+        <div className="p-6 overflow-y-auto max-h-[90vh]">
+          {/* Top Box - Main Info */}
+          <div className="card p-6 mb-4">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+              {/* Left side - Info */}
+              <div className="flex-1">
+                <h2 className="text-2xl font-semibold text-[--text-primary] mb-1">
+                  {alumni?.full_name}
+                </h2>
+                
+                {(alumni?.role || alumni?.company) && (
+                  <p className="text-[--text-secondary] mb-2">
+                    {alumni?.role}{alumni?.role && alumni?.company && ' @ '}{alumni?.company}
+                  </p>
+                )}
+                
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[--text-tertiary] mb-4">
+                  {alumni?.graduation_year && (
+                    <span>Class of {alumni.graduation_year}</span>
+                  )}
+                  {alumni?.location && (
+                    <span>{alumni.location}</span>
+                  )}
+                  {alumni?.sport && (
+                    <span>{alumni.sport}</span>
+                  )}
+                </div>
+
+                {/* Connection Level */}
+                <div className="mt-4">
+                  <p className="text-xs text-[--text-quaternary] uppercase tracking-wide mb-2">Connection Level</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleStatusChange('cold')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        status === 'cold'
+                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
+                      }`}
+                    >
+                      ❄️ Cold
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange('warm')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        status === 'warm'
+                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
+                      }`}
+                    >
+                      🌤️ Warm
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange('hot')}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        status === 'hot'
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
+                      }`}
+                    >
+                      🔥 Hot
+                    </button>
+                  </div>
+                </div>
               </div>
-            )}
-            {alumni.location && (
-              <div className="flex items-center gap-1.5 text-[--text-tertiary]">
-                <MapPin size={14} />
-                {alumni.location}
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 text-[--text-tertiary]">
-              <GraduationCap size={14} />
-              {alumni.sport} • Class of {alumni.graduation_year}
-            </div>
-          </div>
 
-          {/* Contact links */}
-          <div className="flex gap-2 mt-4">
-            {alumni.linkedin_url && (
-              <a
-                href={alumni.linkedin_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary text-sm flex items-center gap-1.5"
-              >
-                <Linkedin size={14} />
-                LinkedIn
-              </a>
-            )}
-            {alumni.email && (
-              <a
-                href={`mailto:${alumni.email}`}
-                className="btn-secondary text-sm flex items-center gap-1.5"
-              >
-                <Mail size={14} />
-                Email
-              </a>
-            )}
-          </div>
-        </div>
-
-        {/* Content - Scrollable */}
-        <div className="overflow-y-auto max-h-[calc(90vh-220px)]">
-          {/* Notes Section */}
-          <div className="p-6 border-b border-[--border-primary]">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2">
-                <StickyNote size={16} className="text-amber-400" />
-                Notes
-              </h3>
-              {!isEditingNotes && (
+              {/* Right side - Actions */}
+              <div className="flex flex-col gap-2 md:min-w-[200px]">
+                {alumni?.linkedin_url && (
+                  <a
+                    href={alumni.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary flex items-center justify-center gap-2"
+                  >
+                    <Linkedin size={16} />
+                    LinkedIn
+                  </a>
+                )}
+                
+                {alumni?.email && (
+                  <div className="flex gap-2">
+                    <a
+                      href={`mailto:${alumni.email}`}
+                      className="btn-secondary flex-1 flex items-center justify-center gap-2"
+                    >
+                      <Mail size={16} />
+                      Email
+                    </a>
+                    <button
+                      onClick={handleCopyEmail}
+                      className="btn-secondary px-3"
+                      title="Copy email"
+                    >
+                      {copiedEmail ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                )}
+                
                 <button
-                  onClick={() => setIsEditingNotes(true)}
-                  className="btn-ghost p-1.5 text-xs"
+                  onClick={() => setShowMessageModal(true)}
+                  className="btn-primary flex items-center justify-center gap-2"
                 >
-                  <Edit2 size={14} />
+                  <MessageSquare size={16} />
+                  Generate Message
                 </button>
+
+                <button
+                  onClick={handleRemove}
+                  disabled={isRemoving}
+                  className="btn-ghost text-red-500 hover:bg-red-500/10 flex items-center justify-center gap-2 mt-2"
+                >
+                  <Trash2 size={16} />
+                  {isRemoving ? 'Removing...' : 'Remove'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Row - Two Boxes */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Notes Box */}
+            <div className="card p-4">
+              <h3 className="text-sm font-medium text-[--text-secondary] mb-3">Notes</h3>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onBlur={handleSaveNotes}
+                placeholder="Add notes about this connection..."
+                className="input-field min-h-[120px] resize-none text-sm"
+              />
+              {isSavingNotes && (
+                <p className="text-xs text-[--text-quaternary] mt-2">Saving...</p>
               )}
             </div>
 
-            {isEditingNotes ? (
-              <div>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add notes about this connection..."
-                  rows={3}
-                  className="input-field resize-none mb-2"
-                  autoFocus
-                />
-                <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => {
-                      setNotes(connection.notes || '')
-                      setIsEditingNotes(false)
-                    }}
-                    className="btn-ghost text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveNotes}
-                    disabled={isSavingNotes}
-                    className="btn-primary text-sm flex items-center gap-1.5"
-                  >
-                    {isSavingNotes ? (
-                      <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                    ) : (
-                      <Check size={14} />
-                    )}
-                    Save
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <p className="text-[--text-tertiary] text-sm">
-                {notes || 'No notes yet. Click edit to add some.'}
-              </p>
-            )}
-          </div>
-
-          {/* Timeline Section */}
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold flex items-center gap-2">
-                <Calendar size={16} className="text-blue-400" />
-                Interaction Timeline
-              </h3>
-              <button
-                onClick={() => setShowAddInteraction(!showAddInteraction)}
-                className="btn-primary text-sm flex items-center gap-1.5"
-              >
-                <Plus size={14} />
-                Add
-              </button>
-            </div>
-
-            {/* Add Interaction Form */}
-            {showAddInteraction && (
-              <div className="bg-[--bg-primary] border border-[--border-primary] rounded-lg p-4 mb-4">
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label className="block text-xs text-[--text-tertiary] mb-1.5">Type</label>
-                    <select
-                      value={newInteraction.type}
-                      onChange={(e) => setNewInteraction({ ...newInteraction, type: e.target.value as Interaction['type'] })}
-                      className="input-field text-sm"
+            {/* Interactions Box */}
+            <div className="card p-4">
+              <h3 className="text-sm font-medium text-[--text-secondary] mb-3">Interactions</h3>
+              
+              {/* Add interaction */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {(Object.keys(interactionIcons) as InteractionType[]).map((type) => {
+                  const Icon = interactionIcons[type]
+                  return (
+                    <button
+                      key={type}
+                      onClick={() => setSelectedInteractionType(type)}
+                      className={`p-2 rounded-lg transition-all ${
+                        selectedInteractionType === type
+                          ? 'bg-[--school-primary] text-white'
+                          : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-hover]'
+                      }`}
+                      title={interactionLabels[type]}
                     >
-                      {interactionTypes.map(type => (
-                        <option key={type.value} value={type.value}>{type.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-[--text-tertiary] mb-1.5">Date</label>
-                    <input
-                      type="date"
-                      value={newInteraction.interaction_date}
-                      onChange={(e) => setNewInteraction({ ...newInteraction, interaction_date: e.target.value })}
-                      className="input-field text-sm"
-                    />
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <label className="block text-xs text-[--text-tertiary] mb-1.5">Title (optional)</label>
+                      <Icon size={16} />
+                    </button>
+                  )
+                })}
+              </div>
+              
+              <div className="flex gap-2 mb-4">
+                <div className="relative flex-1">
+                  <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
                   <input
-                    type="text"
-                    value={newInteraction.title}
-                    onChange={(e) => setNewInteraction({ ...newInteraction, title: e.target.value })}
-                    placeholder="e.g., Initial outreach, Follow-up call"
-                    className="input-field text-sm"
+                    type="date"
+                    value={interactionDate}
+                    onChange={(e) => setInteractionDate(e.target.value)}
+                    className="input-field !pl-10 text-sm"
                   />
                 </div>
-                <div className="mb-3">
-                  <label className="block text-xs text-[--text-tertiary] mb-1.5">Notes (optional)</label>
-                  <textarea
-                    value={newInteraction.notes}
-                    onChange={(e) => setNewInteraction({ ...newInteraction, notes: e.target.value })}
-                    placeholder="What did you discuss?"
-                    rows={2}
-                    className="input-field text-sm resize-none"
-                  />
-                </div>
-                <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => setShowAddInteraction(false)}
-                    className="btn-ghost text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleAddInteraction}
-                    disabled={isAddingInteraction}
-                    className="btn-primary text-sm flex items-center gap-1.5"
-                  >
-                    {isAddingInteraction ? (
-                      <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                    ) : (
-                      <Plus size={14} />
-                    )}
-                    Add Interaction
-                  </button>
-                </div>
+                <button
+                  onClick={handleAddInteraction}
+                  className="btn-primary text-sm px-4"
+                >
+                  Add
+                </button>
               </div>
-            )}
 
-            {/* Timeline */}
-            {isLoadingInteractions ? (
-              <div className="text-center py-8">
-                <div className="w-6 h-6 border-2 border-[--border-primary] border-t-[--text-secondary] rounded-full animate-spin mx-auto" />
-              </div>
-            ) : interactions.length === 0 ? (
-              <div className="text-center py-8 text-[--text-quaternary] text-sm">
-                <MessageSquare size={24} className="mx-auto mb-2 opacity-50" />
-                <p>No interactions yet</p>
-                <p className="text-xs mt-1">Add your first interaction above</p>
-              </div>
-            ) : (
-              <div className="relative">
-                {/* Timeline line */}
-                <div className="absolute left-[19px] top-2 bottom-2 w-px bg-[--border-primary]" />
-
-                {/* Timeline items */}
-                <div className="space-y-4">
-                  {interactions.map((interaction) => {
-                    const IconComponent = getInteractionIcon(interaction.type)
+              {/* Interaction history */}
+              <div className="space-y-2 max-h-[100px] overflow-y-auto">
+                {interactions.length === 0 ? (
+                  <p className="text-xs text-[--text-quaternary]">No interactions logged yet</p>
+                ) : (
+                  interactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((interaction) => {
+                    const Icon = interactionIcons[interaction.type]
                     return (
-                      <div key={interaction.id} className="relative flex gap-4 group">
-                        {/* Icon */}
-                        <div className="relative z-10 w-10 h-10 rounded-lg bg-[--bg-tertiary] border border-[--border-primary] flex items-center justify-center flex-shrink-0">
-                          <IconComponent size={16} className="text-[--text-secondary]" />
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 bg-[--bg-primary] border border-[--border-primary] rounded-lg p-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <p className="text-sm font-medium">
-                                {interaction.title || getInteractionLabel(interaction.type)}
-                              </p>
-                              <p className="text-xs text-[--text-quaternary]">
-                                {formatDate(interaction.interaction_date)}
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => handleDeleteInteraction(interaction.id)}
-                              className="btn-ghost p-1 opacity-0 group-hover:opacity-100 text-[--text-quaternary] hover:text-red-500"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                          {interaction.notes && (
-                            <p className="text-sm text-[--text-tertiary] mt-2">
-                              {interaction.notes}
-                            </p>
-                          )}
-                        </div>
+                      <div key={interaction.id} className="flex items-center gap-2 text-sm text-[--text-secondary]">
+                        <Icon size={14} className="text-[--text-quaternary]" />
+                        <span>{interactionLabels[interaction.type]}</span>
+                        <span className="text-[--text-quaternary]">•</span>
+                        <span className="text-[--text-quaternary]">
+                          {new Date(interaction.date).toLocaleDateString()}
+                        </span>
                       </div>
                     )
-                  })}
-                </div>
+                  })
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Message Modal - simplified inline version */}
+      {showMessageModal && (
+        <MessageModalInline
+          alumni={alumni}
+          userProfile={userProfile}
+          onClose={() => setShowMessageModal(false)}
+        />
+      )}
+    </div>
+  )
+}
+
+// Simplified inline message modal
+function MessageModalInline({ 
+  alumni, 
+  userProfile,
+  onClose 
+}: { 
+  alumni: any
+  userProfile: { name: string; sport: string; interests: string }
+  onClose: () => void 
+}) {
+  const [message, setMessage] = useState('')
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const generateMessage = async () => {
+    setIsGenerating(true)
+    // Simple template-based message
+    const template = `Hi ${alumni?.full_name?.split(' ')[0] || 'there'},
+
+I'm ${userProfile.name}, a ${userProfile.sport || 'student-athlete'} at Cornell. I came across your profile and was really impressed by your career path${alumni?.company ? ` at ${alumni.company}` : ''}.
+
+${userProfile.interests ? `I'm particularly interested in ${userProfile.interests}, and would love to learn more about your experience in the field.` : 'I would love to learn more about your experience and any advice you might have for current athletes.'}
+
+Would you have 15-20 minutes for a quick call or coffee chat? I'd really appreciate any insights you could share.
+
+Thanks so much,
+${userProfile.name}`
+    
+    setMessage(template)
+    setIsGenerating(false)
+  }
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(message)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-xl w-full max-w-lg p-6 shadow-xl">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 text-[--text-quaternary] hover:text-[--text-primary]"
+        >
+          <X size={18} />
+        </button>
+        
+        <h3 className="text-lg font-semibold mb-4">Generate Message</h3>
+        
+        {!message ? (
+          <button
+            onClick={generateMessage}
+            disabled={isGenerating}
+            className="btn-primary w-full"
+          >
+            {isGenerating ? 'Generating...' : 'Generate Personalized Message'}
+          </button>
+        ) : (
+          <>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="input-field min-h-[250px] text-sm mb-4"
+            />
+            <div className="flex gap-2">
+              <button onClick={handleCopy} className="btn-primary flex-1 flex items-center justify-center gap-2">
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? 'Copied!' : 'Copy Message'}
+              </button>
+              <button onClick={onClose} className="btn-secondary">Done</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

@@ -4,11 +4,9 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { UserNetwork } from '@/types/database'
-import NetworkRow from '@/components/NetworkRow'
 import MessageModal from '@/components/MessageModal'
-import NotesModal from '@/components/NotesModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
-import { Search, Users } from 'lucide-react'
+import { Search, Users, ChevronRight } from 'lucide-react'
 
 interface NetworkClientProps {
   initialNetwork: UserNetwork[]
@@ -31,11 +29,8 @@ export default function NetworkClient({
   
   const [network, setNetwork] = useState<UserNetwork[]>(initialNetwork)
   const [searchQuery, setSearchQuery] = useState('')
-  const [interests, setInterests] = useState(userProfile.interests)
   const [selectedConnection, setSelectedConnection] = useState<UserNetwork | null>(null)
-  const [notesConnection, setNotesConnection] = useState<UserNetwork | null>(null)
   const [detailConnection, setDetailConnection] = useState<UserNetwork | null>(null)
-  const [removingId, setRemovingId] = useState<string | null>(null)
   const [highlightedId, setHighlightedId] = useState<string | null>(null)
   
   // Refs for scrolling to highlighted item
@@ -44,12 +39,10 @@ export default function NetworkClient({
   // Handle highlight parameter - scroll to and highlight the connection
   useEffect(() => {
     if (highlightId) {
-      // Find the connection with this alumni_id
       const connection = network.find(c => c.alumni_id === highlightId)
       if (connection) {
         setHighlightedId(connection.id)
         
-        // Scroll to the element after a short delay to ensure render
         setTimeout(() => {
           const element = rowRefs.current.get(connection.id)
           if (element) {
@@ -57,7 +50,6 @@ export default function NetworkClient({
           }
         }, 100)
         
-        // Remove highlight after 3 seconds
         setTimeout(() => {
           setHighlightedId(null)
         }, 3000)
@@ -74,30 +66,28 @@ export default function NetworkClient({
       return (
         alumni.full_name.toLowerCase().includes(query) ||
         alumni.company?.toLowerCase().includes(query) ||
-        alumni.role?.toLowerCase().includes(query)
+        alumni.role?.toLowerCase().includes(query) ||
+        alumni.sport?.toLowerCase().includes(query)
       )
     })
   }, [network, searchQuery])
 
   const contactedCount = network.filter((c) => c.contacted).length
 
-  const handleRemove = async (connectionId: string) => {
-    setRemovingId(connectionId)
-    try {
-      const { error } = await supabase
-        .from('user_networks')
-        .delete()
-        .eq('id', connectionId)
-
-      if (error) throw error
-
-      setNetwork((prev) => prev.filter((c) => c.id !== connectionId))
-    } catch (error) {
-      console.error('Error removing connection:', error)
-      alert('Failed to remove connection. Please try again.')
-    } finally {
-      setRemovingId(null)
+  const handleUpdateConnection = (updatedConnection: UserNetwork) => {
+    setNetwork((prev) =>
+      prev.map((c) =>
+        c.id === updatedConnection.id ? updatedConnection : c
+      )
+    )
+    if (detailConnection?.id === updatedConnection.id) {
+      setDetailConnection(updatedConnection)
     }
+  }
+
+  const handleRemoveConnection = (connectionId: string) => {
+    setNetwork((prev) => prev.filter((c) => c.id !== connectionId))
+    setDetailConnection(null)
   }
 
   const handleSendMessage = async (connectionId: string, message: string) => {
@@ -127,106 +117,6 @@ export default function NetworkClient({
     setSelectedConnection(null)
   }
 
-  const handleUpdateInterests = async () => {
-    try {
-      await supabase
-        .from('profiles')
-        .update({ interests })
-        .eq('id', userId)
-    } catch (error) {
-      console.error('Error updating interests:', error)
-    }
-  }
-
-  const handleSaveNotes = async (connectionId: string, notes: string) => {
-    try {
-      const { error } = await supabase
-        .from('user_networks')
-        .update({ notes })
-        .eq('id', connectionId)
-
-      if (error) throw error
-
-      setNetwork((prev) =>
-        prev.map((c) =>
-          c.id === connectionId ? { ...c, notes } : c
-        )
-      )
-    } catch (error) {
-      console.error('Error saving notes:', error)
-      throw error
-    }
-  }
-
-  const handleUpdateContactedDate = async (connectionId: string, date: string | null) => {
-    try {
-      const { error } = await supabase
-        .from('user_networks')
-        .update({ contacted_at: date })
-        .eq('id', connectionId)
-
-      if (error) throw error
-
-      setNetwork((prev) =>
-        prev.map((c) =>
-          c.id === connectionId ? { ...c, contacted_at: date } : c
-        )
-      )
-    } catch (error) {
-      console.error('Error updating contacted date:', error)
-    }
-  }
-
-  const handleUpdateStatus = async (connectionId: string, status: 'cold' | 'warm' | 'hot') => {
-    try {
-      const { error } = await supabase
-        .from('user_networks')
-        .update({ status })
-        .eq('id', connectionId)
-
-      if (error) throw error
-
-      setNetwork((prev) =>
-        prev.map((c) =>
-          c.id === connectionId ? { ...c, status } : c
-        )
-      )
-    } catch (error) {
-      console.error('Error updating status:', error)
-    }
-  }
-
-  const handleUndoContacted = async (connectionId: string) => {
-    try {
-      const { error } = await supabase
-        .from('user_networks')
-        .update({ contacted: false, contacted_at: null })
-        .eq('id', connectionId)
-
-      if (error) throw error
-
-      setNetwork((prev) =>
-        prev.map((c) =>
-          c.id === connectionId ? { ...c, contacted: false, contacted_at: null } : c
-        )
-      )
-    } catch (error) {
-      console.error('Error undoing contacted status:', error)
-    }
-  }
-
-  const handleUpdateConnection = (updatedConnection: UserNetwork) => {
-    setNetwork((prev) =>
-      prev.map((c) =>
-        c.id === updatedConnection.id ? updatedConnection : c
-      )
-    )
-    // Also update the detail connection if it's open
-    if (detailConnection?.id === updatedConnection.id) {
-      setDetailConnection(updatedConnection)
-    }
-  }
-
   // Helper to set ref for each row
   const setRowRef = (id: string, element: HTMLDivElement | null) => {
     if (element) {
@@ -244,21 +134,8 @@ export default function NetworkClient({
           My Network
         </h1>
         <p className="text-[--text-tertiary] text-sm">
-          Manage your connections and send personalized outreach messages.
+          Manage your connections and track your outreach.
         </p>
-      </div>
-
-      {/* Interests Setting */}
-      <div className="card p-4 mb-6 flex items-center gap-4 flex-wrap">
-        <span className="text-[--text-tertiary] text-sm">Your interests:</span>
-        <input
-          type="text"
-          value={interests}
-          onChange={(e) => setInterests(e.target.value)}
-          onBlur={handleUpdateInterests}
-          placeholder="e.g., investment banking, product management..."
-          className="input-field flex-1 min-w-[250px]"
-        />
       </div>
 
       {/* Stats */}
@@ -267,21 +144,21 @@ export default function NetworkClient({
           <Users size={14} />
           <span>{network.length} connections</span>
         </div>
-        <div className="flex items-center gap-2 text-emerald-400 text-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <div className="flex items-center gap-2 text-emerald-500 text-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           <span>{contactedCount} contacted</span>
         </div>
       </div>
 
       {/* Search */}
-      <div className="search-input-wrapper max-w-sm mb-6">
-        <Search size={16} className="search-icon" />
+      <div className="relative max-w-sm mb-6">
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
         <input
           type="text"
           placeholder="Search your network..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="input-field"
+          className="input-field !pl-11"
         />
       </div>
 
@@ -293,7 +170,7 @@ export default function NetworkClient({
             <>
               <p className="text-base text-[--text-secondary] mb-1">Your network is empty</p>
               <p className="text-[--text-quaternary] text-sm">
-                Go to Discover to add alumni to your network
+                Go to Alumni to add connections to your network
               </p>
             </>
           ) : (
@@ -304,28 +181,42 @@ export default function NetworkClient({
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {filteredNetwork.map((connection) => (
             <div
               key={connection.id}
               ref={(el) => setRowRef(connection.id, el)}
-              className={`transition-all duration-500 rounded-xl ${
+              className={`transition-all duration-500 ${
                 highlightedId === connection.id 
-                  ? 'ring-2 ring-[--school-primary] bg-[--school-primary]/5' 
+                  ? 'ring-2 ring-[--school-primary]' 
                   : ''
               }`}
             >
-              <NetworkRow
-                connection={connection}
-                onSendMessage={setSelectedConnection}
-                onRemove={handleRemove}
-                onOpenNotes={setNotesConnection}
-                onUpdateContactedDate={handleUpdateContactedDate}
-                onUpdateStatus={handleUpdateStatus}
-                onUndoContacted={handleUndoContacted}
-                onOpenDetail={setDetailConnection}
-                isRemoving={removingId === connection.id}
-              />
+              <button
+                onClick={() => setDetailConnection(connection)}
+                className="w-full card p-4 flex items-center justify-between hover:bg-[--bg-tertiary] transition-colors text-left"
+              >
+                <div className="flex-1 min-w-0">
+                  {/* Name */}
+                  <h3 className="font-medium text-[--text-primary] truncate">
+                    {connection.alumni?.full_name}
+                  </h3>
+                  
+                  {/* Company + Role */}
+                  <p className="text-sm text-[--text-secondary] truncate">
+                    {connection.alumni?.role && connection.alumni?.company
+                      ? `${connection.alumni.role} @ ${connection.alumni.company}`
+                      : connection.alumni?.company || connection.alumni?.role || 'No career info yet'}
+                  </p>
+                  
+                  {/* Sport */}
+                  <p className="text-xs text-[--text-quaternary] mt-1">
+                    {connection.alumni?.sport || 'Unknown sport'}
+                  </p>
+                </div>
+
+                <ChevronRight size={20} className="text-[--text-quaternary] flex-shrink-0 ml-4" />
+              </button>
             </div>
           ))}
         </div>
@@ -335,7 +226,7 @@ export default function NetworkClient({
       {selectedConnection && (
         <MessageModal
           connection={selectedConnection}
-          userInterests={interests}
+          userInterests={userProfile.interests}
           userName={userProfile.name}
           userSport={userProfile.sport}
           onClose={() => setSelectedConnection(null)}
@@ -343,21 +234,14 @@ export default function NetworkClient({
         />
       )}
 
-      {/* Notes Modal */}
-      {notesConnection && (
-        <NotesModal
-          connection={notesConnection}
-          onClose={() => setNotesConnection(null)}
-          onSave={handleSaveNotes}
-        />
-      )}
-
       {/* Connection Detail Modal */}
       {detailConnection && (
         <ConnectionDetailModal
           connection={detailConnection}
+          userProfile={userProfile}
           onClose={() => setDetailConnection(null)}
           onUpdate={handleUpdateConnection}
+          onRemove={handleRemoveConnection}
         />
       )}
     </main>

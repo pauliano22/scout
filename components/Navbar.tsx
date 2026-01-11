@@ -2,7 +2,7 @@
 
 import Link from '@/components/Link'
 import { usePathname } from 'next/navigation'
-import { Search, Users, LogOut, User, Flame, Trophy, ChevronDown, Info } from 'lucide-react'
+import { Search, Users, LogOut, User, ChevronDown, Info, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -14,10 +14,9 @@ interface NavbarProps {
     full_name?: string
   } | null
   networkCount?: number
-  currentStreak?: number
 }
 
-export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: NavbarProps) {
+export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -77,7 +76,7 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
               }`}
             >
               <Search size={16} />
-              <span className="hidden sm:inline">Discover</span>
+              <span className="hidden sm:inline">Alumni</span>
             </Link>
             
             <Link 
@@ -98,21 +97,15 @@ export default function Navbar({ user, networkCount = 0, currentStreak = 0 }: Na
             </Link>
 
             <Link 
-              href="/career-path" 
+              href="/coach" 
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/career-path') 
+                isActive('/coach') 
                   ? 'bg-[--bg-tertiary] text-[--text-primary]' 
                   : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >
-              <Trophy size={16} />
-              <span className="hidden sm:inline">Career Path</span>
-              {currentStreak > 0 && (
-                <span className="flex items-center gap-1 bg-[--bg-active] text-amber-500 px-1.5 py-0.5 rounded text-xs">
-                  <Flame size={10} />
-                  {currentStreak}
-                </span>
-              )}
+              <Sparkles size={16} />
+              <span className="hidden sm:inline">Coach</span>
             </Link>
 
             <Link 

@@ -210,7 +210,10 @@ select option {
 }
 
 .input-field {
-  @apply w-full px-3 py-2 rounded-md text-sm;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   color: var(--text-primary);
@@ -227,7 +230,7 @@ select option {
   background: var(--bg-tertiary);
 }
 
-/* Search input */
+/* Search input wrapper pattern */
 .search-input-wrapper {
   position: relative;
 }
@@ -286,7 +289,10 @@ select option {
    BUTTONS
    ============================================ */
 .btn-primary {
-  @apply px-4 py-2 rounded-md text-sm font-medium;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   background: transparent;
   color: var(--school-primary);
   border: 1px solid var(--school-primary);
@@ -301,8 +307,16 @@ select option {
   background: rgba(179, 27, 27, 0.15);
 }
 
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .btn-secondary {
-  @apply px-4 py-2 rounded-md text-sm font-medium;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   background: var(--bg-tertiary);
   color: var(--text-primary);
   border: 1px solid var(--border-primary);
@@ -315,7 +329,10 @@ select option {
 }
 
 .btn-ghost {
-  @apply px-3 py-1.5 rounded-md text-sm font-medium;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   background: transparent;
   color: var(--text-secondary);
   border: none;
@@ -328,7 +345,10 @@ select option {
 }
 
 .btn-success {
-  @apply px-4 py-2 rounded-md text-sm font-medium;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   background: rgba(34, 197, 94, 0.1);
   color: #4ade80;
   border: 1px solid rgba(34, 197, 94, 0.2);
@@ -339,7 +359,10 @@ select option {
    BADGES - Muted colors
    ============================================ */
 .badge {
-  @apply px-2 py-0.5 rounded text-xs font-medium;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .badge-default {

@@ -42,6 +42,7 @@ export interface UserNetwork {
   // Joined data
   alumni?: Alumni
   status?: 'cold' | 'warm' | 'hot'
+  interactions?: string | null  // Add this line
 }
 
 export interface Message {

@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
-import { Search, Check, ChevronRight, Users } from 'lucide-react'
+import Avatar from '@/components/Avatar'
+import { Search, Check, ChevronRight, Users, Sparkles } from 'lucide-react'
 
 // Partial Alumni type for discover page (only fields we fetch)
 export interface DiscoverAlumni {
@@ -31,12 +32,12 @@ const ITEMS_PER_PAGE = 50
 const industries = ['All', 'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media']
 
 const industryBadgeClass: Record<string, string> = {
-  Finance: 'bg-emerald-500/10 text-emerald-400',
-  Technology: 'bg-blue-500/10 text-blue-400',
-  Consulting: 'bg-purple-500/10 text-purple-400',
-  Healthcare: 'bg-pink-500/10 text-pink-400',
-  Law: 'bg-amber-500/10 text-amber-400',
-  Media: 'bg-orange-500/10 text-orange-400',
+  Finance: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  Technology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  Consulting: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  Healthcare: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+  Law: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  Media: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
 }
 
 export default function DiscoverClient({
@@ -227,60 +228,69 @@ export default function DiscoverClient({
       {/* Alumni List */}
       {filteredAlumni.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-4xl mb-3">🔍</p>
+          <div className="empty-state-icon">
+            <Search size={32} className="text-[--text-quaternary]" />
+          </div>
           <p className="text-base text-[--text-secondary] mb-1">No alumni found</p>
           <p className="text-[--text-quaternary] text-sm">Try adjusting your search or filters</p>
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {visibleAlumni.map((alumni) => (
               <button
                 key={alumni.id}
                 onClick={() => setSelectedAlumni(alumni)}
-                className="w-full card p-4 flex items-center justify-between hover:bg-[--bg-tertiary] transition-colors text-left"
+                className="w-full card p-4 flex items-center gap-4 hover:bg-[--bg-tertiary] hover:border-[--border-secondary] transition-all text-left group"
               >
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  {/* Name */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="font-medium text-[--text-primary] truncate">
-                        {alumni.full_name}
-                      </h3>
-                      {networkIds.has(alumni.id) && (
-                        <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded flex-shrink-0">
-                          <Check size={10} />
-                          In Network
-                        </span>
-                      )}
-                    </div>
+                {/* Avatar */}
+                <Avatar name={alumni.full_name} size="md" />
 
-                    {/* Role @ Company */}
-                    <p className="text-sm text-[--text-secondary] truncate">
-                      {alumni.role && alumni.company
-                        ? `${alumni.role} @ ${alumni.company}`
-                        : alumni.company || alumni.role || 'No career info yet'}
-                    </p>
-
-                    {/* Sport */}
-                    <p className="text-xs text-[--text-quaternary] mt-0.5">
-                      {alumni.sport}
-                    </p>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h3 className="font-medium text-[--text-primary] truncate transition-colors">
+                      {alumni.full_name}
+                    </h3>
+                    {networkIds.has(alumni.id) && (
+                      <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex-shrink-0 border border-emerald-500/20">
+                        <Check size={10} />
+                        Connected
+                      </span>
+                    )}
                   </div>
 
-                  {/* Industry Badge */}
-                  {alumni.industry && (
-                    <span
-                      className={`hidden sm:inline-flex px-2.5 py-1 rounded-md text-xs font-medium flex-shrink-0 ${
-                        industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary]'
-                      }`}
-                    >
-                      {alumni.industry}
-                    </span>
-                  )}
+                  {/* Role @ Company */}
+                  <p className="text-sm text-[--text-secondary] truncate">
+                    {alumni.role && alumni.company
+                      ? `${alumni.role} @ ${alumni.company}`
+                      : alumni.company || alumni.role || 'Cornell Athlete Alumni'}
+                  </p>
+
+                  {/* Sport & Year */}
+                  <p className="text-xs text-[--text-quaternary] mt-1 flex items-center gap-2">
+                    <span>{alumni.sport}</span>
+                    {alumni.graduation_year && (
+                      <>
+                        <span className="w-1 h-1 rounded-full bg-[--text-quaternary]" />
+                        <span>Class of {alumni.graduation_year}</span>
+                      </>
+                    )}
+                  </p>
                 </div>
 
-                <ChevronRight size={18} className="text-[--text-quaternary] flex-shrink-0 ml-3" />
+                {/* Industry Badge */}
+                {alumni.industry && (
+                  <span
+                    className={`hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 border ${
+                      industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
+                    }`}
+                  >
+                    {alumni.industry}
+                  </span>
+                )}
+
+                <ChevronRight size={18} className="text-[--text-quaternary] flex-shrink-0 group-hover:text-[--text-secondary] group-hover:translate-x-0.5 transition-all" />
               </button>
             ))}
           </div>
@@ -290,7 +300,7 @@ export default function DiscoverClient({
             <div className="mt-8 text-center">
               <button
                 onClick={handleLoadMore}
-                className="px-6 py-3 bg-[--bg-tertiary] hover:bg-[--bg-quaternary] text-[--text-secondary] rounded-lg transition-colors text-sm font-medium"
+                className="btn-secondary px-8 py-3"
               >
                 Load More ({filteredAlumni.length - visibleCount} remaining)
               </button>

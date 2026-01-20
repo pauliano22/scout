@@ -1,14 +1,15 @@
+'use client'
+
 import Link from '@/components/Link'
-import { createClient } from '@/lib/supabase/server'
+import { useEffect, useState } from 'react'
 import Navbar from '@/components/Navbar'
-import { 
-  ArrowRight, 
-  Users, 
-  Database, 
-  Mail, 
-  Shield, 
-  Target, 
-  Rocket, 
+import {
+  ArrowRight,
+  Users,
+  Database,
+  Mail,
+  Target,
+  Rocket,
   School,
   Search,
   MessageSquare,
@@ -20,375 +21,320 @@ import {
   UsersRound,
   CheckCircle2,
   Clock,
-  Zap
+  Zap,
+  Quote,
+  ArrowUpRight,
+  ChevronRight
 } from 'lucide-react'
 
-export default async function AboutPage() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function AboutPage() {
+  const [user, setUser] = useState<{ email: string } | null>(null)
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUser({ email: user.email! })
+      }
+    }
+    checkUser()
+  }, [])
 
   return (
     <>
-      <Navbar user={user ? { email: user.email! } : null} />
+      <Navbar user={user} />
 
       <main className="overflow-hidden">
-        {/* Hero Section */}
-        <section className="px-6 md:px-12 py-20 md:py-28 max-w-5xl mx-auto relative">
-          {/* Subtle gradient background */}
-          <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[--school-primary]/5 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Hero Section - Different treatment with angled gradient */}
+        <section className="relative px-6 md:px-12 pt-20 pb-32 md:pt-28 md:pb-40">
+          {/* Angled background */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-[--bg-primary] via-[--bg-secondary] to-[--bg-primary]" />
+            <div
+              className="absolute bottom-0 left-0 right-0 h-32 bg-[--bg-secondary]"
+              style={{ clipPath: 'polygon(0 100%, 100% 100%, 100% 0, 0 100%)' }}
+            />
+            {/* Accent line */}
+            <div className="absolute top-1/2 left-0 w-1/3 h-px bg-gradient-to-r from-transparent via-[--school-primary]/30 to-transparent" />
+            <div className="absolute top-1/3 right-0 w-1/4 h-px bg-gradient-to-l from-transparent via-blue-500/20 to-transparent" />
           </div>
 
-          <div className="animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[--school-primary]/10 border border-[--school-primary]/20 rounded-full text-[--school-primary] text-xs font-medium mb-6">
-              <Zap size={12} />
-              Built by Cornell Athletes, for Cornell Athletes
+          <div className="max-w-5xl mx-auto">
+            <div className="max-w-3xl animate-fade-in-up">
+              {/* Eyebrow */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-px w-12 bg-[--school-primary]" />
+                <span className="text-[--school-primary] text-sm font-semibold uppercase tracking-wider">Our Mission</span>
+              </div>
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-[1.1] tracking-tight">
+                Career success shouldn't
+                <br />
+                depend on <span className="text-[--text-tertiary]">who you know</span>
+              </h1>
+
+              <p className="text-xl text-[--text-secondary] max-w-2xl mb-8 leading-relaxed">
+                But it does. Scout levels the playing field by giving every Cornell athlete
+                access to the most powerful network in college sports.
+              </p>
+
+              <div className="flex gap-4 flex-wrap">
+                <Link
+                  href={user ? '/discover' : '/signup'}
+                  className="btn-primary flex items-center gap-2 group"
+                >
+                  {user ? 'Browse Alumni' : 'Get Started Free'}
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
             </div>
-            
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight tracking-tight">
-              Your unfair advantage
-              <br />
-              <span className="text-[--text-tertiary]">in the job market</span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-[--text-secondary] max-w-2xl mb-8">
-              Scout connects you with 20 years of Cornell athlete alumni — the network 
-              you didn't know you had, now one search away.
+          </div>
+        </section>
+
+        {/* The Problem - Full width quote style */}
+        <section className="bg-[--bg-secondary] px-6 md:px-12 py-20 md:py-28 relative">
+          <div className="max-w-4xl mx-auto">
+            <div className="relative">
+              <Quote size={48} className="text-[--school-primary]/20 absolute -top-4 -left-4" />
+              <blockquote className="text-2xl md:text-3xl font-medium leading-relaxed text-[--text-primary] pl-8 border-l-4 border-[--school-primary]">
+                We built Scout because we were tired of watching athletes from other schools
+                land interviews through connections we didn't even know existed.
+              </blockquote>
+              <p className="mt-6 text-[--text-tertiary] pl-8">— The Scout Team</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats - Horizontal scroll cards */}
+        <section className="px-6 md:px-12 py-20 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-[--bg-secondary] to-[--bg-primary]" />
+
+          <div className="max-w-6xl mx-auto relative">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {[
+                { value: '20', label: 'Years of Data', color: 'from-[--school-primary] to-red-500' },
+                { value: '40+', label: 'Sports', color: 'from-blue-400 to-cyan-400' },
+                { value: '7,000+', label: 'Alumni Profiles', color: 'from-emerald-400 to-teal-400' },
+                { value: 'Free', label: 'For Athletes', color: 'from-amber-400 to-orange-400' },
+              ].map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="group relative bg-[--bg-secondary] border border-[--border-primary] rounded-2xl p-6 hover:border-[--border-secondary] transition-all duration-300 animate-fade-in-up"
+                  style={{ animationDelay: `${i * 0.1}s` }}
+                >
+                  <div className={`text-4xl md:text-5xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent mb-2`}>
+                    {stat.value}
+                  </div>
+                  <div className="text-[--text-tertiary] text-sm">{stat.label}</div>
+
+                  {/* Hover glow */}
+                  <div className={`absolute inset-0 bg-gradient-to-r ${stat.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* What We Offer - Staggered cards */}
+        <section className="px-6 md:px-12 py-20 md:py-28">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px w-12 bg-emerald-500" />
+              <span className="text-emerald-400 text-sm font-semibold uppercase tracking-wider">Features</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+              Everything you need to network
+            </h2>
+            <p className="text-[--text-tertiary] max-w-xl text-lg mb-12">
+              Stop juggling LinkedIn, spreadsheets, and email. Scout brings it all together.
             </p>
 
-            <div className="flex gap-3 flex-wrap">
-              <Link
-                href={user ? '/discover' : '/signup'}
-                className="btn-primary flex items-center gap-2"
-              >
-                {user ? 'Browse Alumni' : 'Get Started Free'}
-                <ArrowRight size={16} />
-              </Link>
+            {/* Staggered feature cards */}
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Large left card */}
+              <div className="md:row-span-2 group">
+                <div className="h-full bg-gradient-to-br from-[--school-primary]/10 to-transparent border border-[--school-primary]/20 rounded-2xl p-8 hover:border-[--school-primary]/40 transition-all duration-300">
+                  <div className="w-14 h-14 bg-[--school-primary] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    <Database size={28} className="text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">Verified Alumni Database</h3>
+                  <p className="text-[--text-secondary] leading-relaxed mb-6">
+                    20 years of Cornell athlete rosters, enriched with LinkedIn data.
+                    Every profile includes current role, company, industry, and contact info.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Finance', 'Tech', 'Consulting', 'Law'].map(tag => (
+                      <span key={tag} className="px-3 py-1 bg-[--bg-tertiary] text-[--text-tertiary] text-sm rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                    <span className="px-3 py-1 bg-[--school-primary]/10 text-[--school-primary] text-sm rounded-full">
+                      +12 more
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right stacked cards */}
+              <div className="group">
+                <div className="h-full bg-[--bg-secondary] border border-[--border-primary] rounded-2xl p-6 hover:border-amber-500/40 transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Sparkles size={22} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2">AI Message Generation</h3>
+                  <p className="text-[--text-tertiary] text-sm leading-relaxed">
+                    Generate personalized outreach that references your shared athletic background.
+                    No more generic templates.
+                  </p>
+                </div>
+              </div>
+
+              <div className="group">
+                <div className="h-full bg-[--bg-secondary] border border-[--border-primary] rounded-2xl p-6 hover:border-emerald-500/40 transition-all duration-300">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <UserPlus size={22} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2">Network Tracker</h3>
+                  <p className="text-[--text-tertiary] text-sm leading-relaxed">
+                    Save contacts, track conversations, mark who you've reached out to.
+                    Your entire pipeline in one place.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Current Features */}
-        <section className="px-6 md:px-12 py-20 border-t border-[--border-primary] bg-[--bg-secondary]">
+        {/* Coming Soon - Timeline style */}
+        <section className="bg-[--bg-secondary] px-6 md:px-12 py-20 md:py-28">
           <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12 animate-fade-in-up">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-xs font-medium mb-4">
-                <CheckCircle2 size={12} />
-                Available Now
-              </div>
-              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
-                What Scout Offers
-              </h2>
-              <p className="text-[--text-tertiary] max-w-xl mx-auto">
-                Everything you need to tap into the most powerful network in college sports.
-              </p>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-px w-12 bg-blue-500" />
+              <span className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Roadmap</span>
             </div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-12">
+              What's next
+            </h2>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Feature 1 */}
-              <div className="group bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 hover:border-[--border-secondary] transition-all duration-300 animate-fade-in-up stagger-1">
-                <div className="w-12 h-12 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Database size={22} className="text-blue-400" />
-                </div>
-                <h3 className="text-base font-semibold mb-2">Alumni Database</h3>
-                <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                  Access 20 years of Cornell athlete rosters — every sport, every graduation year, all searchable.
-                </p>
-              </div>
+            {/* Timeline */}
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-8 top-0 bottom-0 w-px bg-[--border-primary] hidden md:block" />
 
-              {/* Feature 2 */}
-              <div className="group bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 hover:border-[--border-secondary] transition-all duration-300 animate-fade-in-up stagger-2">
-                <div className="w-12 h-12 bg-purple-500/10 border border-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Search size={22} className="text-purple-400" />
-                </div>
-                <h3 className="text-base font-semibold mb-2">Smart Search</h3>
-                <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                  Filter by industry, company, sport, or graduation year. Find exactly who can help you break in.
-                </p>
-              </div>
+              <div className="space-y-8">
+                {[
+                  {
+                    status: 'live',
+                    title: 'Cornell Launch',
+                    description: 'Alumni database, search, AI outreach, network tracking',
+                    icon: Rocket
+                  },
+                  {
+                    status: 'building',
+                    title: 'Career Coach AI',
+                    description: 'Personalized guidance on who to contact, when, and how',
+                    icon: Sparkles
+                  },
+                  {
+                    status: 'planned',
+                    title: 'Interview Prep',
+                    description: 'Practice questions, mock interviews, and tips from alumni',
+                    icon: MessageSquare
+                  },
+                  {
+                    status: 'planned',
+                    title: 'More Schools',
+                    description: 'Expanding to Ivy League and beyond',
+                    icon: School
+                  },
+                ].map((item, i) => (
+                  <div key={item.title} className="flex gap-6 items-start group animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
+                    {/* Status dot */}
+                    <div className={`relative z-10 w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 ${
+                      item.status === 'live'
+                        ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30'
+                        : item.status === 'building'
+                        ? 'bg-[--school-primary] shadow-lg shadow-[--school-primary]/30'
+                        : 'bg-[--bg-tertiary] border border-[--border-primary]'
+                    }`}>
+                      <item.icon size={24} className={item.status === 'planned' ? 'text-[--text-tertiary]' : 'text-white'} />
+                    </div>
 
-              {/* Feature 3 */}
-              <div className="group bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 hover:border-[--border-secondary] transition-all duration-300 animate-fade-in-up stagger-3">
-                <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Sparkles size={22} className="text-amber-400" />
-                </div>
-                <h3 className="text-base font-semibold mb-2">AI-Powered Outreach</h3>
-                <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                  Generate personalized messages that reference shared experiences. No more awkward cold emails.
-                </p>
-              </div>
-
-              {/* Feature 4 */}
-              <div className="group bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 hover:border-[--border-secondary] transition-all duration-300 animate-fade-in-up stagger-4">
-                <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <UserPlus size={22} className="text-emerald-400" />
-                </div>
-                <h3 className="text-base font-semibold mb-2">Network Builder</h3>
-                <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                  Save contacts, track who you've reached out to, and manage your entire job search in one place.
-                </p>
-              </div>
-
-              {/* Feature 5 */}
-              <div className="group bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 hover:border-[--border-secondary] transition-all duration-300 animate-fade-in-up stagger-5">
-                <div className="w-12 h-12 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Target size={22} className="text-rose-400" />
-                </div>
-                <h3 className="text-base font-semibold mb-2">Career Path Tracking</h3>
-                <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                  Set daily goals, maintain streaks, and unlock achievements as you build your network.
-                </p>
-              </div>
-
-              {/* Feature 6 */}
-              <div className="group bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 hover:border-[--border-secondary] transition-all duration-300 animate-fade-in-up stagger-5">
-                <div className="w-12 h-12 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Mail size={22} className="text-cyan-400" />
-                </div>
-                <h3 className="text-base font-semibold mb-2">Direct Contact Info</h3>
-                <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                  Get LinkedIn profiles and emails so you can reach out directly — no middleman required.
-                </p>
+                    {/* Content */}
+                    <div className="flex-1 pb-8">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-bold">{item.title}</h3>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          item.status === 'live'
+                            ? 'bg-emerald-500/10 text-emerald-400'
+                            : item.status === 'building'
+                            ? 'bg-[--school-primary]/10 text-[--school-primary]'
+                            : 'bg-[--bg-tertiary] text-[--text-tertiary]'
+                        }`}>
+                          {item.status === 'live' ? 'Live' : item.status === 'building' ? 'Building' : 'Planned'}
+                        </span>
+                      </div>
+                      <p className="text-[--text-tertiary]">{item.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Coming Soon */}
-        <section className="px-6 md:px-12 py-20 border-t border-[--border-primary]">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12 animate-fade-in-up">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[--school-primary]/10 border border-[--school-primary]/20 rounded-full text-[--school-primary] text-xs font-medium mb-4">
-                <Clock size={12} />
-                Coming Soon
-              </div>
-              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
-                What We're Building
-              </h2>
-              <p className="text-[--text-tertiary] max-w-xl mx-auto">
-                We're just getting started. Here's what's on the roadmap.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              {/* Coming Soon 1 */}
-              <div className="flex gap-4 p-5 bg-[--bg-secondary] border border-[--border-primary] rounded-xl animate-fade-in-up stagger-1">
-                <div className="w-10 h-10 bg-[--bg-tertiary] border border-[--border-primary] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <FileText size={18} className="text-[--text-secondary]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Resume & Cover Letter Tools</h3>
-                  <p className="text-[--text-tertiary] text-sm">
-                    AI-powered resume reviews and cover letter generators tailored for athlete backgrounds.
-                  </p>
-                </div>
-              </div>
-
-              {/* Coming Soon 2 */}
-              <div className="flex gap-4 p-5 bg-[--bg-secondary] border border-[--border-primary] rounded-xl animate-fade-in-up stagger-2">
-                <div className="w-10 h-10 bg-[--bg-tertiary] border border-[--border-primary] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <MessageSquare size={18} className="text-[--text-secondary]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Interview Prep Resources</h3>
-                  <p className="text-[--text-tertiary] text-sm">
-                    Practice questions, mock interviews, and tips from alumni who've been through the process.
-                  </p>
-                </div>
-              </div>
-
-              {/* Coming Soon 3 */}
-              <div className="flex gap-4 p-5 bg-[--bg-secondary] border border-[--border-primary] rounded-xl animate-fade-in-up stagger-3">
-                <div className="w-10 h-10 bg-[--bg-tertiary] border border-[--border-primary] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Briefcase size={18} className="text-[--text-secondary]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Job & Opportunity Board</h3>
-                  <p className="text-[--text-tertiary] text-sm">
-                    Exclusive job postings and internship opportunities shared by the athlete alumni network.
-                  </p>
-                </div>
-              </div>
-
-              {/* Coming Soon 4 */}
-              <div className="flex gap-4 p-5 bg-[--bg-secondary] border border-[--border-primary] rounded-xl animate-fade-in-up stagger-4">
-                <div className="w-10 h-10 bg-[--bg-tertiary] border border-[--border-primary] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <GraduationCap size={18} className="text-[--text-secondary]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Athlete-Specific Career Resources</h3>
-                  <p className="text-[--text-tertiary] text-sm">
-                    Guides on translating athletic experience to professional skills that recruiters value.
-                  </p>
-                </div>
-              </div>
-
-              {/* Coming Soon 5 */}
-              <div className="flex gap-4 p-5 bg-[--bg-secondary] border border-[--border-primary] rounded-xl animate-fade-in-up stagger-5 md:col-span-2">
-                <div className="w-10 h-10 bg-[--bg-tertiary] border border-[--border-primary] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <UsersRound size={18} className="text-[--text-secondary]" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-1">Team Collaboration Features</h3>
-                  <p className="text-[--text-tertiary] text-sm">
-                    Share contacts with teammates, coordinate outreach, and build your network together as a team.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* The Problem */}
-        <section className="px-6 md:px-12 py-20 border-t border-[--border-primary] bg-[--bg-secondary]">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="animate-fade-in-up">
-                <h2 className="text-2xl md:text-3xl font-semibold mb-6 tracking-tight">
-                  Why we built this
-                </h2>
-                <div className="space-y-4 text-[--text-secondary]">
-                  <p>
-                    Student-athletes have one of the strongest built-in networks out there — thousands 
-                    of alumni who played the same sport, understand the grind, and want to help.
-                  </p>
-                  <p>
-                    But finding them is a nightmare. LinkedIn searches are slow. Alumni directories are 
-                    outdated. And cold outreach to strangers gets ignored.
-                  </p>
-                  <p className="text-[--text-primary] font-medium">
-                    We built Scout because we were tired of watching athletes from other schools land 
-                    interviews through connections we didn't even know existed.
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-4 animate-fade-in-up stagger-2">
-                <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-[--school-primary] mb-1">20</div>
-                  <div className="text-[--text-tertiary] text-sm">Years of Rosters</div>
-                </div>
-                <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-blue-400 mb-1">40+</div>
-                  <div className="text-[--text-tertiary] text-sm">Sports</div>
-                </div>
-                <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-emerald-400 mb-1">7000+</div>
-                  <div className="text-[--text-tertiary] text-sm">Alumni Profiles</div>
-                </div>
-                <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 text-center">
-                  <div className="text-3xl md:text-4xl font-bold text-amber-400 mb-1">Free</div>
-                  <div className="text-[--text-tertiary] text-sm">For Athletes</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Who It's For */}
-        <section className="px-6 md:px-12 py-20 border-t border-[--border-primary]">
-          <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
-            <h2 className="text-2xl md:text-3xl font-semibold mb-6 tracking-tight">
+        {/* Who It's For - Marquee style sports */}
+        <section className="px-6 md:px-12 py-20 md:py-28 relative overflow-hidden">
+          <div className="max-w-4xl mx-auto text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
               Built for every Cornell athlete
             </h2>
-            <p className="text-[--text-secondary] text-lg mb-8 max-w-2xl mx-auto">
-              Whether you're a freshman exploring options, a senior recruiting for full-time, 
-              or an alum looking to give back — Scout is for you.
+            <p className="text-[--text-secondary] text-lg">
+              Freshman exploring options. Seniors recruiting for full-time. Alumni looking to give back.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              {['Football', 'Basketball', 'Lacrosse', 'Soccer', 'Tennis', 'Swimming', 'Track & Field', 'Hockey', 'Rowing', 'Wrestling'].map((sport) => (
-                <span 
-                  key={sport}
-                  className="px-4 py-2 bg-[--bg-secondary] border border-[--border-primary] rounded-full text-sm text-[--text-secondary]"
+          </div>
+
+          {/* Scrolling sports marquee */}
+          <div className="relative">
+            <div className="flex gap-3 animate-marquee">
+              {['Football', 'Basketball', 'Lacrosse', 'Soccer', 'Tennis', 'Swimming', 'Track & Field', 'Hockey', 'Rowing', 'Wrestling', 'Baseball', 'Volleyball', 'Golf', 'Fencing', 'Squash', 'Football', 'Basketball', 'Lacrosse', 'Soccer', 'Tennis'].map((sport, i) => (
+                <span
+                  key={`${sport}-${i}`}
+                  className="px-5 py-2.5 bg-[--bg-secondary] border border-[--border-primary] rounded-full text-sm text-[--text-secondary] whitespace-nowrap hover:border-[--school-primary]/50 hover:text-[--text-primary] transition-colors cursor-default"
                 >
                   {sport}
                 </span>
               ))}
-              <span className="px-4 py-2 bg-[--bg-tertiary] border border-[--border-secondary] rounded-full text-sm text-[--text-primary] font-medium">
-                + 30 more
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* What's Next */}
-        <section className="px-6 md:px-12 py-20 border-t border-[--border-primary] bg-[--bg-secondary]">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12 animate-fade-in-up">
-              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-3">
-                Our Roadmap
-              </h2>
-              <p className="text-[--text-tertiary] max-w-xl mx-auto">
-                Scout is launching at Cornell first — then expanding to universities nationwide.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="relative animate-fade-in-up stagger-1">
-                <div className="bg-[--bg-primary] border-2 border-[--school-primary] rounded-xl p-6">
-                  <div className="absolute -top-3 left-6 px-3 py-1 bg-[--school-primary] text-white text-xs font-medium rounded-full">
-                    Now
-                  </div>
-                  <div className="pt-2">
-                    <Rocket size={24} className="text-[--school-primary] mb-3" />
-                    <h3 className="font-semibold mb-2">Cornell Launch</h3>
-                    <p className="text-[--text-tertiary] text-sm">
-                      Free access for all Cornell athletes. Building the platform and gathering feedback.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative animate-fade-in-up stagger-2">
-                <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6">
-                  <div className="absolute -top-3 left-6 px-3 py-1 bg-[--bg-tertiary] text-[--text-secondary] text-xs font-medium rounded-full border border-[--border-primary]">
-                    Next
-                  </div>
-                  <div className="pt-2">
-                    <Shield size={24} className="text-[--text-secondary] mb-3" />
-                    <h3 className="font-semibold mb-2">Alumni Opt-In</h3>
-                    <p className="text-[--text-tertiary] text-sm">
-                      Tools for alumni to claim profiles, update info, and control their visibility.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative animate-fade-in-up stagger-3">
-                <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6">
-                  <div className="absolute -top-3 left-6 px-3 py-1 bg-[--bg-tertiary] text-[--text-secondary] text-xs font-medium rounded-full border border-[--border-primary]">
-                    2025
-                  </div>
-                  <div className="pt-2">
-                    <School size={24} className="text-[--text-secondary] mb-3" />
-                    <h3 className="font-semibold mb-2">More Schools</h3>
-                    <p className="text-[--text-tertiary] text-sm">
-                      Expanding to Ivy League and beyond. Same power, every campus.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
 
         {/* CTA Section */}
-        <section className="px-6 md:px-12 py-20 border-t border-[--border-primary]">
-          <div className="max-w-3xl mx-auto text-center animate-fade-in-up">
-            <h2 className="text-3xl md:text-4xl font-semibold mb-4 tracking-tight">
-              Ready to tap into your network?
+        <section className="px-6 md:px-12 py-20 md:py-28 relative">
+          {/* Background accent */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-t from-[--school-primary]/5 to-transparent" />
+            <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-[--school-primary]/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 right-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl" />
+          </div>
+
+          <div className="max-w-3xl mx-auto text-center relative">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+              Start building your network
+              <br />
+              <span className="text-[--text-tertiary]">today</span>
             </h2>
-            <p className="text-[--text-tertiary] mb-8 max-w-md mx-auto">
-              Join Scout for free and start connecting with Cornell athlete alumni today.
+            <p className="text-[--text-secondary] mb-10 text-lg max-w-md mx-auto">
+              Join hundreds of Cornell athletes already using Scout to land interviews and build careers.
             </p>
             <Link
               href={user ? '/discover' : '/signup'}
-              className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-base"
+              className="btn-primary inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold group"
             >
               {user ? 'Browse Alumni' : 'Get Started Free'}
-              <ArrowRight size={18} />
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </section>

@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { UserNetwork } from '@/types/database'
 import MessageModal from '@/components/MessageModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
-import { Search, Users, ChevronRight, Flame, Sun, Snowflake } from 'lucide-react'
+import Avatar from '@/components/Avatar'
+import { Search, Users, ChevronRight, Flame, Sun, Snowflake, MessageCircle } from 'lucide-react'
 
 interface NetworkClientProps {
   initialNetwork: UserNetwork[]
@@ -269,13 +270,19 @@ export default function NetworkClient({
       {/* Network List */}
       {filteredNetwork.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-4xl mb-3">👥</p>
+          <div className="empty-state-icon">
+            <Users size={32} className="text-[--text-quaternary]" />
+          </div>
           {network.length === 0 ? (
             <>
-              <p className="text-base text-[--text-secondary] mb-1">Your network is empty</p>
-              <p className="text-[--text-quaternary] text-sm">
-                Go to Alumni to add connections to your network
+              <p className="text-base text-[--text-secondary] mb-2">Your network is empty</p>
+              <p className="text-[--text-quaternary] text-sm mb-4">
+                Start building your network by discovering alumni
               </p>
+              <a href="/discover" className="btn-primary inline-flex items-center gap-2">
+                Browse Alumni
+                <ChevronRight size={16} />
+              </a>
             </>
           ) : (
             <>
@@ -285,41 +292,68 @@ export default function NetworkClient({
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           {filteredNetwork.map((connection) => (
             <div
               key={connection.id}
               ref={(el) => setRowRef(connection.id, el)}
               className={`transition-all duration-500 ${
-                highlightedId === connection.id 
-                  ? 'ring-2 ring-[--school-primary]' 
+                highlightedId === connection.id
+                  ? 'ring-2 ring-[--school-primary] rounded-xl'
                   : ''
               }`}
             >
               <button
                 onClick={() => setDetailConnection(connection)}
-                className="w-full card p-4 flex items-center justify-between hover:bg-[--bg-tertiary] transition-colors text-left"
+                className="w-full card p-4 flex items-center gap-4 hover:bg-[--bg-tertiary] hover:border-[--border-secondary] transition-all text-left group"
               >
+                {/* Avatar */}
+                <Avatar name={connection.alumni?.full_name || 'Unknown'} size="md" />
+
+                {/* Info */}
                 <div className="flex-1 min-w-0">
-                  {/* Name */}
-                  <h3 className="font-medium text-[--text-primary] truncate">
-                    {connection.alumni?.full_name}
-                  </h3>
-                  
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <h3 className="font-medium text-[--text-primary] truncate transition-colors">
+                      {connection.alumni?.full_name}
+                    </h3>
+                    {/* Status indicator */}
+                    {connection.status === 'hot' && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                        Hot
+                      </span>
+                    )}
+                    {connection.status === 'warm' && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        Warm
+                      </span>
+                    )}
+                  </div>
+
                   {/* Company + Role */}
                   <p className="text-sm text-[--text-secondary] truncate">
                     {connection.alumni?.role && connection.alumni?.company
                       ? `${connection.alumni.role} @ ${connection.alumni.company}`
-                      : connection.alumni?.company || connection.alumni?.role || 'No career info yet'}
+                      : connection.alumni?.company || connection.alumni?.role || 'Cornell Athlete Alumni'}
                   </p>
-                  
-                  {/* Sport */}
-                  <p className="text-xs text-[--text-quaternary] mt-1">
-                    {connection.alumni?.sport || 'Unknown sport'}
-                  </p>
+
+                  {/* Sport & Contacted */}
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs text-[--text-quaternary]">
+                      {connection.alumni?.sport || 'Unknown sport'}
+                    </p>
+                    {connection.contacted && (
+                      <>
+                        <span className="w-1 h-1 rounded-full bg-[--text-quaternary]" />
+                        <span className="text-xs text-emerald-400 flex items-center gap-1">
+                          <MessageCircle size={10} />
+                          Contacted
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                <ChevronRight size={20} className="text-[--text-quaternary] flex-shrink-0 ml-4" />
+                <ChevronRight size={20} className="text-[--text-quaternary] flex-shrink-0 group-hover:text-[--text-secondary] group-hover:translate-x-0.5 transition-all" />
               </button>
             </div>
           ))}

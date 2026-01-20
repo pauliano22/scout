@@ -35,7 +35,7 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
     <nav className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-[--border-primary] sticky top-0 z-50 bg-[--bg-primary]">
       {/* Logo & School Selector */}
       <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href={user ? "/coach" : "/"} className="flex items-center gap-2 group">
           <img src="/favicon.svg" alt="Scout" className="w-8 h-8" />
         </Link>
         

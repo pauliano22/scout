@@ -51,6 +51,8 @@ interface AlumniRecommendation {
   reason: string
 }
 
+const ALUMNI_BATCH_SIZE = 6
+
 export default function CoachClient({
   userId,
   userProfile,
@@ -69,6 +71,8 @@ export default function CoachClient({
   const [recommendations, setRecommendations] = useState<AlumniRecommendation[]>([])
   const [keyInsight, setKeyInsight] = useState<string>('')
   const [addedToNetwork, setAddedToNetwork] = useState<Set<string>>(new Set(networkAlumniIds))
+  const [isFindingMore, setIsFindingMore] = useState(false)
+  const [shownAlumniIds, setShownAlumniIds] = useState<Set<string>>(new Set())
 
   const generatePlan = async () => {
     if (!interest.trim()) return
@@ -147,12 +151,53 @@ export default function CoachClient({
       setRecommendations(alumniRecs)
       setKeyInsight(plan.keyInsight || '')
       setHasGenerated(true)
-      
+
+      // Track shown alumni
+      const newShownIds = new Set(alumniRecs.map(r => r.alumni.id))
+      setShownAlumniIds(newShownIds)
+
     } catch (err) {
       console.error('Error generating plan:', err)
       setError('Failed to generate plan. Please try again.')
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  const findMoreAlumni = async () => {
+    if (!interest.trim()) return
+
+    setIsFindingMore(true)
+
+    try {
+      // Find relevant alumni that haven't been shown yet
+      const relevantAlumni = findRelevantAlumni(interest, allAlumni, shownAlumniIds)
+
+      if (relevantAlumni.length === 0) {
+        alert('No more alumni found matching your criteria. Try broadening your search.')
+        setIsFindingMore(false)
+        return
+      }
+
+      // Add new recommendations
+      const newRecs = relevantAlumni.slice(0, ALUMNI_BATCH_SIZE).map(r => ({
+        alumni: r.alumni,
+        reason: r.reason
+      }))
+
+      setRecommendations(prev => [...prev, ...newRecs])
+
+      // Update shown alumni
+      setShownAlumniIds(prev => {
+        const newSet = new Set(prev)
+        newRecs.forEach(r => newSet.add(r.alumni.id))
+        return newSet
+      })
+
+    } catch (err) {
+      console.error('Error finding more alumni:', err)
+    } finally {
+      setIsFindingMore(false)
     }
   }
 
@@ -200,7 +245,7 @@ export default function CoachClient({
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-[--school-primary] to-red-700 rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-[--school-primary] to-[--school-primary-hover] rounded-xl flex items-center justify-center">
             <Sparkles size={20} className="text-white" />
           </div>
           <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
@@ -268,7 +313,7 @@ export default function CoachClient({
           
           {/* Key Insight */}
           {keyInsight && (
-            <div className="card p-4 bg-gradient-to-r from-[--school-primary]/10 to-red-700/10 border-[--school-primary]/20">
+            <div className="card p-4 bg-gradient-to-r from-[--school-primary]/10 to-[--school-primary-hover]/10 border-[--school-primary]/20">
               <div className="flex items-start gap-3">
                 <Lightbulb size={20} className="text-[--school-primary] flex-shrink-0 mt-0.5" />
                 <p className="text-[--text-secondary] text-sm">{keyInsight}</p>
@@ -374,73 +419,96 @@ export default function CoachClient({
                 No exact matches found. Try a different industry or broader search term.
               </p>
             ) : (
-              <div className="grid gap-4">
-                {recommendations.map(({ alumni, reason }) => (
-                  <div
-                    key={alumni.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[--bg-secondary] rounded-xl border border-[--border-primary]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-[--text-primary]">{alumni.full_name}</h4>
-                      <p className="text-sm text-[--text-secondary]">
-                        {alumni.role && alumni.company 
-                          ? `${alumni.role} @ ${alumni.company}`
-                          : alumni.company || alumni.role || 'Cornell Athlete Alumni'}
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {alumni.graduation_year && (
-                          <span className="inline-flex items-center gap-1 text-xs text-[--text-quaternary]">
-                            <GraduationCap size={12} />
-                            {alumni.graduation_year}
-                          </span>
+              <>
+                <div className="grid gap-4">
+                  {recommendations.map(({ alumni, reason }) => (
+                    <div
+                      key={alumni.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[--bg-secondary] rounded-xl border border-[--border-primary]"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-[--text-primary]">{alumni.full_name}</h4>
+                        <p className="text-sm text-[--text-secondary]">
+                          {alumni.role && alumni.company
+                            ? `${alumni.role} @ ${alumni.company}`
+                            : alumni.company || alumni.role || 'Cornell Athlete Alumni'}
+                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {alumni.graduation_year && (
+                            <span className="inline-flex items-center gap-1 text-xs text-[--text-quaternary]">
+                              <GraduationCap size={12} />
+                              {alumni.graduation_year}
+                            </span>
+                          )}
+                          {alumni.sport && (
+                            <span className="inline-flex items-center gap-1 text-xs text-[--text-quaternary]">
+                              <Users size={12} />
+                              {alumni.sport}
+                            </span>
+                          )}
+                          {alumni.location && (
+                            <span className="inline-flex items-center gap-1 text-xs text-[--text-quaternary]">
+                              <MapPin size={12} />
+                              {alumni.location}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[--school-primary] mt-2 italic">"{reason}"</p>
+                      </div>
+
+                      <div className="flex gap-2 flex-shrink-0">
+                        {alumni.linkedin_url && (
+                          <a
+                            href={alumni.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-ghost p-2"
+                            title="View LinkedIn"
+                          >
+                            <Linkedin size={16} />
+                          </a>
                         )}
-                        {alumni.sport && (
-                          <span className="inline-flex items-center gap-1 text-xs text-[--text-quaternary]">
-                            <Users size={12} />
-                            {alumni.sport}
+
+                        {addedToNetwork.has(alumni.id) ? (
+                          <span className="btn-secondary text-emerald-500 cursor-default flex items-center gap-2">
+                            <CheckCircle2 size={16} />
+                            Added
                           </span>
-                        )}
-                        {alumni.location && (
-                          <span className="inline-flex items-center gap-1 text-xs text-[--text-quaternary]">
-                            <MapPin size={12} />
-                            {alumni.location}
-                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleAddToNetwork(alumni)}
+                            className="btn-primary flex items-center gap-2"
+                          >
+                            <UserPlus size={16} />
+                            Add to Network
+                          </button>
                         )}
                       </div>
-                      <p className="text-xs text-[--school-primary] mt-2 italic">"{reason}"</p>
                     </div>
+                  ))}
+                </div>
 
-                    <div className="flex gap-2 flex-shrink-0">
-                      {alumni.linkedin_url && (
-                        <a
-                          href={alumni.linkedin_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-ghost p-2"
-                          title="View LinkedIn"
-                        >
-                          <Linkedin size={16} />
-                        </a>
-                      )}
-                      
-                      {addedToNetwork.has(alumni.id) ? (
-                        <span className="btn-secondary text-emerald-500 cursor-default flex items-center gap-2">
-                          <CheckCircle2 size={16} />
-                          Added
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleAddToNetwork(alumni)}
-                          className="btn-primary flex items-center gap-2"
-                        >
-                          <UserPlus size={16} />
-                          Add to Network
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                {/* Find More Alumni Button */}
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={findMoreAlumni}
+                    disabled={isFindingMore}
+                    className="btn-secondary flex items-center gap-2 mx-auto"
+                  >
+                    {isFindingMore ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Finding more...
+                      </>
+                    ) : (
+                      <>
+                        <Users size={16} />
+                        Find More Alumni
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -449,14 +517,14 @@ export default function CoachClient({
       {/* Empty state */}
       {!hasGenerated && !isGenerating && (
         <div className="text-center py-16">
-          <div className="w-16 h-16 bg-gradient-to-br from-[--school-primary]/20 to-red-700/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-[--school-primary]/20 to-[--school-primary-hover]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Sparkles size={28} className="text-[--school-primary]" />
           </div>
           <h3 className="text-lg font-medium text-[--text-secondary] mb-2">
             Ready to plan your career?
           </h3>
           <p className="text-[--text-tertiary] text-sm max-w-md mx-auto">
-            Enter your career interest above and Coach will generate a personalized action plan 
+            Enter your career interest above and Coach will generate a personalized action plan
             along with relevant Cornell athlete alumni to connect with.
           </p>
         </div>
@@ -466,7 +534,11 @@ export default function CoachClient({
 }
 
 // Helper function to find relevant alumni based on keywords
-function findRelevantAlumni(interest: string, allAlumni: Alumni[]): { alumni: Alumni; reason: string }[] {
+function findRelevantAlumni(
+  interest: string,
+  allAlumni: Alumni[],
+  excludeIds: Set<string> = new Set()
+): { alumni: Alumni; reason: string }[] {
   const interestLower = interest.toLowerCase()
   const keywords: string[] = []
 
@@ -493,8 +565,9 @@ function findRelevantAlumni(interest: string, allAlumni: Alumni[]): { alumni: Al
   // Add the interest itself as keywords
   keywords.push(...interestLower.split(' ').filter(w => w.length > 3))
 
-  // Score and filter alumni
+  // Score and filter alumni (excluding already shown)
   const scoredAlumni = allAlumni
+    .filter(alumni => !excludeIds.has(alumni.id))
     .map(alumni => {
       let score = 0
       let reason = ''

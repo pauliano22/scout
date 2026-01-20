@@ -2,21 +2,25 @@
 
 import Link from '@/components/Link'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ArrowRight, Users, Search, MessageSquare, Shield, ChevronDown } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 
 export default function HomePage() {
+  const router = useRouter()
   const [showNavbar, setShowNavbar] = useState(false)
   const [user, setUser] = useState<{ email: string } | null>(null)
 
   useEffect(() => {
-    // Check for user session
+    // Check for user session and redirect to coach if logged in
     const checkUser = async () => {
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        setUser({ email: user.email! })
+        // Redirect logged-in users to /coach
+        router.push('/coach')
+        return
       }
     }
     checkUser()

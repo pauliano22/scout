@@ -12,10 +12,10 @@ export default async function CoachPage() {
     redirect('/login')
   }
 
-  // Fetch user profile
+  // Fetch user profile - only needed fields
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('full_name, sport, interests, graduation_year')
     .eq('id', user.id)
     .single()
 
@@ -25,10 +25,10 @@ export default async function CoachPage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
 
-  // Fetch all alumni for recommendations
+  // Fetch alumni for recommendations - only select needed fields for performance
   const { data: alumni } = await supabase
     .from('alumni')
-    .select('*')
+    .select('id, full_name, company, role, industry, sport, graduation_year, location, linkedin_url')
     .eq('is_public', true)
     .not('company', 'is', null)
     .limit(5000)

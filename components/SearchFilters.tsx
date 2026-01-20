@@ -69,14 +69,14 @@ export default function SearchFilters({
   return (
     <div className="flex gap-3 mb-8 flex-wrap">
       {/* Search Input */}
-      <div className="search-input-wrapper flex-1 min-w-[280px]">
-        <Search size={16} className="search-icon" />
+      <div className="relative flex-1 min-w-[280px]">
+        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
         <input
           type="text"
           placeholder="Search by name, company, or role..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="input-field"
+          className="input-field !pl-11"
         />
       </div>
 

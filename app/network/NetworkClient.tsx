@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { UserNetwork } from '@/types/database'
 import MessageModal from '@/components/MessageModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
-import { Search, Users, ChevronRight } from 'lucide-react'
+import { Search, Users, ChevronRight, Flame, Sun, Snowflake } from 'lucide-react'
 
 interface NetworkClientProps {
   initialNetwork: UserNetwork[]
@@ -18,6 +18,8 @@ interface NetworkClientProps {
   }
 }
 
+type StatusFilter = 'all' | 'hot' | 'warm' | 'cold'
+
 export default function NetworkClient({
   initialNetwork,
   userId,
@@ -26,13 +28,14 @@ export default function NetworkClient({
   const supabase = createClient()
   const searchParams = useSearchParams()
   const highlightId = searchParams.get('highlight')
-  
+
   const [network, setNetwork] = useState<UserNetwork[]>(initialNetwork)
   const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [selectedConnection, setSelectedConnection] = useState<UserNetwork | null>(null)
   const [detailConnection, setDetailConnection] = useState<UserNetwork | null>(null)
   const [highlightedId, setHighlightedId] = useState<string | null>(null)
-  
+
   // Refs for scrolling to highlighted item
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
@@ -57,22 +60,43 @@ export default function NetworkClient({
     }
   }, [highlightId, network])
 
+  // Get connections by status
+  const hotConnections = useMemo(() => network.filter(c => c.status === 'hot'), [network])
+  const warmConnections = useMemo(() => network.filter(c => c.status === 'warm'), [network])
+  const coldConnections = useMemo(() => network.filter(c => !c.status || c.status === 'cold'), [network])
+
   const filteredNetwork = useMemo(() => {
-    if (!searchQuery) return network
-    const query = searchQuery.toLowerCase()
-    return network.filter((conn) => {
-      const alumni = conn.alumni
-      if (!alumni) return false
-      return (
-        alumni.full_name.toLowerCase().includes(query) ||
-        alumni.company?.toLowerCase().includes(query) ||
-        alumni.role?.toLowerCase().includes(query) ||
-        alumni.sport?.toLowerCase().includes(query)
-      )
-    })
-  }, [network, searchQuery])
+    let filtered = network
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'cold') {
+        filtered = filtered.filter(c => !c.status || c.status === 'cold')
+      } else {
+        filtered = filtered.filter(c => c.status === statusFilter)
+      }
+    }
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter((conn) => {
+        const alumni = conn.alumni
+        if (!alumni) return false
+        return (
+          alumni.full_name.toLowerCase().includes(query) ||
+          alumni.company?.toLowerCase().includes(query) ||
+          alumni.role?.toLowerCase().includes(query) ||
+          alumni.sport?.toLowerCase().includes(query)
+        )
+      })
+    }
+
+    return filtered
+  }, [network, searchQuery, statusFilter])
 
   const contactedCount = network.filter((c) => c.contacted).length
+  const priorityCount = hotConnections.length + warmConnections.length
 
   const handleUpdateConnection = (updatedConnection: UserNetwork) => {
     setNetwork((prev) =>
@@ -138,6 +162,42 @@ export default function NetworkClient({
         </p>
       </div>
 
+      {/* Priority Connections Panel */}
+      {priorityCount > 0 && (
+        <div className="card p-5 mb-6 bg-gradient-to-r from-[--bg-secondary] to-[--bg-tertiary]">
+          <h2 className="text-sm font-medium text-[--text-secondary] mb-4 flex items-center gap-2">
+            <Flame size={16} className="text-red-400" />
+            Priority Connections
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            {hotConnections.map((conn) => (
+              <button
+                key={conn.id}
+                onClick={() => setDetailConnection(conn)}
+                className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors text-left"
+              >
+                <span className="text-red-400">🔥</span>
+                <span className="text-sm font-medium text-[--text-primary]">
+                  {conn.alumni?.full_name}
+                </span>
+              </button>
+            ))}
+            {warmConnections.map((conn) => (
+              <button
+                key={conn.id}
+                onClick={() => setDetailConnection(conn)}
+                className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 rounded-lg transition-colors text-left"
+              >
+                <span className="text-amber-400">🌤️</span>
+                <span className="text-sm font-medium text-[--text-primary]">
+                  {conn.alumni?.full_name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats */}
       <div className="flex gap-6 mb-6">
         <div className="flex items-center gap-2 text-[--text-tertiary] text-sm">
@@ -148,6 +208,50 @@ export default function NetworkClient({
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           <span>{contactedCount} contacted</span>
         </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <button
+          onClick={() => setStatusFilter('all')}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            statusFilter === 'all'
+              ? 'bg-[--bg-tertiary] text-[--text-primary] border border-[--border-secondary]'
+              : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
+          }`}
+        >
+          All ({network.length})
+        </button>
+        <button
+          onClick={() => setStatusFilter('hot')}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+            statusFilter === 'hot'
+              ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+              : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
+          }`}
+        >
+          <Flame size={14} /> Hot ({hotConnections.length})
+        </button>
+        <button
+          onClick={() => setStatusFilter('warm')}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+            statusFilter === 'warm'
+              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+              : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
+          }`}
+        >
+          <Sun size={14} /> Warm ({warmConnections.length})
+        </button>
+        <button
+          onClick={() => setStatusFilter('cold')}
+          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+            statusFilter === 'cold'
+              ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+              : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
+          }`}
+        >
+          <Snowflake size={14} /> Cold ({coldConnections.length})
+        </button>
       </div>
 
       {/* Search */}

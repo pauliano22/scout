@@ -13,10 +13,17 @@ export default async function DiscoverPage() {
     redirect('/login')
   }
 
-  // Fetch ALL alumni (increase limit from default 1000)
+  // Fetch user profile to get their sport
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('sport')
+    .eq('id', user.id)
+    .single()
+
+  // Fetch ALL alumni - only select needed fields for performance
   const { data: alumni, error: alumniError } = await supabase
     .from('alumni')
-    .select('*')
+    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location')
     .eq('is_public', true)
     .order('graduation_year', { ascending: false })
     .limit(30000)
@@ -58,6 +65,8 @@ export default async function DiscoverPage() {
         initialAlumni={sortedAlumni}
         networkAlumniIds={Array.from(networkAlumniIds)}
         userId={user.id}
+        userSport={profile?.sport || null}
+        totalAlumniCount={sortedAlumni.length}
       />
     </>
   )

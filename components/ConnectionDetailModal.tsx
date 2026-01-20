@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { UserNetwork } from '@/types/database'
-import { 
-  X, 
-  Linkedin, 
-  Mail, 
-  MessageSquare, 
-  Copy, 
+import MessageModal from '@/components/MessageModal'
+import {
+  X,
+  Linkedin,
+  Mail,
+  MessageSquare,
+  Copy,
   Check,
   Phone,
   Coffee,
@@ -390,94 +391,38 @@ export default function ConnectionDetailModal({
         </div>
       </div>
 
-      {/* Message Modal - simplified inline version */}
+      {/* Message Modal - Claude-powered with tone options */}
       {showMessageModal && (
-        <MessageModalInline
-          alumni={alumni}
-          userProfile={userProfile}
+        <MessageModal
+          connection={connection}
+          userInterests={userProfile.interests}
+          userName={userProfile.name}
+          userSport={userProfile.sport}
           onClose={() => setShowMessageModal(false)}
+          onSend={async (connectionId, message) => {
+            // Mark as contacted when message is sent
+            try {
+              const now = new Date().toISOString()
+              await supabase
+                .from('user_networks')
+                .update({
+                  contacted: true,
+                  contacted_at: now
+                })
+                .eq('id', connectionId)
+
+              onUpdate({
+                ...connection,
+                contacted: true,
+                contacted_at: now
+              })
+            } catch (error) {
+              console.error('Error marking as contacted:', error)
+            }
+            setShowMessageModal(false)
+          }}
         />
       )}
-    </div>
-  )
-}
-
-// Simplified inline message modal
-function MessageModalInline({ 
-  alumni, 
-  userProfile,
-  onClose 
-}: { 
-  alumni: any
-  userProfile: { name: string; sport: string; interests: string }
-  onClose: () => void 
-}) {
-  const [message, setMessage] = useState('')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [copied, setCopied] = useState(false)
-
-  const generateMessage = async () => {
-    setIsGenerating(true)
-    // Simple template-based message
-    const template = `Hi ${alumni?.full_name?.split(' ')[0] || 'there'},
-
-I'm ${userProfile.name}, a ${userProfile.sport || 'student-athlete'} at Cornell. I came across your profile and was really impressed by your career path${alumni?.company ? ` at ${alumni.company}` : ''}.
-
-${userProfile.interests ? `I'm particularly interested in ${userProfile.interests}, and would love to learn more about your experience in the field.` : 'I would love to learn more about your experience and any advice you might have for current athletes.'}
-
-Would you have 15-20 minutes for a quick call or coffee chat? I'd really appreciate any insights you could share.
-
-Thanks so much,
-${userProfile.name}`
-    
-    setMessage(template)
-    setIsGenerating(false)
-  }
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(message)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-xl w-full max-w-lg p-6 shadow-xl">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 text-[--text-quaternary] hover:text-[--text-primary]"
-        >
-          <X size={18} />
-        </button>
-        
-        <h3 className="text-lg font-semibold mb-4">Generate Message</h3>
-        
-        {!message ? (
-          <button
-            onClick={generateMessage}
-            disabled={isGenerating}
-            className="btn-primary w-full"
-          >
-            {isGenerating ? 'Generating...' : 'Generate Personalized Message'}
-          </button>
-        ) : (
-          <>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="input-field min-h-[250px] text-sm mb-4"
-            />
-            <div className="flex gap-2">
-              <button onClick={handleCopy} className="btn-primary flex-1 flex items-center justify-center gap-2">
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? 'Copied!' : 'Copy Message'}
-              </button>
-              <button onClick={onClose} className="btn-secondary">Done</button>
-            </div>
-          </>
-        )}
-      </div>
     </div>
   )
 }

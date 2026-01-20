@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import NetworkClient from './NetworkClient'
+import { UserNetwork } from '@/types/database'
 
 export default async function NetworkPage() {
   const supabase = createClient()
@@ -19,12 +20,12 @@ export default async function NetworkPage() {
     .eq('id', user.id)
     .single()
 
-  // Fetch user's network with alumni details - only needed fields for performance
+  // Fetch user's network with alumni details
   const { data: network, error } = await supabase
     .from('user_networks')
     .select(`
-      id, user_id, alumni_id, contacted, contacted_at, notes, status, interactions, created_at,
-      alumni:alumni_id (id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location)
+      *,
+      alumni:alumni_id (*)
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
@@ -39,8 +40,8 @@ export default async function NetworkPage() {
         user={{ email: user.email!, full_name: profile?.full_name }} 
         networkCount={network?.length || 0}
       />
-      <NetworkClient 
-        initialNetwork={network || []}
+      <NetworkClient
+        initialNetwork={(network || []) as UserNetwork[]}
         userId={user.id}
         userProfile={{
           name: profile?.full_name || '',

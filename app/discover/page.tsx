@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
-import DiscoverClient from './DiscoverClient'
+import DiscoverClient, { DiscoverAlumni } from './DiscoverClient'
 
 export default async function DiscoverPage() {
   const supabase = createClient()
@@ -30,7 +30,7 @@ export default async function DiscoverPage() {
 
   // Sort alumni to prioritize those with career info
   // Sort alumni to prioritize those with industry info
-  const sortedAlumni = (alumni || []).sort((a, b) => {
+  const sortedAlumni = ((alumni || []) as DiscoverAlumni[]).sort((a, b) => {
     const aHasInfo = a.industry && a.industry.trim() !== ''
     const bHasInfo = b.industry && b.industry.trim() !== ''
 

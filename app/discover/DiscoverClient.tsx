@@ -2,12 +2,24 @@
 
 import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Alumni } from '@/types/database'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import { Search, Check, ChevronRight, Users } from 'lucide-react'
 
+// Partial Alumni type for discover page (only fields we fetch)
+export interface DiscoverAlumni {
+  id: string
+  full_name: string
+  company: string | null
+  role: string | null
+  industry: string | null
+  sport: string
+  graduation_year: number
+  linkedin_url: string | null
+  location: string | null
+}
+
 interface DiscoverClientProps {
-  initialAlumni: Alumni[]
+  initialAlumni: DiscoverAlumni[]
   networkAlumniIds: string[]
   userId: string
   userSport: string | null
@@ -42,7 +54,7 @@ export default function DiscoverClient({
   const [networkIds, setNetworkIds] = useState<Set<string>>(new Set(initialNetworkIds))
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
-  const [selectedAlumni, setSelectedAlumni] = useState<Alumni | null>(null)
+  const [selectedAlumni, setSelectedAlumni] = useState<DiscoverAlumni | null>(null)
 
   // Filter alumni based on search and filters
   const filteredAlumni = useMemo(() => {
@@ -107,8 +119,8 @@ export default function DiscoverClient({
   }
 
   // Find similar alumni for the modal
-  const getSimilarAlumni = (alumni: Alumni): Alumni[] => {
-    const similar: Alumni[] = []
+  const getSimilarAlumni = (alumni: DiscoverAlumni): DiscoverAlumni[] => {
+    const similar: DiscoverAlumni[] = []
 
     // Find alumni with same industry
     const sameIndustry = initialAlumni.filter(

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Alumni } from '@/types/database'
 import {
   X,
   Linkedin,
@@ -15,13 +14,26 @@ import {
   Loader2
 } from 'lucide-react'
 
+// Base alumni type with only fields used by this modal
+export interface AlumniBase {
+  id: string
+  full_name: string
+  company: string | null
+  role: string | null
+  industry: string | null
+  sport: string
+  graduation_year: number
+  linkedin_url: string | null
+  location: string | null
+}
+
 interface AlumniDetailModalProps {
-  alumni: Alumni
+  alumni: AlumniBase
   isInNetwork: boolean
   onAddToNetwork: (id: string) => Promise<void>
   onClose: () => void
-  similarAlumni?: Alumni[]
-  onSelectAlumni?: (alumni: Alumni) => void
+  similarAlumni?: AlumniBase[]
+  onSelectAlumni?: (alumni: AlumniBase) => void
   networkIds?: Set<string>
 }
 

@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
+  console.log('=== FORGOT PASSWORD ROUTE HIT ===')
+
   try {
     const body = await request.json()
     const { email } = body
+
+    console.log('Email received:', email)
 
     if (!email) {
       return NextResponse.json(
@@ -54,6 +58,10 @@ export async function POST(request: NextRequest) {
     // Send email via Resend API
     const resetUrl = `https://scoutcornell.com/reset-password?token=${token}`
 
+    console.log('Calling Resend API...')
+    console.log('Reset URL:', resetUrl)
+    console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY)
+
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -100,6 +108,8 @@ export async function POST(request: NextRequest) {
       })
     })
 
+    console.log('Resend response status:', resendResponse.status)
+
     if (!resendResponse.ok) {
       const errorData = await resendResponse.json()
       console.error('Resend API error:', errorData)
@@ -108,6 +118,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    const successData = await resendResponse.json()
+    console.log('Resend success:', successData)
 
     return NextResponse.json({ success: true })
   } catch (error) {

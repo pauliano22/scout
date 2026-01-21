@@ -2,56 +2,49 @@
 
 import { useState, useEffect } from 'react'
 import Link from '@/components/Link'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Lock, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
-  const [isSessionReady, setIsSessionReady] = useState(false)
-  const [isCheckingSession, setIsCheckingSession] = useState(true)
+  const [isTokenValid, setIsTokenValid] = useState(false)
+  const [isCheckingToken, setIsCheckingToken] = useState(true)
+  const [tokenError, setTokenError] = useState('')
 
   useEffect(() => {
-    // Listen for auth state changes - Supabase will automatically
-    // detect the recovery token in the URL and establish a session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          // Session established from password reset link
-          setIsSessionReady(true)
-          setIsCheckingSession(false)
-        } else if (event === 'SIGNED_IN' && session) {
-          // Also handle if user is already signed in with recovery token
-          setIsSessionReady(true)
-          setIsCheckingSession(false)
+    const verifyToken = async () => {
+      if (!token) {
+        setTokenError('No reset token provided')
+        setIsCheckingToken(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/reset-password?token=${token}`)
+        const data = await response.json()
+
+        if (data.valid) {
+          setIsTokenValid(true)
+        } else {
+          setTokenError(data.error || 'Invalid or expired reset link')
         }
+      } catch (err) {
+        setTokenError('Failed to verify reset link')
+      } finally {
+        setIsCheckingToken(false)
       }
-    )
-
-    // Also check if there's already a valid session
-    const checkExistingSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        setIsSessionReady(true)
-      }
-      setIsCheckingSession(false)
     }
 
-    // Give Supabase a moment to process the URL token, then check session
-    const timer = setTimeout(checkExistingSession, 500)
-
-    return () => {
-      subscription.unsubscribe()
-      clearTimeout(timer)
-    }
-  }, [supabase.auth])
+    verifyToken()
+  }, [token])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,15 +63,25 @@ export default function ResetPasswordPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.updateUser({ password })
+      const response = await fetch('/api/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ token, password })
+      })
 
-      if (error) throw error
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to reset password')
+      }
 
       setIsSuccess(true)
 
-      // Redirect to coach page after a short delay
+      // Redirect to login page after a short delay
       setTimeout(() => {
-        router.push('/coach')
+        router.push('/login')
       }, 2000)
     } catch (err: any) {
       setError(err.message || 'Failed to reset password')
@@ -98,21 +101,21 @@ export default function ResetPasswordPage() {
 
         {/* Card */}
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
-          {isCheckingSession ? (
+          {isCheckingToken ? (
             <div className="flex flex-col items-center">
               <div className="w-8 h-8 border-2 border-[--text-tertiary]/30 border-t-[--text-tertiary] rounded-full animate-spin mb-4" />
               <p className="text-[--text-tertiary] text-sm text-center">
                 Verifying your reset link...
               </p>
             </div>
-          ) : !isSessionReady ? (
+          ) : !isTokenValid ? (
             <>
               <div className="flex justify-center mb-4">
                 <AlertCircle size={48} className="text-red-500" />
               </div>
               <h1 className="text-xl font-semibold text-center mb-2">Invalid or expired link</h1>
               <p className="text-[--text-tertiary] text-sm text-center mb-6">
-                This password reset link is invalid or has expired. Please request a new one.
+                {tokenError || 'This password reset link is invalid or has expired. Please request a new one.'}
               </p>
               <Link
                 href="/forgot-password"
@@ -129,7 +132,7 @@ export default function ResetPasswordPage() {
               </div>
               <h1 className="text-xl font-semibold text-center mb-2">Password reset!</h1>
               <p className="text-[--text-tertiary] text-sm text-center">
-                Your password has been successfully updated. Redirecting you...
+                Your password has been successfully updated. Redirecting you to sign in...
               </p>
             </>
           ) : (

@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from '@/components/Link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Lock, ArrowRight, CheckCircle } from 'lucide-react'
+import { Lock, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -15,6 +15,43 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [isSessionReady, setIsSessionReady] = useState(false)
+  const [isCheckingSession, setIsCheckingSession] = useState(true)
+
+  useEffect(() => {
+    // Listen for auth state changes - Supabase will automatically
+    // detect the recovery token in the URL and establish a session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          // Session established from password reset link
+          setIsSessionReady(true)
+          setIsCheckingSession(false)
+        } else if (event === 'SIGNED_IN' && session) {
+          // Also handle if user is already signed in with recovery token
+          setIsSessionReady(true)
+          setIsCheckingSession(false)
+        }
+      }
+    )
+
+    // Also check if there's already a valid session
+    const checkExistingSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setIsSessionReady(true)
+      }
+      setIsCheckingSession(false)
+    }
+
+    // Give Supabase a moment to process the URL token, then check session
+    const timer = setTimeout(checkExistingSession, 500)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timer)
+    }
+  }, [supabase.auth])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +98,31 @@ export default function ResetPasswordPage() {
 
         {/* Card */}
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
-          {isSuccess ? (
+          {isCheckingSession ? (
+            <div className="flex flex-col items-center">
+              <div className="w-8 h-8 border-2 border-[--text-tertiary]/30 border-t-[--text-tertiary] rounded-full animate-spin mb-4" />
+              <p className="text-[--text-tertiary] text-sm text-center">
+                Verifying your reset link...
+              </p>
+            </div>
+          ) : !isSessionReady ? (
+            <>
+              <div className="flex justify-center mb-4">
+                <AlertCircle size={48} className="text-red-500" />
+              </div>
+              <h1 className="text-xl font-semibold text-center mb-2">Invalid or expired link</h1>
+              <p className="text-[--text-tertiary] text-sm text-center mb-6">
+                This password reset link is invalid or has expired. Please request a new one.
+              </p>
+              <Link
+                href="/forgot-password"
+                className="w-full btn-primary flex items-center justify-center gap-2"
+              >
+                Request new link
+                <ArrowRight size={16} />
+              </Link>
+            </>
+          ) : isSuccess ? (
             <>
               <div className="flex justify-center mb-4">
                 <CheckCircle size={48} className="text-green-500" />

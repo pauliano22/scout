@@ -20,7 +20,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://scout-eight-ebon.vercel.app/reset-password'
+        redirectTo: 'https://scoutcornell.com/reset-password'
       })
 
       if (error) throw error

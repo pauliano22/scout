@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
   console.log('=== FORGOT PASSWORD ROUTE HIT ===')
@@ -17,19 +17,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const supabase = createClient()
+    // Create Supabase client with service role key (inside function so env vars are available)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    // Check if email exists in profiles table
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .eq('email', email.toLowerCase())
-      .single()
+    console.log('SUPABASE_URL exists:', !!supabaseUrl)
+    console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!supabaseServiceKey)
 
-    if (profileError || !profile) {
-      // Return success even if email doesn't exist (security: don't reveal if email is registered)
-      return NextResponse.json({ success: true })
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase environment variables')
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
     }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
 
     // Generate a secure random token
     const token = crypto.randomUUID()

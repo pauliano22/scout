@@ -17,6 +17,7 @@ export interface DiscoverAlumni {
   graduation_year: number
   linkedin_url: string | null
   location: string | null
+  avatar_url?: string | null
 }
 
 interface DiscoverClientProps {

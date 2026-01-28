@@ -11,6 +11,9 @@ interface AlumniCardProps {
   isLoading?: boolean
 }
 
+// Only show badges for verified industries
+const validIndustries = new Set(['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Sports', 'Education', 'Real Estate', 'Government', 'Nonprofit'])
+
 const industryBadgeClass: Record<string, string> = {
   Finance: 'bg-emerald-500/10 text-emerald-400',
   Technology: 'bg-blue-500/10 text-blue-400',
@@ -18,6 +21,11 @@ const industryBadgeClass: Record<string, string> = {
   Healthcare: 'bg-pink-500/10 text-pink-400',
   Law: 'bg-amber-500/10 text-amber-400',
   Media: 'bg-orange-500/10 text-orange-400',
+  Sports: 'bg-red-500/10 text-red-400',
+  Education: 'bg-indigo-500/10 text-indigo-400',
+  'Real Estate': 'bg-teal-500/10 text-teal-400',
+  Government: 'bg-slate-500/10 text-slate-400',
+  Nonprofit: 'bg-rose-500/10 text-rose-400',
 }
 
 export default function AlumniCard({
@@ -35,7 +43,7 @@ export default function AlumniCard({
             {alumni.sport} • Class of {alumni.graduation_year}
           </p>
         </div>
-        {alumni.industry && (
+        {alumni.industry && validIndustries.has(alumni.industry) && (
           <span
             className={`px-2 py-1 rounded text-xs font-medium ${
               industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary]'

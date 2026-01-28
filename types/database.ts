@@ -9,6 +9,7 @@ export interface Alumni {
   role: string | null
   industry: string | null
   location: string | null
+  avatar_url: string | null
   is_verified: boolean
   is_public: boolean
   source: 'opt_in' | 'public_record' | 'referral'
@@ -24,6 +25,12 @@ export interface Profile {
   sport: string | null
   graduation_year: number | null
   interests: string | null
+  company: string | null
+  role: string | null
+  industry: string | null
+  location: string | null
+  linkedin_url: string | null
+  avatar_url: string | null
   is_alumni: boolean
   is_verified: boolean
   school_id: string | null
@@ -41,7 +48,7 @@ export interface UserNetwork {
   created_at: string
   // Joined data
   alumni?: Alumni
-  status?: 'cold' | 'warm' | 'hot'
+  status?: 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met'
   interactions?: string | null  // Add this line
 }
 

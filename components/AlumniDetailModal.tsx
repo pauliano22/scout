@@ -37,6 +37,9 @@ interface AlumniDetailModalProps {
   networkIds?: Set<string>
 }
 
+// Only show badges for these verified industries
+const validIndustries = new Set(['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Sports', 'Education', 'Real Estate', 'Government', 'Nonprofit'])
+
 const industryBadgeClass: Record<string, string> = {
   Finance: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   Technology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -44,6 +47,11 @@ const industryBadgeClass: Record<string, string> = {
   Healthcare: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
   Law: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   Media: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  Sports: 'bg-red-500/10 text-red-400 border-red-500/20',
+  Education: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  'Real Estate': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+  Government: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  Nonprofit: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
 }
 
 export default function AlumniDetailModal({
@@ -94,7 +102,7 @@ export default function AlumniDetailModal({
                   {alumni.full_name}
                 </h2>
 
-                {alumni.industry && (
+                {alumni.industry && validIndustries.has(alumni.industry) && (
                   <span className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium border ${
                     industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
                   }`}>
@@ -206,7 +214,7 @@ export default function AlumniDetailModal({
                           : similar.company || similar.role || similar.sport}
                       </p>
                     </div>
-                    {similar.industry && (
+                    {similar.industry && validIndustries.has(similar.industry) && (
                       <span className={`ml-3 px-2 py-0.5 rounded text-xs font-medium ${
                         industryBadgeClass[similar.industry]?.split(' ').slice(0, 2).join(' ') || 'bg-[--bg-tertiary] text-[--text-secondary]'
                       }`}>

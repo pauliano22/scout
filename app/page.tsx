@@ -3,7 +3,7 @@
 import Link from '@/components/Link'
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Users, Search, MessageSquare, Sparkles, ChevronDown, Zap, TrendingUp, Building2 } from 'lucide-react'
+import { ArrowRight, Users, Search, MessageSquare, Sparkles, ChevronDown, Zap, TrendingUp, Building2, UserPlus } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 
 // Animated counter component
@@ -159,12 +159,13 @@ export default function HomePage() {
                 <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </Link>
 
-              <button
-                onClick={scrollToContent}
-                className="btn-secondary px-8 py-4 text-base font-semibold"
+              <Link
+                href="/join"
+                className="btn-secondary flex items-center gap-2 px-8 py-4 text-base font-semibold group"
               >
-                See How It Works
-              </button>
+                <UserPlus size={18} />
+                Alumni? Join Here
+              </Link>
             </div>
           </div>
 
@@ -363,13 +364,22 @@ export default function HomePage() {
             <p className="text-[--text-secondary] mb-10 text-lg max-w-md mx-auto">
               Join hundreds of Cornell athletes already building their careers through Scout.
             </p>
-            <Link
-              href={user ? '/discover' : '/signup'}
-              className="btn-primary inline-flex items-center gap-2 px-10 py-4 text-lg font-semibold group"
-            >
-              {user ? 'Start Networking' : 'Get Started Free'}
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <Link
+                href={user ? '/discover' : '/signup'}
+                className="btn-primary inline-flex items-center gap-2 px-10 py-4 text-lg font-semibold group"
+              >
+                {user ? 'Start Networking' : 'Get Started Free'}
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="/join"
+                className="btn-secondary inline-flex items-center gap-2 px-6 py-4 text-base font-medium"
+              >
+                <UserPlus size={18} />
+                Alumni? Join Here
+              </Link>
+            </div>
           </div>
         </section>
       </main>

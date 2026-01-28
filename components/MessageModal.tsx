@@ -10,7 +10,7 @@ interface MessageModalProps {
   userName: string
   userSport: string
   onClose: () => void
-  onSend: (connectionId: string, message: string) => Promise<void>
+  onSend: (connectionId: string, message: string, sentVia: 'linkedin' | 'email' | 'copied' | 'marked') => Promise<void>
 }
 
 type Tone = 'friendly' | 'neutral' | 'formal'
@@ -101,6 +101,10 @@ export default function MessageModal({
     if (!currentMessage) return
     await navigator.clipboard.writeText(currentMessage)
     setIsCopied(true)
+
+    // Track the copy action
+    await onSend(connection.id, currentMessage, 'copied')
+
     setTimeout(() => setIsCopied(false), 2000)
   }
 
@@ -108,7 +112,8 @@ export default function MessageModal({
     if (!currentMessage) return
     setIsSending(true)
     try {
-      await onSend(connection.id, currentMessage)
+      await onSend(connection.id, currentMessage, 'marked')
+      onClose()
     } finally {
       setIsSending(false)
     }
@@ -119,20 +124,32 @@ export default function MessageModal({
     // Copy message to clipboard
     await navigator.clipboard.writeText(currentMessage)
     setIsCopied(true)
-    
+
+    // Track the LinkedIn action
+    await onSend(connection.id, currentMessage, 'linkedin')
+
     // Open LinkedIn profile
     if (alumni.linkedin_url) {
       window.open(alumni.linkedin_url, '_blank')
     }
-    
-    setTimeout(() => setIsCopied(false), 2000)
+
+    setTimeout(() => {
+      setIsCopied(false)
+      onClose()
+    }, 1000)
   }
 
-  const handleOpenEmail = () => {
+  const handleOpenEmail = async () => {
     if (!currentMessage) return
+
+    // Track the email action
+    await onSend(connection.id, currentMessage, 'email')
+
     const subject = encodeURIComponent(`Cornell ${userSport || 'Athletics'} - Networking Request`)
     const body = encodeURIComponent(currentMessage)
-    window.location.href = `mailto:?subject=${subject}&body=${body}`
+    window.location.href = `mailto:${alumni.email || ''}?subject=${subject}&body=${body}`
+
+    setTimeout(() => onClose(), 500)
   }
 
   const handleRegenerate = () => {

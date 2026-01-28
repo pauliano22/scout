@@ -28,9 +28,10 @@ export default async function ProfilePage() {
         user={{ email: user.email!, full_name: profile?.full_name }} 
         networkCount={network?.length || 0}
       />
-      <ProfileClient 
+      <ProfileClient
         profile={profile}
         userId={user.id}
+        userEmail={user.email!}
       />
     </>
   )

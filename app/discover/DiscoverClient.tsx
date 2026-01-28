@@ -31,6 +31,9 @@ const ITEMS_PER_PAGE = 50
 
 const industries = ['All', 'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media']
 
+// Only these specific industries get colored badges - prevents showing incorrect/inferred industries
+const validIndustries = new Set(['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Sports', 'Education', 'Real Estate', 'Government', 'Nonprofit'])
+
 const industryBadgeClass: Record<string, string> = {
   Finance: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   Technology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -38,6 +41,11 @@ const industryBadgeClass: Record<string, string> = {
   Healthcare: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
   Law: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   Media: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  Sports: 'bg-red-500/10 text-red-400 border-red-500/20',
+  Education: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  'Real Estate': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+  Government: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+  Nonprofit: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
 }
 
 export default function DiscoverClient({
@@ -244,7 +252,7 @@ export default function DiscoverClient({
                 className="w-full card p-4 flex items-center gap-4 hover:bg-[--bg-tertiary] hover:border-[--border-secondary] transition-all text-left group"
               >
                 {/* Avatar */}
-                <Avatar name={alumni.full_name} size="md" />
+                <Avatar name={alumni.full_name} sport={alumni.sport} imageUrl={alumni.avatar_url} size="md" />
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
@@ -279,8 +287,8 @@ export default function DiscoverClient({
                   </p>
                 </div>
 
-                {/* Industry Badge */}
-                {alumni.industry && (
+                {/* Industry Badge - only show if it's a valid/verified industry */}
+                {alumni.industry && validIndustries.has(alumni.industry) && (
                   <span
                     className={`hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 border ${
                       industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'

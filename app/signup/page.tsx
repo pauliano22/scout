@@ -19,6 +19,12 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!email.toLowerCase().endsWith('@cornell.edu')) {
+      setError('Please use your Cornell email address (@cornell.edu)')
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -34,8 +40,8 @@ export default function SignupPage() {
 
       if (error) throw error
 
-      // Redirect directly to profile page
-      router.push('/profile')
+      // Redirect to dashboard
+      router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Failed to sign up')
       setIsLoading(false)
@@ -88,13 +94,14 @@ export default function SignupPage() {
               />
               <input
                 type="email"
-                placeholder="Email (preferably @cornell.edu)"
+                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
                 className="input-field !pl-11"
               />
+              <p className="text-xs text-[--text-quaternary] mt-1 ml-1">Use your Cornell email (@cornell.edu)</p>
             </div>
 
             <div className="relative">

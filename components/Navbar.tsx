@@ -68,23 +68,35 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
       <div className="flex items-center gap-1">
         {user ? (
           <>
-            <Link 
-              href="/discover" 
+            <Link
+              href="/coach"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border-2 ${
+                isActive('/coach')
+                  ? 'bg-[--school-primary]/15 text-[--school-primary] border-[--school-primary]'
+                  : 'bg-[--school-primary]/5 text-[--school-primary] border-[--school-primary]/40 hover:bg-[--school-primary]/15 hover:border-[--school-primary]'
+              }`}
+            >
+              <Sparkles size={16} />
+              <span className="hidden sm:inline">Coach</span>
+            </Link>
+
+            <Link
+              href="/discover"
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/discover') 
-                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                isActive('/discover')
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]'
                   : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >
               <Search size={16} />
               <span className="hidden sm:inline">Alumni</span>
             </Link>
-            
-            <Link 
-              href="/network" 
+
+            <Link
+              href="/network"
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/network') 
-                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                isActive('/network')
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]'
                   : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >
@@ -97,23 +109,11 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
               )}
             </Link>
 
-            <Link 
-              href="/coach" 
+            <Link
+              href="/about"
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/coach') 
-                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
-                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
-              }`}
-            >
-              <Sparkles size={16} />
-              <span className="hidden sm:inline">Coach</span>
-            </Link>
-
-            <Link 
-              href="/about" 
-              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/about') 
-                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                isActive('/about')
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]'
                   : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >

@@ -31,7 +31,7 @@ interface ConnectionDetailModalProps {
   onRemove: (connectionId: string) => void
 }
 
-type ConnectionStatus = 'cold' | 'warm' | 'hot'
+type ConnectionStatus = 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met'
 type InteractionType = 'email' | 'call' | 'coffee' | 'meeting' | 'other'
 
 interface Interaction {
@@ -51,7 +51,7 @@ export default function ConnectionDetailModal({
   const supabase = createClient()
   const alumni = connection.alumni
   
-  const [status, setStatus] = useState<ConnectionStatus>(connection.status || 'cold')
+  const [status, setStatus] = useState<ConnectionStatus>((connection.status as ConnectionStatus) || 'interested')
   const [notes, setNotes] = useState(connection.notes || '')
   const [isSavingNotes, setIsSavingNotes] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
@@ -215,39 +215,59 @@ export default function ConnectionDetailModal({
                   )}
                 </div>
 
-                {/* Connection Level */}
+                {/* Status */}
                 <div className="mt-4">
-                  <p className="text-xs text-[--text-quaternary] uppercase tracking-wide mb-2">Connection Level</p>
-                  <div className="flex gap-2">
+                  <p className="text-xs text-[--text-quaternary] uppercase tracking-wide mb-2">Status</p>
+                  <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => handleStatusChange('cold')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        status === 'cold'
+                      onClick={() => handleStatusChange('interested')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        status === 'interested'
                           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                           : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
                       }`}
                     >
-                      ❄️ Cold
+                      Interested
                     </button>
                     <button
-                      onClick={() => handleStatusChange('warm')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        status === 'warm'
+                      onClick={() => handleStatusChange('awaiting_reply')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        status === 'awaiting_reply'
                           ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                           : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
                       }`}
                     >
-                      🌤️ Warm
+                      Awaiting Reply
                     </button>
                     <button
-                      onClick={() => handleStatusChange('hot')}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        status === 'hot'
+                      onClick={() => handleStatusChange('response_needed')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        status === 'response_needed'
                           ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                           : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
                       }`}
                     >
-                      🔥 Hot
+                      Response Needed
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange('meeting_scheduled')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        status === 'meeting_scheduled'
+                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
+                      }`}
+                    >
+                      Meeting Scheduled
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange('met')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        status === 'met'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
+                      }`}
+                    >
+                      Met
                     </button>
                   </div>
                 </div>
@@ -400,21 +420,24 @@ export default function ConnectionDetailModal({
           userSport={userProfile.sport}
           onClose={() => setShowMessageModal(false)}
           onSend={async (connectionId, message) => {
-            // Mark as contacted when message is sent
+            // Mark as contacted and move to awaiting_reply
             try {
               const now = new Date().toISOString()
               await supabase
                 .from('user_networks')
                 .update({
                   contacted: true,
-                  contacted_at: now
+                  contacted_at: now,
+                  status: 'awaiting_reply'
                 })
                 .eq('id', connectionId)
 
+              setStatus('awaiting_reply')
               onUpdate({
                 ...connection,
                 contacted: true,
-                contacted_at: now
+                contacted_at: now,
+                status: 'awaiting_reply'
               })
             } catch (error) {
               console.error('Error marking as contacted:', error)

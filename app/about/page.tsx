@@ -81,13 +81,24 @@ export default function AboutPage() {
               </p>
 
               <div className="flex gap-4 flex-wrap">
-                <Link
-                  href={user ? '/discover' : '/signup'}
-                  className="btn-primary flex items-center gap-2 group"
-                >
-                  {user ? 'Browse Alumni' : 'Get Started Free'}
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </Link>
+                {user ? (
+                  <Link
+                    href="/coach"
+                    className="btn-primary flex items-center gap-2 group px-8 py-4 text-lg font-semibold shadow-lg shadow-[--school-primary]/30"
+                  >
+                    <Sparkles size={20} />
+                    Get Your Career Plan
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : (
+                  <Link
+                    href="/signup"
+                    className="btn-primary flex items-center gap-2 group"
+                  >
+                    Get Started Free
+                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -311,6 +322,29 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Alumni Join Section */}
+        <section className="px-6 md:px-12 py-16 bg-gradient-to-r from-[--school-primary]/10 via-[--school-primary]/5 to-transparent border-y border-[--school-primary]/20">
+          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-[--school-primary] rounded-2xl flex items-center justify-center shadow-lg shadow-[--school-primary]/30">
+                <UserPlus size={28} className="text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Are you a Cornell athlete alumnus?</h3>
+                <p className="text-[--text-tertiary]">Add your info so current athletes can find and connect with you.</p>
+              </div>
+            </div>
+            <Link
+              href="/join"
+              className="btn-primary flex items-center gap-2 px-8 py-4 text-base font-semibold group whitespace-nowrap"
+            >
+              <UserPlus size={18} />
+              Join the Network
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="px-6 md:px-12 py-20 md:py-28 relative">
           {/* Background accent */}
@@ -329,13 +363,33 @@ export default function AboutPage() {
             <p className="text-[--text-secondary] mb-10 text-lg max-w-md mx-auto">
               Join hundreds of Cornell athletes already using Scout to land interviews and build careers.
             </p>
-            <Link
-              href={user ? '/discover' : '/signup'}
-              className="btn-primary inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold group"
-            >
-              {user ? 'Browse Alumni' : 'Get Started Free'}
-              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+            {user ? (
+              <Link
+                href="/coach"
+                className="btn-primary inline-flex items-center gap-2 px-10 py-4 text-lg font-semibold group shadow-lg shadow-[--school-primary]/30"
+              >
+                <Sparkles size={20} />
+                Start with Coach
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
+            ) : (
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                <Link
+                  href="/signup"
+                  className="btn-primary inline-flex items-center gap-2 px-8 py-4 text-lg font-semibold group"
+                >
+                  Get Started Free
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link
+                  href="/join"
+                  className="btn-secondary inline-flex items-center gap-2 px-6 py-4 text-base"
+                >
+                  <UserPlus size={18} />
+                  Alumni? Add Your Info
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       </main>

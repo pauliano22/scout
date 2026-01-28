@@ -23,7 +23,7 @@ export default async function DiscoverPage() {
   // Fetch ALL alumni - only select needed fields for performance
   const { data: alumni, error: alumniError } = await supabase
     .from('alumni')
-    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location')
+    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, avatar_url')
     .eq('is_public', true)
     .order('graduation_year', { ascending: false })
     .limit(30000)

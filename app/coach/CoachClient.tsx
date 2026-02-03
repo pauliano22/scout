@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import Link from '@/components/Link'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import AlumniDetailModal from '@/components/AlumniDetailModal'
+import { analyzeActionItem } from '@/lib/actionResources'
 import {
   Sparkles,
   Users,
@@ -21,7 +23,8 @@ import {
   Loader2,
   Plus,
   X,
-  Trash2
+  Trash2,
+  ExternalLink
 } from 'lucide-react'
 
 interface Alumni {
@@ -111,6 +114,8 @@ export default function CoachClient({
   const [showGenerator, setShowGenerator] = useState(false)
   const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null)
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null) // Track which plan was just saved
+  const [selectedAlumni, setSelectedAlumni] = useState<Alumni | null>(null) // For profile modal
+  const [generatingNextStepsForPlan, setGeneratingNextStepsForPlan] = useState<string | null>(null)
 
   // Toggle action item in saved plan
   const toggleSavedPlanAction = async (planId: string, actionIndex: number) => {
@@ -189,6 +194,75 @@ export default function CoachClient({
     (sum, plan) => sum + (plan.action_items?.filter(item => item.completed).length || 0),
     0
   )
+
+  // Generate next steps for a saved plan
+  const generateNextSteps = async (planId: string) => {
+    const plan = localPlans.find(p => p.id === planId)
+    if (!plan) return
+
+    setGeneratingNextStepsForPlan(planId)
+
+    try {
+      const completedActions = plan.action_items.filter(item => item.completed)
+      const remainingActions = plan.action_items.filter(item => !item.completed)
+
+      const response = await fetch('/api/coach/next-steps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          interest: plan.interest,
+          userProfile,
+          completedActions,
+          remainingActions,
+        })
+      })
+
+      if (!response.ok) throw new Error('Failed to generate next steps')
+
+      const data = await response.json()
+      if (data.error) throw new Error(data.error)
+
+      const newActions = data.nextSteps || []
+      if (newActions.length === 0) {
+        alert('No additional steps generated. Great progress!')
+        return
+      }
+
+      // Append new actions to the plan
+      const updatedActionItems = [...plan.action_items, ...newActions]
+
+      // Update local state
+      setLocalPlans(prev => prev.map(p =>
+        p.id === planId ? { ...p, action_items: updatedActionItems } : p
+      ))
+
+      // Save to database
+      const { error } = await supabase
+        .from('coaching_plans')
+        .update({ action_items: updatedActionItems })
+        .eq('id', planId)
+
+      if (error) throw error
+
+      // Auto-expand the plan to show new items
+      setExpandedPlanId(planId)
+
+    } catch (err) {
+      console.error('Error generating next steps:', err)
+      alert('Failed to generate next steps. Please try again.')
+    } finally {
+      setGeneratingNextStepsForPlan(null)
+    }
+  }
+
+  // Check if a plan should show "Generate Next Steps" button
+  const shouldShowNextSteps = (plan: Plan) => {
+    if (!plan.action_items || plan.action_items.length === 0) return false
+    const completedCount = plan.action_items.filter(item => item.completed).length
+    const totalCount = plan.action_items.length
+    // Show button if at least 1 item completed but not all items
+    return completedCount >= 1 && completedCount < totalCount
+  }
 
   const generatePlan = async () => {
     if (!interest.trim()) return
@@ -338,6 +412,50 @@ export default function CoachClient({
   }
 
   const firstName = userProfile.name.split(' ')[0] || 'there'
+
+  // Helper function to find alumni by ID
+  const findAlumniById = (id: string): Alumni | null => {
+    return allAlumni.find(a => a.id === id) || null
+  }
+
+  // Helper function to find similar alumni for modal
+  const getSimilarAlumni = (alumni: Alumni): Alumni[] => {
+    const similar: Alumni[] = []
+
+    // Find alumni with same industry
+    if (alumni.industry) {
+      const sameIndustry = allAlumni.filter(
+        a => a.id !== alumni.id && a.industry === alumni.industry
+      ).slice(0, 2)
+      similar.push(...sameIndustry)
+    }
+
+    // Find alumni with same sport
+    if (similar.length < 4 && alumni.sport) {
+      const sameSport = allAlumni.filter(
+        a => a.id !== alumni.id && a.sport === alumni.sport && !similar.includes(a)
+      ).slice(0, 4 - similar.length)
+      similar.push(...sameSport)
+    }
+
+    // Find alumni at same company
+    if (similar.length < 4 && alumni.company) {
+      const sameCompany = allAlumni.filter(
+        a => a.id !== alumni.id && a.company === alumni.company && !similar.includes(a)
+      ).slice(0, 4 - similar.length)
+      similar.push(...sameCompany)
+    }
+
+    return similar.slice(0, 4)
+  }
+
+  // Handler for adding to network from modal
+  const handleModalAddToNetwork = async (alumniId: string) => {
+    const alumni = findAlumniById(alumniId)
+    if (alumni) {
+      await handleAddToNetwork(alumni)
+    }
+  }
 
   return (
     <main className="px-6 md:px-12 py-10 max-w-6xl mx-auto">
@@ -509,24 +627,50 @@ export default function CoachClient({
                 </div>
 
                 <div className="space-y-2">
-                  {actionItems.map((action, index) => (
-                    <button
-                      key={index}
-                      onClick={() => toggleActionComplete(index)}
-                      className="w-full flex items-start gap-3 text-left group p-3 rounded-lg hover:bg-[--bg-tertiary] transition-colors"
-                    >
-                      <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        action.completed
-                          ? 'bg-emerald-500 border-emerald-500'
-                          : 'border-[--border-secondary] group-hover:border-emerald-500'
-                      }`}>
-                        {action.completed && <Check size={12} className="text-white" />}
+                  {actionItems.map((action, index) => {
+                    const actionInfo = analyzeActionItem(action.text)
+                    return (
+                      <div key={index} className="rounded-lg hover:bg-[--bg-tertiary] transition-colors">
+                        <button
+                          onClick={() => toggleActionComplete(index)}
+                          className="w-full flex items-start gap-3 text-left group p-3"
+                        >
+                          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            action.completed
+                              ? 'bg-emerald-500 border-emerald-500'
+                              : 'border-[--border-secondary] group-hover:border-emerald-500'
+                          }`}>
+                            {action.completed && <Check size={12} className="text-white" />}
+                          </div>
+                          <span className={`text-sm ${action.completed ? 'text-[--text-quaternary] line-through' : 'text-[--text-primary]'}`}>
+                            {action.text}
+                          </span>
+                        </button>
+                        {/* Guidance and resource link for uncompleted items */}
+                        {!action.completed && (actionInfo.guidance || actionInfo.resourceUrl) && (
+                          <div className="pl-11 pr-3 pb-3 space-y-1.5">
+                            {actionInfo.guidance && (
+                              <p className="text-xs text-[--text-tertiary]">
+                                {actionInfo.guidance}
+                              </p>
+                            )}
+                            {actionInfo.resourceUrl && (
+                              <a
+                                href={actionInfo.resourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-[--school-primary] hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {actionInfo.resourceLabel || 'Learn more'}
+                                <ExternalLink size={10} />
+                              </a>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <span className={`text-sm ${action.completed ? 'text-[--text-quaternary] line-through' : 'text-[--text-primary]'}`}>
-                        {action.text}
-                      </span>
-                    </button>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
@@ -683,24 +827,50 @@ export default function CoachClient({
                       </div>
 
                       <div className="space-y-2">
-                        {itemsToShow?.map((item, index) => (
-                          <button
-                            key={index}
-                            onClick={() => toggleSavedPlanAction(plan.id, index)}
-                            className="w-full flex items-start gap-3 text-left group p-2 rounded-lg hover:bg-[--bg-tertiary] transition-colors"
-                          >
-                            <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                              item.completed
-                                ? 'bg-emerald-500 border-emerald-500'
-                                : 'border-[--border-secondary] group-hover:border-emerald-500'
-                            }`}>
-                              {item.completed && <Check size={12} className="text-white" />}
+                        {itemsToShow?.map((item, index) => {
+                          const actionInfo = analyzeActionItem(item.text)
+                          return (
+                            <div key={index} className="rounded-lg hover:bg-[--bg-tertiary] transition-colors">
+                              <button
+                                onClick={() => toggleSavedPlanAction(plan.id, index)}
+                                className="w-full flex items-start gap-3 text-left group p-2"
+                              >
+                                <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                  item.completed
+                                    ? 'bg-emerald-500 border-emerald-500'
+                                    : 'border-[--border-secondary] group-hover:border-emerald-500'
+                                }`}>
+                                  {item.completed && <Check size={12} className="text-white" />}
+                                </div>
+                                <span className={`text-sm ${item.completed ? 'text-[--text-quaternary] line-through' : 'text-[--text-secondary]'}`}>
+                                  {item.text}
+                                </span>
+                              </button>
+                              {/* Guidance and resource link for uncompleted items (when expanded) */}
+                              {isExpanded && !item.completed && (actionInfo.guidance || actionInfo.resourceUrl) && (
+                                <div className="pl-9 pr-3 pb-2 space-y-1">
+                                  {actionInfo.guidance && (
+                                    <p className="text-xs text-[--text-tertiary]">
+                                      {actionInfo.guidance}
+                                    </p>
+                                  )}
+                                  {actionInfo.resourceUrl && (
+                                    <a
+                                      href={actionInfo.resourceUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-xs text-[--school-primary] hover:underline"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {actionInfo.resourceLabel || 'Learn more'}
+                                      <ExternalLink size={10} />
+                                    </a>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            <span className={`text-sm ${item.completed ? 'text-[--text-quaternary] line-through' : 'text-[--text-secondary]'}`}>
-                              {item.text}
-                            </span>
-                          </button>
-                        ))}
+                          )
+                        })}
                         {(hasMoreItems || plan.alumni_recommendations?.length > 0) && (
                           <button
                             onClick={() => setExpandedPlanId(isExpanded ? null : plan.id)}
@@ -726,23 +896,52 @@ export default function CoachClient({
                               <span className="text-sm font-medium">Suggested Connections</span>
                             </div>
                             <div className="space-y-2">
-                              {plan.alumni_recommendations.map((rec: any, idx: number) => (
-                                <div key={idx} className="flex items-center justify-between p-2 bg-[--bg-secondary] rounded-lg">
-                                  <div>
-                                    <p className="text-sm font-medium">{rec.alumni_name}</p>
-                                    <p className="text-xs text-[--text-tertiary]">{rec.reason}</p>
+                              {plan.alumni_recommendations.map((rec: any, idx: number) => {
+                                const alumniData = rec.alumni_id ? findAlumniById(rec.alumni_id) : null
+                                return (
+                                  <div key={idx} className="flex items-center justify-between p-2 bg-[--bg-secondary] rounded-lg">
+                                    <div>
+                                      <p className="text-sm font-medium">{rec.alumni_name}</p>
+                                      <p className="text-xs text-[--text-tertiary]">{rec.reason}</p>
+                                    </div>
+                                    {alumniData && (
+                                      <button
+                                        onClick={() => setSelectedAlumni(alumniData)}
+                                        className="text-xs text-[--school-primary] hover:underline"
+                                      >
+                                        View
+                                      </button>
+                                    )}
                                   </div>
-                                  {rec.alumni_id && (
-                                    <Link
-                                      href={`/discover?highlight=${rec.alumni_id}`}
-                                      className="text-xs text-[--school-primary] hover:underline"
-                                    >
-                                      View
-                                    </Link>
-                                  )}
-                                </div>
-                              ))}
+                                )
+                              })}
                             </div>
+                          </div>
+                        )}
+
+                        {/* Generate Next Steps Button - shows when plan has progress */}
+                        {shouldShowNextSteps(plan) && (
+                          <div className="mt-4 pt-4 border-t border-[--border-primary]">
+                            <button
+                              onClick={() => generateNextSteps(plan.id)}
+                              disabled={generatingNextStepsForPlan === plan.id}
+                              className="w-full btn-secondary flex items-center justify-center gap-2 py-2.5"
+                            >
+                              {generatingNextStepsForPlan === plan.id ? (
+                                <>
+                                  <Loader2 size={14} className="animate-spin" />
+                                  Generating next steps...
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles size={14} />
+                                  Generate Next Steps
+                                </>
+                              )}
+                            </button>
+                            <p className="text-xs text-[--text-quaternary] text-center mt-2">
+                              Get personalized follow-up actions based on your progress
+                            </p>
                           </div>
                         )}
                       </div>
@@ -830,6 +1029,42 @@ export default function CoachClient({
           </div>
         </div>
       </div>
+
+      {/* Alumni Detail Modal */}
+      {selectedAlumni && (
+        <AlumniDetailModal
+          alumni={{
+            id: selectedAlumni.id,
+            full_name: selectedAlumni.full_name,
+            company: selectedAlumni.company ?? null,
+            role: selectedAlumni.role ?? null,
+            industry: selectedAlumni.industry ?? null,
+            sport: selectedAlumni.sport || '',
+            graduation_year: selectedAlumni.graduation_year || 0,
+            linkedin_url: selectedAlumni.linkedin_url ?? null,
+            location: selectedAlumni.location ?? null,
+          }}
+          isInNetwork={addedToNetwork.has(selectedAlumni.id)}
+          onAddToNetwork={handleModalAddToNetwork}
+          onClose={() => setSelectedAlumni(null)}
+          similarAlumni={getSimilarAlumni(selectedAlumni).map(a => ({
+            id: a.id,
+            full_name: a.full_name,
+            company: a.company ?? null,
+            role: a.role ?? null,
+            industry: a.industry ?? null,
+            sport: a.sport || '',
+            graduation_year: a.graduation_year || 0,
+            linkedin_url: a.linkedin_url ?? null,
+            location: a.location ?? null,
+          }))}
+          onSelectAlumni={(alumni) => {
+            const fullAlumni = findAlumniById(alumni.id)
+            if (fullAlumni) setSelectedAlumni(fullAlumni)
+          }}
+          networkIds={addedToNetwork}
+        />
+      )}
     </main>
   )
 }

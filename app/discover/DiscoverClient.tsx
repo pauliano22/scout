@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import Avatar from '@/components/Avatar'
-import { Search, Check, ChevronRight, Users, Sparkles } from 'lucide-react'
+import { Search, Check, ChevronRight, Users, Sparkles, ChevronDown, X } from 'lucide-react'
+import { sportMatchesExact } from '@/lib/sportUtils'
 
 // Partial Alumni type for discover page (only fields we fetch)
 export interface DiscoverAlumni {
@@ -49,6 +50,43 @@ const industryBadgeClass: Record<string, string> = {
   Nonprofit: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
 }
 
+// Complete list of Cornell sports (exact team names for precise filtering)
+const SPORTS_LIST = [
+  'Baseball',
+  'Equestrian',
+  'Fencing',
+  'Field Hockey',
+  'Football',
+  "Men's Basketball",
+  "Men's Cross Country",
+  "Men's Golf",
+  "Men's Ice Hockey",
+  "Men's Lacrosse",
+  "Men's Rowing",
+  "Men's Soccer",
+  "Men's Squash",
+  "Men's Swimming And Diving",
+  "Men's Tennis",
+  "Men's Track And Field",
+  'Rowing',
+  'Softball',
+  'Sprint Football',
+  "Women's Basketball",
+  "Women's Cross Country",
+  "Women's Gymnastics",
+  "Women's Ice Hockey",
+  "Women's Lacrosse",
+  "Women's Rowing",
+  "Women's Sailing",
+  "Women's Soccer",
+  "Women's Squash",
+  "Women's Swimming And Diving",
+  "Women's Tennis",
+  "Women's Track And Field",
+  "Women's Volleyball",
+  'Wrestling',
+]
+
 export default function DiscoverClient({
   initialAlumni,
   networkAlumniIds: initialNetworkIds,
@@ -80,11 +118,8 @@ export default function DiscoverClient({
       const matchesIndustry =
         industryFilter === 'All' || person.industry === industryFilter
 
-      // Use partial matching for sports (e.g., "Football" matches "Football (Men's)")
-      const matchesSport =
-        !sportFilter ||
-        person.sport?.toLowerCase().includes(sportFilter.toLowerCase()) ||
-        sportFilter.toLowerCase().includes(person.sport?.toLowerCase() || '')
+      // Use exact matching for sports - no cross-matching between distinct teams
+      const matchesSport = sportMatchesExact(person.sport, sportFilter)
 
       return matchesSearch && matchesIndustry && matchesSport
     })
@@ -162,9 +197,17 @@ export default function DiscoverClient({
       setSportFilter(null)
     } else if (userSport) {
       setSportFilter(userSport)
-      setIndustryFilter('All') // Reset industry filter when selecting sport
+      // No longer resetting industry filter - allow combining sport + industry
     }
   }
+
+  const handleClearAllFilters = () => {
+    setSearchQuery('')
+    setIndustryFilter('All')
+    setSportFilter(null)
+  }
+
+  const hasActiveFilters = industryFilter !== 'All' || sportFilter !== null || searchQuery !== ''
 
   return (
     <main className="px-6 md:px-12 py-10 max-w-5xl mx-auto">
@@ -197,10 +240,7 @@ export default function DiscoverClient({
           {industries.map((industry) => (
             <button
               key={industry}
-              onClick={() => {
-                setIndustryFilter(industry)
-                setSportFilter(null) // Clear sport filter when selecting industry
-              }}
+              onClick={() => setIndustryFilter(industry)}
               className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
                 industryFilter === industry
                   ? 'bg-[--school-primary] text-white'
@@ -225,6 +265,43 @@ export default function DiscoverClient({
               My Sport
             </button>
           )}
+
+          {/* Sport Dropdown */}
+          <div className="relative">
+            <select
+              value={sportFilter || ''}
+              onChange={(e) => setSportFilter(e.target.value || null)}
+              className={`px-3.5 py-1.5 pr-8 rounded-full text-sm font-medium transition-all cursor-pointer appearance-none ${
+                sportFilter && sportFilter !== userSport
+                  ? 'bg-[--school-primary] text-white'
+                  : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-hover] border border-[--border-primary]'
+              }`}
+            >
+              <option value="">All Sports</option>
+              {SPORTS_LIST.map((sport) => (
+                <option key={sport} value={sport}>
+                  {sport}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={14}
+              className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${
+                sportFilter && sportFilter !== userSport ? 'text-white/70' : 'text-[--text-quaternary]'
+              }`}
+            />
+          </div>
+
+          {/* Clear All Filters Button */}
+          {hasActiveFilters && (
+            <button
+              onClick={handleClearAllFilters}
+              className="px-3.5 py-1.5 rounded-full text-sm font-medium transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 flex items-center gap-1.5"
+            >
+              <X size={14} />
+              Clear filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -232,6 +309,8 @@ export default function DiscoverClient({
       <p className="text-[--text-quaternary] text-sm mb-4">
         Showing {visibleAlumni.length} of {filteredAlumni.length} alumni
         {sportFilter && <span className="text-[--school-primary]"> in {sportFilter}</span>}
+        {sportFilter && industryFilter !== 'All' && <span> &amp;</span>}
+        {industryFilter !== 'All' && <span className="text-[--school-primary]"> {industryFilter}</span>}
       </p>
 
       {/* Alumni List */}

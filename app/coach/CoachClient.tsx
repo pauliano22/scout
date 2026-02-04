@@ -1028,7 +1028,7 @@ export default function CoachClient({
           {suggestedActions.length > 0 && (
             <div>
               <ActionList
-                actions={suggestedActions.map(toActionCardFormat)}
+                actions={suggestedActions.slice(0, 3).map(toActionCardFormat)}
                 onComplete={handleActionComplete}
                 onDismiss={handleActionDismiss}
                 title="Suggested Actions"
@@ -1050,7 +1050,7 @@ export default function CoachClient({
               </div>
             ) : (
               <div className="space-y-4">
-                {recentActivity.map((item) => (
+                {recentActivity.slice(0, 3).map((item) => (
                   <div key={item.id} className="flex items-start gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       item.type === 'network_add' ? 'bg-emerald-500/10' : 'bg-blue-500/10'

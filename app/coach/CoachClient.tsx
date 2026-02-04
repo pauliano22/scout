@@ -790,7 +790,7 @@ export default function CoachClient({
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs text-[--school-primary] mt-2 italic">"{reason}"</p>
+                            <p className="text-xs text-[--school-primary] mt-2">{reason}</p>
                           </div>
 
                           <div className="flex gap-2 flex-shrink-0">

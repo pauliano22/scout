@@ -31,86 +31,84 @@ export default function JobDetail({
   }
 
   const handleApplyClick = () => {
-    // Open external URL
     window.open(job.external_url, '_blank')
-    // Mark as applied
     if (onApply && !isApplied) {
       onApply(job.id)
     }
   }
 
-  const getJobTypeLabel = (type: string | null) => {
+  const getJobTypeStyle = (type: string | null) => {
     switch (type) {
       case 'remote':
-        return { label: 'Remote', color: 'bg-green-100 text-green-800' }
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
       case 'hybrid':
-        return { label: 'Hybrid', color: 'bg-blue-100 text-blue-800' }
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
       case 'onsite':
-        return { label: 'On-site', color: 'bg-gray-100 text-gray-800' }
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
       default:
         return null
     }
   }
 
-  const getSeniorityLabel = (level: string | null) => {
+  const getSeniorityStyle = (level: string | null) => {
     switch (level) {
       case 'entry':
-        return { label: 'Entry Level', color: 'bg-purple-100 text-purple-800' }
+        return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
       case 'mid':
-        return { label: 'Mid Level', color: 'bg-indigo-100 text-indigo-800' }
+        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
       case 'senior':
-        return { label: 'Senior', color: 'bg-orange-100 text-orange-800' }
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
       case 'executive':
-        return { label: 'Executive', color: 'bg-red-100 text-red-800' }
+        return 'bg-red-500/10 text-red-400 border-red-500/20'
       default:
         return null
     }
   }
 
-  const jobType = getJobTypeLabel(job.job_type)
-  const seniority = getSeniorityLabel(job.seniority_level)
+  const jobTypeStyle = getJobTypeStyle(job.job_type)
+  const seniorityStyle = getSeniorityStyle(job.seniority_level)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/60"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="relative bg-[--bg-secondary] rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-[--border-primary]">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-5 border-b border-[--border-primary]">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-[--bg-tertiary] transition-colors"
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5 text-[--text-secondary]" />
           </button>
 
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-8 h-8 text-gray-400" />
+          <div className="flex items-start gap-4 pr-8">
+            <div className="w-14 h-14 bg-[--bg-tertiary] rounded-xl flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-7 h-7 text-[--text-quaternary]" />
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-xl font-bold text-gray-900 mb-1">{job.title}</h2>
-              <p className="text-lg text-gray-600">{job.company}</p>
+              <h2 className="text-xl font-bold text-[--text-primary] mb-1">{job.title}</h2>
+              <p className="text-[--text-secondary]">{job.company}</p>
 
               {/* Tags */}
               <div className="flex flex-wrap gap-2 mt-3">
-                {jobType && (
-                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${jobType.color}`}>
-                    {jobType.label}
+                {jobTypeStyle && (
+                  <span className={`px-2.5 py-1 text-xs font-medium rounded border ${jobTypeStyle}`}>
+                    {job.job_type?.charAt(0).toUpperCase()}{job.job_type?.slice(1)}
                   </span>
                 )}
-                {seniority && (
-                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${seniority.color}`}>
-                    {seniority.label}
+                {seniorityStyle && (
+                  <span className={`px-2.5 py-1 text-xs font-medium rounded border ${seniorityStyle}`}>
+                    {job.seniority_level?.charAt(0).toUpperCase()}{job.seniority_level?.slice(1)}
                   </span>
                 )}
                 {job.similarity && (
-                  <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-primary-100 text-primary-800">
+                  <span className="px-2.5 py-1 text-xs font-medium rounded border bg-[--school-primary]/10 text-[--school-primary] border-[--school-primary]/20">
                     {Math.round(job.similarity * 100)}% Match
                   </span>
                 )}
@@ -120,31 +118,31 @@ export default function JobDetail({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-5">
           {/* Details Grid */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-3 mb-5">
             {job.location && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <MapPin className="w-5 h-5 text-gray-400" />
-                <span>{job.location}</span>
+              <div className="flex items-center gap-2 text-[--text-secondary]">
+                <MapPin className="w-4 h-4 text-[--text-quaternary]" />
+                <span className="text-sm">{job.location}</span>
               </div>
             )}
             {job.industry && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Briefcase className="w-5 h-5 text-gray-400" />
-                <span>{job.industry}</span>
+              <div className="flex items-center gap-2 text-[--text-secondary]">
+                <Briefcase className="w-4 h-4 text-[--text-quaternary]" />
+                <span className="text-sm">{job.industry}</span>
               </div>
             )}
             {job.salary_range && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <DollarSign className="w-5 h-5 text-gray-400" />
-                <span>{job.salary_range}</span>
+              <div className="flex items-center gap-2 text-[--text-secondary]">
+                <DollarSign className="w-4 h-4 text-[--text-quaternary]" />
+                <span className="text-sm">{job.salary_range}</span>
               </div>
             )}
             {job.posted_at && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Clock className="w-5 h-5 text-gray-400" />
-                <span>Posted {new Date(job.posted_at).toLocaleDateString()}</span>
+              <div className="flex items-center gap-2 text-[--text-secondary]">
+                <Clock className="w-4 h-4 text-[--text-quaternary]" />
+                <span className="text-sm">Posted {new Date(job.posted_at).toLocaleDateString()}</span>
               </div>
             )}
           </div>
@@ -152,12 +150,10 @@ export default function JobDetail({
           {/* Description */}
           {job.description && (
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Job Description</h3>
-              <div className="prose prose-sm max-w-none text-gray-600">
+              <h3 className="font-semibold text-[--text-primary] mb-3">Job Description</h3>
+              <div className="text-sm text-[--text-secondary] leading-relaxed space-y-3">
                 {job.description.split('\n').map((paragraph, index) => (
-                  <p key={index} className="mb-3">
-                    {paragraph}
-                  </p>
+                  <p key={index}>{paragraph}</p>
                 ))}
               </div>
             </div>
@@ -165,44 +161,44 @@ export default function JobDetail({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50">
+        <div className="p-5 border-t border-[--border-primary] bg-[--bg-tertiary]">
           <div className="flex gap-3">
             <button
               onClick={handleSaveClick}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${
+              className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors border ${
                 isSaved
-                  ? 'bg-primary-100 text-primary-700 hover:bg-primary-200'
-                  : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-[--school-primary]/10 text-[--school-primary] border-[--school-primary]/20'
+                  : 'bg-[--bg-secondary] text-[--text-secondary] border-[--border-primary] hover:border-[--border-hover]'
               }`}
             >
               {isSaved ? (
                 <>
-                  <BookmarkCheck className="w-5 h-5" />
+                  <BookmarkCheck className="w-4 h-4" />
                   Saved
                 </>
               ) : (
                 <>
-                  <Bookmark className="w-5 h-5" />
+                  <Bookmark className="w-4 h-4" />
                   Save Job
                 </>
               )}
             </button>
             <button
               onClick={handleApplyClick}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors ${
+              className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors ${
                 isApplied
-                  ? 'bg-green-600 text-white'
-                  : 'bg-primary-600 text-white hover:bg-primary-700'
+                  ? 'bg-emerald-600 text-white'
+                  : 'bg-[--school-primary] text-white hover:opacity-90'
               }`}
             >
               {isApplied ? (
                 <>
-                  <Check className="w-5 h-5" />
+                  <Check className="w-4 h-4" />
                   Applied
                 </>
               ) : (
                 <>
-                  <ExternalLink className="w-5 h-5" />
+                  <ExternalLink className="w-4 h-4" />
                   Apply Now
                 </>
               )}

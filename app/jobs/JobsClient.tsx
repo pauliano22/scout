@@ -1,96 +1,123 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Job, JobFilters as FilterType, UserJobInteraction } from '@/types/database'
+import { useState, useMemo } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Job, JobFilters as FilterType } from '@/types/database'
 import JobCard from '@/components/jobs/JobCard'
 import JobFilters from '@/components/jobs/JobFilters'
 import JobDetail from '@/components/jobs/JobDetail'
-import { Loader2, Sparkles, List, Bookmark, Briefcase } from 'lucide-react'
+import { Loader2, Sparkles, List, Bookmark, Briefcase, Search } from 'lucide-react'
+
+interface JobsClientProps {
+  initialJobs: Job[]
+  initialSavedIds: string[]
+  initialAppliedIds: string[]
+  userId: string
+  userProfile: {
+    sport: string | null
+    industry: string | null
+    interests: string | null
+  }
+}
 
 type ViewMode = 'all' | 'recommended' | 'saved'
 
-export default function JobsClient() {
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [loading, setLoading] = useState(true)
+export default function JobsClient({
+  initialJobs,
+  initialSavedIds,
+  initialAppliedIds,
+  userId,
+  userProfile,
+}: JobsClientProps) {
+  const supabase = createClient()
+  const [jobs, setJobs] = useState<Job[]>(initialJobs)
+  const [loading, setLoading] = useState(false)
   const [filters, setFilters] = useState<FilterType>({})
   const [viewMode, setViewMode] = useState<ViewMode>('all')
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
-  const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set())
-  const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set())
-  const [totalJobs, setTotalJobs] = useState(0)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
+  const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set(initialSavedIds))
+  const [appliedJobIds, setAppliedJobIds] = useState<Set<string>>(new Set(initialAppliedIds))
 
-  // Fetch jobs
-  const fetchJobs = useCallback(async () => {
+  // Filter jobs based on current filters
+  const filteredJobs = useMemo(() => {
+    let result = jobs
+
+    if (viewMode === 'saved') {
+      result = result.filter(job => savedJobIds.has(job.id))
+    }
+
+    if (filters.search) {
+      const search = filters.search.toLowerCase()
+      result = result.filter(job =>
+        job.title.toLowerCase().includes(search) ||
+        job.company.toLowerCase().includes(search) ||
+        job.description?.toLowerCase().includes(search)
+      )
+    }
+
+    if (filters.industry) {
+      result = result.filter(job => job.industry === filters.industry)
+    }
+
+    if (filters.location) {
+      const loc = filters.location.toLowerCase()
+      result = result.filter(job => job.location?.toLowerCase().includes(loc))
+    }
+
+    if (filters.job_type) {
+      result = result.filter(job => job.job_type === filters.job_type)
+    }
+
+    if (filters.seniority_level) {
+      result = result.filter(job => job.seniority_level === filters.seniority_level)
+    }
+
+    return result
+  }, [jobs, filters, viewMode, savedJobIds])
+
+  // Fetch recommendations
+  const fetchRecommendations = async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams()
-      if (filters.search) params.set('search', filters.search)
-      if (filters.industry) params.set('industry', filters.industry)
-      if (filters.location) params.set('location', filters.location)
-      if (filters.job_type) params.set('job_type', filters.job_type)
-      if (filters.seniority_level) params.set('seniority_level', filters.seniority_level)
-      params.set('page', String(page))
-
-      const endpoint = viewMode === 'recommended' ? '/api/jobs/recommendations' : '/api/jobs'
-      const response = await fetch(`${endpoint}?${params}`)
+      const response = await fetch('/api/jobs/recommendations')
       const data = await response.json()
+      if (data.jobs) {
+        setJobs(data.jobs)
+      }
+    } catch (error) {
+      console.error('Error fetching recommendations:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      if (viewMode === 'saved') {
-        // Fetch saved jobs specifically
-        const savedResponse = await fetch('/api/jobs/interactions?type=saved')
-        const savedData = await savedResponse.json()
-        const savedJobs = savedData.interactions
-          ?.map((i: UserJobInteraction) => i.job)
-          .filter(Boolean) || []
-        setJobs(savedJobs)
-        setTotalJobs(savedJobs.length)
-        setHasMore(false)
-      } else {
-        setJobs(data.jobs || [])
-        setTotalJobs(data.total || 0)
-        setHasMore(data.hasMore || false)
+  // Fetch all jobs
+  const fetchAllJobs = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/jobs')
+      const data = await response.json()
+      if (data.jobs) {
+        setJobs(data.jobs)
       }
     } catch (error) {
       console.error('Error fetching jobs:', error)
     } finally {
       setLoading(false)
     }
-  }, [filters, viewMode, page])
+  }
 
-  // Fetch user's interactions
-  const fetchInteractions = useCallback(async () => {
-    try {
-      const [savedRes, appliedRes] = await Promise.all([
-        fetch('/api/jobs/interactions?type=saved'),
-        fetch('/api/jobs/interactions?type=applied'),
-      ])
-
-      const savedData = await savedRes.json()
-      const appliedData = await appliedRes.json()
-
-      setSavedJobIds(new Set(savedData.interactions?.map((i: UserJobInteraction) => i.job_id) || []))
-      setAppliedJobIds(new Set(appliedData.interactions?.map((i: UserJobInteraction) => i.job_id) || []))
-    } catch (error) {
-      console.error('Error fetching interactions:', error)
+  // Handle view mode change
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode)
+    if (mode === 'recommended') {
+      fetchRecommendations()
+    } else if (mode === 'all') {
+      fetchAllJobs()
     }
-  }, [])
+  }
 
-  useEffect(() => {
-    fetchJobs()
-  }, [fetchJobs])
-
-  useEffect(() => {
-    fetchInteractions()
-  }, [fetchInteractions])
-
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(1)
-  }, [filters, viewMode])
-
-  // Save/unsave job
+  // Save job
   const handleSave = async (jobId: string) => {
     try {
       await fetch('/api/jobs/interactions', {
@@ -104,6 +131,7 @@ export default function JobsClient() {
     }
   }
 
+  // Unsave job
   const handleUnsave = async (jobId: string) => {
     try {
       await fetch(`/api/jobs/interactions?job_id=${jobId}&type=saved`, {
@@ -114,10 +142,6 @@ export default function JobsClient() {
         newSet.delete(jobId)
         return newSet
       })
-      // Refresh if viewing saved jobs
-      if (viewMode === 'saved') {
-        fetchJobs()
-      }
     } catch (error) {
       console.error('Error unsaving job:', error)
     }
@@ -138,12 +162,12 @@ export default function JobsClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <main className="min-h-screen bg-[--bg-primary]">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Job Board</h1>
-          <p className="text-gray-600">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-[--text-primary] mb-1">Job Board</h1>
+          <p className="text-[--text-secondary]">
             Discover opportunities matched to your profile and interests
           </p>
         </div>
@@ -151,22 +175,22 @@ export default function JobsClient() {
         {/* View Mode Tabs */}
         <div className="flex gap-2 mb-6">
           <button
-            onClick={() => setViewMode('all')}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+            onClick={() => handleViewModeChange('all')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
               viewMode === 'all'
-                ? 'bg-primary-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
+                ? 'bg-[--school-primary] text-white'
+                : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
             }`}
           >
             <List className="w-4 h-4" />
             All Jobs
           </button>
           <button
-            onClick={() => setViewMode('recommended')}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+            onClick={() => handleViewModeChange('recommended')}
+            className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
               viewMode === 'recommended'
-                ? 'bg-primary-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
+                ? 'bg-[--school-primary] text-white'
+                : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
             }`}
           >
             <Sparkles className="w-4 h-4" />
@@ -174,10 +198,10 @@ export default function JobsClient() {
           </button>
           <button
             onClick={() => setViewMode('saved')}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition-colors ${
               viewMode === 'saved'
-                ? 'bg-primary-600 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
+                ? 'bg-[--school-primary] text-white'
+                : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
             }`}
           >
             <Bookmark className="w-4 h-4" />
@@ -185,80 +209,78 @@ export default function JobsClient() {
           </button>
         </div>
 
-        <div className="flex gap-8">
+        <div className="flex gap-6">
           {/* Filters Sidebar */}
-          {viewMode !== 'saved' && (
-            <aside className="hidden md:block w-72 flex-shrink-0">
-              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-8">
-                <JobFilters
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  totalJobs={totalJobs}
-                />
-              </div>
-            </aside>
-          )}
+          <aside className="hidden lg:block w-72 flex-shrink-0">
+            <div className="bg-[--bg-secondary] rounded-xl border border-[--border-primary] p-5 sticky top-20">
+              <JobFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                totalJobs={filteredJobs.length}
+              />
+            </div>
+          </aside>
 
           {/* Jobs Grid */}
-          <main className="flex-1">
+          <div className="flex-1 min-w-0">
+            {/* Mobile Search */}
+            <div className="lg:hidden mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[--text-quaternary]" />
+                <input
+                  type="text"
+                  placeholder="Search jobs..."
+                  value={filters.search || ''}
+                  onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value || undefined }))}
+                  className="w-full pl-10 pr-4 py-2.5 bg-[--bg-secondary] border border-[--border-primary] rounded-lg text-[--text-primary] placeholder-[--text-quaternary] focus:ring-2 focus:ring-[--school-primary] focus:border-[--school-primary] outline-none"
+                />
+              </div>
+            </div>
+
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+                <Loader2 className="w-8 h-8 text-[--school-primary] animate-spin" />
               </div>
-            ) : jobs.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-xl border border-gray-200">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Briefcase className="w-8 h-8 text-gray-400" />
+            ) : filteredJobs.length === 0 ? (
+              <div className="text-center py-16 bg-[--bg-secondary] rounded-xl border border-[--border-primary]">
+                <div className="w-16 h-16 bg-[--bg-tertiary] rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Briefcase className="w-8 h-8 text-[--text-quaternary]" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-[--text-primary] mb-2">
                   {viewMode === 'saved' ? 'No saved jobs yet' : 'No jobs found'}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-[--text-secondary]">
                   {viewMode === 'saved'
                     ? 'Save jobs you\'re interested in to see them here'
                     : 'Try adjusting your filters to see more results'}
                 </p>
               </div>
             ) : (
-              <>
-                <div className="space-y-4">
-                  {jobs.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      isSaved={savedJobIds.has(job.id)}
-                      onSave={handleSave}
-                      onUnsave={handleUnsave}
-                      onClick={setSelectedJob}
-                      showMatchScore={viewMode === 'recommended'}
-                    />
-                  ))}
-                </div>
-
-                {/* Load More */}
-                {hasMore && (
-                  <div className="mt-6 text-center">
-                    <button
-                      onClick={() => setPage(p => p + 1)}
-                      className="px-6 py-3 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      Load More Jobs
-                    </button>
-                  </div>
-                )}
-              </>
+              <div className="space-y-3">
+                {filteredJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    isSaved={savedJobIds.has(job.id)}
+                    isApplied={appliedJobIds.has(job.id)}
+                    onSave={handleSave}
+                    onUnsave={handleUnsave}
+                    onClick={setSelectedJob}
+                    showMatchScore={viewMode === 'recommended'}
+                  />
+                ))}
+              </div>
             )}
-          </main>
+          </div>
         </div>
 
         {/* Mobile Filters */}
-        {viewMode !== 'saved' && (
-          <JobFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            totalJobs={totalJobs}
-          />
-        )}
+        <JobFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          totalJobs={filteredJobs.length}
+          isMobile
+        />
       </div>
 
       {/* Job Detail Modal */}
@@ -273,7 +295,6 @@ export default function JobsClient() {
           onApply={handleApply}
         />
       )}
-    </div>
+    </main>
   )
 }
-

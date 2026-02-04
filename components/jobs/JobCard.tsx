@@ -1,11 +1,12 @@
 'use client'
 
 import { Job } from '@/types/database'
-import { MapPin, Building2, Briefcase, DollarSign, Clock, Bookmark, BookmarkCheck, ExternalLink } from 'lucide-react'
+import { MapPin, Building2, Briefcase, DollarSign, Bookmark, BookmarkCheck, ExternalLink, CheckCircle2 } from 'lucide-react'
 
 interface JobCardProps {
   job: Job
   isSaved?: boolean
+  isApplied?: boolean
   onSave?: (jobId: string) => void
   onUnsave?: (jobId: string) => void
   onClick?: (job: Job) => void
@@ -15,6 +16,7 @@ interface JobCardProps {
 export default function JobCard({
   job,
   isSaved = false,
+  isApplied = false,
   onSave,
   onUnsave,
   onClick,
@@ -29,77 +31,92 @@ export default function JobCard({
     }
   }
 
-  const getJobTypeColor = (type: string | null) => {
+  const getJobTypeStyle = (type: string | null) => {
     switch (type) {
       case 'remote':
-        return 'bg-green-100 text-green-800'
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
       case 'hybrid':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
       case 'onsite':
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
       default:
-        return 'bg-gray-100 text-gray-600'
+        return 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
     }
   }
 
-  const getSeniorityColor = (level: string | null) => {
+  const getSeniorityStyle = (level: string | null) => {
     switch (level) {
       case 'entry':
-        return 'bg-purple-100 text-purple-800'
+        return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
       case 'mid':
-        return 'bg-indigo-100 text-indigo-800'
+        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
       case 'senior':
-        return 'bg-orange-100 text-orange-800'
+        return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
       case 'executive':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-500/10 text-red-400 border-red-500/20'
       default:
-        return 'bg-gray-100 text-gray-600'
+        return 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
     }
   }
 
-  const getMatchScoreColor = (score: number) => {
-    if (score >= 0.8) return 'text-green-600 bg-green-50'
-    if (score >= 0.6) return 'text-blue-600 bg-blue-50'
-    return 'text-gray-600 bg-gray-50'
+  const getIndustryStyle = (industry: string | null) => {
+    switch (industry?.toLowerCase()) {
+      case 'finance':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+      case 'technology':
+        return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+      case 'consulting':
+        return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+      case 'healthcare':
+        return 'bg-red-500/10 text-red-400 border-red-500/20'
+      case 'law':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+      case 'media':
+        return 'bg-pink-500/10 text-pink-400 border-pink-500/20'
+      default:
+        return 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
+    }
   }
 
   return (
     <div
-      className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-all cursor-pointer group"
+      className="bg-[--bg-secondary] rounded-xl border border-[--border-primary] p-4 hover:border-[--border-hover] transition-all cursor-pointer group"
       onClick={() => onClick?.(job)}
     >
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 min-w-0">
           {/* Title and Company */}
           <div className="flex items-start gap-3 mb-3">
-            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-6 h-6 text-gray-400" />
+            <div className="w-10 h-10 bg-[--bg-tertiary] rounded-lg flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-5 h-5 text-[--text-quaternary]" />
             </div>
-            <div className="min-w-0">
-              <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors truncate">
-                {job.title}
-              </h3>
-              <p className="text-sm text-gray-600">{job.company}</p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-[--text-primary] group-hover:text-[--school-primary] transition-colors truncate">
+                  {job.title}
+                </h3>
+                {isApplied && (
+                  <span className="flex items-center gap-1 text-xs text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Applied
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-[--text-secondary]">{job.company}</p>
             </div>
           </div>
 
           {/* Details */}
-          <div className="flex flex-wrap gap-3 text-sm text-gray-500 mb-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[--text-tertiary] mb-3">
             {job.location && (
               <span className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
+                <MapPin className="w-3.5 h-3.5" />
                 {job.location}
-              </span>
-            )}
-            {job.industry && (
-              <span className="flex items-center gap-1">
-                <Briefcase className="w-4 h-4" />
-                {job.industry}
               </span>
             )}
             {job.salary_range && (
               <span className="flex items-center gap-1">
-                <DollarSign className="w-4 h-4" />
+                <DollarSign className="w-3.5 h-3.5" />
                 {job.salary_range}
               </span>
             )}
@@ -107,18 +124,23 @@ export default function JobCard({
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
+            {job.industry && (
+              <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getIndustryStyle(job.industry)}`}>
+                {job.industry}
+              </span>
+            )}
             {job.job_type && (
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getJobTypeColor(job.job_type)}`}>
+              <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getJobTypeStyle(job.job_type)}`}>
                 {job.job_type.charAt(0).toUpperCase() + job.job_type.slice(1)}
               </span>
             )}
             {job.seniority_level && (
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getSeniorityColor(job.seniority_level)}`}>
-                {job.seniority_level.charAt(0).toUpperCase() + job.seniority_level.slice(1)} Level
+              <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getSeniorityStyle(job.seniority_level)}`}>
+                {job.seniority_level.charAt(0).toUpperCase() + job.seniority_level.slice(1)}
               </span>
             )}
             {showMatchScore && job.similarity && (
-              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getMatchScoreColor(job.similarity)}`}>
+              <span className="px-2 py-0.5 text-xs font-medium rounded border bg-[--school-primary]/10 text-[--school-primary] border-[--school-primary]/20">
                 {Math.round(job.similarity * 100)}% Match
               </span>
             )}
@@ -131,8 +153,8 @@ export default function JobCard({
             onClick={handleSaveClick}
             className={`p-2 rounded-lg transition-colors ${
               isSaved
-                ? 'bg-primary-100 text-primary-600'
-                : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+                ? 'bg-[--school-primary]/10 text-[--school-primary]'
+                : 'bg-[--bg-tertiary] text-[--text-quaternary] hover:bg-[--bg-hover] hover:text-[--text-secondary]'
             }`}
             title={isSaved ? 'Remove from saved' : 'Save job'}
           >
@@ -147,21 +169,13 @@ export default function JobCard({
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="p-2 rounded-lg bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
+            className="p-2 rounded-lg bg-[--bg-tertiary] text-[--text-quaternary] hover:bg-[--bg-hover] hover:text-[--text-secondary] transition-colors"
             title="View on company site"
           >
             <ExternalLink className="w-5 h-5" />
           </a>
         </div>
       </div>
-
-      {/* Posted time */}
-      {job.posted_at && (
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-1 text-xs text-gray-400">
-          <Clock className="w-3 h-3" />
-          Posted {new Date(job.posted_at).toLocaleDateString()}
-        </div>
-      )}
     </div>
   )
 }

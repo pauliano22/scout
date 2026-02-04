@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UserNetwork } from '@/types/database'
-import { X, Copy, Check, Linkedin, RefreshCw, Sparkles, Mail } from 'lucide-react'
+import { X, Copy, Check, Linkedin, RefreshCw, Sparkles, Mail, ExternalLink } from 'lucide-react'
 
 interface MessageModalProps {
   connection: UserNetwork
@@ -139,7 +139,7 @@ export default function MessageModal({
     }, 1000)
   }
 
-  const handleOpenEmail = async () => {
+  const handleOpenGmail = async () => {
     if (!currentMessage) return
 
     // Track the email action
@@ -147,7 +147,22 @@ export default function MessageModal({
 
     const subject = encodeURIComponent(`Cornell ${userSport || 'Athletics'} - Networking Request`)
     const body = encodeURIComponent(currentMessage)
-    window.location.href = `mailto:${alumni.email || ''}?subject=${subject}&body=${body}`
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${alumni.email || ''}&su=${subject}&body=${body}`
+    window.open(gmailUrl, '_blank')
+
+    setTimeout(() => onClose(), 500)
+  }
+
+  const handleOpenOutlook = async () => {
+    if (!currentMessage) return
+
+    // Track the email action
+    await onSend(connection.id, currentMessage, 'email')
+
+    const subject = encodeURIComponent(`Cornell ${userSport || 'Athletics'} - Networking Request`)
+    const body = encodeURIComponent(currentMessage)
+    const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${alumni.email || ''}&subject=${subject}&body=${body}`
+    window.open(outlookUrl, '_blank')
 
     setTimeout(() => onClose(), 500)
   }
@@ -243,12 +258,25 @@ export default function MessageModal({
           </button>
 
           <button
-            onClick={handleOpenEmail}
+            onClick={handleOpenGmail}
             disabled={!currentMessage || isGenerating[selectedTone]}
             className="btn-secondary flex items-center gap-2"
+            title="Opens Gmail in a new tab"
           >
             <Mail size={14} />
-            Open in Email
+            Gmail
+            <ExternalLink size={10} className="opacity-50" />
+          </button>
+
+          <button
+            onClick={handleOpenOutlook}
+            disabled={!currentMessage || isGenerating[selectedTone]}
+            className="btn-secondary flex items-center gap-2"
+            title="Opens Outlook in a new tab"
+          >
+            <Mail size={14} />
+            Outlook
+            <ExternalLink size={10} className="opacity-50" />
           </button>
 
           {hasLinkedIn && (

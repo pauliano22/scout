@@ -16,7 +16,8 @@ import {
   Users,
   MoreHorizontal,
   Calendar,
-  Trash2
+  Trash2,
+  ExternalLink
 } from 'lucide-react'
 
 interface ConnectionDetailModalProps {
@@ -172,6 +173,26 @@ export default function ConnectionDetailModal({
     other: 'Other'
   }
 
+  // Open Google Calendar to schedule a meeting
+  const handleOpenGoogleCalendar = () => {
+    const title = encodeURIComponent(`Meeting with ${alumni?.full_name || 'Contact'}`)
+    const details = encodeURIComponent(`Networking call with ${alumni?.full_name}${alumni?.role ? ` (${alumni.role})` : ''}${alumni?.company ? ` at ${alumni.company}` : ''}\n\nCornell Athletics Alumni Network`)
+
+    // Default to tomorrow at 10am, 30 min duration
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    tomorrow.setHours(10, 0, 0, 0)
+    const endTime = new Date(tomorrow)
+    endTime.setMinutes(endTime.getMinutes() + 30)
+
+    // Format dates for Google Calendar (YYYYMMDDTHHmmss)
+    const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    const dates = `${formatDate(tomorrow)}/${formatDate(endTime)}`
+
+    const calendarUrl = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}`
+    window.open(calendarUrl, '_blank')
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -259,6 +280,16 @@ export default function ConnectionDetailModal({
                     >
                       Meeting Scheduled
                     </button>
+                    {status === 'meeting_scheduled' && (
+                      <button
+                        onClick={handleOpenGoogleCalendar}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 transition-all flex items-center gap-1"
+                        title="Opens Google Calendar in a new tab"
+                      >
+                        <Calendar size={12} />
+                        <ExternalLink size={10} />
+                      </button>
+                    )}
                     <button
                       onClick={() => handleStatusChange('met')}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -385,6 +416,19 @@ export default function ConnectionDetailModal({
                   Add
                 </button>
               </div>
+
+              {/* Google Calendar button for scheduling */}
+              {(selectedInteractionType === 'meeting' || selectedInteractionType === 'call' || selectedInteractionType === 'coffee') && (
+                <button
+                  onClick={handleOpenGoogleCalendar}
+                  className="w-full btn-secondary text-sm flex items-center justify-center gap-2 mb-4"
+                  title="Opens Google Calendar in a new tab"
+                >
+                  <Calendar size={14} />
+                  Add to Google Calendar
+                  <ExternalLink size={10} className="opacity-50" />
+                </button>
+              )}
 
               {/* Interaction history */}
               <div className="space-y-2 max-h-[100px] overflow-y-auto">

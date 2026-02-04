@@ -28,8 +28,8 @@ export interface EmailDraftParams {
 
 export interface SuggestedAction {
   id?: string
-  type: 'calendar_event' | 'email_draft' | 'linkedin_message' | 'follow_up'
-  payload: CalendarEventPayload | EmailDraftPayload | LinkedInPayload | FollowUpPayload
+  type: 'calendar_event' | 'email_draft' | 'linkedin_message' | 'follow_up' | 'job_application'
+  payload: CalendarEventPayload | EmailDraftPayload | LinkedInPayload | FollowUpPayload | JobApplicationPayload
   reasoning?: string
   confidence?: number
 }
@@ -61,6 +61,13 @@ export interface FollowUpPayload {
   type: 'email' | 'call' | 'meeting'
   targetDate: string
   notes: string
+}
+
+export interface JobApplicationPayload {
+  jobId?: string
+  jobTitle: string
+  company: string
+  jobUrl?: string
 }
 
 // ============================================
@@ -276,6 +283,12 @@ export function generateActionUrl(action: SuggestedAction): string | null {
     case 'follow_up':
       // Follow-ups don't have direct URLs, they're reminders
       return null
+
+    case 'job_application': {
+      const payload = action.payload as JobApplicationPayload
+      // Link to external job URL if available, otherwise to job board
+      return payload.jobUrl || (payload.jobId ? `/jobs?job=${payload.jobId}` : '/jobs')
+    }
 
     default:
       return null

@@ -27,6 +27,7 @@ const JOB_TYPES = [
 ]
 
 const SENIORITY_LEVELS = [
+  { value: 'internship', label: 'Internship' },
   { value: 'entry', label: 'Entry' },
   { value: 'mid', label: 'Mid' },
   { value: 'senior', label: 'Senior' },

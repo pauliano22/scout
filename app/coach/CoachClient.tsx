@@ -26,7 +26,8 @@ import {
   Plus,
   X,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  Briefcase
 } from 'lucide-react'
 
 interface Alumni {
@@ -1082,6 +1083,20 @@ export default function CoachClient({
           <h2 className="text-lg font-medium mb-4">Quick Actions</h2>
           <div className="space-y-2">
             <Link
+              href="/jobs"
+              className="card p-4 flex items-center gap-3 hover:border-purple-500/50 transition-colors"
+            >
+              <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                <Briefcase size={18} className="text-purple-500" />
+              </div>
+              <div className="flex-1">
+                <div className="font-medium text-sm">Browse Jobs</div>
+                <div className="text-xs text-[--text-quaternary]">Find opportunities</div>
+              </div>
+              <ChevronRight size={16} className="text-[--text-quaternary]" />
+            </Link>
+
+            <Link
               href="/discover"
               className="card p-4 flex items-center gap-3 hover:border-blue-500/50 transition-colors"
             >
@@ -1090,7 +1105,7 @@ export default function CoachClient({
               </div>
               <div className="flex-1">
                 <div className="font-medium text-sm">Browse Alumni</div>
-                <div className="text-xs text-[--text-quaternary]">Find new connections</div>
+                <div className="text-xs text-[--text-quaternary]">Find connections</div>
               </div>
               <ChevronRight size={16} className="text-[--text-quaternary]" />
             </Link>

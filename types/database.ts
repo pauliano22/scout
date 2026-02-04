@@ -251,7 +251,7 @@ export interface Job {
   external_id: string | null
   source: string
   industry: string | null
-  seniority_level: 'entry' | 'mid' | 'senior' | 'executive' | null
+  seniority_level: 'internship' | 'entry' | 'mid' | 'senior' | 'executive' | null
   is_active: boolean
   posted_at: string | null
   expires_at: string | null

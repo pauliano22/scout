@@ -46,6 +46,8 @@ export default function JobCard({
 
   const getSeniorityStyle = (level: string | null) => {
     switch (level) {
+      case 'internship':
+        return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'
       case 'entry':
         return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
       case 'mid':

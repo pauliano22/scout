@@ -19,7 +19,9 @@ import {
   type EmailDraftPayload,
   type LinkedInPayload,
   type FollowUpPayload,
+  type JobApplicationPayload,
 } from '@/lib/smart-links'
+import { Briefcase } from 'lucide-react'
 
 interface ActionCardProps {
   action: SuggestedAction
@@ -65,6 +67,15 @@ const actionConfig = {
     textClass: 'text-amber-400',
     borderClass: 'border-amber-500/20',
     hoverClass: 'hover:bg-amber-500/20',
+  },
+  job_application: {
+    icon: Briefcase,
+    label: 'View Job',
+    color: 'purple',
+    bgClass: 'bg-purple-500/10',
+    textClass: 'text-purple-400',
+    borderClass: 'border-purple-500/20',
+    hoverClass: 'hover:bg-purple-500/20',
   },
 }
 
@@ -142,6 +153,14 @@ export default function ActionCard({
           detail: payload.notes,
         }
       }
+      case 'job_application': {
+        const payload = action.payload as JobApplicationPayload
+        return {
+          title: payload.jobTitle,
+          subtitle: payload.company,
+          detail: '',
+        }
+      }
       default:
         return { title: 'Action', subtitle: '', detail: '' }
     }
@@ -173,68 +192,30 @@ export default function ActionCard({
     )
   }
 
-  // Full card version
+  // Full card version - compact layout
   return (
-    <div className={`rounded-xl border ${config.borderClass} ${config.bgClass} overflow-hidden`}>
-      {/* Header */}
-      <div className="flex items-start justify-between p-4 pb-3 gap-2">
-        <div className="flex items-start gap-3 flex-1 min-w-0">
-          <div className={`w-10 h-10 rounded-lg ${config.bgClass} flex items-center justify-center flex-shrink-0`}>
-            <Icon size={20} className={config.textClass} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 min-w-0">
-              <h4 className="font-medium text-[--text-primary] truncate flex-1 min-w-0">
-                {displayInfo.title}
-              </h4>
-              {action.confidence && action.confidence >= 0.8 && (
-                <span className="flex items-center gap-1 text-xs text-amber-400 flex-shrink-0 whitespace-nowrap">
-                  <Sparkles size={10} />
-                  Recommended
-                </span>
-              )}
-            </div>
-            <p className="text-sm text-[--text-tertiary] flex items-center gap-1 truncate">
-              <Clock size={12} className="flex-shrink-0" />
-              <span className="truncate">{displayInfo.subtitle}</span>
-            </p>
-          </div>
+    <div className={`rounded-lg border ${config.borderClass} ${config.bgClass} overflow-hidden`}>
+      <div className="flex items-center gap-3 p-3">
+        {/* Icon */}
+        <div className={`w-8 h-8 rounded-lg ${config.bgClass} flex items-center justify-center flex-shrink-0`}>
+          <Icon size={16} className={config.textClass} />
         </div>
 
-        {/* Dismiss button */}
-        <button
-          onClick={handleDismiss}
-          className="p-1.5 text-[--text-quaternary] hover:text-[--text-secondary] hover:bg-[--bg-tertiary] rounded-md transition-colors"
-          title="Dismiss"
-        >
-          <X size={14} />
-        </button>
-      </div>
-
-      {/* Detail preview (if available) */}
-      {displayInfo.detail && (
-        <div className="px-4 pb-3 overflow-hidden">
-          <p className="text-xs text-[--text-quaternary] line-clamp-2 break-words">
-            {displayInfo.detail}
+        {/* Content */}
+        <div className="min-w-0 flex-1">
+          <h4 className="text-sm font-medium text-[--text-primary] truncate">
+            {displayInfo.title}
+          </h4>
+          <p className="text-xs text-[--text-tertiary] truncate">
+            {displayInfo.subtitle}
           </p>
         </div>
-      )}
 
-      {/* AI reasoning (if available) */}
-      {action.reasoning && (
-        <div className="px-4 pb-3 overflow-hidden">
-          <p className="text-xs text-[--text-tertiary] italic break-words line-clamp-2">
-            💡 {action.reasoning}
-          </p>
-        </div>
-      )}
-
-      {/* Action button */}
-      <div className="px-4 pb-4">
+        {/* Action button */}
         <button
           onClick={handleAction}
           disabled={isCompleted || !actionUrl}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all flex-shrink-0 ${
             isCompleted
               ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
               : `${config.bgClass} ${config.textClass} ${config.hoverClass} border ${config.borderClass}`
@@ -242,16 +223,24 @@ export default function ActionCard({
         >
           {isCompleted ? (
             <>
-              <Check size={16} />
-              Completed
+              <Check size={12} />
+              Done
             </>
           ) : (
             <>
-              <Icon size={16} />
               {config.label}
-              <ExternalLink size={14} />
+              <ExternalLink size={10} />
             </>
           )}
+        </button>
+
+        {/* Dismiss button */}
+        <button
+          onClick={handleDismiss}
+          className="p-1 text-[--text-quaternary] hover:text-[--text-secondary] rounded transition-colors flex-shrink-0"
+          title="Dismiss"
+        >
+          <X size={12} />
         </button>
       </div>
     </div>

@@ -14,11 +14,18 @@ interface MessageModalProps {
 }
 
 type Tone = 'friendly' | 'neutral' | 'formal'
+type MessageType = 'introduction' | 'follow_up' | 'thank_you'
 
 const toneConfig = {
   friendly: { label: 'Friendly', emoji: '😊', description: 'Warm & casual' },
   neutral: { label: 'Neutral', emoji: '🤝', description: 'Balanced' },
   formal: { label: 'Formal', emoji: '👔', description: 'Professional' },
+}
+
+const messageTypeConfig = {
+  introduction: { label: 'Introduction', description: 'First outreach to connect' },
+  follow_up: { label: 'Follow Up', description: 'Check in after initial contact' },
+  thank_you: { label: 'Thank You', description: 'After a call or meeting' },
 }
 
 export default function MessageModal({
@@ -31,16 +38,9 @@ export default function MessageModal({
 }: MessageModalProps) {
   const alumni = connection.alumni
   const [selectedTone, setSelectedTone] = useState<Tone>('neutral')
-  const [messages, setMessages] = useState<Record<Tone, string>>({
-    friendly: '',
-    neutral: '',
-    formal: '',
-  })
-  const [isGenerating, setIsGenerating] = useState<Record<Tone, boolean>>({
-    friendly: false,
-    neutral: false,
-    formal: false,
-  })
+  const [selectedType, setSelectedType] = useState<MessageType>('introduction')
+  const [messages, setMessages] = useState<Record<string, string>>({})
+  const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({})
   const [isSending, setIsSending] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -49,9 +49,10 @@ export default function MessageModal({
 
   const hasLinkedIn = alumni.linkedin_url && alumni.linkedin_url.trim() !== ''
 
-  // Generate message for a specific tone
-  const generateMessage = async (tone: Tone) => {
-    setIsGenerating(prev => ({ ...prev, [tone]: true }))
+  // Generate message for a specific tone and type combination
+  const generateMessage = async (tone: Tone, type: MessageType) => {
+    const key = `${type}_${tone}`
+    setIsGenerating(prev => ({ ...prev, [key]: true }))
     setError(null)
 
     try {
@@ -64,6 +65,7 @@ export default function MessageModal({
           userSport,
           userInterests,
           tone,
+          messageType: type,
         }),
       })
 
@@ -72,30 +74,33 @@ export default function MessageModal({
       }
 
       const data = await response.json()
-      setMessages(prev => ({ ...prev, [tone]: data.message }))
+      setMessages(prev => ({ ...prev, [key]: data.message }))
     } catch (err) {
       console.error('Error generating message:', err)
       setError('Failed to generate message. Please try again.')
     } finally {
-      setIsGenerating(prev => ({ ...prev, [tone]: false }))
+      setIsGenerating(prev => ({ ...prev, [key]: false }))
     }
   }
 
+  const currentKey = `${selectedType}_${selectedTone}`
+
   // Generate initial message on mount
   useEffect(() => {
-    if (!messages.neutral) {
-      generateMessage('neutral')
+    const key = `${selectedType}_${selectedTone}`
+    if (!messages[key] && !isGenerating[key]) {
+      generateMessage(selectedTone, selectedType)
     }
   }, [])
 
-  // Generate message when switching to a tone that hasn't been generated yet
+  // Generate message when switching to a tone/type that hasn't been generated yet
   useEffect(() => {
-    if (!messages[selectedTone] && !isGenerating[selectedTone]) {
-      generateMessage(selectedTone)
+    if (!messages[currentKey] && !isGenerating[currentKey]) {
+      generateMessage(selectedTone, selectedType)
     }
-  }, [selectedTone])
+  }, [selectedTone, selectedType])
 
-  const currentMessage = messages[selectedTone]
+  const currentMessage = messages[currentKey]
 
   const handleCopy = async () => {
     if (!currentMessage) return
@@ -168,8 +173,10 @@ export default function MessageModal({
   }
 
   const handleRegenerate = () => {
-    generateMessage(selectedTone)
+    generateMessage(selectedTone, selectedType)
   }
+
+  const isCurrentlyGenerating = isGenerating[currentKey]
 
   return (
     <div
@@ -192,27 +199,50 @@ export default function MessageModal({
           </button>
         </div>
 
+        {/* Message type selector */}
+        <div className="mb-3">
+          <label className="text-xs text-[--text-tertiary] mb-1.5 block">Message Type</label>
+          <div className="flex gap-2">
+            {(Object.keys(messageTypeConfig) as MessageType[]).map((type) => (
+              <button
+                key={type}
+                onClick={() => setSelectedType(type)}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  selectedType === type
+                    ? 'bg-[--school-primary] text-white'
+                    : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-primary]'
+                }`}
+              >
+                {messageTypeConfig[type].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Tone selector tabs */}
-        <div className="flex gap-2 mb-4">
-          {(Object.keys(toneConfig) as Tone[]).map((tone) => (
-            <button
-              key={tone}
-              onClick={() => setSelectedTone(tone)}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                selectedTone === tone
-                  ? 'bg-[--school-primary] text-white'
-                  : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-primary]'
-              }`}
-            >
-              <span className="mr-1">{toneConfig[tone].emoji}</span>
-              {toneConfig[tone].label}
-            </button>
-          ))}
+        <div className="mb-4">
+          <label className="text-xs text-[--text-tertiary] mb-1.5 block">Tone</label>
+          <div className="flex gap-2">
+            {(Object.keys(toneConfig) as Tone[]).map((tone) => (
+              <button
+                key={tone}
+                onClick={() => setSelectedTone(tone)}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  selectedTone === tone
+                    ? 'bg-[--school-primary]/80 text-white'
+                    : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-primary]'
+                }`}
+              >
+                <span className="mr-1">{toneConfig[tone].emoji}</span>
+                {toneConfig[tone].label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Generated message preview */}
         <div className="bg-[--bg-primary] border border-[--border-primary] rounded-lg p-4 mb-4 min-h-[200px]">
-          {isGenerating[selectedTone] ? (
+          {isCurrentlyGenerating ? (
             <div className="flex flex-col items-center justify-center h-full py-8 text-[--text-tertiary]">
               <div className="w-6 h-6 border-2 border-[--school-primary]/30 border-t-[--school-primary] rounded-full animate-spin mb-3" />
               <p className="text-sm">Generating {toneConfig[selectedTone].label.toLowerCase()} message...</p>
@@ -235,10 +265,10 @@ export default function MessageModal({
         <div className="flex justify-between items-center mb-5">
           <button
             onClick={handleRegenerate}
-            disabled={isGenerating[selectedTone]}
+            disabled={isCurrentlyGenerating}
             className="btn-ghost text-xs flex items-center gap-1 text-[--text-tertiary] hover:text-[--text-primary]"
           >
-            <RefreshCw size={12} className={isGenerating[selectedTone] ? 'animate-spin' : ''} />
+            <RefreshCw size={12} className={isCurrentlyGenerating ? 'animate-spin' : ''} />
             Regenerate
           </button>
           <p className="text-[--text-quaternary] text-xs">
@@ -250,7 +280,7 @@ export default function MessageModal({
         <div className="flex gap-2 justify-end flex-wrap">
           <button
             onClick={handleCopy}
-            disabled={!currentMessage || isGenerating[selectedTone]}
+            disabled={!currentMessage || isCurrentlyGenerating}
             className="btn-secondary flex items-center gap-2"
           >
             {isCopied ? <Check size={14} /> : <Copy size={14} />}
@@ -259,7 +289,7 @@ export default function MessageModal({
 
           <button
             onClick={handleOpenGmail}
-            disabled={!currentMessage || isGenerating[selectedTone]}
+            disabled={!currentMessage || isCurrentlyGenerating}
             className="btn-secondary flex items-center gap-2"
             title="Opens Gmail in a new tab"
           >
@@ -270,7 +300,7 @@ export default function MessageModal({
 
           <button
             onClick={handleOpenOutlook}
-            disabled={!currentMessage || isGenerating[selectedTone]}
+            disabled={!currentMessage || isCurrentlyGenerating}
             className="btn-secondary flex items-center gap-2"
             title="Opens Outlook in a new tab"
           >
@@ -282,7 +312,7 @@ export default function MessageModal({
           {hasLinkedIn && (
             <button
               onClick={handleCopyAndOpenLinkedIn}
-              disabled={!currentMessage || isGenerating[selectedTone]}
+              disabled={!currentMessage || isCurrentlyGenerating}
               className="btn-secondary flex items-center gap-2 hover:text-[#0077b5]"
             >
               <Linkedin size={14} />
@@ -292,7 +322,7 @@ export default function MessageModal({
 
           <button
             onClick={handleSend}
-            disabled={isSending || !currentMessage || isGenerating[selectedTone]}
+            disabled={isSending || !currentMessage || isCurrentlyGenerating}
             className="btn-primary flex items-center gap-2"
           >
             {isSending ? (

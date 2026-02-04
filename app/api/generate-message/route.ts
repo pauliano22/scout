@@ -9,7 +9,7 @@ const anthropic = new Anthropic({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { alumni, userName, userSport, userInterests, tone } = body
+    const { alumni, userName, userSport, userInterests, tone, messageType = 'introduction' } = body
 
     // Validate required fields
     if (!alumni || !tone) {
@@ -25,7 +25,37 @@ export async function POST(request: NextRequest) {
       formal: 'Write in a formal, professional tone. Be polished and business-like. Use proper salutations and maintain a respectful distance.',
     }
 
-    const prompt = `Generate a networking outreach message from a current Cornell student-athlete to a Cornell alumni.
+    const messageTypeInstructions = {
+      introduction: {
+        purpose: 'This is a FIRST OUTREACH message to introduce yourself and request to connect.',
+        requirements: `- Mention the shared Cornell Athletics connection
+- Reference their specific company/role
+- Ask for a brief call or coffee chat
+- Express genuine interest in learning from their experience`,
+      },
+      follow_up: {
+        purpose: 'This is a FOLLOW-UP message after initial contact (they may not have responded yet, or you want to continue the conversation).',
+        requirements: `- Reference your previous outreach briefly
+- Don't be pushy - be understanding of their busy schedule
+- Offer flexible timing for a call
+- Keep it shorter than an intro message (100-150 words)`,
+      },
+      thank_you: {
+        purpose: 'This is a THANK YOU message after having a call or meeting with them.',
+        requirements: `- Express genuine gratitude for their time
+- Reference 1-2 specific insights or advice they shared
+- Mention any next steps you discussed
+- Offer to stay in touch or provide updates on your progress
+- Keep it concise (100-150 words)`,
+      },
+    }
+
+    const typeConfig = messageTypeInstructions[messageType as keyof typeof messageTypeInstructions] || messageTypeInstructions.introduction
+
+    const prompt = `Generate a networking message from a current Cornell student-athlete to a Cornell alumni.
+
+MESSAGE TYPE: ${messageType.toUpperCase().replace('_', ' ')}
+${typeConfig.purpose}
 
 SENDER INFO:
 - Name: ${userName || '[Student Name]'}
@@ -43,11 +73,10 @@ RECIPIENT INFO:
 TONE: ${tone}
 ${toneInstructions[tone as keyof typeof toneInstructions]}
 
-REQUIREMENTS:
-- Keep it concise (150-200 words max)
-- Mention the shared Cornell Athletics connection
-- Reference their specific company/role
-- Ask for a brief call or coffee chat
+SPECIFIC REQUIREMENTS FOR THIS MESSAGE TYPE:
+${typeConfig.requirements}
+
+GENERAL REQUIREMENTS:
 - Be authentic, not generic
 - Do NOT use placeholder brackets like [Your Name] - use the actual info provided or omit
 - End with a simple sign-off using the sender's first name only

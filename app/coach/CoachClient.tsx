@@ -840,7 +840,8 @@ export default function CoachClient({
             </div>
           )}
 
-          {/* Saved Career Plans */}
+          {/* Saved Career Plans - hide header when viewing generated plan with no other plans */}
+          {(!hasGenerated || localPlans.filter(p => p.id !== savedPlanId).length > 0) && (
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium">Your Career Plans</h2>
@@ -1019,6 +1020,7 @@ export default function CoachClient({
               </div>
             )}
           </div>
+          )}
 
         </div>
 

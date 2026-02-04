@@ -234,3 +234,47 @@ export interface FollowUpPayload {
   targetDate: string
   notes: string
 }
+
+// ============================================
+// JOB BOARD TYPES
+// ============================================
+
+export interface Job {
+  id: string
+  title: string
+  company: string
+  location: string | null
+  salary_range: string | null
+  job_type: 'remote' | 'hybrid' | 'onsite' | null
+  description: string | null
+  external_url: string
+  external_id: string | null
+  source: string
+  industry: string | null
+  seniority_level: 'entry' | 'mid' | 'senior' | 'executive' | null
+  is_active: boolean
+  posted_at: string | null
+  expires_at: string | null
+  created_at: string
+  updated_at: string
+  // Computed in queries
+  similarity?: number
+}
+
+export interface UserJobInteraction {
+  id: string
+  user_id: string
+  job_id: string
+  interaction_type: 'saved' | 'applied' | 'dismissed' | 'viewed'
+  notes: string | null
+  created_at: string
+  job?: Job
+}
+
+export interface JobFilters {
+  search?: string
+  industry?: string
+  location?: string
+  job_type?: 'remote' | 'hybrid' | 'onsite'
+  seniority_level?: string
+}

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "node scripts/seed.js",
-    "import:alumni": "npx tsx scripts/import-alumni.ts"
+    "import:alumni": "npx tsx scripts/import-alumni.ts",
+    "sync:jobs": "npx tsx scripts/sync-jobs.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

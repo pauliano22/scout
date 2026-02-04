@@ -2,7 +2,7 @@
 
 import Link from '@/components/Link'
 import { usePathname } from 'next/navigation'
-import { Search, Users, LogOut, User, ChevronDown, Info, Sparkles } from 'lucide-react'
+import { Search, Users, LogOut, User, ChevronDown, Info, Sparkles, Briefcase } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -107,6 +107,18 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
                   {networkCount}
                 </span>
               )}
+            </Link>
+
+            <Link
+              href="/jobs"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive('/jobs')
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]'
+                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
+              }`}
+            >
+              <Briefcase size={16} />
+              <span className="hidden sm:inline">Jobs</span>
             </Link>
 
             <Link

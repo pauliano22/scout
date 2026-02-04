@@ -188,3 +188,49 @@ export interface Interaction {
   created_at: string
   updated_at: string
 }
+
+export interface SuggestedAction {
+  id: string
+  user_id: string
+  alumni_id: string | null
+  coaching_plan_id: string | null
+  message_id: string | null
+  action_type: 'calendar_event' | 'email_draft' | 'linkedin_message' | 'follow_up'
+  status: 'pending' | 'completed' | 'dismissed' | 'expired'
+  payload: CalendarEventPayload | EmailDraftPayload | LinkedInMessagePayload | FollowUpPayload
+  ai_reasoning: string | null
+  confidence_score: number | null
+  expires_at: string | null
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CalendarEventPayload {
+  title: string
+  description?: string
+  startTime: string
+  endTime: string
+  location?: string
+  guests?: string[]
+}
+
+export interface EmailDraftPayload {
+  recipientEmail: string
+  recipientName?: string
+  subject: string
+  body: string
+  cc?: string
+}
+
+export interface LinkedInMessagePayload {
+  recipientName: string
+  profileUrl: string
+  message: string
+}
+
+export interface FollowUpPayload {
+  type: 'email' | 'call' | 'meeting'
+  targetDate: string
+  notes: string
+}

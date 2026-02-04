@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import { analyzeActionItem } from '@/lib/actionResources'
+import { ActionList } from '@/components/ui/ActionCard'
+import type { SuggestedAction } from '@/lib/smart-links'
 import {
   Sparkles,
   Users,
@@ -67,6 +69,26 @@ interface AlumniRecommendation {
   reason: string
 }
 
+interface DbSuggestedAction {
+  id: string
+  user_id: string
+  alumni_id: string | null
+  action_type: 'calendar_event' | 'email_draft' | 'linkedin_message' | 'follow_up'
+  status: 'pending' | 'completed' | 'dismissed' | 'expired'
+  payload: Record<string, unknown>
+  ai_reasoning: string | null
+  confidence_score: number | null
+  created_at: string
+  alumni?: {
+    id: string
+    full_name: string
+    company: string | null
+    role: string | null
+    linkedin_url: string | null
+    email: string | null
+  } | null
+}
+
 interface CoachClientProps {
   userId: string
   userProfile: {
@@ -81,6 +103,7 @@ interface CoachClientProps {
   networkCount: number
   messagesCount: number
   recentActivity: ActivityItem[]
+  initialSuggestedActions: DbSuggestedAction[]
 }
 
 const ALUMNI_BATCH_SIZE = 6
@@ -93,12 +116,14 @@ export default function CoachClient({
   savedPlans,
   networkCount,
   messagesCount,
-  recentActivity
+  recentActivity,
+  initialSuggestedActions
 }: CoachClientProps) {
   const supabase = createClient()
 
   // Dashboard state
   const [localPlans, setLocalPlans] = useState<Plan[]>(savedPlans)
+  const [suggestedActions, setSuggestedActions] = useState<DbSuggestedAction[]>(initialSuggestedActions)
 
   // Coach generator state
   const [interest, setInterest] = useState(userProfile.interests || '')
@@ -116,6 +141,43 @@ export default function CoachClient({
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null) // Track which plan was just saved
   const [selectedAlumni, setSelectedAlumni] = useState<Alumni | null>(null) // For profile modal
   const [generatingNextStepsForPlan, setGeneratingNextStepsForPlan] = useState<string | null>(null)
+
+  // Convert DB suggested action to ActionCard format
+  const toActionCardFormat = (dbAction: DbSuggestedAction): SuggestedAction => ({
+    id: dbAction.id,
+    type: dbAction.action_type,
+    payload: dbAction.payload as unknown as SuggestedAction['payload'],
+    reasoning: dbAction.ai_reasoning || undefined,
+    confidence: dbAction.confidence_score || undefined,
+  })
+
+  // Handle completing a suggested action
+  const handleActionComplete = async (actionId: string) => {
+    try {
+      await fetch(`/api/actions/${actionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      })
+      setSuggestedActions(prev => prev.filter(a => a.id !== actionId))
+    } catch (error) {
+      console.error('Error completing action:', error)
+    }
+  }
+
+  // Handle dismissing a suggested action
+  const handleActionDismiss = async (actionId: string) => {
+    try {
+      await fetch(`/api/actions/${actionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'dismissed' }),
+      })
+      setSuggestedActions(prev => prev.filter(a => a.id !== actionId))
+    } catch (error) {
+      console.error('Error dismissing action:', error)
+    }
+  }
 
   // Toggle action item in saved plan
   const toggleSavedPlanAction = async (planId: string, actionIndex: number) => {
@@ -321,6 +383,11 @@ export default function CoachClient({
       setRecommendations(alumniRecs)
       setHasGenerated(true)
       setShownAlumniIds(new Set(alumniRecs.map(r => r.alumni.id)))
+
+      // Add any new suggested actions from the API
+      if (plan.suggestedActions && plan.suggestedActions.length > 0) {
+        setSuggestedActions(prev => [...plan.suggestedActions, ...prev])
+      }
 
       // Auto-save the plan to database
       try {
@@ -955,8 +1022,21 @@ export default function CoachClient({
         </div>
 
         {/* Sidebar - Right 1/3 */}
-        <div>
+        <div className="space-y-6">
+          {/* Suggested Actions */}
+          {suggestedActions.length > 0 && (
+            <div>
+              <ActionList
+                actions={suggestedActions.map(toActionCardFormat)}
+                onComplete={handleActionComplete}
+                onDismiss={handleActionDismiss}
+                title="Suggested Actions"
+              />
+            </div>
+          )}
+
           {/* Recent Activity */}
+          <div>
           <h2 className="text-lg font-medium mb-4">Recent Activity</h2>
           <div className="card p-4 mb-6">
             {recentActivity.length === 0 ? (
@@ -995,8 +1075,10 @@ export default function CoachClient({
               </div>
             )}
           </div>
+          </div>
 
           {/* Quick Actions */}
+          <div>
           <h2 className="text-lg font-medium mb-4">Quick Actions</h2>
           <div className="space-y-2">
             <Link
@@ -1026,6 +1108,7 @@ export default function CoachClient({
               </div>
               <ChevronRight size={16} className="text-[--text-quaternary]" />
             </Link>
+          </div>
           </div>
         </div>
       </div>

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { createClient } from '@/lib/supabase/server'
+import { createCalendarEventPayload } from '@/lib/smart-links'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -99,8 +101,62 @@ Return ONLY valid JSON, no other text.`
       const jsonMatch = responseText.match(/\{[\s\S]*\}/)
       const jsonStr = jsonMatch ? jsonMatch[0] : responseText
       const plan = JSON.parse(jsonStr)
-      
-      return NextResponse.json(plan)
+
+      // Try to save suggested actions for top alumni recommendations (non-blocking)
+      const suggestedActions: unknown[] = []
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user && plan.alumniRecommendations && relevantAlumni) {
+          // Create calendar event suggestions for top 3 recommended alumni
+          const topRecommendations = plan.alumniRecommendations.slice(0, 3)
+
+          for (const rec of topRecommendations) {
+            // Find the matching alumni from the original list
+            const alumni = relevantAlumni.find(
+              (a: Alumni) => a.full_name === rec.alumniName
+            )
+
+            if (alumni) {
+              // Create a calendar event suggestion for coffee chat
+              const calendarPayload = createCalendarEventPayload(
+                `Coffee Chat with ${alumni.full_name}`,
+                {
+                  description: `${rec.reason}\n\nCompany: ${alumni.company || 'N/A'}\nRole: ${alumni.role || 'N/A'}`,
+                  location: 'Zoom / Phone Call',
+                }
+              )
+
+              const { data: action } = await supabase
+                .from('suggested_actions')
+                .insert({
+                  user_id: user.id,
+                  alumni_id: alumni.id || null,
+                  action_type: 'calendar_event',
+                  payload: calendarPayload,
+                  ai_reasoning: rec.reason,
+                  confidence_score: 0.8,
+                  status: 'pending',
+                })
+                .select()
+                .single()
+
+              if (action) {
+                suggestedActions.push(action)
+              }
+            }
+          }
+        }
+      } catch (actionError) {
+        // Don't fail the request if action saving fails
+        console.error('Failed to save suggested actions:', actionError)
+      }
+
+      return NextResponse.json({
+        ...plan,
+        suggestedActions,
+      })
     } catch (parseError) {
       console.error('Failed to parse Claude response:', responseText)
       return NextResponse.json(

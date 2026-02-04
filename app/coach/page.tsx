@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar'
 import CoachClient from './CoachClient'
 
 export default async function CoachPage() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
@@ -99,6 +99,26 @@ export default async function CoachPage() {
 
   const networkAlumniIds = new Set(network?.map(n => n.alumni_id) || [])
 
+  // Fetch pending suggested actions
+  const { data: pendingActions } = await supabase
+    .from('suggested_actions')
+    .select(`
+      *,
+      alumni:alumni_id (
+        id,
+        full_name,
+        company,
+        role,
+        linkedin_url,
+        email
+      )
+    `)
+    .eq('user_id', user.id)
+    .eq('status', 'pending')
+    .or('expires_at.is.null,expires_at.gt.now()')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
   return (
     <>
       <Navbar
@@ -119,6 +139,7 @@ export default async function CoachPage() {
         networkCount={networkCount || 0}
         messagesCount={messagesCount || 0}
         recentActivity={activity}
+        initialSuggestedActions={pendingActions || []}
       />
     </>
   )

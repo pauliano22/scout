@@ -177,26 +177,26 @@ export default function ActionCard({
   return (
     <div className={`rounded-xl border ${config.borderClass} ${config.bgClass} overflow-hidden`}>
       {/* Header */}
-      <div className="flex items-start justify-between p-4 pb-3">
-        <div className="flex items-start gap-3">
+      <div className="flex items-start justify-between p-4 pb-3 gap-2">
+        <div className="flex items-start gap-3 flex-1 min-w-0">
           <div className={`w-10 h-10 rounded-lg ${config.bgClass} flex items-center justify-center flex-shrink-0`}>
             <Icon size={20} className={config.textClass} />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h4 className="font-medium text-[--text-primary] truncate">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <h4 className="font-medium text-[--text-primary] truncate flex-1 min-w-0">
                 {displayInfo.title}
               </h4>
               {action.confidence && action.confidence >= 0.8 && (
-                <span className="flex items-center gap-1 text-xs text-amber-400">
+                <span className="flex items-center gap-1 text-xs text-amber-400 flex-shrink-0 whitespace-nowrap">
                   <Sparkles size={10} />
                   Recommended
                 </span>
               )}
             </div>
-            <p className="text-sm text-[--text-tertiary] flex items-center gap-1">
-              <Clock size={12} />
-              {displayInfo.subtitle}
+            <p className="text-sm text-[--text-tertiary] flex items-center gap-1 truncate">
+              <Clock size={12} className="flex-shrink-0" />
+              <span className="truncate">{displayInfo.subtitle}</span>
             </p>
           </div>
         </div>
@@ -213,8 +213,8 @@ export default function ActionCard({
 
       {/* Detail preview (if available) */}
       {displayInfo.detail && (
-        <div className="px-4 pb-3">
-          <p className="text-xs text-[--text-quaternary] line-clamp-2">
+        <div className="px-4 pb-3 overflow-hidden">
+          <p className="text-xs text-[--text-quaternary] line-clamp-2 break-words">
             {displayInfo.detail}
           </p>
         </div>
@@ -222,8 +222,8 @@ export default function ActionCard({
 
       {/* AI reasoning (if available) */}
       {action.reasoning && (
-        <div className="px-4 pb-3">
-          <p className="text-xs text-[--text-tertiary] italic">
+        <div className="px-4 pb-3 overflow-hidden">
+          <p className="text-xs text-[--text-tertiary] italic break-words line-clamp-2">
             💡 {action.reasoning}
           </p>
         </div>

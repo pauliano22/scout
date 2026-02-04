@@ -217,7 +217,7 @@ export default function DiscoverClient({
           Connect with Cornell Athlete Alumni
         </h1>
         <p className="text-[--text-tertiary] text-sm">
-          Search <span className="text-[--school-primary] font-medium">{totalAlumniCount.toLocaleString()}</span> verified alumni to find mentors in your target industry
+          Search <span className="text-[--school-primary] font-medium">{totalAlumniCount.toLocaleString()}</span> alumni to find mentors in your target industry
         </p>
       </div>
 

@@ -125,9 +125,9 @@ export default function AboutPage() {
           <div className="max-w-6xl mx-auto relative">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {[
-                { value: '20', label: 'Years of Data', color: 'from-[--school-primary] to-red-500' },
+                { value: '55', label: 'Years of Data', color: 'from-[--school-primary] to-red-500' },
                 { value: '40+', label: 'Sports', color: 'from-blue-400 to-cyan-400' },
-                { value: '7,000+', label: 'Alumni Profiles', color: 'from-emerald-400 to-teal-400' },
+                { value: '17,000+', label: 'Alumni Profiles', color: 'from-emerald-400 to-teal-400' },
                 { value: 'Free', label: 'For Athletes', color: 'from-amber-400 to-orange-400' },
               ].map((stat, i) => (
                 <div
@@ -172,7 +172,7 @@ export default function AboutPage() {
                   </div>
                   <h3 className="text-2xl font-bold mb-3">Verified Alumni Database</h3>
                   <p className="text-[--text-secondary] leading-relaxed mb-6">
-                    20 years of Cornell athlete rosters, enriched with LinkedIn data.
+                    55 years of Cornell athlete rosters, enriched with LinkedIn data.
                     Every profile includes current role, company, industry, and contact info.
                   </p>
                   <div className="flex flex-wrap gap-2">

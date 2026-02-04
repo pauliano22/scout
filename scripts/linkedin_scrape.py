@@ -411,11 +411,13 @@ def main():
     est_minutes = (len(alumni) * DELAY_BETWEEN_CALLS) / 60
     print(f"   Estimated time: {est_minutes:.0f} minutes ({est_minutes/60:.1f} hours)")
     
-    # Confirm before starting
-    confirm = input("\n   Type 'yes' to start enrichment: ")
-    if confirm.lower() != 'yes':
-        print("   Aborted.")
-        return
+    # Confirm before starting (skip if --yes flag passed)
+    import sys
+    if '--yes' not in sys.argv:
+        confirm = input("\n   Type 'yes' to start enrichment: ")
+        if confirm.lower() != 'yes':
+            print("   Aborted.")
+            return
     
     # Enrich each alumni
     print(f"\n3. Searching LinkedIn for each alumni...")
@@ -436,7 +438,9 @@ def main():
         rate = (i + 1) / elapsed if elapsed > 0 else 0
         remaining = (len(alumni) - i - 1) / rate if rate > 0 else 0
         
-        print(f"[{i+1}/{len(alumni)}] {name} ({sport}, {grad_year}) ", end="")
+        # Handle Unicode characters safely for Windows console
+        safe_name = name.encode('ascii', 'replace').decode('ascii')
+        print(f"[{i+1}/{len(alumni)}] {safe_name} ({sport}, {grad_year}) ", end="")
         
         # Search for their LinkedIn
         result = search_linkedin(name, sport, grad_year)

@@ -54,12 +54,12 @@ TARGET_SPORTS = [
     'womens-volleyball',
 ]
 
-# Set your year range
-START_YEAR = 2005
+# Set your year range - go as far back as archives exist
+START_YEAR = 1970
 END_YEAR = 2025
 
-# Output file path - CHANGE THIS to your desired save location
-OUTPUT_FILE = "cornell_all_sports_alumni_2005_2025.csv"
+# Output file path
+OUTPUT_FILE = "cornell_all_sports_alumni_1970_2025.csv"
 
 # Delay between requests (in seconds) - reduced for faster scraping
 MIN_DELAY = 0.3

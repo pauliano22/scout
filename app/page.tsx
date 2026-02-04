@@ -278,7 +278,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center group">
                 <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-[--school-primary] to-red-500 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={20} />
+                  <AnimatedCounter target={55} />
                 </div>
                 <p className="text-[--text-tertiary] text-sm">Years of Rosters</p>
               </div>

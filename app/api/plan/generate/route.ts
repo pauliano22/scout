@@ -87,12 +87,15 @@ For each selected alumnus, respond in this exact JSON format:
   "recommendations": [
     {
       "index": <number from the list above>,
+      "full_name": "<exact full name from the list>",
       "career_summary": "<2-3 sentence summary of their career path and what makes them valuable to connect with>",
       "talking_points": ["<point 1>", "<point 2>", "<point 3>"],
       "recommendation_reason": "<1 sentence explaining why this person is a great match for the student>"
     }
   ]
 }
+
+IMPORTANT: The "full_name" must EXACTLY match the name from the list, and the "index" must be the correct number for that person. Double-check that your content (career_summary, talking_points, recommendation_reason) is about the person named in "full_name".
 
 Select the ${batchSize} most relevant alumni. Prioritize those in the student's target industries and roles.
 
@@ -164,9 +167,14 @@ Respond ONLY with valid JSON.`
       return NextResponse.json({ error: 'Failed to create plan' }, { status: 500 })
     }
 
-    // Insert plan_alumni rows
+    // Insert plan_alumni rows - match by name first, fall back to index
     const planAlumniRows = recommendations.map((rec: any, i: number) => {
-      const alumnus = candidates[rec.index - 1]
+      let alumnus = rec.full_name
+        ? candidates.find(c => c.full_name?.toLowerCase() === rec.full_name.toLowerCase())
+        : null
+      if (!alumnus) {
+        alumnus = candidates[rec.index - 1] || null
+      }
       if (!alumnus) return null
       return {
         plan_id: plan.id,

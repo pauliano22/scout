@@ -104,12 +104,15 @@ Respond in this exact JSON format:
   "recommendations": [
     {
       "index": <number from list>,
+      "full_name": "<exact full name from the list>",
       "career_summary": "<2-3 sentence summary>",
       "talking_points": ["<point 1>", "<point 2>", "<point 3>"],
       "recommendation_reason": "<1 sentence why this person is a great match>"
     }
   ]
 }
+
+IMPORTANT: The "full_name" must EXACTLY match the name from the list, and the "index" must be the correct number for that person. Double-check that your content (career_summary, talking_points, recommendation_reason) is about the person named in "full_name".
 
 TALKING POINTS INSTRUCTIONS:
 Talking points are conversation topics the student can bring up when they meet this person. Each one should be a specific question or topic they could naturally ask about during a coffee chat or call. Think about what would make for an interesting, genuine conversation between these two people.
@@ -162,7 +165,12 @@ Respond ONLY with valid JSON.`
     const startOrder = (maxSortRow?.sort_order || 0) + 1
 
     const planAlumniRows = recommendations.map((rec: any, i: number) => {
-      const alumnus = candidates[rec.index - 1]
+      let alumnus = rec.full_name
+        ? candidates.find(c => c.full_name?.toLowerCase() === rec.full_name.toLowerCase())
+        : null
+      if (!alumnus) {
+        alumnus = candidates[rec.index - 1] || null
+      }
       if (!alumnus) return null
       return {
         plan_id: planId,

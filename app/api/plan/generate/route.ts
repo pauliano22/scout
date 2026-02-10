@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       `${i + 1}. ${a.full_name} | ${a.role || 'N/A'} @ ${a.company || 'N/A'} | ${a.industry || 'N/A'} | ${a.sport} '${a.graduation_year} | ${a.location || 'N/A'}`
     ).join('\n')
 
-    const prompt = `You are a career networking advisor for a Cornell student-athlete. Based on the student's profile and goals, select the top ${batchSize} alumni from the list below and generate personalized content for each.
+    const prompt = `You are helping a Cornell student-athlete prepare for networking conversations with alumni. Based on the student's profile, select the top ${batchSize} alumni from the list below and generate content to help the student have a great conversation with each person.
 
 STUDENT PROFILE:
 - Name: ${profile.full_name || 'Student'}
@@ -101,7 +101,20 @@ For each selected alumnus, respond in this exact JSON format:
   ]
 }
 
-Select the ${batchSize} most relevant alumni. Prioritize those in the student's target industries and roles. Generate unique, specific talking points based on each person's actual company and role. Do NOT use generic advice. Respond ONLY with valid JSON.`
+Select the ${batchSize} most relevant alumni. Prioritize those in the student's target industries and roles.
+
+TALKING POINTS INSTRUCTIONS:
+Talking points are conversation topics the student can bring up when they meet this person. Each one should be a specific question or topic they could naturally ask about during a coffee chat or call. Think about what would make for an interesting, genuine conversation between these two people.
+
+Good talking points reference the person's specific company, role, or industry and connect to the student's background. For example:
+- "What the day-to-day looks like as a ${'{role}'} at ${'{company}'} — and how it compares to what you expected going in"
+- "How they made the jump from ${'{previous industry/role}'} to ${'{current role}'} — especially useful since you're considering a similar path"
+- "What they wish they'd known about ${'{industry}'} before starting, given your ${'{major}'} background"
+- "Their experience balancing the transition from D1 athletics into early career — and whether the discipline/time management skills actually translated the way people say"
+
+Do NOT write vague or buzzword-heavy points like "discuss leadership synergies" or "explore industry trends." Write like a friend giving you advice on what to actually ask someone.
+
+Respond ONLY with valid JSON.`
 
     const message = await anthropic.messages.create({
       model: 'claude-3-haiku-20240307',

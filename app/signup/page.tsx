@@ -87,20 +87,22 @@ export default function SignupPage() {
               />
             </div>
 
-            <div className="relative">
-              <Mail
-                size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
-              />
-              <input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-                className="input-field !pl-11"
-              />
+            <div>
+              <div className="relative">
+                <Mail
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
+                />
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="input-field !pl-11"
+                />
+              </div>
               <p className="text-xs text-[--text-quaternary] mt-1 ml-1">Use your Cornell email (@cornell.edu)</p>
             </div>
 

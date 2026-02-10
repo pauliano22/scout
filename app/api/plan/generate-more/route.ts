@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       `${i + 1}. ${a.full_name} | ${a.role || 'N/A'} @ ${a.company || 'N/A'} | ${a.industry || 'N/A'} | ${a.sport} '${a.graduation_year} | ${a.location || 'N/A'}`
     ).join('\n')
 
-    const prompt = `You are a career networking advisor for a Cornell student-athlete. Select the top ${count} alumni and generate personalized content for each.
+    const prompt = `You are helping a Cornell student-athlete prepare for networking conversations with alumni. Select the top ${count} alumni and generate content to help the student have a great conversation with each person.
 
 STUDENT PROFILE:
 - Name: ${profile.full_name || 'Student'}
@@ -98,8 +98,10 @@ STUDENT PROFILE:
 - Major: ${profile.major || 'N/A'}
 - Primary Industry Interest: ${profile.primary_industry || 'Open to all'}
 - Target Roles: ${profile.target_roles?.join(', ') || 'Open to all'}
+- Secondary Industries: ${profile.secondary_industries?.join(', ') || 'None'}
 - Current Stage: ${profile.current_stage || 'exploring'}
 - Past Experience: ${profile.past_experience || 'None listed'}
+- Location Preference: ${profile.geography_preference || 'doesnt_matter'}${profile.preferred_locations?.length ? ' (' + profile.preferred_locations.join(', ') + ')' : ''}
 
 AVAILABLE ALUMNI:
 ${alumniList}
@@ -115,6 +117,17 @@ Respond in this exact JSON format:
     }
   ]
 }
+
+TALKING POINTS INSTRUCTIONS:
+Talking points are conversation topics the student can bring up when they meet this person. Each one should be a specific question or topic they could naturally ask about during a coffee chat or call. Think about what would make for an interesting, genuine conversation between these two people.
+
+Good talking points reference the person's specific company, role, or industry and connect to the student's background. For example:
+- "What the day-to-day looks like as a ${'{role}'} at ${'{company}'} — and how it compares to what you expected going in"
+- "How they made the jump from ${'{previous industry/role}'} to ${'{current role}'} — especially useful since you're considering a similar path"
+- "What they wish they'd known about ${'{industry}'} before starting, given your ${'{major}'} background"
+- "Their experience balancing the transition from D1 athletics into early career — and whether the discipline/time management skills actually translated the way people say"
+
+Do NOT write vague or buzzword-heavy points like "discuss leadership synergies" or "explore industry trends." Write like a friend giving you advice on what to actually ask someone.
 
 Respond ONLY with valid JSON.`
 

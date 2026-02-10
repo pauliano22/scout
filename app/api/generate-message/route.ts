@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@/lib/supabase/server'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -100,46 +99,8 @@ Write only the message, no additional commentary.`
       ? message.content[0].text
       : ''
 
-    // Try to save as a suggested action (non-blocking)
-    let suggestedAction = null
-    try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (user) {
-        // Create email draft payload
-        const emailPayload = {
-          recipientEmail: alumni.email || '',
-          recipientName: alumni.full_name,
-          subject: `Cornell ${userSport || 'Athlete'} Reaching Out`,
-          body: generatedMessage,
-        }
-
-        // Save the suggested action
-        const { data: action } = await supabase
-          .from('suggested_actions')
-          .insert({
-            user_id: user.id,
-            alumni_id: alumni.id || null,
-            action_type: 'email_draft',
-            payload: emailPayload,
-            ai_reasoning: `Draft message to connect with ${alumni.full_name} at ${alumni.company || 'their company'}`,
-            confidence_score: 0.85,
-            status: 'pending',
-          })
-          .select()
-          .single()
-
-        suggestedAction = action
-      }
-    } catch (actionError) {
-      // Don't fail the request if action saving fails
-      console.error('Failed to save suggested action:', actionError)
-    }
-
     return NextResponse.json({
       message: generatedMessage,
-      suggestedAction,
     })
   } catch (error) {
     console.error('Error generating message:', error)

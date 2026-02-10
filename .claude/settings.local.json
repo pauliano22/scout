@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd forgot password functionality\n\n- Add \"Forgot password?\" link to login page\n- Create forgot-password page with email input and reset email flow\n- Create reset-password page with password update and redirect to /coach\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd custom password reset flow with Resend for instant emails\n\nReplace Supabase''s slow email queue with direct Resend API integration\nfor instant password reset emails. Uses custom token-based flow stored\nin password_reset_tokens table with 1-hour expiration.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(ping:*)",
+      "Bash(curl:*)",
+      "Bash(npm run dev)",
+      "Bash(npx tsx:*)",
+      "Bash(python linkedin_scrape.py:*)",
+      "Bash(test:*)",
+      "Bash(find . -type f -name \"*.sql\" -exec echo \"=== {} ===\" ; -exec wc -l {} ;)",
+      "Bash(npx next build)"
+    ]
+  }
+}

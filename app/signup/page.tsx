@@ -40,8 +40,8 @@ export default function SignupPage() {
 
       if (error) throw error
 
-      // Redirect to dashboard
-      router.push('/dashboard')
+      // Redirect to onboarding
+      router.push('/onboarding')
     } catch (err: any) {
       setError(err.message || 'Failed to sign up')
       setIsLoading(false)

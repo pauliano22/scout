@@ -83,7 +83,7 @@ export default function AboutPage() {
               <div className="flex gap-4 flex-wrap">
                 {user ? (
                   <Link
-                    href="/coach"
+                    href="/plan"
                     className="btn-primary flex items-center gap-2 group px-8 py-4 text-lg font-semibold shadow-lg shadow-[--school-primary]/30"
                   >
                     <Sparkles size={20} />
@@ -365,11 +365,11 @@ export default function AboutPage() {
             </p>
             {user ? (
               <Link
-                href="/coach"
+                href="/plan"
                 className="btn-primary inline-flex items-center gap-2 px-10 py-4 text-lg font-semibold group shadow-lg shadow-[--school-primary]/30"
               >
                 <Sparkles size={20} />
-                Start with Coach
+                View Your Plan
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             ) : (

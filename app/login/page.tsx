@@ -28,7 +28,7 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      router.push('/dashboard')
+      router.push('/plan')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')

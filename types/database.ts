@@ -34,6 +34,18 @@ export interface Profile {
   is_alumni: boolean
   is_verified: boolean
   school_id: string | null
+  // Intake / onboarding fields
+  primary_industry: string | null
+  target_roles: string[]
+  secondary_industries: string[]
+  networking_intensity: '20' | '10' | '5' | 'own_pace'
+  current_stage: 'exploring' | 'recruiting' | 'interviewing' | 'referrals' | 'relationship_building'
+  existing_network: 'none' | 'few_conversations' | 'ongoing'
+  major: string | null
+  past_experience: string | null
+  preferred_locations: string[]
+  geography_preference: 'city' | 'region' | 'doesnt_matter'
+  onboarding_completed: boolean
   created_at: string
   updated_at: string
 }
@@ -49,7 +61,7 @@ export interface UserNetwork {
   // Joined data
   alumni?: Alumni
   status?: 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met'
-  interactions?: string | null  // Add this line
+  interactions?: string | null
 }
 
 export interface Message {
@@ -73,52 +85,46 @@ export interface School {
   created_at: string
 }
 
-export interface UserStats {
+export interface NetworkingPlan {
   id: string
   user_id: string
-  current_streak: number
-  longest_streak: number
-  last_activity_date: string | null
-  total_xp: number
-  current_level: number
-  total_connections: number
-  total_messages_sent: number
-  total_responses_received: number
+  title: string
+  goal_count: number
+  is_active: boolean
   created_at: string
   updated_at: string
+  // Joined data
+  plan_alumni?: PlanAlumni[]
+  custom_contacts?: PlanCustomContact[]
 }
 
-export interface Achievement {
+export interface PlanAlumni {
   id: string
-  slug: string
+  plan_id: string
+  alumni_id: string
+  ai_career_summary: string | null
+  ai_talking_points: string[]
+  ai_recommendation_reason: string | null
+  status: 'active' | 'not_interested' | 'contacted'
+  sort_order: number
+  created_at: string
+  updated_at: string
+  // Joined data
+  alumni?: Alumni
+}
+
+export interface PlanCustomContact {
+  id: string
+  plan_id: string
+  user_id: string
   name: string
-  description: string
-  icon: string
-  xp_reward: number
-  requirement_type: 'streak' | 'connections' | 'messages' | 'responses'
-  requirement_value: number
-  tier: 'bronze' | 'silver' | 'gold' | 'platinum'
+  company: string | null
+  role: string | null
+  linkedin_url: string | null
+  notes: string | null
+  status: 'active' | 'not_interested' | 'contacted'
   created_at: string
-}
-
-export interface UserAchievement {
-  id: string
-  user_id: string
-  achievement_id: string
-  unlocked_at: string
-  achievement?: Achievement
-}
-
-export interface DailyGoal {
-  id: string
-  user_id: string
-  date: string
-  connections_goal: number
-  connections_made: number
-  messages_goal: number
-  messages_sent: number
-  completed: boolean
-  created_at: string
+  updated_at: string
 }
 
 export interface AlumniFilters {
@@ -131,16 +137,16 @@ export interface AlumniFilters {
 
 export type Industry = 'Finance' | 'Technology' | 'Consulting' | 'Healthcare' | 'Law' | 'Media'
 
-export type Sport = 
-  | 'Basketball' 
-  | 'Soccer' 
-  | 'Football' 
-  | 'Lacrosse' 
-  | 'Tennis' 
-  | 'Swimming' 
-  | 'Baseball' 
-  | 'Volleyball' 
-  | 'Hockey' 
+export type Sport =
+  | 'Basketball'
+  | 'Soccer'
+  | 'Football'
+  | 'Lacrosse'
+  | 'Tennis'
+  | 'Swimming'
+  | 'Baseball'
+  | 'Volleyball'
+  | 'Hockey'
   | 'Track & Field'
   | 'Rowing'
   | 'Wrestling'
@@ -149,32 +155,6 @@ export type Sport =
   | 'Cross Country'
   | 'Fencing'
   | 'Gymnastics'
-
-// Level thresholds
-export const LEVEL_THRESHOLDS = [
-  0,      // Level 1
-  100,    // Level 2
-  250,    // Level 3
-  500,    // Level 4
-  850,    // Level 5
-  1300,   // Level 6
-  1850,   // Level 7
-  2500,   // Level 8
-  3250,   // Level 9
-  4100,   // Level 10
-]
-
-export function getXpForNextLevel(currentXp: number, currentLevel: number): number {
-  const nextLevelXp = LEVEL_THRESHOLDS[currentLevel] || LEVEL_THRESHOLDS[LEVEL_THRESHOLDS.length - 1] + 1000
-  return nextLevelXp - currentXp
-}
-
-export function getXpProgress(currentXp: number, currentLevel: number): number {
-  const currentLevelXp = LEVEL_THRESHOLDS[currentLevel - 1] || 0
-  const nextLevelXp = LEVEL_THRESHOLDS[currentLevel] || currentLevelXp + 1000
-  const progress = ((currentXp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100
-  return Math.min(100, Math.max(0, progress))
-}
 
 export interface Interaction {
   id: string
@@ -187,94 +167,4 @@ export interface Interaction {
   interaction_date: string
   created_at: string
   updated_at: string
-}
-
-export interface SuggestedAction {
-  id: string
-  user_id: string
-  alumni_id: string | null
-  coaching_plan_id: string | null
-  message_id: string | null
-  action_type: 'calendar_event' | 'email_draft' | 'linkedin_message' | 'follow_up'
-  status: 'pending' | 'completed' | 'dismissed' | 'expired'
-  payload: CalendarEventPayload | EmailDraftPayload | LinkedInMessagePayload | FollowUpPayload
-  ai_reasoning: string | null
-  confidence_score: number | null
-  expires_at: string | null
-  completed_at: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface CalendarEventPayload {
-  title: string
-  description?: string
-  startTime: string
-  endTime: string
-  location?: string
-  guests?: string[]
-}
-
-export interface EmailDraftPayload {
-  recipientEmail: string
-  recipientName?: string
-  subject: string
-  body: string
-  cc?: string
-}
-
-export interface LinkedInMessagePayload {
-  recipientName: string
-  profileUrl: string
-  message: string
-}
-
-export interface FollowUpPayload {
-  type: 'email' | 'call' | 'meeting'
-  targetDate: string
-  notes: string
-}
-
-// ============================================
-// JOB BOARD TYPES
-// ============================================
-
-export interface Job {
-  id: string
-  title: string
-  company: string
-  location: string | null
-  salary_range: string | null
-  job_type: 'remote' | 'hybrid' | 'onsite' | null
-  description: string | null
-  external_url: string
-  external_id: string | null
-  source: string
-  industry: string | null
-  seniority_level: 'internship' | 'entry' | 'mid' | 'senior' | 'executive' | null
-  is_active: boolean
-  posted_at: string | null
-  expires_at: string | null
-  created_at: string
-  updated_at: string
-  // Computed in queries
-  similarity?: number
-}
-
-export interface UserJobInteraction {
-  id: string
-  user_id: string
-  job_id: string
-  interaction_type: 'saved' | 'applied' | 'dismissed' | 'viewed'
-  notes: string | null
-  created_at: string
-  job?: Job
-}
-
-export interface JobFilters {
-  search?: string
-  industry?: string
-  location?: string
-  job_type?: 'remote' | 'hybrid' | 'onsite'
-  seniority_level?: string
 }

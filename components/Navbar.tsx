@@ -2,7 +2,7 @@
 
 import Link from '@/components/Link'
 import { usePathname } from 'next/navigation'
-import { Search, Users, LogOut, User, ChevronDown, Info, Sparkles, Briefcase } from 'lucide-react'
+import { Search, Users, LogOut, User, ChevronDown, Info, ClipboardList } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -14,7 +14,6 @@ interface NavbarProps {
     full_name?: string
   } | null
   networkCount?: number
-  currentStreak?: number
 }
 
 export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
@@ -35,20 +34,20 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
     <nav className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-[--border-primary] sticky top-0 z-50 bg-[--bg-primary]">
       {/* Logo & School Selector */}
       <div className="flex items-center gap-3">
-        <Link href={user ? "/coach" : "/"} className="flex items-center gap-2 group">
+        <Link href={user ? "/plan" : "/"} className="flex items-center gap-2 group">
           <img src="/favicon.svg" alt="Scout" className="w-8 h-8" />
         </Link>
-        
+
         {/* School Badge/Selector */}
         <div className="relative">
-          <button 
+          <button
             onClick={() => setShowSchoolDropdown(!showSchoolDropdown)}
             className="flex items-center gap-1.5 text-xs px-2.5 py-1 bg-[--bg-tertiary] border border-[--border-primary] rounded-md text-[--text-secondary] font-medium hover:bg-[--bg-hover] transition-colors"
           >
             CORNELL
             <ChevronDown size={12} className={`transition-transform ${showSchoolDropdown ? 'rotate-180' : ''}`} />
           </button>
-          
+
           {showSchoolDropdown && (
             <div className="absolute top-full mt-1 left-0 bg-[--bg-secondary] border border-[--border-primary] rounded-lg shadow-lg overflow-hidden min-w-[160px] animate-fade-in">
               <div className="p-1">
@@ -69,15 +68,15 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
         {user ? (
           <>
             <Link
-              href="/coach"
+              href="/plan"
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border-2 ${
-                isActive('/coach')
+                isActive('/plan')
                   ? 'bg-[--school-primary]/15 text-[--school-primary] border-[--school-primary]'
                   : 'bg-[--school-primary]/5 text-[--school-primary] border-[--school-primary]/40 hover:bg-[--school-primary]/15 hover:border-[--school-primary]'
               }`}
             >
-              <Sparkles size={16} />
-              <span className="hidden sm:inline">Coach</span>
+              <ClipboardList size={16} />
+              <span className="hidden sm:inline">Plan</span>
             </Link>
 
             <Link
@@ -89,7 +88,7 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
               }`}
             >
               <Search size={16} />
-              <span className="hidden sm:inline">Alumni</span>
+              <span className="hidden sm:inline">Discover</span>
             </Link>
 
             <Link
@@ -107,18 +106,6 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
                   {networkCount}
                 </span>
               )}
-            </Link>
-
-            <Link
-              href="/jobs"
-              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/jobs')
-                  ? 'bg-[--bg-tertiary] text-[--text-primary]'
-                  : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
-              }`}
-            >
-              <Briefcase size={16} />
-              <span className="hidden sm:inline">Jobs</span>
             </Link>
 
             <Link
@@ -155,11 +142,11 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
           </>
         ) : (
           <>
-            <Link 
-              href="/about" 
+            <Link
+              href="/about"
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive('/about') 
-                  ? 'bg-[--bg-tertiary] text-[--text-primary]' 
+                isActive('/about')
+                  ? 'bg-[--bg-tertiary] text-[--text-primary]'
                   : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
               }`}
             >

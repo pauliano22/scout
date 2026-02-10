@@ -6,8 +6,6 @@ import { X, Copy, Check, Linkedin, RefreshCw, Sparkles, Mail, ExternalLink } fro
 
 interface MessageModalProps {
   connection: UserNetwork
-  userInterests: string
-  userName: string
   userSport: string
   onClose: () => void
   onSend: (connectionId: string, message: string, sentVia: 'linkedin' | 'email' | 'copied' | 'marked') => Promise<void>
@@ -30,8 +28,6 @@ const messageTypeConfig = {
 
 export default function MessageModal({
   connection,
-  userInterests,
-  userName,
   userSport,
   onClose,
   onSend,
@@ -61,9 +57,6 @@ export default function MessageModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           alumni,
-          userName,
-          userSport,
-          userInterests,
           tone,
           messageType: type,
         }),

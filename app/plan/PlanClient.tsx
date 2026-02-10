@@ -578,8 +578,6 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
       {messageTarget && (
         <MessageModal
           connection={messageTarget.connection}
-          userInterests={profile.interests || profile.primary_industry || ''}
-          userName={profile.full_name || ''}
           userSport={profile.sport || ''}
           onClose={() => setMessageTarget(null)}
           onSend={handleSendMessage}

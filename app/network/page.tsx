@@ -46,7 +46,6 @@ export default async function NetworkPage() {
         userProfile={{
           name: profile?.full_name || '',
           sport: profile?.sport || '',
-          interests: profile?.interests || '',
         }}
       />
     </>

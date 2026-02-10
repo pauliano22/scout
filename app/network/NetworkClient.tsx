@@ -15,7 +15,6 @@ interface NetworkClientProps {
   userProfile: {
     name: string
     sport: string
-    interests: string
   }
 }
 
@@ -444,8 +443,6 @@ export default function NetworkClient({
       {selectedConnection && (
         <MessageModal
           connection={selectedConnection}
-          userInterests={userProfile.interests}
-          userName={userProfile.name}
           userSport={userProfile.sport}
           onClose={() => setSelectedConnection(null)}
           onSend={handleSendMessage}

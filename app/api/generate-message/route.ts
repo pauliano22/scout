@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { createClient } from '@/lib/supabase/server'
+import { buildUserContext } from '@/lib/ai/user-context'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -7,15 +9,32 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { alumni, userName, userSport, userInterests, tone, messageType = 'introduction' } = body
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // Validate required fields
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { alumni, tone, messageType = 'introduction' } = body
+
     if (!alumni || !tone) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
+    }
+
+    // Fetch full profile so Claude has complete context
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
     const toneInstructions = {
@@ -56,10 +75,8 @@ export async function POST(request: NextRequest) {
 MESSAGE TYPE: ${messageType.toUpperCase().replace('_', ' ')}
 ${typeConfig.purpose}
 
-SENDER INFO:
-- Name: ${userName || '[Student Name]'}
-- Sport: ${userSport || '[Sport]'}
-- Interests: ${userInterests || 'career opportunities'}
+SENDER (STUDENT) PROFILE:
+${buildUserContext(profile)}
 
 RECIPIENT INFO:
 - Name: ${alumni.full_name}
@@ -76,7 +93,9 @@ SPECIFIC REQUIREMENTS FOR THIS MESSAGE TYPE:
 ${typeConfig.requirements}
 
 GENERAL REQUIREMENTS:
-- Be authentic, not generic
+- Be authentic, not generic — use the student's specific background, experience, and goals to make the message feel personal
+- If the student is exploring careers, the message should reflect curiosity; if they're actively recruiting, it should be more direct about what they're looking for
+- Reference specific shared connections (same sport, same industry interest, same location) naturally
 - Do NOT use placeholder brackets like [Your Name] - use the actual info provided or omit
 - End with a simple sign-off using the sender's first name only
 - Make each message unique - vary the opening, structure, and specific details
@@ -94,7 +113,6 @@ Write only the message, no additional commentary.`
       ],
     })
 
-    // Extract text from response
     const generatedMessage = message.content[0].type === 'text'
       ? message.content[0].text
       : ''

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
+import { buildUserContext } from '@/lib/ai/user-context'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -93,15 +94,7 @@ export async function POST(request: NextRequest) {
     const prompt = `You are helping a Cornell student-athlete prepare for networking conversations with alumni. Select the top ${count} alumni and generate content to help the student have a great conversation with each person.
 
 STUDENT PROFILE:
-- Name: ${profile.full_name || 'Student'}
-- Sport: ${profile.sport || 'N/A'}
-- Major: ${profile.major || 'N/A'}
-- Primary Industry Interest: ${profile.primary_industry || 'Open to all'}
-- Target Roles: ${profile.target_roles?.join(', ') || 'Open to all'}
-- Secondary Industries: ${profile.secondary_industries?.join(', ') || 'None'}
-- Current Stage: ${profile.current_stage || 'exploring'}
-- Past Experience: ${profile.past_experience || 'None listed'}
-- Location Preference: ${profile.geography_preference || 'doesnt_matter'}${profile.preferred_locations?.length ? ' (' + profile.preferred_locations.join(', ') + ')' : ''}
+${buildUserContext(profile)}
 
 AVAILABLE ALUMNI:
 ${alumniList}

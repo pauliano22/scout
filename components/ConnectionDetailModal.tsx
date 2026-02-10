@@ -25,7 +25,6 @@ interface ConnectionDetailModalProps {
   userProfile: {
     name: string
     sport: string
-    interests: string
   }
   onClose: () => void
   onUpdate: (connection: UserNetwork) => void
@@ -459,8 +458,6 @@ export default function ConnectionDetailModal({
       {showMessageModal && (
         <MessageModal
           connection={connection}
-          userInterests={userProfile.interests}
-          userName={userProfile.name}
           userSport={userProfile.sport}
           onClose={() => setShowMessageModal(false)}
           onSend={async (connectionId, message) => {

@@ -117,7 +117,15 @@ export default function AlumniDetailModal({
               <div className="flex items-center gap-2 text-[--text-secondary] mb-3">
                 <Briefcase size={16} className="text-[--text-quaternary]" />
                 <span>
-                  {alumni.role}{alumni.role && alumni.company && ' @ '}{alumni.company}
+                  {alumni.role && alumni.role !== '...'
+                    ? alumni.role
+                    : ''}
+                  {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
+                    ? ' @ '
+                    : ''}
+                  {alumni.company && alumni.company !== '...'
+                    ? alumni.company
+                    : ''}
                 </span>
               </div>
             )}
@@ -142,7 +150,7 @@ export default function AlumniDetailModal({
                   <span>{alumni.location}</span>
                 </div>
               )}
-              {alumni.company && (
+              {alumni.company && alumni.company !== '...' && (
                 <div className="flex items-center gap-1.5">
                   <Building2 size={14} />
                   <span>{alumni.company}</span>
@@ -209,9 +217,9 @@ export default function AlumniDetailModal({
                         )}
                       </div>
                       <p className="text-sm text-[--text-tertiary] truncate">
-                        {similar.role && similar.company
+                        {similar.role && similar.role !== '...' && similar.company && similar.company !== '...'
                           ? `${similar.role} @ ${similar.company}`
-                          : similar.company || similar.role || similar.sport}
+                          : (similar.role && similar.role !== '...' ? similar.role : '') || (similar.company && similar.company !== '...' ? similar.company : '') || similar.sport}
                       </p>
                     </div>
                     {similar.industry && validIndustries.has(similar.industry) && (

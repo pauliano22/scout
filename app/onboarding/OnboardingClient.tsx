@@ -10,7 +10,47 @@ const INDUSTRIES = [
   'Education', 'Real Estate', 'Non-Profit', 'Government', 'Sports', 'Other'
 ]
 
-const TOTAL_STEPS = 6
+const SPORTS_LIST = [
+  'Baseball',
+  'Equestrian',
+  'Fencing',
+  'Field Hockey',
+  'Football',
+  "Men's Basketball",
+  "Men's Cross Country",
+  "Men's Golf",
+  "Men's Ice Hockey",
+  "Men's Lacrosse",
+  "Men's Rowing",
+  "Men's Soccer",
+  "Men's Squash",
+  "Men's Swimming And Diving",
+  "Men's Tennis",
+  "Men's Track And Field",
+  'Rowing',
+  'Softball',
+  'Sprint Football',
+  "Women's Basketball",
+  "Women's Cross Country",
+  "Women's Gymnastics",
+  "Women's Ice Hockey",
+  "Women's Lacrosse",
+  "Women's Rowing",
+  "Women's Sailing",
+  "Women's Soccer",
+  "Women's Squash",
+  "Women's Swimming And Diving",
+  "Women's Tennis",
+  "Women's Track And Field",
+  "Women's Volleyball",
+  'Wrestling',
+]
+
+const TOTAL_STEPS = 7
+
+// Generate graduation year options (current year - 4 to current year + 4)
+const currentYear = new Date().getFullYear()
+const GRAD_YEARS = Array.from({ length: 9 }, (_, i) => currentYear - 4 + i)
 
 interface OnboardingClientProps {
   userId: string
@@ -25,25 +65,29 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  // Step 1: Career Targeting
+  // Step 1: Sport & Graduation Year
+  const [sport, setSport] = useState('')
+  const [graduationYear, setGraduationYear] = useState<number | ''>('')
+
+  // Step 2: Career Targeting
   const [primaryIndustry, setPrimaryIndustry] = useState('')
   const [targetRoles, setTargetRoles] = useState<string[]>([''])
   const [secondaryIndustries, setSecondaryIndustries] = useState<string[]>([])
 
-  // Step 2: Networking Intensity
+  // Step 3: Networking Intensity
   const [networkingIntensity, setNetworkingIntensity] = useState<string>('own_pace')
 
-  // Step 3: Current Stage
+  // Step 4: Current Stage
   const [currentStage, setCurrentStage] = useState<string>('exploring')
 
-  // Step 4: Existing Network
+  // Step 5: Existing Network
   const [existingNetwork, setExistingNetwork] = useState<string>('none')
 
-  // Step 5: Background
+  // Step 6: Background
   const [major, setMajor] = useState('')
   const [pastExperience, setPastExperience] = useState('')
 
-  // Step 6: Geography
+  // Step 7: Geography
   const [preferredLocations, setPreferredLocations] = useState<string[]>([''])
   const [geographyPreference, setGeographyPreference] = useState<string>('doesnt_matter')
 
@@ -63,6 +107,8 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
+          sport: sport || null,
+          graduation_year: graduationYear || null,
           primary_industry: primaryIndustry || null,
           target_roles: targetRoles.filter(r => r.trim()),
           secondary_industries: secondaryIndustries,
@@ -154,8 +200,52 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             </div>
           )}
 
-          {/* Step 1: Career Targeting */}
+          {/* Step 1: Sport & Graduation Year */}
           {step === 1 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-1">About You</h2>
+              <p className="text-[--text-tertiary] text-sm mb-6">
+                Tell us about your athletic background at Cornell.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-[--text-secondary] mb-1.5 block">
+                    Sport
+                  </label>
+                  <select
+                    value={sport}
+                    onChange={(e) => setSport(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value="">Select your sport</option>
+                    {SPORTS_LIST.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-[--text-secondary] mb-1.5 block">
+                    Graduation Year
+                  </label>
+                  <select
+                    value={graduationYear}
+                    onChange={(e) => setGraduationYear(e.target.value ? parseInt(e.target.value) : '')}
+                    className="input-field"
+                  >
+                    <option value="">Select your graduation year</option>
+                    {GRAD_YEARS.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Career Targeting */}
+          {step === 2 && (
             <div>
               <h2 className="text-xl font-semibold mb-1">Career Targeting</h2>
               <p className="text-[--text-tertiary] text-sm mb-6">
@@ -233,8 +323,8 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             </div>
           )}
 
-          {/* Step 2: Networking Intensity */}
-          {step === 2 && (
+          {/* Step 3: Networking Intensity */}
+          {step === 3 && (
             <div>
               <h2 className="text-xl font-semibold mb-1">Networking Intensity</h2>
               <p className="text-[--text-tertiary] text-sm mb-6">
@@ -274,8 +364,8 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             </div>
           )}
 
-          {/* Step 3: Current Stage */}
-          {step === 3 && (
+          {/* Step 4: Current Stage */}
+          {step === 4 && (
             <div>
               <h2 className="text-xl font-semibold mb-1">Where are you at?</h2>
               <p className="text-[--text-tertiary] text-sm mb-6">
@@ -316,8 +406,8 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             </div>
           )}
 
-          {/* Step 4: Existing Network */}
-          {step === 4 && (
+          {/* Step 5: Existing Network */}
+          {step === 5 && (
             <div>
               <h2 className="text-xl font-semibold mb-1">Your existing network</h2>
               <p className="text-[--text-tertiary] text-sm mb-6">
@@ -356,8 +446,8 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             </div>
           )}
 
-          {/* Step 5: Background */}
-          {step === 5 && (
+          {/* Step 6: Background */}
+          {step === 6 && (
             <div>
               <h2 className="text-xl font-semibold mb-1">Your background</h2>
               <p className="text-[--text-tertiary] text-sm mb-6">
@@ -394,8 +484,8 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             </div>
           )}
 
-          {/* Step 6: Geography */}
-          {step === 6 && (
+          {/* Step 7: Geography */}
+          {step === 7 && (
             <div>
               <h2 className="text-xl font-semibold mb-1">Location preferences</h2>
               <p className="text-[--text-tertiary] text-sm mb-6">

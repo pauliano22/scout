@@ -123,11 +123,11 @@ export default function NetworkRow({
         <div className="min-w-0">
           <h3 className="text-sm font-semibold truncate">{alumni.full_name}</h3>
           <p className="text-[--text-tertiary] text-sm truncate">
-            {alumni.role && alumni.company 
+            {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
               ? `${alumni.role} at ${alumni.company}`
-              : alumni.role 
+              : alumni.role && alumni.role !== '...'
                 ? alumni.role
-                : alumni.company 
+                : alumni.company && alumni.company !== '...'
                   ? alumni.company
                   : `${alumni.sport} • Class of ${alumni.graduation_year}`
             }

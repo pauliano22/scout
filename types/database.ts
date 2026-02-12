@@ -105,6 +105,7 @@ export interface PlanAlumni {
   ai_career_summary: string | null
   ai_talking_points: string[]
   ai_recommendation_reason: string | null
+  ai_company_bio: string | null
   status: 'active' | 'not_interested' | 'contacted'
   sort_order: number
   created_at: string
@@ -155,6 +156,14 @@ export type Sport =
   | 'Cross Country'
   | 'Fencing'
   | 'Gymnastics'
+
+export interface UserEvent {
+  id: string
+  user_id: string
+  event_type: string
+  event_data: Record<string, any>
+  created_at: string
+}
 
 export interface Interaction {
   id: string

@@ -6,6 +6,7 @@ import AlumniDetailModal from '@/components/AlumniDetailModal'
 import Avatar from '@/components/Avatar'
 import { Search, Check, ChevronRight, Users, Sparkles, ChevronDown, X } from 'lucide-react'
 import { sportMatchesExact } from '@/lib/sportUtils'
+import { trackEvent } from '@/lib/track'
 
 // Partial Alumni type for discover page (only fields we fetch)
 export interface DiscoverAlumni {
@@ -155,6 +156,7 @@ export default function DiscoverClient({
       if (error) throw error
 
       setNetworkIds((prev) => new Set([...prev, alumniId]))
+      trackEvent('alumni_added_to_network', { alumni_id: alumniId, source: 'discover' })
     } catch (error) {
       console.error('Error adding to network:', error)
       alert('Failed to add to network. Please try again.')
@@ -350,9 +352,9 @@ export default function DiscoverClient({
 
                   {/* Role @ Company */}
                   <p className="text-sm text-[--text-secondary] truncate">
-                    {alumni.role && alumni.company
+                    {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
                       ? `${alumni.role} @ ${alumni.company}`
-                      : alumni.company || alumni.role || 'Cornell Athlete Alumni'}
+                      : (alumni.role && alumni.role !== '...' ? alumni.role : '') || (alumni.company && alumni.company !== '...' ? alumni.company : '') || 'Cornell Athlete Alumni'}
                   </p>
 
                   {/* Sport & Year */}

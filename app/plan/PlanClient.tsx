@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import MessageModal from '@/components/MessageModal'
+import { trackEvent } from '@/lib/track'
 import type { Profile, NetworkingPlan, PlanAlumni, PlanCustomContact, UserNetwork, Alumni } from '@/types/database'
 import {
   ChevronDown,
@@ -19,10 +20,20 @@ import {
   ThumbsDown,
   Mail,
   Loader2,
+  Trash2,
+  RefreshCw,
+  Building2,
+  UserPlus,
+  Check,
 } from 'lucide-react'
 
 type PlanAlumniWithAlumni = PlanAlumni & { alumni: Alumni }
 type PlanWithAlumni = NetworkingPlan & { plan_alumni: PlanAlumniWithAlumni[] }
+
+const INDUSTRIES = [
+  'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media',
+  'Education', 'Real Estate', 'Non-Profit', 'Government', 'Sports', 'Other'
+]
 
 interface PlanClientProps {
   userId: string
@@ -34,9 +45,10 @@ interface PlanClientProps {
     messagesCount: number
     meetingsCount: number
   }
+  networkAlumniIds: string[]
 }
 
-export default function PlanClient({ userId, profile, plan: initialPlan, customContacts: initialCustomContacts, stats }: PlanClientProps) {
+export default function PlanClient({ userId, profile, plan: initialPlan, customContacts: initialCustomContacts, stats, networkAlumniIds: initialNetworkIds }: PlanClientProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -46,6 +58,11 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
   const [isGenerating, setIsGenerating] = useState(false)
   const [isGeneratingMore, setIsGeneratingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDeletingPlan, setIsDeletingPlan] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [selectedIndustry, setSelectedIndustry] = useState(profile.primary_industry || '')
+  const [networkIds, setNetworkIds] = useState<Set<string>>(new Set(initialNetworkIds))
+  const [addingToNetworkId, setAddingToNetworkId] = useState<string | null>(null)
 
   // MessageModal state
   const [messageTarget, setMessageTarget] = useState<{ connection: UserNetwork; planAlumniId: string } | null>(null)
@@ -59,11 +76,26 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
 
   const activePlanAlumni = (plan?.plan_alumni?.filter(pa => pa.status !== 'not_interested') || []) as PlanAlumniWithAlumni[]
 
+  // Auto-expand first alumni on initial load
+  useEffect(() => {
+    if (initialPlan && activePlanAlumni.length > 0 && !expandedId) {
+      setExpandedId(activePlanAlumni[0].id)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleGeneratePlan = async () => {
     setIsGenerating(true)
     setError(null)
 
     try {
+      // Update industry if changed
+      if (selectedIndustry !== profile.primary_industry) {
+        await supabase
+          .from('profiles')
+          .update({ primary_industry: selectedIndustry || null })
+          .eq('id', userId)
+      }
+
       const response = await fetch('/api/plan/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -77,10 +109,40 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
 
       const data = await response.json()
       setPlan(data.plan)
+      trackEvent('plan_generated', { industry: selectedIndustry })
+
+      // Auto-expand first alumni
+      const firstAlumni = data.plan?.plan_alumni?.[0]
+      if (firstAlumni) setExpandedId(firstAlumni.id)
     } catch (err: any) {
       setError(err.message)
     } finally {
       setIsGenerating(false)
+    }
+  }
+
+  const handleDeletePlan = async () => {
+    if (!plan) return
+    setIsDeletingPlan(true)
+
+    try {
+      const response = await fetch('/api/plan/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: plan.id }),
+      })
+
+      if (!response.ok) throw new Error('Failed to delete plan')
+
+      setPlan(null)
+      setCustomContacts([])
+      setExpandedId(null)
+      setShowDeleteConfirm(false)
+      trackEvent('plan_deleted')
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsDeletingPlan(false)
     }
   }
 
@@ -138,8 +200,24 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
     }
   }
 
+  const handleAddToNetwork = async (alumniId: string) => {
+    setAddingToNetworkId(alumniId)
+    try {
+      const { error } = await supabase
+        .from('user_networks')
+        .insert({ user_id: userId, alumni_id: alumniId })
+
+      if (error) throw error
+      setNetworkIds(prev => new Set([...prev, alumniId]))
+      trackEvent('alumni_added_to_network', { alumni_id: alumniId, source: 'plan' })
+    } catch (err) {
+      console.error('Error adding to network:', err)
+    } finally {
+      setAddingToNetworkId(null)
+    }
+  }
+
   const handleWriteMessage = (planAlumni: PlanAlumniWithAlumni) => {
-    // Construct a UserNetwork-compatible object for MessageModal
     const connection: UserNetwork = {
       id: planAlumni.id,
       user_id: userId,
@@ -154,7 +232,6 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
   }
 
   const handleSendMessage = async (connectionId: string, message: string, sentVia: 'linkedin' | 'email' | 'copied' | 'marked') => {
-    // Save the message
     await supabase.from('messages').insert({
       user_id: userId,
       alumni_id: messageTarget?.connection.alumni_id,
@@ -162,7 +239,6 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
       sent_via: sentVia === 'marked' ? 'email' : sentVia,
     })
 
-    // Update plan alumni status to contacted
     if (messageTarget?.planAlumniId) {
       await supabase
         .from('plan_alumni')
@@ -179,6 +255,8 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
         }
       })
     }
+
+    trackEvent('message_sent', { sent_via: sentVia, alumni_id: messageTarget?.connection.alumni_id })
   }
 
   const handleAddCustomContact = async () => {
@@ -209,6 +287,7 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id)
+    trackEvent('alumni_expanded', { plan_alumni_id: id })
   }
 
   return (
@@ -225,20 +304,29 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
 
       {/* Stats Bar */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center">
-          <Users size={20} className="mx-auto mb-2 text-[--school-primary]" />
-          <div className="text-2xl font-bold text-[--text-primary]">{stats.networkCount}</div>
-          <div className="text-xs text-[--text-tertiary]">People in Network</div>
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[--school-primary]/5 to-transparent" />
+          <div className="relative">
+            <Users size={20} className="mx-auto mb-2 text-[--school-primary]" />
+            <div className="text-2xl font-bold text-[--text-primary]">{stats.networkCount}</div>
+            <div className="text-xs text-[--text-tertiary]">People in Network</div>
+          </div>
         </div>
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center">
-          <MessageSquare size={20} className="mx-auto mb-2 text-[--school-primary]" />
-          <div className="text-2xl font-bold text-[--text-primary]">{stats.messagesCount}</div>
-          <div className="text-xs text-[--text-tertiary]">Messages Sent</div>
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[--school-primary]/5 to-transparent" />
+          <div className="relative">
+            <MessageSquare size={20} className="mx-auto mb-2 text-[--school-primary]" />
+            <div className="text-2xl font-bold text-[--text-primary]">{stats.messagesCount}</div>
+            <div className="text-xs text-[--text-tertiary]">Messages Sent</div>
+          </div>
         </div>
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center">
-          <Calendar size={20} className="mx-auto mb-2 text-[--school-primary]" />
-          <div className="text-2xl font-bold text-[--text-primary]">{stats.meetingsCount}</div>
-          <div className="text-xs text-[--text-tertiary]">Meetings</div>
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[--school-primary]/5 to-transparent" />
+          <div className="relative">
+            <Calendar size={20} className="mx-auto mb-2 text-[--school-primary]" />
+            <div className="text-2xl font-bold text-[--text-primary]">{stats.meetingsCount}</div>
+            <div className="text-xs text-[--text-tertiary]">Meetings</div>
+          </div>
         </div>
       </div>
 
@@ -250,28 +338,45 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
         </div>
       )}
 
-      {/* No Plan State */}
+      {/* No Plan State - Enlarged CTA */}
       {!plan && (
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 text-center mb-8">
-          <Sparkles size={32} className="mx-auto mb-4 text-[--school-primary]" />
-          <h2 className="text-lg font-semibold mb-2">Generate your networking plan</h2>
-          <p className="text-[--text-tertiary] text-sm mb-6 max-w-md mx-auto">
-            Based on your interests in {profile.primary_industry || 'various industries'} and your background,
-            we&apos;ll recommend alumni to connect with and provide personalized talking points.
+        <div className="border-2 border-dashed border-[--school-primary]/40 bg-gradient-to-br from-[--school-primary]/5 via-[--bg-secondary] to-[--bg-secondary] rounded-2xl p-12 text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-[--school-primary]/10 flex items-center justify-center mx-auto mb-6">
+            <Sparkles size={32} className="text-[--school-primary]" />
+          </div>
+          <h2 className="text-2xl font-bold mb-3 text-[--text-primary]">Generate Your Networking Plan</h2>
+          <p className="text-[--text-secondary] text-base mb-4 max-w-lg mx-auto">
+            We&apos;ll analyze your background and interests to recommend the best alumni connections with personalized talking points.
           </p>
+
+          {/* Industry selector */}
+          <div className="max-w-xs mx-auto mb-6">
+            <label className="text-sm text-[--text-tertiary] mb-1.5 block">Target Industry</label>
+            <select
+              value={selectedIndustry}
+              onChange={(e) => setSelectedIndustry(e.target.value)}
+              className="input-field text-center"
+            >
+              <option value="">All Industries</option>
+              {INDUSTRIES.map(ind => (
+                <option key={ind} value={ind}>{ind}</option>
+              ))}
+            </select>
+          </div>
+
           <button
             onClick={handleGeneratePlan}
             disabled={isGenerating}
-            className="btn-primary inline-flex items-center gap-2 px-6 py-3"
+            className="btn-primary inline-flex items-center gap-3 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-shadow"
           >
             {isGenerating ? (
               <>
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={22} className="animate-spin" />
                 Generating your plan...
               </>
             ) : (
               <>
-                <Sparkles size={18} />
+                <Sparkles size={22} />
                 Generate Plan
               </>
             )}
@@ -290,7 +395,45 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
                 {plan.goal_count && ` \u00B7 Goal: ${plan.goal_count} connections`}
               </p>
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="btn-ghost p-2 text-[--text-quaternary] hover:text-red-400"
+                title="Delete plan and start fresh"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           </div>
+
+          {/* Delete confirmation */}
+          {showDeleteConfirm && (
+            <div className="mt-4 pt-4 border-t border-[--school-primary]/20">
+              <p className="text-sm text-[--text-secondary] mb-3">
+                Delete this plan and start fresh? You can generate a new plan with a different industry focus.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDeletePlan}
+                  disabled={isDeletingPlan}
+                  className="px-4 py-2 text-sm bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors flex items-center gap-2"
+                >
+                  {isDeletingPlan ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={14} />
+                  )}
+                  Delete Plan
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="btn-ghost text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -301,11 +444,12 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
             const alumni = pa.alumni
             if (!alumni) return null
             const isExpanded = expandedId === pa.id
+            const isInNetwork = networkIds.has(alumni.id)
 
             return (
               <div
                 key={pa.id}
-                className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl overflow-hidden"
+                className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl overflow-hidden hover:border-[--border-secondary] transition-colors"
               >
                 {/* Collapsed header */}
                 <button
@@ -328,11 +472,16 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
                             Contacted
                           </span>
                         )}
+                        {isInNetwork && (
+                          <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full flex-shrink-0">
+                            In Network
+                          </span>
+                        )}
                       </div>
                       <div className="text-sm text-[--text-tertiary] truncate">
-                        {alumni.role && alumni.company
+                        {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
                           ? `${alumni.role} @ ${alumni.company}`
-                          : alumni.company || alumni.role || 'Alumni'}
+                          : (alumni.role && alumni.role !== '...' ? alumni.role : '') || (alumni.company && alumni.company !== '...' ? alumni.company : '') || 'Alumni'}
                       </div>
                     </div>
                   </div>
@@ -347,22 +496,25 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
                 {/* Expanded content */}
                 {isExpanded && (
                   <div className="px-5 pb-5 border-t border-[--border-primary]">
-                    {/* Recommendation reason */}
-                    {pa.ai_recommendation_reason && (
-                      <div className="mt-4 mb-4 bg-[--school-primary]/5 border border-[--school-primary]/20 rounded-lg p-3">
-                        <p className="text-sm text-[--text-secondary]">
-                          <span className="font-medium text-[--school-primary]">Why connect: </span>
-                          {pa.ai_recommendation_reason}
+                    {/* Career summary - now first */}
+                    {pa.ai_career_summary && (
+                      <div className="mt-4 mb-4">
+                        <h4 className="text-sm font-medium text-[--text-secondary] mb-1">Career Summary</h4>
+                        <p className="text-sm text-[--text-tertiary] leading-relaxed">
+                          {pa.ai_career_summary}
                         </p>
                       </div>
                     )}
 
-                    {/* Career summary */}
-                    {pa.ai_career_summary && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-[--text-secondary] mb-1">Career Summary</h4>
+                    {/* Company bio */}
+                    {pa.ai_company_bio && alumni.company && (
+                      <div className="mb-4 bg-[--bg-tertiary]/50 rounded-lg p-3">
+                        <h4 className="text-sm font-medium text-[--text-secondary] mb-1 flex items-center gap-1.5">
+                          <Building2 size={14} />
+                          About {alumni.company}
+                        </h4>
                         <p className="text-sm text-[--text-tertiary] leading-relaxed">
-                          {pa.ai_career_summary}
+                          {pa.ai_company_bio}
                         </p>
                       </div>
                     )}
@@ -430,6 +582,27 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
                         <Mail size={14} />
                         Write Message
                       </button>
+
+                      {/* Add to Network button */}
+                      {isInNetwork ? (
+                        <span className="btn-success text-sm flex items-center gap-1.5 cursor-default">
+                          <Check size={14} />
+                          In Network
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleAddToNetwork(alumni.id)}
+                          disabled={addingToNetworkId === alumni.id}
+                          className="btn-secondary text-sm flex items-center gap-1.5 hover:border-[--school-primary] hover:text-[--school-primary]"
+                        >
+                          {addingToNetworkId === alumni.id ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <UserPlus size={14} />
+                          )}
+                          Add to Network
+                        </button>
+                      )}
 
                       <button
                         onClick={() => handleNotInterested(pa.id)}
@@ -547,8 +720,9 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
                     <div className="text-sm text-[--text-tertiary]">
                       {contact.role && contact.company
                         ? `${contact.role} @ ${contact.company}`
-                        : contact.company || contact.role || ''}
+                        : contact.role || contact.company || ''}
                     </div>
+
                     {contact.notes && (
                       <div className="text-xs text-[--text-quaternary] mt-1">{contact.notes}</div>
                     )}

@@ -89,11 +89,16 @@ For each selected alumnus, respond in this exact JSON format:
       "index": <number from the list above>,
       "full_name": "<exact full name from the list>",
       "career_summary": "<2-3 sentence summary of their career path and what makes them valuable to connect with>",
+      "company_bio": "<2-3 sentences about the company they work at — what it does, its size/reputation, and why it's relevant. If the person has no company listed or it says N/A, set this to null>",
       "talking_points": ["<point 1>", "<point 2>", "<point 3>"],
       "recommendation_reason": "<1 sentence explaining why this person is a great match for the student>"
     }
   ]
 }
+
+COMPANY BIO INSTRUCTIONS:
+- Write 2-3 sentences about what the company does, its industry reputation, and why a student might want to know about it.
+- If the person has NO company listed (shows as "N/A"), set company_bio to null. Do NOT make up a company or write a bio for a nonexistent company.
 
 IMPORTANT: The "full_name" must EXACTLY match the name from the list, and the "index" must be the correct number for that person. Double-check that your content (career_summary, talking_points, recommendation_reason) is about the person named in "full_name".
 
@@ -180,6 +185,7 @@ Respond ONLY with valid JSON.`
         plan_id: plan.id,
         alumni_id: alumnus.id,
         ai_career_summary: rec.career_summary,
+        ai_company_bio: rec.company_bio || null,
         ai_talking_points: rec.talking_points,
         ai_recommendation_reason: rec.recommendation_reason,
         status: 'active',

@@ -67,6 +67,14 @@ export default async function PlanPage() {
     .eq('user_id', user.id)
     .in('status', ['meeting_scheduled', 'met'])
 
+  // Fetch network alumni IDs (for showing "In Network" badges)
+  const { data: networkAlumni } = await supabase
+    .from('user_networks')
+    .select('alumni_id')
+    .eq('user_id', user.id)
+
+  const networkAlumniIds = networkAlumni?.map(n => n.alumni_id) || []
+
   // Sort plan alumni by sort_order
   if (activePlan?.plan_alumni) {
     activePlan.plan_alumni.sort((a: any, b: any) => a.sort_order - b.sort_order)
@@ -88,6 +96,7 @@ export default async function PlanPage() {
           messagesCount: messagesCount || 0,
           meetingsCount: meetingsCount || 0,
         }}
+        networkAlumniIds={networkAlumniIds}
       />
     </>
   )

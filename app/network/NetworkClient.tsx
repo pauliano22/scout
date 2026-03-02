@@ -3,11 +3,12 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { UserNetwork } from '@/types/database'
+import { UserNetwork, PlanCustomContact } from '@/types/database'
 import MessageModal from '@/components/MessageModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
 import Avatar from '@/components/Avatar'
-import { Search, Users, ChevronRight, MessageSquare, Clock, AlertCircle, Calendar, CheckCircle2, Send, FileText, Phone } from 'lucide-react'
+import { statusConfig, getStatusConfig, type CRMStatus } from '@/lib/statusConfig'
+import { Search, Users, ChevronRight, MessageSquare, Clock, AlertCircle, Calendar, CheckCircle2, Send, FileText, Phone, Plus, X, Linkedin, Loader2 } from 'lucide-react'
 
 interface NetworkClientProps {
   initialNetwork: UserNetwork[]
@@ -16,53 +17,10 @@ interface NetworkClientProps {
     name: string
     sport: string
   }
+  initialCustomContacts: PlanCustomContact[]
 }
 
-type CRMStatus = 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met'
 type StatusFilter = 'all' | CRMStatus
-
-const statusConfig: Record<CRMStatus, { label: string; color: string; bgClass: string; borderClass: string; textClass: string; icon: typeof Clock }> = {
-  interested: {
-    label: 'Interested',
-    color: 'blue',
-    bgClass: 'bg-blue-500/10',
-    borderClass: 'border-blue-500/20',
-    textClass: 'text-blue-400',
-    icon: Users,
-  },
-  awaiting_reply: {
-    label: 'Awaiting Reply',
-    color: 'amber',
-    bgClass: 'bg-amber-500/10',
-    borderClass: 'border-amber-500/20',
-    textClass: 'text-amber-400',
-    icon: Clock,
-  },
-  response_needed: {
-    label: 'Response Needed',
-    color: 'red',
-    bgClass: 'bg-red-500/10',
-    borderClass: 'border-red-500/20',
-    textClass: 'text-red-400',
-    icon: AlertCircle,
-  },
-  meeting_scheduled: {
-    label: 'Meeting',
-    color: 'purple',
-    bgClass: 'bg-purple-500/10',
-    borderClass: 'border-purple-500/20',
-    textClass: 'text-purple-400',
-    icon: Calendar,
-  },
-  met: {
-    label: 'Met',
-    color: 'emerald',
-    bgClass: 'bg-emerald-500/10',
-    borderClass: 'border-emerald-500/20',
-    textClass: 'text-emerald-400',
-    icon: CheckCircle2,
-  },
-}
 
 const nextActionConfig: Record<CRMStatus, { label: string; icon: typeof Send }> = {
   interested: { label: 'Send Message', icon: Send },
@@ -72,7 +30,8 @@ const nextActionConfig: Record<CRMStatus, { label: string; icon: typeof Send }> 
   met: { label: 'Add Notes', icon: FileText },
 }
 
-// Sport color mapping for color-coded sport labels
+// Sport color mapping for color-coded sport labels (Network page only)
+// Note: these colors are intentionally different from status badge colors (see lib/statusConfig.ts)
 function getSportColor(sport: string): string {
   const s = sport.toLowerCase()
   if (s.includes('football')) return 'bg-amber-500/10 text-amber-400 border-amber-500/20'
@@ -98,6 +57,7 @@ export default function NetworkClient({
   initialNetwork,
   userId,
   userProfile,
+  initialCustomContacts,
 }: NetworkClientProps) {
   const supabase = createClient()
   const searchParams = useSearchParams()
@@ -109,6 +69,12 @@ export default function NetworkClient({
   const [selectedConnection, setSelectedConnection] = useState<UserNetwork | null>(null)
   const [detailConnection, setDetailConnection] = useState<UserNetwork | null>(null)
   const [highlightedId, setHighlightedId] = useState<string | null>(null)
+
+  // Custom contacts state
+  const [customContacts, setCustomContacts] = useState<PlanCustomContact[]>(initialCustomContacts)
+  const [showAddContact, setShowAddContact] = useState(false)
+  const [contactForm, setContactForm] = useState({ name: '', company: '', role: '', linkedin_url: '', notes: '' })
+  const [isAddingContact, setIsAddingContact] = useState(false)
 
   // Refs for scrolling to highlighted item
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map())
@@ -270,6 +236,33 @@ export default function NetworkClient({
     } else {
       rowRefs.current.delete(id)
     }
+  }
+
+  // Custom contact handlers
+  const handleAddCustomContact = async () => {
+    if (!contactForm.name.trim()) return
+    setIsAddingContact(true)
+
+    const { data, error } = await supabase
+      .from('plan_custom_contacts')
+      .insert({
+        plan_id: null,
+        user_id: userId,
+        name: contactForm.name,
+        company: contactForm.company || null,
+        role: contactForm.role || null,
+        linkedin_url: contactForm.linkedin_url || null,
+        notes: contactForm.notes || null,
+      })
+      .select()
+      .single()
+
+    if (!error && data) {
+      setCustomContacts(prev => [...prev, data])
+      setContactForm({ name: '', company: '', role: '', linkedin_url: '', notes: '' })
+      setShowAddContact(false)
+    }
+    setIsAddingContact(false)
   }
 
   // Filter tab definitions
@@ -438,6 +431,114 @@ export default function NetworkClient({
           })}
         </div>
       )}
+
+      {/* ─── Custom Contacts ─── */}
+      <div className="mt-12 pt-8 border-t border-[--border-primary]">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="font-semibold text-[--text-primary]">Custom Contacts</h3>
+            <p className="text-xs text-[--text-tertiary] mt-0.5">Track people outside the alumni directory</p>
+          </div>
+          <button
+            onClick={() => setShowAddContact(!showAddContact)}
+            className="btn-ghost text-sm flex items-center gap-1.5"
+          >
+            {showAddContact ? <X size={14} /> : <Plus size={14} />}
+            {showAddContact ? 'Cancel' : 'Add Contact'}
+          </button>
+        </div>
+
+        {/* Add contact form */}
+        {showAddContact && (
+          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4">
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <input
+                type="text"
+                placeholder="Name *"
+                value={contactForm.name}
+                onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+                className="input-field"
+              />
+              <input
+                type="text"
+                placeholder="Company"
+                value={contactForm.company}
+                onChange={(e) => setContactForm(prev => ({ ...prev, company: e.target.value }))}
+                className="input-field"
+              />
+              <input
+                type="text"
+                placeholder="Role"
+                value={contactForm.role}
+                onChange={(e) => setContactForm(prev => ({ ...prev, role: e.target.value }))}
+                className="input-field"
+              />
+              <input
+                type="text"
+                placeholder="LinkedIn URL"
+                value={contactForm.linkedin_url}
+                onChange={(e) => setContactForm(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                className="input-field"
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Notes"
+              value={contactForm.notes}
+              onChange={(e) => setContactForm(prev => ({ ...prev, notes: e.target.value }))}
+              className="input-field mb-3"
+            />
+            <button
+              onClick={handleAddCustomContact}
+              disabled={!contactForm.name.trim() || isAddingContact}
+              className="btn-primary text-sm flex items-center gap-2"
+            >
+              {isAddingContact ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+              {isAddingContact ? 'Adding...' : 'Add Contact'}
+            </button>
+          </div>
+        )}
+
+        {/* Custom contacts list */}
+        {customContacts.length > 0 ? (
+          <div className="space-y-2">
+            {customContacts.map(contact => (
+              <div
+                key={contact.id}
+                className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 flex items-center justify-between"
+              >
+                <div>
+                  <div className="font-medium text-[--text-primary]">{contact.name}</div>
+                  <div className="text-sm text-[--text-tertiary]">
+                    {contact.role && contact.company
+                      ? `${contact.role} @ ${contact.company}`
+                      : contact.role || contact.company || ''}
+                  </div>
+                  {contact.notes && (
+                    <div className="text-xs text-[--text-quaternary] mt-1">{contact.notes}</div>
+                  )}
+                </div>
+                {contact.linkedin_url && (
+                  <a
+                    href={contact.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-ghost p-2 hover:text-[#0077b5]"
+                  >
+                    <Linkedin size={16} />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          !showAddContact && (
+            <p className="text-sm text-[--text-quaternary] text-center py-6">
+              No custom contacts yet. Add people you want to track outside the alumni directory.
+            </p>
+          )
+        )}
+      </div>
 
       {/* Message Modal */}
       {selectedConnection && (

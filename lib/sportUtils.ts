@@ -27,6 +27,7 @@ export const SPORTS_LIST = [
   "Men's Tennis",
   "Men's Track And Field",
   'Rowing',
+  'Polo',
   'Softball',
   'Sprint Football',
   "Women's Basketball",

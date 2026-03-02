@@ -34,10 +34,17 @@ export default async function NetworkPage() {
     console.error('Error fetching network:', error)
   }
 
+  // Fetch all custom contacts for this user (plan_id may be null for standalone contacts)
+  const { data: customContacts } = await supabase
+    .from('plan_custom_contacts')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true })
+
   return (
     <>
-      <Navbar 
-        user={{ email: user.email!, full_name: profile?.full_name }} 
+      <Navbar
+        user={{ email: user.email!, full_name: profile?.full_name }}
         networkCount={network?.length || 0}
       />
       <NetworkClient
@@ -47,6 +54,7 @@ export default async function NetworkPage() {
           name: profile?.full_name || '',
           sport: profile?.sport || '',
         }}
+        initialCustomContacts={customContacts || []}
       />
     </>
   )

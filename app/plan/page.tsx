@@ -38,18 +38,6 @@ export default async function PlanPage() {
     .limit(1)
     .single()
 
-  // Fetch custom contacts for the active plan
-  let customContacts: any[] = []
-  if (activePlan) {
-    const { data: contacts } = await supabase
-      .from('plan_custom_contacts')
-      .select('*')
-      .eq('plan_id', activePlan.id)
-      .order('created_at', { ascending: true })
-
-    customContacts = contacts || []
-  }
-
   // Fetch stats
   const { count: networkCount } = await supabase
     .from('user_networks')
@@ -90,7 +78,6 @@ export default async function PlanPage() {
         userId={user.id}
         profile={profile}
         plan={activePlan}
-        customContacts={customContacts}
         stats={{
           networkCount: networkCount || 0,
           messagesCount: messagesCount || 0,

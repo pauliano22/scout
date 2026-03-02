@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import Avatar from '@/components/Avatar'
-import { Search, Check, ChevronRight, Users, Sparkles, ChevronDown, X } from 'lucide-react'
-import { sportMatchesExact } from '@/lib/sportUtils'
+import { Search, Check, ChevronRight, Users, ChevronDown, X, Loader2, MapPin, Flame } from 'lucide-react'
 import { trackEvent } from '@/lib/track'
+import { SPORTS_LIST } from '@/lib/sportUtils'
 
 // Partial Alumni type for discover page (only fields we fetch)
 export interface DiscoverAlumni {
@@ -51,43 +51,6 @@ const industryBadgeClass: Record<string, string> = {
   Nonprofit: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
 }
 
-// Complete list of Cornell sports (exact team names for precise filtering)
-const SPORTS_LIST = [
-  'Baseball',
-  'Equestrian',
-  'Fencing',
-  'Field Hockey',
-  'Football',
-  "Men's Basketball",
-  "Men's Cross Country",
-  "Men's Golf",
-  "Men's Ice Hockey",
-  "Men's Lacrosse",
-  "Men's Rowing",
-  "Men's Soccer",
-  "Men's Squash",
-  "Men's Swimming And Diving",
-  "Men's Tennis",
-  "Men's Track And Field",
-  'Rowing',
-  'Softball',
-  'Sprint Football',
-  "Women's Basketball",
-  "Women's Cross Country",
-  "Women's Gymnastics",
-  "Women's Ice Hockey",
-  "Women's Lacrosse",
-  "Women's Rowing",
-  "Women's Sailing",
-  "Women's Soccer",
-  "Women's Squash",
-  "Women's Swimming And Diving",
-  "Women's Tennis",
-  "Women's Track And Field",
-  "Women's Volleyball",
-  'Wrestling',
-]
-
 export default function DiscoverClient({
   initialAlumni,
   networkAlumniIds: initialNetworkIds,
@@ -97,51 +60,104 @@ export default function DiscoverClient({
 }: DiscoverClientProps) {
   const supabase = createClient()
 
+  // Search & filter state
   const [searchQuery, setSearchQuery] = useState('')
   const [industryFilter, setIndustryFilter] = useState('All')
   const [sportFilter, setSportFilter] = useState<string | null>(null)
+  const [locationFilter, setLocationFilter] = useState('')
+
+  // Data state
+  const [alumni, setAlumni] = useState<DiscoverAlumni[]>(initialAlumni)
+  const [totalCount, setTotalCount] = useState(totalAlumniCount)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasMore, setHasMore] = useState(initialAlumni.length < totalAlumniCount)
+
+  // Loading state
+  const [isSearching, setIsSearching] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+
+  // Network & modal state
   const [networkIds, setNetworkIds] = useState<Set<string>>(new Set(initialNetworkIds))
   const [loadingId, setLoadingId] = useState<string | null>(null)
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE)
   const [selectedAlumni, setSelectedAlumni] = useState<DiscoverAlumni | null>(null)
+  const [similarAlumni, setSimilarAlumni] = useState<DiscoverAlumni[]>([])
 
-  // Filter alumni based on search and filters
-  const filteredAlumni = useMemo(() => {
-    return initialAlumni.filter((person) => {
-      const searchLower = searchQuery.toLowerCase()
-      const matchesSearch =
-        searchQuery === '' ||
-        person.full_name.toLowerCase().includes(searchLower) ||
-        person.company?.toLowerCase().includes(searchLower) ||
-        person.role?.toLowerCase().includes(searchLower) ||
-        person.industry?.toLowerCase().includes(searchLower)
+  // Debounce ref
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Track whether this is the initial render (no filters applied yet)
+  const isInitialRender = useRef(true)
 
-      const matchesIndustry =
-        industryFilter === 'All' || person.industry === industryFilter
+  // Fetch alumni from server
+  const fetchAlumni = useCallback(async (
+    search: string,
+    industry: string,
+    sport: string | null,
+    location: string,
+    page: number,
+    append: boolean
+  ) => {
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (industry !== 'All') params.set('industry', industry)
+    if (sport) params.set('sport', sport)
+    if (location.trim()) params.set('location', location.trim())
+    params.set('page', String(page))
+    params.set('limit', String(ITEMS_PER_PAGE))
 
-      // Use exact matching for sports - no cross-matching between distinct teams
-      const matchesSport = sportMatchesExact(person.sport, sportFilter)
+    const res = await fetch(`/api/alumni/search?${params.toString()}`)
+    if (!res.ok) throw new Error('Search failed')
 
-      return matchesSearch && matchesIndustry && matchesSport
-    })
-  }, [initialAlumni, searchQuery, industryFilter, sportFilter])
+    const data = await res.json()
 
-  // Reset visible count when filters/search change
-  useMemo(() => {
-    setVisibleCount(ITEMS_PER_PAGE)
-  }, [searchQuery, industryFilter, sportFilter])
+    if (append) {
+      setAlumni(prev => [...prev, ...data.alumni])
+    } else {
+      setAlumni(data.alumni)
+    }
+    setTotalCount(data.total)
+    setCurrentPage(page)
+    setHasMore(data.hasMore)
+  }, [])
 
-  // Get only the visible portion of filtered alumni
-  const visibleAlumni = useMemo(() => {
-    return filteredAlumni.slice(0, visibleCount)
-  }, [filteredAlumni, visibleCount])
+  // Debounced search - fires when search/filters change
+  useEffect(() => {
+    // Skip the initial render - we already have SSR data
+    if (isInitialRender.current) {
+      isInitialRender.current = false
+      return
+    }
 
-  const hasMore = visibleCount < filteredAlumni.length
+    if (debounceRef.current) clearTimeout(debounceRef.current)
 
-  const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + ITEMS_PER_PAGE)
+    debounceRef.current = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        await fetchAlumni(searchQuery, industryFilter, sportFilter, locationFilter, 1, false)
+      } catch (err) {
+        console.error('Search error:', err)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 300)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [searchQuery, industryFilter, sportFilter, locationFilter, fetchAlumni])
+
+  // Load more handler
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true)
+    try {
+      await fetchAlumni(searchQuery, industryFilter, sportFilter, locationFilter, currentPage + 1, true)
+    } catch (err) {
+      console.error('Load more error:', err)
+    } finally {
+      setIsLoadingMore(false)
+    }
   }
 
+  // Add to network
   const handleAddToNetwork = async (alumniId: string) => {
     setLoadingId(alumniId)
 
@@ -165,33 +181,25 @@ export default function DiscoverClient({
     }
   }
 
-  // Find similar alumni for the modal
-  const getSimilarAlumni = (alumni: DiscoverAlumni): DiscoverAlumni[] => {
-    const similar: DiscoverAlumni[] = []
+  // Fetch similar alumni when modal opens
+  const handleSelectAlumni = async (selected: DiscoverAlumni) => {
+    setSelectedAlumni(selected)
+    setSimilarAlumni([])
 
-    // Find alumni with same industry
-    const sameIndustry = initialAlumni.filter(
-      a => a.id !== alumni.id && a.industry === alumni.industry && a.industry
-    ).slice(0, 2)
-    similar.push(...sameIndustry)
+    try {
+      const params = new URLSearchParams({ alumni_id: selected.id })
+      if (selected.industry) params.set('industry', selected.industry)
+      if (selected.sport) params.set('sport', selected.sport)
+      if (selected.company) params.set('company', selected.company)
 
-    // Find alumni with same sport (if we don't have enough)
-    if (similar.length < 4) {
-      const sameSport = initialAlumni.filter(
-        a => a.id !== alumni.id && a.sport === alumni.sport && !similar.includes(a)
-      ).slice(0, 4 - similar.length)
-      similar.push(...sameSport)
+      const res = await fetch(`/api/alumni/similar?${params.toString()}`)
+      if (res.ok) {
+        const data = await res.json()
+        setSimilarAlumni(data.similar || [])
+      }
+    } catch {
+      // Similar alumni are non-critical, silently fail
     }
-
-    // Find alumni at same company
-    if (similar.length < 4 && alumni.company) {
-      const sameCompany = initialAlumni.filter(
-        a => a.id !== alumni.id && a.company === alumni.company && !similar.includes(a)
-      ).slice(0, 4 - similar.length)
-      similar.push(...sameCompany)
-    }
-
-    return similar.slice(0, 4)
   }
 
   const handleMySportFilter = () => {
@@ -199,7 +207,6 @@ export default function DiscoverClient({
       setSportFilter(null)
     } else if (userSport) {
       setSportFilter(userSport)
-      // No longer resetting industry filter - allow combining sport + industry
     }
   }
 
@@ -207,9 +214,16 @@ export default function DiscoverClient({
     setSearchQuery('')
     setIndustryFilter('All')
     setSportFilter(null)
+    setLocationFilter('')
   }
 
-  const hasActiveFilters = industryFilter !== 'All' || sportFilter !== null || searchQuery !== ''
+  const hasActiveFilters = industryFilter !== 'All' || sportFilter !== null || searchQuery !== '' || locationFilter !== ''
+
+  // Active filter summary for results line
+  const activeFilterParts: string[] = []
+  if (sportFilter) activeFilterParts.push(sportFilter)
+  if (industryFilter !== 'All') activeFilterParts.push(industryFilter)
+  if (locationFilter.trim()) activeFilterParts.push(locationFilter.trim())
 
   return (
     <main className="px-6 md:px-12 py-10 max-w-5xl mx-auto">
@@ -226,7 +240,7 @@ export default function DiscoverClient({
       {/* Search Section - Hero/Focus */}
       <div className="card p-6 mb-6">
         {/* Large Search Bar */}
-        <div className="relative mb-5">
+        <div className="relative mb-4">
           <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
           <input
             type="text"
@@ -235,6 +249,29 @@ export default function DiscoverClient({
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full py-3.5 pl-12 pr-4 text-base bg-[--bg-primary] border border-[--border-primary] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
           />
+          {isSearching && (
+            <Loader2 size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] animate-spin" />
+          )}
+        </div>
+
+        {/* Location Search Bar */}
+        <div className="relative mb-5">
+          <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Filter by location (e.g. San Diego, New York)"
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+            className="w-full py-2.5 pl-11 pr-4 text-sm bg-[--bg-primary] border border-[--border-primary] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
+          />
+          {locationFilter && (
+            <button
+              onClick={() => setLocationFilter('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] hover:text-[--text-secondary]"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         {/* Quick Filter Pills */}
@@ -309,14 +346,19 @@ export default function DiscoverClient({
 
       {/* Results count */}
       <p className="text-[--text-quaternary] text-sm mb-4">
-        Showing {visibleAlumni.length} of {filteredAlumni.length} alumni
-        {sportFilter && <span className="text-[--school-primary]"> in {sportFilter}</span>}
-        {sportFilter && industryFilter !== 'All' && <span> &amp;</span>}
-        {industryFilter !== 'All' && <span className="text-[--school-primary]"> {industryFilter}</span>}
+        Showing {alumni.length} of {totalCount.toLocaleString()} alumni
+        {activeFilterParts.length > 0 && (
+          <span> matching <span className="text-[--school-primary]">{activeFilterParts.join(' + ')}</span></span>
+        )}
       </p>
 
       {/* Alumni List */}
-      {filteredAlumni.length === 0 ? (
+      {isSearching && alumni.length === 0 ? (
+        <div className="text-center py-16">
+          <Loader2 size={32} className="mx-auto text-[--text-quaternary] animate-spin mb-3" />
+          <p className="text-[--text-secondary]">Searching alumni...</p>
+        </div>
+      ) : alumni.length === 0 ? (
         <div className="text-center py-16">
           <div className="empty-state-icon">
             <Search size={32} className="text-[--text-quaternary]" />
@@ -326,63 +368,85 @@ export default function DiscoverClient({
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-3">
-            {visibleAlumni.map((alumni) => (
-              <button
-                key={alumni.id}
-                onClick={() => setSelectedAlumni(alumni)}
-                className="w-full card p-4 flex items-center gap-4 hover:bg-[--bg-tertiary] hover:border-[--border-secondary] transition-all text-left group"
-              >
-                {/* Avatar */}
-                <Avatar name={alumni.full_name} sport={alumni.sport} imageUrl={alumni.avatar_url} size="md" />
+          <div className={`flex flex-col gap-3 ${isSearching ? 'opacity-50 pointer-events-none' : ''}`}>
+            {alumni.map((alumniItem) => {
+              const isSameSport = userSport && alumniItem.sport && alumniItem.sport.toLowerCase() === userSport.toLowerCase()
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <h3 className="font-medium text-[--text-primary] truncate transition-colors">
-                      {alumni.full_name}
-                    </h3>
-                    {networkIds.has(alumni.id) && (
-                      <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex-shrink-0 border border-emerald-500/20">
-                        <Check size={10} />
-                        Connected
-                      </span>
-                    )}
+              return (
+                <button
+                  key={alumniItem.id}
+                  onClick={() => handleSelectAlumni(alumniItem)}
+                  className={`w-full card p-4 flex items-center gap-4 hover:bg-[--bg-tertiary] transition-all text-left group ${
+                    isSameSport
+                      ? 'border-[--school-primary]/40 hover:border-[--school-primary]/60'
+                      : 'hover:border-[--border-secondary]'
+                  }`}
+                >
+                  {/* Avatar */}
+                  <Avatar name={alumniItem.full_name} sport={alumniItem.sport} imageUrl={alumniItem.avatar_url} size="md" />
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <h3 className="font-medium text-[--text-primary] truncate transition-colors">
+                        {alumniItem.full_name}
+                      </h3>
+                      {networkIds.has(alumniItem.id) && (
+                        <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex-shrink-0 border border-emerald-500/20">
+                          <Check size={10} />
+                          Connected
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Role @ Company */}
+                    <p className="text-sm text-[--text-secondary] truncate">
+                      {alumniItem.role && alumniItem.role !== '...' && alumniItem.company && alumniItem.company !== '...'
+                        ? `${alumniItem.role} @ ${alumniItem.company}`
+                        : (alumniItem.role && alumniItem.role !== '...' ? alumniItem.role : '') || (alumniItem.company && alumniItem.company !== '...' ? alumniItem.company : '') || 'Cornell Athlete Alumni'}
+                    </p>
+
+                    {/* Sport badge + Year */}
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      {isSameSport ? (
+                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border bg-[--school-primary]/10 text-[--school-primary] border-[--school-primary]/30 font-medium">
+                          <Flame size={10} />
+                          Played {alumniItem.sport} like you
+                        </span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--bg-tertiary] text-[--text-quaternary] border-[--border-primary]">
+                          {alumniItem.sport}
+                        </span>
+                      )}
+                      {alumniItem.graduation_year && (
+                        <span className="text-xs text-[--text-quaternary]">
+                          Class of {alumniItem.graduation_year}
+                        </span>
+                      )}
+                      {alumniItem.location && (
+                        <span className="text-xs text-[--text-quaternary] flex items-center gap-1">
+                          <MapPin size={10} />
+                          {alumniItem.location}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Role @ Company */}
-                  <p className="text-sm text-[--text-secondary] truncate">
-                    {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
-                      ? `${alumni.role} @ ${alumni.company}`
-                      : (alumni.role && alumni.role !== '...' ? alumni.role : '') || (alumni.company && alumni.company !== '...' ? alumni.company : '') || 'Cornell Athlete Alumni'}
-                  </p>
+                  {/* Industry Badge - only show if it's a valid/verified industry */}
+                  {alumniItem.industry && validIndustries.has(alumniItem.industry) && (
+                    <span
+                      className={`hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 border ${
+                        industryBadgeClass[alumniItem.industry] || 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
+                      }`}
+                    >
+                      {alumniItem.industry}
+                    </span>
+                  )}
 
-                  {/* Sport & Year */}
-                  <p className="text-xs text-[--text-quaternary] mt-1 flex items-center gap-2">
-                    <span>{alumni.sport}</span>
-                    {alumni.graduation_year && (
-                      <>
-                        <span className="w-1 h-1 rounded-full bg-[--text-quaternary]" />
-                        <span>Class of {alumni.graduation_year}</span>
-                      </>
-                    )}
-                  </p>
-                </div>
-
-                {/* Industry Badge - only show if it's a valid/verified industry */}
-                {alumni.industry && validIndustries.has(alumni.industry) && (
-                  <span
-                    className={`hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 border ${
-                      industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
-                    }`}
-                  >
-                    {alumni.industry}
-                  </span>
-                )}
-
-                <ChevronRight size={18} className="text-[--text-quaternary] flex-shrink-0 group-hover:text-[--text-secondary] group-hover:translate-x-0.5 transition-all" />
-              </button>
-            ))}
+                  <ChevronRight size={18} className="text-[--text-quaternary] flex-shrink-0 group-hover:text-[--text-secondary] group-hover:translate-x-0.5 transition-all" />
+                </button>
+              )
+            })}
           </div>
 
           {/* Load More Button */}
@@ -390,9 +454,17 @@ export default function DiscoverClient({
             <div className="mt-8 text-center">
               <button
                 onClick={handleLoadMore}
+                disabled={isLoadingMore}
                 className="btn-secondary px-8 py-3"
               >
-                Load More ({filteredAlumni.length - visibleCount} remaining)
+                {isLoadingMore ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Loading...
+                  </span>
+                ) : (
+                  `Load More (${(totalCount - alumni.length).toLocaleString()} remaining)`
+                )}
               </button>
             </div>
           )}
@@ -405,9 +477,9 @@ export default function DiscoverClient({
           alumni={selectedAlumni}
           isInNetwork={networkIds.has(selectedAlumni.id)}
           onAddToNetwork={handleAddToNetwork}
-          onClose={() => setSelectedAlumni(null)}
-          similarAlumni={getSimilarAlumni(selectedAlumni)}
-          onSelectAlumni={(alumni) => setSelectedAlumni(alumni)}
+          onClose={() => { setSelectedAlumni(null); setSimilarAlumni([]) }}
+          similarAlumni={similarAlumni}
+          onSelectAlumni={(a) => handleSelectAlumni(a as DiscoverAlumni)}
           networkIds={networkIds}
         />
       )}

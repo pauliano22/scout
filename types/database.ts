@@ -116,7 +116,7 @@ export interface PlanAlumni {
 
 export interface PlanCustomContact {
   id: string
-  plan_id: string
+  plan_id: string | null
   user_id: string
   name: string
   company: string | null

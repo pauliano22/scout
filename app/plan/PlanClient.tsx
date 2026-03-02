@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import MessageModal from '@/components/MessageModal'
 import { trackEvent } from '@/lib/track'
-import type { Profile, NetworkingPlan, PlanAlumni, PlanCustomContact, UserNetwork, Alumni } from '@/types/database'
+import { getStatusConfig } from '@/lib/statusConfig'
+import type { Profile, NetworkingPlan, PlanAlumni, UserNetwork, Alumni } from '@/types/database'
 import {
   ChevronDown,
   ChevronUp,
@@ -25,6 +25,7 @@ import {
   Building2,
   UserPlus,
   Check,
+  Flame,
 } from 'lucide-react'
 
 type PlanAlumniWithAlumni = PlanAlumni & { alumni: Alumni }
@@ -39,7 +40,6 @@ interface PlanClientProps {
   userId: string
   profile: Profile
   plan: PlanWithAlumni | null
-  customContacts: PlanCustomContact[]
   stats: {
     networkCount: number
     messagesCount: number
@@ -48,12 +48,10 @@ interface PlanClientProps {
   networkAlumniIds: string[]
 }
 
-export default function PlanClient({ userId, profile, plan: initialPlan, customContacts: initialCustomContacts, stats, networkAlumniIds: initialNetworkIds }: PlanClientProps) {
-  const router = useRouter()
+export default function PlanClient({ userId, profile, plan: initialPlan, stats, networkAlumniIds: initialNetworkIds }: PlanClientProps) {
   const supabase = createClient()
 
   const [plan, setPlan] = useState<PlanWithAlumni | null>(initialPlan)
-  const [customContacts, setCustomContacts] = useState(initialCustomContacts)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isGeneratingMore, setIsGeneratingMore] = useState(false)
@@ -66,11 +64,6 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
 
   // MessageModal state
   const [messageTarget, setMessageTarget] = useState<{ connection: UserNetwork; planAlumniId: string } | null>(null)
-
-  // Custom contact form state
-  const [showAddContact, setShowAddContact] = useState(false)
-  const [contactForm, setContactForm] = useState({ name: '', company: '', role: '', linkedin_url: '', notes: '' })
-  const [isAddingContact, setIsAddingContact] = useState(false)
 
   const firstName = profile.full_name?.split(' ')[0] || 'there'
 
@@ -135,7 +128,6 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
       if (!response.ok) throw new Error('Failed to delete plan')
 
       setPlan(null)
-      setCustomContacts([])
       setExpandedId(null)
       setShowDeleteConfirm(false)
       trackEvent('plan_deleted')
@@ -257,32 +249,6 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
     }
 
     trackEvent('message_sent', { sent_via: sentVia, alumni_id: messageTarget?.connection.alumni_id })
-  }
-
-  const handleAddCustomContact = async () => {
-    if (!plan || !contactForm.name.trim()) return
-    setIsAddingContact(true)
-
-    const { data, error } = await supabase
-      .from('plan_custom_contacts')
-      .insert({
-        plan_id: plan.id,
-        user_id: userId,
-        name: contactForm.name,
-        company: contactForm.company || null,
-        role: contactForm.role || null,
-        linkedin_url: contactForm.linkedin_url || null,
-        notes: contactForm.notes || null,
-      })
-      .select()
-      .single()
-
-    if (!error && data) {
-      setCustomContacts(prev => [...prev, data])
-      setContactForm({ name: '', company: '', role: '', linkedin_url: '', notes: '' })
-      setShowAddContact(false)
-    }
-    setIsAddingContact(false)
   }
 
   const toggleExpand = (id: string) => {
@@ -445,11 +411,17 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
             if (!alumni) return null
             const isExpanded = expandedId === pa.id
             const isInNetwork = networkIds.has(alumni.id)
+            const isSameSport = profile.sport && alumni.sport && alumni.sport.toLowerCase() === profile.sport.toLowerCase()
+            const contactedConfig = getStatusConfig('met') // reuse emerald for "Contacted"
 
             return (
               <div
                 key={pa.id}
-                className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl overflow-hidden hover:border-[--border-secondary] transition-colors"
+                className={`rounded-xl overflow-hidden transition-colors border ${
+                  isSameSport
+                    ? 'bg-[--bg-secondary] border-[--school-primary]/30'
+                    : 'bg-[--bg-secondary] border-[--border-primary] hover:border-[--border-secondary]'
+                }`}
               >
                 {/* Collapsed header */}
                 <button
@@ -463,17 +435,17 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-[--text-primary] truncate">
                           {alumni.full_name}
                         </span>
                         {pa.status === 'contacted' && (
-                          <span className="text-xs bg-green-500/10 text-green-500 px-2 py-0.5 rounded-full flex-shrink-0">
+                          <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 border ${contactedConfig.bgClass} ${contactedConfig.textClass} ${contactedConfig.borderClass}`}>
                             Contacted
                           </span>
                         )}
                         {isInNetwork && (
-                          <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full flex-shrink-0">
+                          <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full flex-shrink-0 border border-emerald-500/20">
                             In Network
                           </span>
                         )}
@@ -486,9 +458,17 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
                     </div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className="text-xs bg-[--bg-tertiary] px-2 py-1 rounded text-[--text-tertiary] hidden sm:inline">
-                      {alumni.sport} &apos;{String(alumni.graduation_year).slice(-2)}
-                    </span>
+                    {/* Sport badge */}
+                    {isSameSport ? (
+                      <span className="hidden sm:flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-[--school-primary]/10 text-[--school-primary] border-[--school-primary]/30 font-medium">
+                        <Flame size={10} />
+                        Same sport
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-[--bg-tertiary] px-2 py-1 rounded text-[--text-tertiary] hidden sm:inline border border-[--border-primary]">
+                        {alumni.sport} &apos;{String(alumni.graduation_year).slice(-2)}
+                      </span>
+                    )}
                     {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                   </div>
                 </button>
@@ -620,131 +600,26 @@ export default function PlanClient({ userId, profile, plan: initialPlan, customC
         </div>
       )}
 
-      {/* Generate More Button */}
+      {/* Generate More Button — primary CTA */}
       {plan && (
         <div className="text-center mb-8">
           <button
             onClick={handleGenerateMore}
             disabled={isGeneratingMore}
-            className="btn-secondary inline-flex items-center gap-2 px-5 py-2.5"
+            className="btn-primary inline-flex items-center gap-2.5 px-7 py-3 text-base font-semibold shadow-md hover:shadow-lg transition-shadow"
           >
             {isGeneratingMore ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2 size={18} className="animate-spin" />
                 Finding more alumni...
               </>
             ) : (
               <>
-                <Plus size={16} />
+                <RefreshCw size={18} />
                 Generate More Recommendations
               </>
             )}
           </button>
-        </div>
-      )}
-
-      {/* Custom Contacts Section */}
-      {plan && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-[--text-primary]">Custom Contacts</h3>
-            <button
-              onClick={() => setShowAddContact(!showAddContact)}
-              className="btn-ghost text-sm flex items-center gap-1.5"
-            >
-              {showAddContact ? <X size={14} /> : <Plus size={14} />}
-              {showAddContact ? 'Cancel' : 'Add Contact'}
-            </button>
-          </div>
-
-          {/* Add contact form */}
-          {showAddContact && (
-            <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4">
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <input
-                  type="text"
-                  placeholder="Name *"
-                  value={contactForm.name}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="input-field"
-                />
-                <input
-                  type="text"
-                  placeholder="Company"
-                  value={contactForm.company}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, company: e.target.value }))}
-                  className="input-field"
-                />
-                <input
-                  type="text"
-                  placeholder="Role"
-                  value={contactForm.role}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, role: e.target.value }))}
-                  className="input-field"
-                />
-                <input
-                  type="text"
-                  placeholder="LinkedIn URL"
-                  value={contactForm.linkedin_url}
-                  onChange={(e) => setContactForm(prev => ({ ...prev, linkedin_url: e.target.value }))}
-                  className="input-field"
-                />
-              </div>
-              <input
-                type="text"
-                placeholder="Notes"
-                value={contactForm.notes}
-                onChange={(e) => setContactForm(prev => ({ ...prev, notes: e.target.value }))}
-                className="input-field mb-3"
-              />
-              <button
-                onClick={handleAddCustomContact}
-                disabled={!contactForm.name.trim() || isAddingContact}
-                className="btn-primary text-sm"
-              >
-                {isAddingContact ? 'Adding...' : 'Add Contact'}
-              </button>
-            </div>
-          )}
-
-          {/* Custom contacts list */}
-          {customContacts.length > 0 ? (
-            <div className="space-y-2">
-              {customContacts.map(contact => (
-                <div
-                  key={contact.id}
-                  className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-medium text-[--text-primary]">{contact.name}</div>
-                    <div className="text-sm text-[--text-tertiary]">
-                      {contact.role && contact.company
-                        ? `${contact.role} @ ${contact.company}`
-                        : contact.role || contact.company || ''}
-                    </div>
-
-                    {contact.notes && (
-                      <div className="text-xs text-[--text-quaternary] mt-1">{contact.notes}</div>
-                    )}
-                  </div>
-                  {contact.linkedin_url && (
-                    <a
-                      href={contact.linkedin_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-ghost p-2 hover:text-[#0077b5]"
-                    >
-                      <Linkedin size={16} />
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-[--text-quaternary] text-center py-4">
-              Add people you want to track outside the alumni directory
-            </p>
-          )}
         </div>
       )}
 

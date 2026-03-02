@@ -7,8 +7,8 @@ import { UserNetwork, PlanCustomContact } from '@/types/database'
 import MessageModal from '@/components/MessageModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
 import Avatar from '@/components/Avatar'
-import { statusConfig, getStatusConfig, type CRMStatus } from '@/lib/statusConfig'
-import { Search, Users, ChevronRight, MessageSquare, Clock, AlertCircle, Calendar, CheckCircle2, Send, FileText, Phone, Plus, X, Linkedin, Loader2 } from 'lucide-react'
+import { statusConfig, type CRMStatus } from '@/lib/statusConfig'
+import { Search, Users, ChevronRight, MessageSquare, AlertCircle, Send, FileText, Phone, Plus, X, Linkedin, Loader2 } from 'lucide-react'
 
 interface NetworkClientProps {
   initialNetwork: UserNetwork[]

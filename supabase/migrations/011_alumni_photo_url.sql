@@ -1,0 +1,2 @@
+ALTER TABLE alumni
+  ADD COLUMN IF NOT EXISTS photo_url TEXT;

@@ -127,7 +127,7 @@ export default function AboutPage() {
               {[
                 { value: '55', label: 'Years of Data', color: 'from-[--school-primary] to-red-500' },
                 { value: '40+', label: 'Sports', color: 'from-blue-400 to-cyan-400' },
-                { value: '17,000+', label: 'Alumni Profiles', color: 'from-emerald-400 to-teal-400' },
+                { value: '18,000+', label: 'Alumni Profiles', color: 'from-emerald-400 to-teal-400' },
                 { value: 'Free', label: 'For Athletes', color: 'from-amber-400 to-orange-400' },
               ].map((stat, i) => (
                 <div

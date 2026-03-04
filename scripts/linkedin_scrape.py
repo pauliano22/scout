@@ -14,11 +14,7 @@ SERPER_API_KEY = "cf407b7c1990467853c02e0bce31778b6828f37d"
 SUPABASE_URL = "https://recftqpdnbdandloykms.supabase.co"
 SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlY2Z0cXBkbmJkYW5kbG95a21zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDYwODU2OCwiZXhwIjoyMDgwMTg0NTY4fQ.p5Hs6kriDGTUoP73WMWmkmORMEhxf1qd0H6yxS9RmFY"
 
-# Process ALL alumni (set high number)
-BATCH_SIZE = 10000
-
-# Delay between API calls (seconds) - be nice to the API
-DELAY_BETWEEN_CALLS = 0.5  # Faster since we're paying
+DELAY_BETWEEN_CALLS = 0.5
 
 # ==========================================
 # INDUSTRY MAPPING
@@ -216,24 +212,20 @@ COMPANY_TO_INDUSTRY = {
 # HELPER FUNCTIONS
 # ==========================================
 
-def search_linkedin(name, sport, graduation_year):
+def search_linkedin(name, sport=None, loose=False):
     """
     Searches Serper.dev for a person's LinkedIn profile.
-    Returns dict with linkedin_url, role, company, location, industry
+    loose=True uses a broader query (name + Cornell only, no sport).
+    Returns dict with linkedin_url, role, company, location, industry.
     """
-    # Build search query
-    query = f'"{name}" Cornell {sport} site:linkedin.com/in'
-    
-    headers = {
-        'X-API-KEY': SERPER_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    
-    payload = {
-        'q': query,
-        'num': 3  # Get top 3 results
-    }
-    
+    if loose or not sport:
+        query = f'"{name}" Cornell site:linkedin.com/in'
+    else:
+        query = f'"{name}" Cornell {sport} site:linkedin.com/in'
+
+    headers = {'X-API-KEY': SERPER_API_KEY, 'Content-Type': 'application/json'}
+    payload = {'q': query, 'num': 3}
+
     try:
         response = requests.post(
             'https://google.serper.dev/search',
@@ -242,13 +234,10 @@ def search_linkedin(name, sport, graduation_year):
             timeout=10
         )
         response.raise_for_status()
-        data = response.json()
-        
-        # Parse the results
-        return parse_search_results(data, name)
-        
+        return parse_search_results(response.json(), name)
     except Exception as e:
-        print(f"   Error searching for {name}: {e}")
+        safe_err = str(e).encode('ascii', 'replace').decode('ascii')
+        print(f"   Error searching for {name.encode('ascii','replace').decode('ascii')}: {safe_err}")
         return None
 
 
@@ -375,136 +364,113 @@ def determine_industry(company, title, snippet):
 # MAIN EXECUTION
 # ==========================================
 
+def run_pass(supabase, alumni, loose, pass_name):
+    """Search a list of alumni and update DB. Returns (found, not_found, errors)."""
+    found = not_found = errors = 0
+    start = time.time()
+
+    for i, person in enumerate(alumni):
+        name = person['full_name']
+        sport = person['sport']
+        elapsed = time.time() - start
+        rate = (i + 1) / elapsed if elapsed > 0 else 1
+        eta = (len(alumni) - i - 1) / rate
+
+        safe_name = name.encode('ascii', 'replace').decode('ascii')
+        print(f"[{pass_name} {i+1}/{len(alumni)}] {safe_name} ", end="", flush=True)
+
+        try:
+            result = search_linkedin(name, sport, loose=loose)
+        except Exception:
+            result = None
+
+        if result and result.get('linkedin_url'):
+            role = (result.get('role') or '')[:30].encode('ascii', 'replace').decode('ascii')
+            company = (result.get('company') or '')[:20].encode('ascii', 'replace').decode('ascii')
+            print(f"-> {role} @ {company}")
+            update = {k: result[k] for k in ('linkedin_url', 'role', 'company', 'industry', 'location') if result.get(k)}
+            try:
+                supabase.table('alumni').update(update).eq('id', person['id']).execute()
+                found += 1
+            except Exception as e:
+                print(f"  DB error: {e}")
+                errors += 1
+        else:
+            print("-> Not found")
+            try:
+                supabase.table('alumni').update({'linkedin_url': ''}).eq('id', person['id']).execute()
+                not_found += 1
+            except Exception:
+                errors += 1
+
+        if (i + 1) % 100 == 0:
+            print(f"\n--- {i+1}/{len(alumni)} | Found: {found} | Not found: {not_found} | ETA: {eta/60:.1f} min ---\n")
+
+        time.sleep(DELAY_BETWEEN_CALLS)
+
+    return found, not_found, errors
+
+
 def main():
-    print("="*60)
-    print("LINKEDIN ENRICHMENT - FULL RUN")
-    print("="*60)
-    
-    # Connect to Supabase
-    print("\n1. Connecting to Supabase...")
+    import sys
     supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    print("   Connected!")
-    
-    # Fetch un-enriched alumni (no linkedin_url yet)
-    # Only get people who have graduated (not current students)
-    # Prioritize recent graduates who are more likely to have LinkedIn
-    print(f"\n2. Fetching un-enriched alumni...")
-    
-    current_year = 2025  # Current year - only enrich people who have graduated
-    
-    result = supabase.table('alumni') \
+    current_year = 2026
+
+    # ── Pass 1: true NULLs — strict query (name + sport + Cornell) ──
+    print("=" * 60)
+    print("PASS 1: Never-searched alumni (true NULL linkedin_url)")
+    print("=" * 60)
+    res = supabase.table('alumni') \
         .select('id, full_name, sport, graduation_year') \
         .is_('linkedin_url', 'null') \
         .lte('graduation_year', current_year) \
         .order('graduation_year', desc=True) \
-        .limit(BATCH_SIZE) \
         .execute()
-    
-    alumni = result.data
-    print(f"   Found {len(alumni)} alumni to enrich")
-    
-    if not alumni:
-        print("\n   No more alumni to enrich! All done!")
-        return
-    
-    # Estimate time
-    est_minutes = (len(alumni) * DELAY_BETWEEN_CALLS) / 60
-    print(f"   Estimated time: {est_minutes:.0f} minutes ({est_minutes/60:.1f} hours)")
-    
-    # Confirm before starting (skip if --yes flag passed)
-    import sys
-    if '--yes' not in sys.argv:
-        confirm = input("\n   Type 'yes' to start enrichment: ")
-        if confirm.lower() != 'yes':
-            print("   Aborted.")
-            return
-    
-    # Enrich each alumni
-    print(f"\n3. Searching LinkedIn for each alumni...")
-    print("-"*60)
-    
-    enriched_count = 0
-    not_found_count = 0
-    error_count = 0
-    start_time = time.time()
-    
-    for i, person in enumerate(alumni):
-        name = person['full_name']
-        sport = person['sport']
-        grad_year = person['graduation_year']
-        
-        # Progress indicator (every person)
-        elapsed = time.time() - start_time
-        rate = (i + 1) / elapsed if elapsed > 0 else 0
-        remaining = (len(alumni) - i - 1) / rate if rate > 0 else 0
-        
-        # Handle Unicode characters safely for Windows console
-        safe_name = name.encode('ascii', 'replace').decode('ascii')
-        print(f"[{i+1}/{len(alumni)}] {safe_name} ({sport}, {grad_year}) ", end="")
-        
-        # Search for their LinkedIn
-        result = search_linkedin(name, sport, grad_year)
-        
-        if result and result.get('linkedin_url'):
-            role_display = result.get('role', 'N/A')[:30] if result.get('role') else 'N/A'
-            company_display = result.get('company', 'N/A')[:20] if result.get('company') else 'N/A'
-            print(f"-> {role_display} @ {company_display}")
-            
-            # Update Supabase
-            update_data = {}
-            if result.get('linkedin_url'):
-                update_data['linkedin_url'] = result['linkedin_url']
-            if result.get('role'):
-                update_data['role'] = result['role']
-            if result.get('company'):
-                update_data['company'] = result['company']
-            if result.get('industry'):
-                update_data['industry'] = result['industry']
-            if result.get('location'):
-                update_data['location'] = result['location']
-            
-            if update_data:
-                try:
-                    supabase.table('alumni').update(update_data).eq('id', person['id']).execute()
-                    enriched_count += 1
-                except Exception as e:
-                    print(f"      DB Error: {e}")
-                    error_count += 1
-        else:
-            print("-> Not found")
-            # Mark as searched so we don't keep trying
-            try:
-                supabase.table('alumni').update({'linkedin_url': ''}).eq('id', person['id']).execute()
-                not_found_count += 1
-            except Exception as e:
-                error_count += 1
-        
-        # Progress update every 100 people
-        if (i + 1) % 100 == 0:
-            print(f"\n--- Progress: {i+1}/{len(alumni)} | Found: {enriched_count} | Not found: {not_found_count} | ETA: {remaining/60:.1f} min ---\n")
-        
-        # Delay between calls
-        time.sleep(DELAY_BETWEEN_CALLS)
-    
-    # Summary
-    total_time = time.time() - start_time
-    print("\n" + "="*60)
-    print("ENRICHMENT COMPLETE")
-    print("="*60)
-    print(f"Total time:    {total_time/60:.1f} minutes")
-    print(f"Enriched:      {enriched_count}")
-    print(f"Not found:     {not_found_count}")
-    print(f"Errors:        {error_count}")
-    print(f"Success rate:  {enriched_count/(enriched_count+not_found_count)*100:.1f}%")
-    
-    # Check remaining
-    remaining_result = supabase.table('alumni') \
-        .select('id', count='exact') \
-        .is_('linkedin_url', 'null') \
+    pass1 = res.data
+    print(f"Found {len(pass1)} alumni to search")
+
+    # ── Pass 2: empty string — loose query (name + Cornell only) ──
+    print("\n" + "=" * 60)
+    print("PASS 2: Previously searched but not found — retrying with looser query")
+    print("=" * 60)
+    res2 = supabase.table('alumni') \
+        .select('id, full_name, sport, graduation_year') \
+        .eq('linkedin_url', '') \
         .lte('graduation_year', current_year) \
+        .order('graduation_year', desc=True) \
         .execute()
-    
-    print(f"\nRemaining un-enriched: {remaining_result.count}")
+    pass2 = res2.data
+    print(f"Found {len(pass2)} alumni to retry")
+
+    total = len(pass1) + len(pass2)
+    est = (total * DELAY_BETWEEN_CALLS) / 60
+    print(f"\nTotal to search: {total:,} (~{est:.0f} min / {est/60:.1f} hrs)")
+
+    if '--yes' not in sys.argv:
+        confirm = input("\nType 'yes' to start: ")
+        if confirm.lower() != 'yes':
+            print("Aborted.")
+            return
+
+    f1 = nf1 = e1 = 0
+    if pass1:
+        f1, nf1, e1 = run_pass(supabase, pass1, loose=False, pass_name="P1")
+
+    f2 = nf2 = e2 = 0
+    if pass2:
+        f2, nf2, e2 = run_pass(supabase, pass2, loose=True, pass_name="P2")
+
+    # Final counts
+    real = supabase.table('alumni').select('id', count='exact') \
+        .not_.is_('linkedin_url', 'null').neq('linkedin_url', '').execute().count
+
+    print("\n" + "=" * 60)
+    print("DONE")
+    print("=" * 60)
+    print(f"Pass 1 (strict):  {f1} found, {nf1} not found, {e1} errors")
+    print(f"Pass 2 (loose):   {f2} found, {nf2} not found, {e2} errors")
+    print(f"Total new URLs:   {f1 + f2}")
+    print(f"Real LinkedIn URLs in DB now: {real:,}")
 
 
 if __name__ == "__main__":

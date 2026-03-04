@@ -145,7 +145,7 @@ export default function HomePage() {
 
             {/* Subheading */}
             <p className="text-lg md:text-xl text-[--text-secondary] max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              Connect with <span className="text-[--text-primary] font-semibold">17,000+ Cornell athlete alumni</span> across
+              Connect with <span className="text-[--text-primary] font-semibold">18,000+ Cornell athlete alumni</span> across
               every industry. Find mentors, land interviews, and build your career.
             </p>
 
@@ -290,7 +290,7 @@ export default function HomePage() {
               </div>
               <div className="text-center group">
                 <div className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2">
-                  <AnimatedCounter target={17000} suffix="+" />
+                  <AnimatedCounter target={18000} suffix="+" />
                 </div>
                 <p className="text-[--text-tertiary] text-sm">Alumni Profiles</p>
               </div>

@@ -1,35 +1,30 @@
 'use client'
 
 import posthog from 'posthog-js'
-import { PostHogProvider as PHProvider } from 'posthog-js/react'
+import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react'
 import { useEffect } from 'react'
 
-// Helper for tracking custom events anywhere in the app
-export { usePostHog } from 'posthog-js/react'
+export { usePostHog }
 
 export function trackEvent(event: string, properties?: Record<string, unknown>) {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && posthog.__loaded) {
     posthog.capture(event, properties)
   }
 }
 
 export default function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-    const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com'
-
-    if (!key) return // No key configured yet
-
-    posthog.init(key, {
-      api_host: host,
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
       capture_pageview: true,
       capture_pageleave: true,
-      person_profiles: 'identified_only',
+      loaded: (ph) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[PostHog] initialized', ph.get_distinct_id())
+        }
+      },
     })
   }, [])
-
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-  if (!key) return <>{children}</>
 
   return <PHProvider client={posthog}>{children}</PHProvider>
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react'
 import ResumeUpload from '@/components/ResumeUpload'
+import { trackEvent } from '@/lib/track'
 
 const INDUSTRIES = [
   'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media',
@@ -131,6 +132,13 @@ export default function OnboardingClient({ userId, userName, isAlumni, prefill }
         .eq('id', userId)
 
       if (updateError) throw updateError
+
+      trackEvent('onboarding_completed', {
+        sport,
+        primary_industry: primaryIndustry,
+        current_stage: currentStage,
+        networking_intensity: networkingIntensity,
+      })
 
       router.push('/plan')
     } catch (err: any) {

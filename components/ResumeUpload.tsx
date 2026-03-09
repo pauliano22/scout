@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvent } from '@/lib/track'
 import { Upload, FileText, Check, X, Loader } from 'lucide-react'
 
 interface ParsedResume {
@@ -78,6 +79,11 @@ export default function ResumeUpload({ userId, onParsed, compact = false }: Resu
     const { parsed: data } = await res.json()
     setParsed(data)
     setState('done')
+    trackEvent('resume_uploaded', {
+      has_major: !!data.major,
+      has_industry: !!data.primary_industry,
+      has_roles: (data.target_roles?.length ?? 0) > 0,
+    })
     onParsed?.(data)
   }
 

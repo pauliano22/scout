@@ -134,6 +134,9 @@ export default function DiscoverClient({
       setIsSearching(true)
       try {
         await fetchAlumni(searchQuery, industryFilter, sportFilter, locationFilter, 1, false)
+        if (searchQuery || industryFilter !== 'All' || sportFilter || locationFilter) {
+          trackEvent('search_performed', { query: searchQuery, industry: industryFilter, sport: sportFilter, location: locationFilter })
+        }
       } catch (err) {
         console.error('Search error:', err)
       } finally {
@@ -186,6 +189,7 @@ export default function DiscoverClient({
   const handleSelectAlumni = async (selected: DiscoverAlumni) => {
     setSelectedAlumni(selected)
     setSimilarAlumni([])
+    trackEvent('alumni_profile_opened', { alumni_id: selected.id, industry: selected.industry, sport: selected.sport })
 
     try {
       const params = new URLSearchParams({ alumni_id: selected.id })

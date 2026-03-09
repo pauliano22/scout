@@ -12,7 +12,7 @@ export default async function OnboardingPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('*, alumni:alumni_id(sport, graduation_year, company, role, industry, location)')
     .eq('id', user.id)
     .single()
 
@@ -20,10 +20,26 @@ export default async function OnboardingPage() {
     redirect('/plan')
   }
 
+  // If the profile is linked to an alumni row, pass pre-fill data
+  const linkedAlumni = profile?.alumni as {
+    sport?: string
+    graduation_year?: number
+    company?: string
+    role?: string
+    industry?: string
+    location?: string
+  } | null
+
   return (
     <OnboardingClient
       userId={user.id}
       userName={profile?.full_name || ''}
+      isAlumni={!!profile?.alumni_id}
+      prefill={linkedAlumni ? {
+        sport: linkedAlumni.sport || '',
+        graduationYear: linkedAlumni.graduation_year || null,
+        primaryIndustry: linkedAlumni.industry || '',
+      } : undefined}
     />
   )
 }

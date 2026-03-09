@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/types/database'
 import Avatar from '@/components/Avatar'
+import ResumeUpload from '@/components/ResumeUpload'
 import { Save, Check, Camera, Linkedin, MapPin, Briefcase, Building2 } from 'lucide-react'
 
 // Complete list of Cornell varsity sports with exact team names
@@ -381,6 +382,21 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
               className="input-field"
             />
           </div>
+        </div>
+
+        {/* Resume Upload */}
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
+          <h2 className="text-base font-semibold mb-1">Resume</h2>
+          <p className="text-xs text-[--text-quaternary] mb-4">
+            Uploading your resume helps us find better alumni matches and personalize your outreach. It&apos;s never shared with alumni.
+          </p>
+          <ResumeUpload
+            userId={userId}
+            compact
+            onParsed={(data) => {
+              if (data.major) setInterests(prev => prev || `Major: ${data.major}`)
+            }}
+          />
         </div>
 
         {/* Career Interests */}

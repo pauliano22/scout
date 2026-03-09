@@ -19,6 +19,7 @@ export interface DiscoverAlumni {
   graduation_year: number
   linkedin_url: string | null
   location: string | null
+  photo_url?: string | null
   avatar_url?: string | null
 }
 
@@ -383,7 +384,7 @@ export default function DiscoverClient({
                   }`}
                 >
                   {/* Avatar */}
-                  <Avatar name={alumniItem.full_name} sport={alumniItem.sport} imageUrl={alumniItem.avatar_url} size="md" />
+                  <Avatar name={alumniItem.full_name} sport={alumniItem.sport} imageUrl={alumniItem.photo_url || alumniItem.avatar_url} size="md" />
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">

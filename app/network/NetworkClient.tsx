@@ -384,7 +384,7 @@ export default function NetworkClient({
                   className="w-full card p-4 flex items-center gap-4 hover:bg-[--bg-tertiary] hover:border-[--border-secondary] transition-all text-left group cursor-pointer"
                 >
                   {/* Avatar */}
-                  <Avatar name={connection.alumni?.full_name || 'Unknown'} sport={connection.alumni?.sport} imageUrl={connection.alumni?.avatar_url} size="md" />
+                  <Avatar name={connection.alumni?.full_name || 'Unknown'} sport={connection.alumni?.sport} imageUrl={connection.alumni?.photo_url || connection.alumni?.avatar_url} size="md" />
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">

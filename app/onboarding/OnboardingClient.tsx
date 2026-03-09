@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react'
+import ResumeUpload from '@/components/ResumeUpload'
 
 const INDUSTRIES = [
   'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media',
@@ -46,7 +47,7 @@ const SPORTS_LIST = [
   'Wrestling',
 ]
 
-const TOTAL_STEPS = 7
+const TOTAL_STEPS = 8
 
 // Generate graduation year options (current year - 4 to current year + 4)
 const currentYear = new Date().getFullYear()
@@ -55,22 +56,28 @@ const GRAD_YEARS = Array.from({ length: 9 }, (_, i) => currentYear - 4 + i)
 interface OnboardingClientProps {
   userId: string
   userName: string
+  isAlumni?: boolean
+  prefill?: {
+    sport?: string
+    graduationYear?: number | null
+    primaryIndustry?: string
+  }
 }
 
-export default function OnboardingClient({ userId, userName }: OnboardingClientProps) {
+export default function OnboardingClient({ userId, userName, isAlumni, prefill }: OnboardingClientProps) {
   const router = useRouter()
   const supabase = createClient()
 
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)  // 0 = welcome/consent screen
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
   // Step 1: Sport & Graduation Year
-  const [sport, setSport] = useState('')
-  const [graduationYear, setGraduationYear] = useState<number | ''>('')
+  const [sport, setSport] = useState(prefill?.sport || '')
+  const [graduationYear, setGraduationYear] = useState<number | ''>(prefill?.graduationYear || '')
 
   // Step 2: Career Targeting
-  const [primaryIndustry, setPrimaryIndustry] = useState('')
+  const [primaryIndustry, setPrimaryIndustry] = useState(prefill?.primaryIndustry || '')
   const [targetRoles, setTargetRoles] = useState<string[]>([''])
   const [secondaryIndustries, setSecondaryIndustries] = useState<string[]>([])
 
@@ -168,6 +175,75 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
     if (preferredLocations.length > 1) {
       setPreferredLocations(preferredLocations.filter((_, i) => i !== index))
     }
+  }
+
+  // Welcome / consent screen
+  if (step === 0) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-lg">
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <img src="/favicon.svg" alt="Scout" className="w-10 h-10" />
+            <span className="logo-text text-xl">scout</span>
+          </div>
+
+          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
+            <h2 className="text-2xl font-semibold mb-2">Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!</h2>
+            <p className="text-[--text-tertiary] text-sm mb-6">
+              {isAlumni
+                ? "We found your alumni profile — we'll pre-fill what we know. Just confirm your details and set your preferences."
+                : "Before we get started, here's what you should know about Scout."}
+            </p>
+
+            <div className="space-y-4 mb-8">
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">🎓</div>
+                <div>
+                  <div className="font-medium text-sm text-[--text-primary]">Cornell Athletes Only</div>
+                  <div className="text-xs text-[--text-tertiary] mt-0.5">Scout is exclusively for current and former Cornell student-athletes. Access is verified through your Cornell email.</div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">🔒</div>
+                <div>
+                  <div className="font-medium text-sm text-[--text-primary]">Your Data is Secure</div>
+                  <div className="text-xs text-[--text-tertiary] mt-0.5">Your personal information is stored in an encrypted database and is never sold to third parties. Only verified Cornell athletes can access the alumni directory.</div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">🤝</div>
+                <div>
+                  <div className="font-medium text-sm text-[--text-primary]">Built for Networking</div>
+                  <div className="text-xs text-[--text-tertiary] mt-0.5">Scout helps you connect with Cornell athlete alumni in your target industry. We use your profile to surface the most relevant connections.</div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">✏️</div>
+                <div>
+                  <div className="font-medium text-sm text-[--text-primary]">Quick Setup (5 min)</div>
+                  <div className="text-xs text-[--text-tertiary] mt-0.5">We&apos;ll ask a few questions about your sport, career interests, and goals to personalize your experience.</div>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-[--text-quaternary] mb-6">
+              By continuing, you agree that you are a current or former Cornell student-athlete and consent to Scout using your profile information to generate personalized networking recommendations.
+            </p>
+
+            <button
+              onClick={() => setStep(1)}
+              className="btn-primary w-full flex items-center justify-center gap-2"
+            >
+              Get Started
+              <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -558,6 +634,31 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             </div>
           )}
 
+          {/* Step 8: Resume Upload (optional) */}
+          {step === 8 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-1">Upload your resume</h2>
+              <p className="text-[--text-tertiary] text-sm mb-6">
+                Optional — we&apos;ll use it to pre-fill your background and find better alumni matches. It&apos;s never shared with alumni.
+              </p>
+              <ResumeUpload
+                userId={userId}
+                onParsed={(data) => {
+                  if (data.major && !major) setMajor(data.major)
+                  if (data.past_experience && !pastExperience) setPastExperience(data.past_experience)
+                  if (data.primary_industry && !primaryIndustry) setPrimaryIndustry(data.primary_industry)
+                  if (data.graduation_year && !graduationYear) setGraduationYear(data.graduation_year)
+                  if (data.target_roles && data.target_roles.length > 0 && targetRoles.every(r => !r.trim())) {
+                    setTargetRoles(data.target_roles.slice(0, 3))
+                  }
+                }}
+              />
+              <p className="text-xs text-[--text-quaternary] mt-4 text-center">
+                You can also upload this later from your profile page.
+              </p>
+            </div>
+          )}
+
           {/* Navigation buttons */}
           <div className="flex justify-between mt-8">
             {step > 1 ? (
@@ -570,10 +671,18 @@ export default function OnboardingClient({ userId, userName }: OnboardingClientP
             )}
 
             {step < TOTAL_STEPS ? (
-              <button onClick={handleNext} className="btn-primary flex items-center gap-2">
-                Next
-                <ArrowRight size={16} />
-              </button>
+              <div className="flex items-center gap-3">
+                {/* On the resume step, show a skip option */}
+                {step === TOTAL_STEPS - 1 && (
+                  <button onClick={handleNext} className="text-sm text-[--text-tertiary] hover:text-[--text-secondary]">
+                    Skip
+                  </button>
+                )}
+                <button onClick={handleNext} className="btn-primary flex items-center gap-2">
+                  {step === TOTAL_STEPS - 1 ? 'Next' : 'Next'}
+                  <ArrowRight size={16} />
+                </button>
+              </div>
             ) : (
               <button
                 onClick={handleSubmit}

@@ -9,17 +9,21 @@
     "lint": "next lint",
     "db:seed": "node scripts/seed.js",
     "import:alumni": "npx tsx scripts/import-alumni.ts",
+    "import:photos": "npx tsx scripts/import-photos.ts",
+    "proxy:photos": "npx tsx scripts/proxy-photos.ts",
     "sync:jobs": "npx tsx scripts/sync-jobs.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "^2.39.0",
+    "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.303.0",
     "next": "^14.0.4",
     "papaparse": "^5.5.3",
+    "posthog-js": "^1.359.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

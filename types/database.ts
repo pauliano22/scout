@@ -10,6 +10,7 @@ export interface Alumni {
   industry: string | null
   location: string | null
   avatar_url: string | null
+  photo_url: string | null
   is_verified: boolean
   is_public: boolean
   source: 'opt_in' | 'public_record' | 'referral'
@@ -46,6 +47,9 @@ export interface Profile {
   preferred_locations: string[]
   geography_preference: 'city' | 'region' | 'doesnt_matter'
   onboarding_completed: boolean
+  resume_url: string | null
+  resume_parsed: Record<string, unknown> | null
+  alumni_id: string | null
   created_at: string
   updated_at: string
 }

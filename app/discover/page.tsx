@@ -25,7 +25,7 @@ export default async function DiscoverPage() {
   // Fetch only the first page of alumni (sorted: industry first, then grad year)
   const { data: alumni, count: totalCount } = await supabase
     .from('alumni')
-    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, avatar_url', { count: 'exact' })
+    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, photo_url, avatar_url', { count: 'exact' })
     .eq('is_public', true)
     .order('industry', { ascending: false, nullsFirst: false })
     .order('graduation_year', { ascending: false })

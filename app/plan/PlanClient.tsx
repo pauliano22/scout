@@ -6,6 +6,7 @@ import MessageModal from '@/components/MessageModal'
 import { trackEvent } from '@/lib/track'
 import { getStatusConfig } from '@/lib/statusConfig'
 import type { Profile, NetworkingPlan, PlanAlumni, UserNetwork, Alumni } from '@/types/database'
+import Avatar from '@/components/Avatar'
 import {
   ChevronDown,
   ChevronUp,
@@ -27,6 +28,11 @@ import {
   Check,
   Flame,
 } from 'lucide-react'
+
+function cleanField(value: string | null | undefined): string | null {
+  if (!value || value === '...') return null
+  return value.replace(/-\s*LinkedIn$/i, '').trim() || null
+}
 
 type PlanAlumniWithAlumni = PlanAlumni & { alumni: Alumni }
 type PlanWithAlumni = NetworkingPlan & { plan_alumni: PlanAlumniWithAlumni[] }
@@ -429,11 +435,12 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                   className="w-full flex items-center justify-between p-5 text-left hover:bg-[--bg-tertiary]/50 transition-colors"
                 >
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-semibold text-[--school-primary]">
-                        {alumni.full_name?.charAt(0) || '?'}
-                      </span>
-                    </div>
+                    <Avatar
+                      name={alumni.full_name || '?'}
+                      sport={alumni.sport || undefined}
+                      imageUrl={alumni.photo_url || alumni.avatar_url}
+                      size="md"
+                    />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-[--text-primary] truncate">
@@ -451,9 +458,12 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                         )}
                       </div>
                       <div className="text-sm text-[--text-tertiary] truncate">
-                        {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
-                          ? `${alumni.role} @ ${alumni.company}`
-                          : (alumni.role && alumni.role !== '...' ? alumni.role : '') || (alumni.company && alumni.company !== '...' ? alumni.company : '') || 'Alumni'}
+                        {(() => {
+                          const role = cleanField(alumni.role)
+                          const company = cleanField(alumni.company)
+                          if (role && company) return `${role} @ ${company}`
+                          return role || company || 'Alumni'
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -491,7 +501,7 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                       <div className="mb-4 bg-[--bg-tertiary]/50 rounded-lg p-3">
                         <h4 className="text-sm font-medium text-[--text-secondary] mb-1 flex items-center gap-1.5">
                           <Building2 size={14} />
-                          About {alumni.company}
+                          About {cleanField(alumni.company) || alumni.company}
                         </h4>
                         <p className="text-sm text-[--text-tertiary] leading-relaxed">
                           {pa.ai_company_bio}

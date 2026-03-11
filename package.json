@@ -11,6 +11,7 @@
     "import:alumni": "npx tsx scripts/import-alumni.ts",
     "import:photos": "npx tsx scripts/import-photos.ts",
     "proxy:photos": "npx tsx scripts/proxy-photos.ts",
+    "enrich:pdl": "npx tsx scripts/enrich-pdl.ts",
     "sync:jobs": "npx tsx scripts/sync-jobs.ts"
   },
   "dependencies": {

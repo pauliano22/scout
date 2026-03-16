@@ -115,7 +115,10 @@ Return only valid JSON, nothing else.`,
       updates.target_roles = parsed.target_roles
     }
 
-    await supabase.from('profiles').update(updates).eq('id', user.id)
+    const { error: updateError } = await supabase.from('profiles').update(updates).eq('id', user.id)
+    if (updateError) {
+      console.error('Profile update error (resume):', updateError)
+    }
 
     return NextResponse.json({ parsed })
   } catch (error) {

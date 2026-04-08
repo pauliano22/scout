@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { UserNetwork } from '@/types/database'
+import { cleanField } from '@/lib/cleanField'
 import { Check, Mail, X, Linkedin, StickyNote, Calendar, Flame, Snowflake, Sun } from 'lucide-react'
 
 interface NetworkRowProps {
@@ -123,14 +124,12 @@ export default function NetworkRow({
         <div className="min-w-0">
           <h3 className="text-sm font-semibold truncate">{alumni.full_name}</h3>
           <p className="text-[--text-tertiary] text-sm truncate">
-            {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
-              ? `${alumni.role} at ${alumni.company}`
-              : alumni.role && alumni.role !== '...'
-                ? alumni.role
-                : alumni.company && alumni.company !== '...'
-                  ? alumni.company
-                  : `${alumni.sport} • Class of ${alumni.graduation_year}`
-            }
+            {(() => {
+              const role = cleanField(alumni.role)
+              const company = cleanField(alumni.company)
+              if (role && company) return `${role} at ${company}`
+              return role || company || `${alumni.sport} · Class of ${alumni.graduation_year}`
+            })()}
           </p>
         </div>
       </div>
@@ -211,7 +210,7 @@ export default function NetworkRow({
 
           {/* Date picker dropdown with undo option */}
           {showDatePicker && connection.contacted && (
-            <div className="absolute top-full mt-1 right-0 bg-[--bg-secondary] border border-[--border-primary] rounded-lg p-3 shadow-lg z-10 animate-fade-in min-w-[180px]">
+            <div className="absolute top-full mt-1 right-0 bg-[--bg-secondary] border border-[--border-primary] rounded-lg p-3 z-10 animate-fade-in min-w-[180px]">
               <label className="block text-xs text-[--text-tertiary] mb-1.5">
                 <Calendar size={10} className="inline mr-1" />
                 Contacted on

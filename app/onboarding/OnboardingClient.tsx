@@ -50,9 +50,9 @@ const SPORTS_LIST = [
 
 const TOTAL_STEPS = 8
 
-// Generate graduation year options (current year - 4 to current year + 4)
+// Generate graduation year options for current students (last year through 6 years out)
 const currentYear = new Date().getFullYear()
-const GRAD_YEARS = Array.from({ length: 9 }, (_, i) => currentYear - 4 + i)
+const GRAD_YEARS = Array.from({ length: 8 }, (_, i) => currentYear - 1 + i)
 
 interface OnboardingClientProps {
   userId: string
@@ -65,7 +65,7 @@ interface OnboardingClientProps {
   }
 }
 
-export default function OnboardingClient({ userId, userName, isAlumni, prefill }: OnboardingClientProps) {
+export default function OnboardingClient({ userId, userName, prefill }: OnboardingClientProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -198,42 +198,28 @@ export default function OnboardingClient({ userId, userName, isAlumni, prefill }
           <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
             <h2 className="text-2xl font-semibold mb-2">Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!</h2>
             <p className="text-[--text-tertiary] text-sm mb-6">
-              {isAlumni
-                ? "We found your alumni profile — we'll pre-fill what we know. Just confirm your details and set your preferences."
-                : "Before we get started, here's what you should know about Scout."}
+              Before we get started, here's what you should know about Scout.
             </p>
 
-            <div className="space-y-4 mb-8">
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">🎓</div>
-                <div>
-                  <div className="font-medium text-sm text-[--text-primary]">Cornell Athletes Only</div>
-                  <div className="text-xs text-[--text-tertiary] mt-0.5">Scout is exclusively for current and former Cornell student-athletes. Access is verified through your Cornell email.</div>
-                </div>
+            <div className="space-y-5 mb-8">
+              <div>
+                <div className="font-medium text-sm text-[--text-primary] mb-0.5">Cornell Athletes Only</div>
+                <div className="text-xs text-[--text-tertiary]">Scout is exclusively for current and former Cornell student-athletes. Access is verified through your Cornell email.</div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">🔒</div>
-                <div>
-                  <div className="font-medium text-sm text-[--text-primary]">Your Data is Secure</div>
-                  <div className="text-xs text-[--text-tertiary] mt-0.5">Your personal information is stored in an encrypted database and is never sold to third parties. Only verified Cornell athletes can access the alumni directory.</div>
-                </div>
+              <div>
+                <div className="font-medium text-sm text-[--text-primary] mb-0.5">Your Data is Secure</div>
+                <div className="text-xs text-[--text-tertiary]">Your personal information is never sold to third parties. Only verified Cornell athletes can access the alumni directory.</div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">🤝</div>
-                <div>
-                  <div className="font-medium text-sm text-[--text-primary]">Built for Networking</div>
-                  <div className="text-xs text-[--text-tertiary] mt-0.5">Scout helps you connect with Cornell athlete alumni in your target industry. We use your profile to surface the most relevant connections.</div>
-                </div>
+              <div>
+                <div className="font-medium text-sm text-[--text-primary] mb-0.5">Built for Networking</div>
+                <div className="text-xs text-[--text-tertiary]">Scout surfaces the most relevant alumni connections based on your sport, industry interests, and career goals.</div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0 text-[--school-primary] font-bold text-sm">✏️</div>
-                <div>
-                  <div className="font-medium text-sm text-[--text-primary]">Quick Setup (5 min)</div>
-                  <div className="text-xs text-[--text-tertiary] mt-0.5">We&apos;ll ask a few questions about your sport, career interests, and goals to personalize your experience.</div>
-                </div>
+              <div>
+                <div className="font-medium text-sm text-[--text-primary] mb-0.5">Quick Setup (5 min)</div>
+                <div className="text-xs text-[--text-tertiary]">We&apos;ll ask a few questions about your sport, career interests, and goals to personalize your experience.</div>
               </div>
             </div>
 
@@ -392,7 +378,7 @@ export default function OnboardingClient({ userId, userName, isAlumni, prefill }
                       <button
                         key={ind}
                         onClick={() => toggleSecondaryIndustry(ind)}
-                        className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
                           secondaryIndustries.includes(ind)
                             ? 'bg-[--school-primary] text-white'
                             : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-primary]'
@@ -424,7 +410,7 @@ export default function OnboardingClient({ userId, userName, isAlumni, prefill }
                 ].map(option => (
                   <label
                     key={option.value}
-                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
                       networkingIntensity === option.value
                         ? 'border-[--school-primary] bg-[--school-primary]/5'
                         : 'border-[--border-primary] hover:border-[--border-secondary]'
@@ -466,7 +452,7 @@ export default function OnboardingClient({ userId, userName, isAlumni, prefill }
                 ].map(option => (
                   <label
                     key={option.value}
-                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
                       currentStage === option.value
                         ? 'border-[--school-primary] bg-[--school-primary]/5'
                         : 'border-[--border-primary] hover:border-[--border-secondary]'
@@ -506,7 +492,7 @@ export default function OnboardingClient({ userId, userName, isAlumni, prefill }
                 ].map(option => (
                   <label
                     key={option.value}
-                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
                       existingNetwork === option.value
                         ? 'border-[--school-primary] bg-[--school-primary]/5'
                         : 'border-[--border-primary] hover:border-[--border-secondary]'
@@ -585,7 +571,7 @@ export default function OnboardingClient({ userId, userName, isAlumni, prefill }
                   ].map(option => (
                     <label
                       key={option.value}
-                      className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                      className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
                         geographyPreference === option.value
                           ? 'border-[--school-primary] bg-[--school-primary]/5'
                           : 'border-[--border-primary] hover:border-[--border-secondary]'

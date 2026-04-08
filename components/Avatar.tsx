@@ -1,10 +1,42 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { isLikelyPlaceholderAvatar } from '@/lib/isPlaceholderAvatar'
+
+// LinkedIn CDN hosts both real and generic silhouette images — indistinguishable by URL alone.
+// We check size server-side (silhouettes ~3KB, real photos ~15-100KB) and cache in sessionStorage.
+function useSilhouetteCheck(imageUrl: string | null | undefined): boolean {
+  const [isSilhouette, setIsSilhouette] = useState(false)
+
+  useEffect(() => {
+    if (!imageUrl || !imageUrl.includes('media.licdn.com')) return
+
+    const cacheKey = `avatar-check:${imageUrl}`
+    try {
+      const cached = sessionStorage.getItem(cacheKey)
+      if (cached !== null) {
+        setIsSilhouette(cached === '1')
+        return
+      }
+    } catch { /* sessionStorage unavailable */ }
+
+    fetch(`/api/avatar/check?url=${encodeURIComponent(imageUrl)}`)
+      .then(r => r.json())
+      .then(({ isPlaceholder }: { isPlaceholder: boolean }) => {
+        try { sessionStorage.setItem(cacheKey, isPlaceholder ? '1' : '0') } catch { /* ignore */ }
+        if (isPlaceholder) setIsSilhouette(true)
+      })
+      .catch(() => { /* fail open — don't hide a real photo due to network error */ })
+  }, [imageUrl])
+
+  return isSilhouette
+}
+
 interface AvatarProps {
   name: string
   sport?: string
   imageUrl?: string | null
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   className?: string
 }
 
@@ -66,19 +98,25 @@ const sizeClasses = {
   md: 'w-10 h-10 text-sm',
   lg: 'w-12 h-12 text-base',
   xl: 'w-16 h-16 text-lg',
+  '2xl': 'w-24 h-24 text-2xl',
 }
 
 export default function Avatar({ name, sport, imageUrl, size = 'md', className = '' }: AvatarProps) {
+  const [imgFailed, setImgFailed] = useState(false)
+  const isSilhouette = useSilhouetteCheck(imageUrl)
   const initials = getInitials(name)
   const sizeClass = sizeClasses[size]
 
-  // If a real image URL is provided, show it
-  if (imageUrl) {
+  // Show image only if: URL present, not a known placeholder pattern, not a LinkedIn silhouette, and hasn't errored at runtime
+  const showImage = !!imageUrl && !isLikelyPlaceholderAvatar(imageUrl) && !isSilhouette && !imgFailed
+
+  if (showImage) {
     return (
       <img
-        src={imageUrl}
+        src={imageUrl!}
         alt={name}
         className={`${sizeClass} rounded-full object-cover shadow-md flex-shrink-0 ${className}`}
+        onError={() => setImgFailed(true)}
       />
     )
   }

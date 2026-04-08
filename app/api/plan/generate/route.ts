@@ -7,6 +7,11 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
+// Completeness scoring helpers (additive only — does not change filtering logic)
+const GARBAGE = new Set(['...', '-', '--', 'n/a', 'na', 'none', 'unknown', 'null'])
+const hasValue = (v: string | null | undefined) =>
+  !!v && !GARBAGE.has(v.trim().toLowerCase())
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
@@ -18,18 +23,19 @@ export async function POST(request: NextRequest) {
 
     const { batchSize = 10 } = await request.json()
 
-    // Fetch user profile with intake data
-    const { data: profile } = await supabase
+    // ── Profile ───────────────────────────────────────────────────────────────
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
 
-    if (!profile) {
+    if (profileError || !profile) {
+      console.error('[plan/generate] profile fetch error:', profileError)
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Fetch alumni that the user hasn't already been recommended
+    // ── Already-connected alumni ───────────────────────────────────────────────
     const { data: existingNetworkIds } = await supabase
       .from('user_networks')
       .select('alumni_id')
@@ -37,39 +43,53 @@ export async function POST(request: NextRequest) {
 
     const excludeIds = new Set(existingNetworkIds?.map(n => n.alumni_id) || [])
 
-    // Fetch available alumni
-    const { data: allAlumni } = await supabase
+    // ── Alumni pool — keep the working live filter (.not company is null) ──────
+    const { data: allAlumni, error: alumniError } = await supabase
       .from('alumni')
-      .select('id, full_name, company, role, industry, sport, graduation_year, location, linkedin_url, email')
+      .select('id, full_name, company, role, industry, sport, graduation_year, location, linkedin_url, email, photo_url, avatar_url')
       .eq('is_public', true)
       .not('company', 'is', null)
       .limit(5000)
+
+    if (alumniError) {
+      console.error('[plan/generate] alumni fetch error:', alumniError)
+      return NextResponse.json({ error: 'Failed to fetch alumni' }, { status: 500 })
+    }
 
     if (!allAlumni || allAlumni.length === 0) {
       return NextResponse.json({ error: 'No alumni available' }, { status: 404 })
     }
 
-    // Filter out already-connected alumni
     const availableAlumni = allAlumni.filter(a => !excludeIds.has(a.id))
 
     if (availableAlumni.length === 0) {
       return NextResponse.json({ error: 'No new alumni available' }, { status: 404 })
     }
 
-    // Pre-filter alumni by relevance (industry, location)
+    // ── Score by relevance + completeness ─────────────────────────────────────
     const scoredAlumni = availableAlumni.map(a => {
       let score = 0
+
+      // Relevance (original live logic)
       if (profile.primary_industry && a.industry?.toLowerCase() === profile.primary_industry.toLowerCase()) score += 3
       if (profile.secondary_industries?.some((si: string) => a.industry?.toLowerCase() === si.toLowerCase())) score += 1
       if (profile.preferred_locations?.some((loc: string) => a.location?.toLowerCase().includes(loc.toLowerCase()))) score += 2
       if (profile.sport && a.sport?.toLowerCase() === profile.sport.toLowerCase()) score += 1
+
+      // Completeness bonus (additive, does not drop anyone from pool)
+      // Only avatar_url earns the photo bonus — it's manually uploaded and always a real headshot.
+      // photo_url is scraped from LinkedIn and may be a generic silhouette.
+      if (a.avatar_url) score += 3
+      if (hasValue(a.role)) score += 2
+      if (hasValue(a.company)) score += 2
+      if (hasValue(a.location)) score += 1
+
       return { ...a, score }
     }).sort((a, b) => b.score - a.score)
 
-    // Take top candidates for AI selection
     const candidates = scoredAlumni.slice(0, Math.min(batchSize * 3, scoredAlumni.length))
 
-    // Build the AI prompt
+    // ── Prompt — restored to the working live version exactly ─────────────────
     const alumniList = candidates.map((a, i) =>
       `${i + 1}. ${a.full_name} | ${a.role || 'N/A'} @ ${a.company || 'N/A'} | ${a.industry || 'N/A'} | ${a.sport} '${a.graduation_year} | ${a.location || 'N/A'}`
     ).join('\n')
@@ -117,42 +137,59 @@ Do NOT write vague or buzzword-heavy points like "discuss leadership synergies" 
 
 Respond ONLY with valid JSON.`
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 4000,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
-
-    let recommendations
+    // ── Claude call ───────────────────────────────────────────────────────────
+    let responseText: string
     try {
-      const parsed = JSON.parse(responseText)
+      const message = await anthropic.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }],
+      })
+      responseText = message.content[0].type === 'text' ? message.content[0].text : ''
+    } catch (claudeErr: any) {
+      console.error('[plan/generate] Claude API error:', claudeErr?.message ?? claudeErr)
+      return NextResponse.json(
+        { error: `AI error: ${claudeErr?.message ?? 'Unknown'}` },
+        { status: 500 }
+      )
+    }
+
+    // ── Parse response ────────────────────────────────────────────────────────
+    let recommendations: any[]
+    try {
+      const cleaned = responseText.replace(/^```(?:json)?\s*/m, '').replace(/\s*```$/m, '').trim()
+      const parsed = JSON.parse(cleaned)
       recommendations = parsed.recommendations
     } catch {
-      // Try to extract JSON from the response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0])
-        recommendations = parsed.recommendations
+        try {
+          recommendations = JSON.parse(jsonMatch[0]).recommendations
+        } catch {
+          console.error('[plan/generate] JSON parse failed. Raw:', responseText.slice(0, 300))
+          return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 })
+        }
       } else {
+        console.error('[plan/generate] No JSON in response. Raw:', responseText.slice(0, 300))
         return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 })
       }
     }
 
     if (!recommendations || recommendations.length === 0) {
+      console.error('[plan/generate] Empty recommendations array')
       return NextResponse.json({ error: 'No recommendations generated' }, { status: 500 })
     }
 
-    // Deactivate any existing active plans
+    // ── Deactivate existing plans ─────────────────────────────────────────────
     await supabase
       .from('networking_plans')
       .update({ is_active: false })
       .eq('user_id', user.id)
       .eq('is_active', true)
 
-    // Create the networking plan
-    const goalCount = profile.networking_intensity === '20' ? 20
+    // ── Create plan ───────────────────────────────────────────────────────────
+    const goalCount =
+      profile.networking_intensity === '20' ? 20
       : profile.networking_intensity === '10' ? 10
       : profile.networking_intensity === '5' ? 5
       : 10
@@ -169,55 +206,69 @@ Respond ONLY with valid JSON.`
       .single()
 
     if (planError || !plan) {
+      console.error('[plan/generate] plan insert error:', planError)
       return NextResponse.json({ error: 'Failed to create plan' }, { status: 500 })
     }
 
-    // Insert plan_alumni rows - match by name first, fall back to index
+    // ── Build plan_alumni rows (after plan exists — same order as live version) ─
     const planAlumniRows = recommendations.map((rec: any, i: number) => {
+      // Name match first, index fallback — same as live version
       let alumnus = rec.full_name
-        ? candidates.find(c => c.full_name?.toLowerCase() === rec.full_name.toLowerCase())
+        ? candidates.find(c => c.full_name?.toLowerCase() === rec.full_name?.toLowerCase())
         : null
-      if (!alumnus) {
-        alumnus = candidates[rec.index - 1] || null
+      if (!alumnus && rec.index >= 1) {
+        alumnus = candidates[rec.index - 1] ?? null
       }
-      if (!alumnus) return null
+      if (!alumnus) {
+        console.warn(`[plan/generate] unmatched rec: "${rec.full_name}" idx=${rec.index}`)
+        return null
+      }
       return {
         plan_id: plan.id,
         alumni_id: alumnus.id,
-        ai_career_summary: rec.career_summary,
-        ai_company_bio: rec.company_bio || null,
-        ai_talking_points: rec.talking_points,
-        ai_recommendation_reason: rec.recommendation_reason,
+        ai_career_summary: rec.career_summary ?? null,
+        ai_company_bio: rec.company_bio ?? null,
+        ai_talking_points: Array.isArray(rec.talking_points) ? rec.talking_points : [],
+        ai_recommendation_reason: rec.recommendation_reason ?? null,
         status: 'active',
         sort_order: i,
       }
     }).filter(Boolean)
 
+    if (planAlumniRows.length === 0) {
+      console.error('[plan/generate] all recs unmatched. candidates:', candidates.map(c => c.full_name))
+      return NextResponse.json({ error: 'Could not match recommendations to alumni' }, { status: 500 })
+    }
+
+    // ── Insert plan_alumni ────────────────────────────────────────────────────
     const { error: insertError } = await supabase
       .from('plan_alumni')
       .insert(planAlumniRows)
 
     if (insertError) {
-      console.error('Failed to insert plan alumni:', insertError)
+      console.error('[plan/generate] plan_alumni insert error:', insertError)
       return NextResponse.json({ error: 'Failed to save recommendations' }, { status: 500 })
     }
 
-    // Fetch the complete plan with alumni data
-    const { data: completePlan } = await supabase
+    // ── Fetch complete plan ───────────────────────────────────────────────────
+    const { data: completePlan, error: fetchError } = await supabase
       .from('networking_plans')
-      .select(`
-        *,
-        plan_alumni (
-          *,
-          alumni (*)
-        )
-      `)
+      .select(`*, plan_alumni (*, alumni (*))`)
       .eq('id', plan.id)
       .single()
 
+    if (fetchError) {
+      console.error('[plan/generate] fetch complete plan error:', fetchError)
+      return NextResponse.json({ error: 'Plan saved but failed to load' }, { status: 500 })
+    }
+
     return NextResponse.json({ plan: completePlan })
-  } catch (error) {
-    console.error('Plan generation error:', error)
-    return NextResponse.json({ error: 'Failed to generate plan' }, { status: 500 })
+
+  } catch (error: any) {
+    console.error('[plan/generate] unexpected error:', error?.message ?? error)
+    return NextResponse.json(
+      { error: error?.message ?? 'Failed to generate plan' },
+      { status: 500 }
+    )
   }
 }

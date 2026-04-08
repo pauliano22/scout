@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
-import Avatar from '@/components/Avatar'
-import { Search, Check, ChevronRight, Users, ChevronDown, X, Loader2, MapPin, Flame } from 'lucide-react'
+import AlumniCard from '@/components/AlumniCard'
+import { Search, Users, ChevronDown, X, Loader2, MapPin } from 'lucide-react'
 import { trackEvent } from '@/lib/track'
 import { SPORTS_LIST } from '@/lib/sportUtils'
 
@@ -35,22 +35,6 @@ const ITEMS_PER_PAGE = 50
 
 const industries = ['All', 'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media']
 
-// Only these specific industries get colored badges - prevents showing incorrect/inferred industries
-const validIndustries = new Set(['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Sports', 'Education', 'Real Estate', 'Government', 'Nonprofit'])
-
-const industryBadgeClass: Record<string, string> = {
-  Finance: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  Technology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  Consulting: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  Healthcare: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
-  Law: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  Media: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  Sports: 'bg-red-500/10 text-red-400 border-red-500/20',
-  Education: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-  'Real Estate': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-  Government: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
-  Nonprofit: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-}
 
 export default function DiscoverClient({
   initialAlumni,
@@ -231,81 +215,63 @@ export default function DiscoverClient({
   if (locationFilter.trim()) activeFilterParts.push(locationFilter.trim())
 
   return (
-    <main className="px-6 md:px-12 py-10 max-w-5xl mx-auto">
-      {/* Header Section */}
-      <div className="text-center mb-8">
-        <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">
-          Connect with Cornell Athlete Alumni
-        </h1>
-        <p className="text-[--text-tertiary] text-sm">
-          Search <span className="text-[--school-primary] font-medium">{totalAlumniCount.toLocaleString()}</span> alumni to find mentors in your target industry
-        </p>
-      </div>
-
-      {/* Search Section - Hero/Focus */}
-      <div className="card p-6 mb-6">
-        {/* Large Search Bar */}
-        <div className="relative mb-4">
-          <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
+    <main className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
+      {/* Search bar — hero element, no distracting headline */}
+      <div className="mb-5">
+        {/* Main search */}
+        <div className="relative mb-2">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
           <input
             type="text"
-            placeholder="Search by name, company, role, or industry..."
+            placeholder={`Search ${totalAlumniCount.toLocaleString()} alumni by name, company, or role…`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-3.5 pl-12 pr-4 text-base bg-[--bg-primary] border border-[--border-primary] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
+            className="w-full py-3.5 pl-11 pr-10 text-sm bg-[--bg-secondary] border border-[--border-primary] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
+            autoFocus
           />
-          {isSearching && (
-            <Loader2 size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] animate-spin" />
-          )}
-        </div>
-
-        {/* Location Search Bar */}
-        <div className="relative mb-5">
-          <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Filter by location (e.g. San Diego, New York)"
-            value={locationFilter}
-            onChange={(e) => setLocationFilter(e.target.value)}
-            className="w-full py-2.5 pl-11 pr-4 text-sm bg-[--bg-primary] border border-[--border-primary] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
-          />
-          {locationFilter && (
+          {isSearching ? (
+            <Loader2 size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] animate-spin" />
+          ) : searchQuery ? (
             <button
-              onClick={() => setLocationFilter('')}
+              onClick={() => setSearchQuery('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] hover:text-[--text-secondary]"
             >
-              <X size={14} />
+              <X size={15} />
             </button>
-          )}
+          ) : null}
         </div>
 
-        {/* Quick Filter Pills */}
-        <div className="flex flex-wrap gap-2">
+        {/* Filters row */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Industry pills */}
           {industries.map((industry) => (
             <button
               key={industry}
               onClick={() => setIndustryFilter(industry)}
-              className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 industryFilter === industry
                   ? 'bg-[--school-primary] text-white'
-                  : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-hover] border border-[--border-primary]'
+                  : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
               }`}
             >
               {industry}
             </button>
           ))}
 
-          {/* My Sport Button */}
+          {/* Divider */}
+          <div className="w-px h-4 bg-[--border-primary]" />
+
+          {/* My Sport */}
           {userSport && (
             <button
               onClick={handleMySportFilter}
-              className={`px-3.5 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
                 sportFilter === userSport
                   ? 'bg-[--school-primary] text-white'
-                  : 'bg-[--bg-tertiary] text-[--school-primary] hover:bg-[--bg-hover] border border-[--school-primary]'
+                  : 'bg-[--bg-secondary] text-[--school-primary] hover:bg-[--bg-tertiary] border border-[--school-primary]/50'
               }`}
             >
-              <Users size={14} />
+              <Users size={12} />
               My Sport
             </button>
           )}
@@ -315,47 +281,69 @@ export default function DiscoverClient({
             <select
               value={sportFilter || ''}
               onChange={(e) => setSportFilter(e.target.value || null)}
-              className={`px-3.5 py-1.5 pr-8 rounded-full text-sm font-medium transition-all cursor-pointer appearance-none ${
+              className={`px-3 py-1.5 pr-7 rounded-lg text-xs font-medium transition-colors cursor-pointer appearance-none ${
                 sportFilter && sportFilter !== userSport
                   ? 'bg-[--school-primary] text-white'
-                  : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-hover] border border-[--border-primary]'
+                  : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
               }`}
             >
               <option value="">All Sports</option>
               {SPORTS_LIST.map((sport) => (
-                <option key={sport} value={sport}>
-                  {sport}
-                </option>
+                <option key={sport} value={sport}>{sport}</option>
               ))}
             </select>
             <ChevronDown
-              size={14}
-              className={`absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${
+              size={12}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${
                 sportFilter && sportFilter !== userSport ? 'text-white/70' : 'text-[--text-quaternary]'
               }`}
             />
           </div>
 
-          {/* Clear All Filters Button */}
+          {/* Location inline */}
+          <div className="relative">
+            <MapPin size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Location"
+              value={locationFilter}
+              onChange={(e) => setLocationFilter(e.target.value)}
+              className={`pl-7 pr-6 py-1.5 rounded-lg text-xs font-medium transition-colors border focus:outline-none w-28 focus:w-36 ${
+                locationFilter
+                  ? 'bg-[--school-primary] text-white border-[--school-primary] placeholder-white/60'
+                  : 'bg-[--bg-secondary] text-[--text-secondary] border-[--border-primary] hover:bg-[--bg-tertiary]'
+              }`}
+            />
+            {locationFilter && (
+              <button
+                onClick={() => setLocationFilter('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
+              >
+                <X size={11} />
+              </button>
+            )}
+          </div>
+
+          {/* Clear all */}
           {hasActiveFilters && (
             <button
               onClick={handleClearAllFilters}
-              className="px-3.5 py-1.5 rounded-full text-sm font-medium transition-all bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 flex items-center gap-1.5"
+              className="text-xs text-[--text-quaternary] hover:text-red-400 transition-colors flex items-center gap-1 ml-1"
             >
-              <X size={14} />
-              Clear filters
+              <X size={12} />
+              Clear
             </button>
           )}
+
+          {/* Results count — right-aligned */}
+          <span className="ml-auto text-xs text-[--text-quaternary]">
+            {totalCount.toLocaleString()} alumni
+            {activeFilterParts.length > 0 && (
+              <span className="text-[--school-primary]"> · {activeFilterParts.join(', ')}</span>
+            )}
+          </span>
         </div>
       </div>
-
-      {/* Results count */}
-      <p className="text-[--text-quaternary] text-sm mb-4">
-        Showing {alumni.length} of {totalCount.toLocaleString()} alumni
-        {activeFilterParts.length > 0 && (
-          <span> matching <span className="text-[--school-primary]">{activeFilterParts.join(' + ')}</span></span>
-        )}
-      </p>
 
       {/* Alumni List */}
       {isSearching && alumni.length === 0 ? (
@@ -364,94 +352,24 @@ export default function DiscoverClient({
           <p className="text-[--text-secondary]">Searching alumni...</p>
         </div>
       ) : alumni.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="empty-state-icon">
-            <Search size={32} className="text-[--text-quaternary]" />
-          </div>
-          <p className="text-base text-[--text-secondary] mb-1">No alumni found</p>
-          <p className="text-[--text-quaternary] text-sm">Try adjusting your search or filters</p>
+        <div className="text-center py-20">
+          <Search size={28} className="mx-auto text-[--text-quaternary] mb-3" />
+          <p className="text-sm font-medium text-[--text-secondary] mb-1">No alumni found</p>
+          <p className="text-xs text-[--text-quaternary]">Try adjusting your search or filters</p>
         </div>
       ) : (
         <>
-          <div className={`flex flex-col gap-3 ${isSearching ? 'opacity-50 pointer-events-none' : ''}`}>
-            {alumni.map((alumniItem) => {
-              const isSameSport = userSport && alumniItem.sport && alumniItem.sport.toLowerCase() === userSport.toLowerCase()
-
-              return (
-                <button
-                  key={alumniItem.id}
-                  onClick={() => handleSelectAlumni(alumniItem)}
-                  className={`w-full card p-4 flex items-center gap-4 hover:bg-[--bg-tertiary] transition-all text-left group ${
-                    isSameSport
-                      ? 'border-[--school-primary]/40 hover:border-[--school-primary]/60'
-                      : 'hover:border-[--border-secondary]'
-                  }`}
-                >
-                  {/* Avatar */}
-                  <Avatar name={alumniItem.full_name} sport={alumniItem.sport} imageUrl={alumniItem.photo_url || alumniItem.avatar_url} size="md" />
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <h3 className="font-medium text-[--text-primary] truncate transition-colors">
-                        {alumniItem.full_name}
-                      </h3>
-                      {networkIds.has(alumniItem.id) && (
-                        <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full flex-shrink-0 border border-emerald-500/20">
-                          <Check size={10} />
-                          Connected
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Role @ Company */}
-                    <p className="text-sm text-[--text-secondary] truncate">
-                      {alumniItem.role && alumniItem.role !== '...' && alumniItem.company && alumniItem.company !== '...'
-                        ? `${alumniItem.role} @ ${alumniItem.company}`
-                        : (alumniItem.role && alumniItem.role !== '...' ? alumniItem.role : '') || (alumniItem.company && alumniItem.company !== '...' ? alumniItem.company : '') || 'Cornell Athlete Alumni'}
-                    </p>
-
-                    {/* Sport badge + Year */}
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      {isSameSport ? (
-                        <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border bg-[--school-primary]/10 text-[--school-primary] border-[--school-primary]/30 font-medium">
-                          <Flame size={10} />
-                          Played {alumniItem.sport} like you
-                        </span>
-                      ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--bg-tertiary] text-[--text-quaternary] border-[--border-primary]">
-                          {alumniItem.sport}
-                        </span>
-                      )}
-                      {alumniItem.graduation_year && (
-                        <span className="text-xs text-[--text-quaternary]">
-                          Class of {alumniItem.graduation_year}
-                        </span>
-                      )}
-                      {alumniItem.location && (
-                        <span className="text-xs text-[--text-quaternary] flex items-center gap-1">
-                          <MapPin size={10} />
-                          {alumniItem.location}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Industry Badge - only show if it's a valid/verified industry */}
-                  {alumniItem.industry && validIndustries.has(alumniItem.industry) && (
-                    <span
-                      className={`hidden sm:inline-flex px-3 py-1.5 rounded-lg text-xs font-medium flex-shrink-0 border ${
-                        industryBadgeClass[alumniItem.industry] || 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
-                      }`}
-                    >
-                      {alumniItem.industry}
-                    </span>
-                  )}
-
-                  <ChevronRight size={18} className="text-[--text-quaternary] flex-shrink-0 group-hover:text-[--text-secondary] group-hover:translate-x-0.5 transition-all" />
-                </button>
-              )
-            })}
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${isSearching ? 'opacity-50 pointer-events-none' : ''}`}>
+            {alumni.map((alumniItem) => (
+              <AlumniCard
+                key={alumniItem.id}
+                alumni={alumniItem as any}
+                isInNetwork={networkIds.has(alumniItem.id)}
+                onAddToNetwork={handleAddToNetwork}
+                onClick={() => handleSelectAlumni(alumniItem)}
+                isLoading={loadingId === alumniItem.id}
+              />
+            ))}
           </div>
 
           {/* Load More Button */}

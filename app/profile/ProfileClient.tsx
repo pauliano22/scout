@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/types/database'
 import Avatar from '@/components/Avatar'
 import ResumeUpload from '@/components/ResumeUpload'
-import { Save, Check, Camera, Linkedin, MapPin, Briefcase, Building2 } from 'lucide-react'
+import { Save, Check, Camera } from 'lucide-react'
 
 // Complete list of Cornell varsity sports with exact team names
 const sports = [
@@ -313,9 +313,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">
-                <span className="flex items-center gap-1.5"><Building2 size={13} /> Company</span>
-              </label>
+              <label className="block text-sm text-[--text-tertiary] mb-2">Company</label>
               <input
                 type="text"
                 value={company}
@@ -326,9 +324,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
             </div>
 
             <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">
-                <span className="flex items-center gap-1.5"><Briefcase size={13} /> Role</span>
-              </label>
+              <label className="block text-sm text-[--text-tertiary] mb-2">Role</label>
               <input
                 type="text"
                 value={role}
@@ -357,9 +353,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
             </div>
 
             <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">
-                <span className="flex items-center gap-1.5"><MapPin size={13} /> Location</span>
-              </label>
+              <label className="block text-sm text-[--text-tertiary] mb-2">Location</label>
               <input
                 type="text"
                 value={location}
@@ -371,9 +365,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
           </div>
 
           <div>
-            <label className="block text-sm text-[--text-tertiary] mb-2">
-              <span className="flex items-center gap-1.5"><Linkedin size={13} /> LinkedIn URL</span>
-            </label>
+            <label className="block text-sm text-[--text-tertiary] mb-2">LinkedIn URL</label>
             <input
               type="url"
               value={linkedinUrl}
@@ -417,7 +409,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
 
         {/* Info note */}
         {sport && graduationYear && (
-          <p className="text-xs text-[--text-quaternary] bg-[--bg-tertiary] rounded-lg px-4 py-3">
+          <p className="text-xs text-[--text-quaternary]">
             Your profile will be visible to other Cornell athletes in the Discover page so they can connect with you.
           </p>
         )}

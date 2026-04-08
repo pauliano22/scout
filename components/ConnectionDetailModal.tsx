@@ -4,28 +4,13 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { UserNetwork } from '@/types/database'
 import MessageModal from '@/components/MessageModal'
-import {
-  X,
-  Linkedin,
-  Mail,
-  MessageSquare,
-  Copy,
-  Check,
-  Phone,
-  Coffee,
-  Users,
-  MoreHorizontal,
-  Calendar,
-  Trash2,
-  ExternalLink
-} from 'lucide-react'
+import Avatar from '@/components/Avatar'
+import { cleanField } from '@/lib/cleanField'
+import { X, Linkedin, Mail, Phone, Coffee, Users, Calendar, Copy, Check, ExternalLink } from 'lucide-react'
 
 interface ConnectionDetailModalProps {
   connection: UserNetwork
-  userProfile: {
-    name: string
-    sport: string
-  }
+  userProfile: { name: string; sport: string }
   onClose: () => void
   onUpdate: (connection: UserNetwork) => void
   onRemove: (connectionId: string) => void
@@ -41,6 +26,44 @@ interface Interaction {
   created_at: string
 }
 
+const STATUS_STEPS: { key: ConnectionStatus; label: string; dot: string }[] = [
+  { key: 'interested',        label: 'New',     dot: 'bg-blue-400' },
+  { key: 'awaiting_reply',    label: 'Sent',    dot: 'bg-amber-400' },
+  { key: 'response_needed',   label: 'Replied', dot: 'bg-red-400' },
+  { key: 'meeting_scheduled', label: 'Meeting', dot: 'bg-purple-400' },
+  { key: 'met',               label: 'Met',     dot: 'bg-emerald-400' },
+]
+
+const INTERACTION_LABELS: Record<InteractionType, string> = {
+  email:   'Email',
+  call:    'Call',
+  coffee:  'Coffee',
+  meeting: 'Meeting',
+  other:   'Other',
+}
+
+const INTERACTION_ICONS: Record<InteractionType, typeof Mail> = {
+  email:   Mail,
+  call:    Phone,
+  coffee:  Coffee,
+  meeting: Users,
+  other:   Calendar,
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatRelativeDate(dateStr: string | null | undefined): string | null {
+  if (!dateStr) return null
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000)
+  if (days === 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days}d ago`
+  if (days < 30) return `${Math.floor(days / 7)}w ago`
+  return `${Math.floor(days / 30)}mo ago`
+}
+
 export default function ConnectionDetailModal({
   connection,
   userProfile,
@@ -50,439 +73,310 @@ export default function ConnectionDetailModal({
 }: ConnectionDetailModalProps) {
   const supabase = createClient()
   const alumni = connection.alumni
-  
+
   const [status, setStatus] = useState<ConnectionStatus>((connection.status as ConnectionStatus) || 'interested')
   const [notes, setNotes] = useState(connection.notes || '')
+  const [savedNotes, setSavedNotes] = useState(connection.notes || '')
   const [isSavingNotes, setIsSavingNotes] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
   const [showMessageModal, setShowMessageModal] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
-  
-  // Interaction tracking
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+
   const [interactions, setInteractions] = useState<Interaction[]>(
     connection.interactions ? JSON.parse(connection.interactions) : []
   )
-  const [selectedInteractionType, setSelectedInteractionType] = useState<InteractionType>('email')
-  const [interactionDate, setInteractionDate] = useState(new Date().toISOString().split('T')[0])
+  const [logType, setLogType] = useState<InteractionType>('email')
+  const [logDate, setLogDate] = useState(new Date().toISOString().split('T')[0])
 
   const handleStatusChange = async (newStatus: ConnectionStatus) => {
     setStatus(newStatus)
     try {
-      const { error } = await supabase
-        .from('user_networks')
-        .update({ status: newStatus })
-        .eq('id', connection.id)
-
+      const { error } = await supabase.from('user_networks').update({ status: newStatus }).eq('id', connection.id)
       if (error) throw error
       onUpdate({ ...connection, status: newStatus })
-    } catch (error) {
-      console.error('Error updating status:', error)
-    }
+    } catch (err) { console.error('status update:', err) }
   }
 
   const handleSaveNotes = async () => {
+    if (notes === savedNotes) return
     setIsSavingNotes(true)
     try {
-      const { error } = await supabase
-        .from('user_networks')
-        .update({ notes })
-        .eq('id', connection.id)
-
+      const { error } = await supabase.from('user_networks').update({ notes }).eq('id', connection.id)
       if (error) throw error
+      setSavedNotes(notes)
       onUpdate({ ...connection, notes })
-    } catch (error) {
-      console.error('Error saving notes:', error)
-    } finally {
-      setIsSavingNotes(false)
-    }
+    } catch (err) { console.error('save notes:', err) }
+    finally { setIsSavingNotes(false) }
   }
 
   const handleCopyEmail = async () => {
-    if (alumni?.email) {
-      await navigator.clipboard.writeText(alumni.email)
-      setCopiedEmail(true)
-      setTimeout(() => setCopiedEmail(false), 2000)
-    }
+    if (!alumni?.email) return
+    await navigator.clipboard.writeText(alumni.email)
+    setCopiedEmail(true)
+    setTimeout(() => setCopiedEmail(false), 2000)
   }
 
-  const handleAddInteraction = async () => {
-    const newInteraction: Interaction = {
+  const handleLogInteraction = async () => {
+    const entry: Interaction = {
       id: Date.now().toString(),
-      type: selectedInteractionType,
-      date: interactionDate,
-      created_at: new Date().toISOString()
+      type: logType,
+      date: logDate,
+      created_at: new Date().toISOString(),
     }
-    
-    const updatedInteractions = [...interactions, newInteraction]
-    setInteractions(updatedInteractions)
-    
+    const updated = [...interactions, entry]
+    setInteractions(updated)
     try {
-      const { error } = await supabase
-        .from('user_networks')
-        .update({ 
-          interactions: JSON.stringify(updatedInteractions),
-          contacted: true,
-          contacted_at: new Date().toISOString()
-        })
-        .eq('id', connection.id)
-
-      if (error) throw error
-      onUpdate({ 
-        ...connection, 
-        interactions: JSON.stringify(updatedInteractions),
+      const { error } = await supabase.from('user_networks').update({
+        interactions: JSON.stringify(updated),
         contacted: true,
-        contacted_at: new Date().toISOString()
-      })
-    } catch (error) {
-      console.error('Error adding interaction:', error)
-    }
+        contacted_at: new Date().toISOString(),
+      }).eq('id', connection.id)
+      if (error) throw error
+      onUpdate({ ...connection, interactions: JSON.stringify(updated), contacted: true, contacted_at: new Date().toISOString() })
+    } catch (err) { console.error('log interaction:', err) }
   }
 
   const handleRemove = async () => {
-    if (!confirm('Are you sure you want to remove this connection?')) return
-    
     setIsRemoving(true)
     try {
-      const { error } = await supabase
-        .from('user_networks')
-        .delete()
-        .eq('id', connection.id)
-
+      const { error } = await supabase.from('user_networks').delete().eq('id', connection.id)
       if (error) throw error
       onRemove(connection.id)
-    } catch (error) {
-      console.error('Error removing connection:', error)
+    } catch (err) {
+      console.error('remove:', err)
       setIsRemoving(false)
     }
   }
 
-  const interactionIcons: Record<InteractionType, typeof Mail> = {
-    email: Mail,
-    call: Phone,
-    coffee: Coffee,
-    meeting: Users,
-    other: MoreHorizontal
-  }
-
-  const interactionLabels: Record<InteractionType, string> = {
-    email: 'Email',
-    call: 'Call',
-    coffee: 'Coffee Chat',
-    meeting: 'Meeting',
-    other: 'Other'
-  }
-
-  // Open Google Calendar to schedule a meeting
-  const handleOpenGoogleCalendar = () => {
+  const handleOpenCalendar = () => {
     const title = encodeURIComponent(`Meeting with ${alumni?.full_name || 'Contact'}`)
     const details = encodeURIComponent(`Networking call with ${alumni?.full_name}${alumni?.role ? ` (${alumni.role})` : ''}${alumni?.company ? ` at ${alumni.company}` : ''}\n\nCornell Athletics Alumni Network`)
-
-    // Default to tomorrow at 10am, 30 min duration
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    tomorrow.setHours(10, 0, 0, 0)
-    const endTime = new Date(tomorrow)
-    endTime.setMinutes(endTime.getMinutes() + 30)
-
-    // Format dates for Google Calendar (YYYYMMDDTHHmmss)
-    const formatDate = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
-    const dates = `${formatDate(tomorrow)}/${formatDate(endTime)}`
-
-    const calendarUrl = `https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${dates}&details=${details}`
-    window.open(calendarUrl, '_blank')
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); tomorrow.setHours(10, 0, 0, 0)
+    const end = new Date(tomorrow); end.setMinutes(end.getMinutes() + 30)
+    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
+    window.open(`https://calendar.google.com/calendar/u/0/r/eventedit?text=${title}&dates=${fmt(tomorrow)}/${fmt(end)}&details=${details}`, '_blank')
   }
 
+  const role = cleanField(alumni?.role)
+  const company = cleanField(alumni?.company)
+  const lastTouched = formatRelativeDate(connection.contacted_at)
+  const currentStep = STATUS_STEPS.find(s => s.key === status)
+
+  const sortedInteractions = [...interactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      
-      {/* Modal */}
-      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl">
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-[--text-quaternary] hover:text-[--text-primary] hover:bg-[--bg-tertiary] rounded-lg transition-colors z-10"
-        >
-          <X size={20} />
+
+      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg overflow-hidden">
+        {/* Close */}
+        <button onClick={onClose} className="absolute top-4 right-4 p-1.5 text-[--text-quaternary] hover:text-[--text-primary] hover:bg-[--bg-tertiary] rounded-lg transition-colors z-10">
+          <X size={17} />
         </button>
 
-        <div className="p-6 overflow-y-auto max-h-[90vh]">
-          {/* Top Box - Main Info */}
-          <div className="card p-6 mb-4">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-              {/* Left side - Info */}
-              <div className="flex-1">
-                <h2 className="text-2xl font-semibold text-[--text-primary] mb-1">
-                  {alumni?.full_name}
-                </h2>
-                
-                {(alumni?.role || alumni?.company) && (
-                  <p className="text-[--text-secondary] mb-2">
-                    {alumni?.role}{alumni?.role && alumni?.company && ' @ '}{alumni?.company}
+        <div className="overflow-y-auto max-h-[92vh]">
+
+          {/* ── Header ── */}
+          <div className="px-6 pt-6 pb-5">
+            <div className="flex items-start gap-4 mb-5">
+              <Avatar
+                name={alumni?.full_name || '?'}
+                sport={alumni?.sport}
+                imageUrl={alumni?.avatar_url || alumni?.photo_url}
+                size="xl"
+                className="flex-shrink-0 mt-0.5"
+              />
+              <div className="flex-1 min-w-0 pr-7">
+                <h2 className="text-xl font-semibold text-[--text-primary] leading-tight">{alumni?.full_name}</h2>
+                {(role || company) && (
+                  <p className="text-sm text-[--text-secondary] mt-0.5 leading-snug">
+                    {role && company ? `${role} · ${company}` : role || company}
                   </p>
                 )}
-                
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-[--text-tertiary] mb-4">
-                  {alumni?.graduation_year && (
-                    <span>Class of {alumni.graduation_year}</span>
-                  )}
-                  {alumni?.location && (
-                    <span>{alumni.location}</span>
-                  )}
-                  {alumni?.sport && (
-                    <span>{alumni.sport}</span>
-                  )}
-                </div>
-
-                {/* Status */}
-                <div className="mt-4">
-                  <p className="text-xs text-[--text-quaternary] uppercase tracking-wide mb-2">Status</p>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => handleStatusChange('interested')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        status === 'interested'
-                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
-                      }`}
-                    >
-                      Interested
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange('awaiting_reply')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        status === 'awaiting_reply'
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
-                      }`}
-                    >
-                      Awaiting Reply
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange('response_needed')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        status === 'response_needed'
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
-                      }`}
-                    >
-                      Response Needed
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange('meeting_scheduled')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        status === 'meeting_scheduled'
-                          ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
-                      }`}
-                    >
-                      Meeting Scheduled
-                    </button>
-                    {status === 'meeting_scheduled' && (
-                      <button
-                        onClick={handleOpenGoogleCalendar}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30 hover:bg-purple-500/30 transition-all flex items-center gap-1"
-                        title="Opens Google Calendar in a new tab"
-                      >
-                        <Calendar size={12} />
-                        <ExternalLink size={10} />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleStatusChange('met')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        status === 'met'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-[--bg-tertiary] text-[--text-secondary] border border-[--border-primary] hover:bg-[--bg-hover]'
-                      }`}
-                    >
-                      Met
-                    </button>
-                  </div>
-                </div>
+                <p className="text-xs text-[--text-quaternary] mt-1.5 flex flex-wrap gap-x-2">
+                  {alumni?.sport && <span>{alumni.sport}</span>}
+                  {alumni?.graduation_year && <span>'{String(alumni.graduation_year).slice(-2)}</span>}
+                  {alumni?.location && <span>{alumni.location}</span>}
+                  {lastTouched && <span className="text-[--text-quaternary]">· Last contacted {lastTouched}</span>}
+                </p>
               </div>
+            </div>
 
-              {/* Right side - Actions */}
-              <div className="flex flex-col gap-2 md:min-w-[200px]">
-                {alumni?.linkedin_url && (
-                  <a
-                    href={alumni.linkedin_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn-secondary flex items-center justify-center gap-2"
-                  >
-                    <Linkedin size={16} />
-                    LinkedIn
-                  </a>
-                )}
-                
-                {alumni?.email && (
-                  <div className="flex gap-2">
-                    <a
-                      href={`mailto:${alumni.email}`}
-                      className="btn-secondary flex-1 flex items-center justify-center gap-2"
-                    >
-                      <Mail size={16} />
-                      Email
-                    </a>
-                    <button
-                      onClick={handleCopyEmail}
-                      className="btn-secondary px-3"
-                      title="Copy email"
-                    >
-                      {copiedEmail ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
-                    </button>
-                  </div>
-                )}
-                
+            {/* ── Status track ── */}
+            <div className="flex items-center gap-1 bg-[--bg-secondary] rounded-xl p-1">
+              {STATUS_STEPS.map(step => (
                 <button
-                  onClick={() => setShowMessageModal(true)}
-                  className="btn-primary flex items-center justify-center gap-2"
+                  key={step.key}
+                  onClick={() => handleStatusChange(step.key)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    status === step.key
+                      ? 'bg-[--bg-primary] text-[--text-primary] shadow-sm'
+                      : 'text-[--text-quaternary] hover:text-[--text-secondary]'
+                  }`}
                 >
-                  <MessageSquare size={16} />
-                  Generate Message
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${step.dot} ${status !== step.key ? 'opacity-40' : ''}`} />
+                  <span className="hidden sm:inline">{step.label}</span>
                 </button>
-
-                <button
-                  onClick={handleRemove}
-                  disabled={isRemoving}
-                  className="btn-ghost text-red-500 hover:bg-red-500/10 flex items-center justify-center gap-2 mt-2"
-                >
-                  <Trash2 size={16} />
-                  {isRemoving ? 'Removing...' : 'Remove'}
-                </button>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Bottom Row - Two Boxes */}
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Notes Box */}
-            <div className="card p-4">
-              <h3 className="text-sm font-medium text-[--text-secondary] mb-3">Notes</h3>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                onBlur={handleSaveNotes}
-                placeholder="Add notes about this connection..."
-                className="input-field min-h-[120px] resize-none text-sm"
-              />
-              {isSavingNotes && (
-                <p className="text-xs text-[--text-quaternary] mt-2">Saving...</p>
+          {/* ── Primary CTA ── */}
+          <div className="px-6 pb-4 flex flex-col gap-2">
+            <button
+              onClick={() => setShowMessageModal(true)}
+              className="w-full btn-primary py-2.5 text-sm font-medium"
+            >
+              Write Message
+            </button>
+
+            {/* Secondary links */}
+            <div className="flex items-center gap-2">
+              {alumni?.linkedin_url && (
+                <a href={alumni.linkedin_url} target="_blank" rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 text-xs text-[--text-secondary] hover:text-[--text-primary] bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] rounded-lg py-2 transition-colors">
+                  <Linkedin size={13} /> LinkedIn
+                </a>
+              )}
+              {alumni?.email && (
+                <a href={`mailto:${alumni.email}`}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-xs text-[--text-secondary] hover:text-[--text-primary] bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] rounded-lg py-2 transition-colors">
+                  <Mail size={13} /> Email
+                </a>
+              )}
+              {alumni?.email && (
+                <button onClick={handleCopyEmail}
+                  className="px-3 py-2 text-xs text-[--text-secondary] hover:text-[--text-primary] bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] rounded-lg transition-colors"
+                  title="Copy email">
+                  {copiedEmail ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                </button>
+              )}
+              {(status === 'meeting_scheduled' || status === 'met') && (
+                <button onClick={handleOpenCalendar}
+                  className="flex-1 flex items-center justify-center gap-1.5 text-xs text-[--text-secondary] hover:text-[--text-primary] bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] rounded-lg py-2 transition-colors">
+                  <Calendar size={13} /> Calendar <ExternalLink size={10} className="opacity-50" />
+                </button>
               )}
             </div>
+          </div>
 
-            {/* Interactions Box */}
-            <div className="card p-4">
-              <h3 className="text-sm font-medium text-[--text-secondary] mb-3">Interactions</h3>
-              
-              {/* Add interaction */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {(Object.keys(interactionIcons) as InteractionType[]).map((type) => {
-                  const Icon = interactionIcons[type]
+          {/* ── Notes ── */}
+          <div className="px-6 pb-5 border-t border-[--border-primary] pt-5">
+            <p className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-2">Notes</p>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              onBlur={handleSaveNotes}
+              placeholder="What did you talk about? What's your plan? Any context that'll help next time…"
+              rows={4}
+              className="w-full bg-transparent text-sm text-[--text-primary] placeholder:text-[--text-quaternary] resize-none outline-none leading-relaxed"
+            />
+            {isSavingNotes && <p className="text-xs text-[--text-quaternary] mt-1">Saving…</p>}
+            {!isSavingNotes && notes !== savedNotes && (
+              <p className="text-xs text-[--text-quaternary] mt-1">Unsaved changes</p>
+            )}
+          </div>
+
+          {/* ── Interactions ── */}
+          <div className="px-6 pb-5 border-t border-[--border-primary] pt-5">
+            <p className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-3">Interactions</p>
+
+            {/* Log row */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex gap-1">
+                {(Object.keys(INTERACTION_LABELS) as InteractionType[]).map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setLogType(type)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                      logType === type
+                        ? 'bg-[--school-primary] text-white'
+                        : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
+                    }`}
+                  >
+                    {INTERACTION_LABELS[type]}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="date"
+                value={logDate}
+                onChange={e => setLogDate(e.target.value)}
+                className="flex-1 bg-[--bg-secondary] border border-[--border-primary] rounded-lg px-2.5 py-1 text-xs text-[--text-primary] focus:outline-none focus:border-[--school-primary] transition-colors min-w-0"
+              />
+              <button onClick={handleLogInteraction} className="btn-primary text-xs px-3 py-1.5 flex-shrink-0">
+                Log
+              </button>
+            </div>
+
+            {/* Timeline */}
+            {sortedInteractions.length === 0 ? (
+              <p className="text-xs text-[--text-quaternary]">No interactions logged yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {sortedInteractions.map((item, i) => {
+                  const Icon = INTERACTION_ICONS[item.type]
                   return (
-                    <button
-                      key={type}
-                      onClick={() => setSelectedInteractionType(type)}
-                      className={`p-2 rounded-lg transition-all ${
-                        selectedInteractionType === type
-                          ? 'bg-[--school-primary] text-white'
-                          : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-hover]'
-                      }`}
-                      title={interactionLabels[type]}
-                    >
-                      <Icon size={16} />
-                    </button>
+                    <div key={item.id} className="flex items-center gap-3 text-xs text-[--text-secondary]">
+                      <div className="flex flex-col items-center flex-shrink-0">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[--border-secondary]" />
+                        {i < sortedInteractions.length - 1 && (
+                          <div className="w-px h-4 bg-[--border-primary] mt-1" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 pb-2">
+                        <Icon size={12} className="text-[--text-quaternary]" />
+                        <span>{INTERACTION_LABELS[item.type]}</span>
+                        <span className="text-[--text-quaternary]">{formatDate(item.date)}</span>
+                      </div>
+                    </div>
                   )
                 })}
               </div>
-              
-              <div className="flex gap-2 mb-4">
-                <div className="relative flex-1">
-                  <Calendar size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
-                  <input
-                    type="date"
-                    value={interactionDate}
-                    onChange={(e) => setInteractionDate(e.target.value)}
-                    className="input-field !pl-10 text-sm"
-                  />
-                </div>
+            )}
+          </div>
+
+          {/* ── Danger zone ── */}
+          <div className="px-6 pb-6 border-t border-[--border-primary] pt-4">
+            {showRemoveConfirm ? (
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-[--text-secondary]">Remove this connection?</span>
                 <button
-                  onClick={handleAddInteraction}
-                  className="btn-primary text-sm px-4"
+                  onClick={handleRemove}
+                  disabled={isRemoving}
+                  className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
                 >
-                  Add
+                  {isRemoving ? 'Removing…' : 'Yes, remove'}
+                </button>
+                <button onClick={() => setShowRemoveConfirm(false)} className="text-xs text-[--text-quaternary] hover:text-[--text-secondary] transition-colors">
+                  Cancel
                 </button>
               </div>
-
-              {/* Google Calendar button for scheduling */}
-              {(selectedInteractionType === 'meeting' || selectedInteractionType === 'call' || selectedInteractionType === 'coffee') && (
-                <button
-                  onClick={handleOpenGoogleCalendar}
-                  className="w-full btn-secondary text-sm flex items-center justify-center gap-2 mb-4"
-                  title="Opens Google Calendar in a new tab"
-                >
-                  <Calendar size={14} />
-                  Add to Google Calendar
-                  <ExternalLink size={10} className="opacity-50" />
-                </button>
-              )}
-
-              {/* Interaction history */}
-              <div className="space-y-2 max-h-[100px] overflow-y-auto">
-                {interactions.length === 0 ? (
-                  <p className="text-xs text-[--text-quaternary]">No interactions logged yet</p>
-                ) : (
-                  interactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((interaction) => {
-                    const Icon = interactionIcons[interaction.type]
-                    return (
-                      <div key={interaction.id} className="flex items-center gap-2 text-sm text-[--text-secondary]">
-                        <Icon size={14} className="text-[--text-quaternary]" />
-                        <span>{interactionLabels[interaction.type]}</span>
-                        <span className="text-[--text-quaternary]">•</span>
-                        <span className="text-[--text-quaternary]">
-                          {new Date(interaction.date).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </div>
+            ) : (
+              <button
+                onClick={() => setShowRemoveConfirm(true)}
+                className="text-xs text-[--text-quaternary] hover:text-red-400 transition-colors"
+              >
+                Remove from network
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Message Modal - Claude-powered with tone options */}
       {showMessageModal && (
         <MessageModal
           connection={connection}
           userSport={userProfile.sport}
           onClose={() => setShowMessageModal(false)}
           onSend={async (connectionId, message) => {
-            // Mark as contacted and move to awaiting_reply
             try {
               const now = new Date().toISOString()
-              await supabase
-                .from('user_networks')
-                .update({
-                  contacted: true,
-                  contacted_at: now,
-                  status: 'awaiting_reply'
-                })
-                .eq('id', connectionId)
-
+              await supabase.from('user_networks').update({ contacted: true, contacted_at: now, status: 'awaiting_reply' }).eq('id', connectionId)
               setStatus('awaiting_reply')
-              onUpdate({
-                ...connection,
-                contacted: true,
-                contacted_at: now,
-                status: 'awaiting_reply'
-              })
-            } catch (error) {
-              console.error('Error marking as contacted:', error)
-            }
+              onUpdate({ ...connection, contacted: true, contacted_at: now, status: 'awaiting_reply' })
+            } catch (err) { console.error('send message:', err) }
             setShowMessageModal(false)
           }}
         />

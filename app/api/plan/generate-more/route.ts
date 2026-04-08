@@ -61,10 +61,10 @@ export async function POST(request: NextRequest) {
       ...(existingNetworkIds?.map(n => n.alumni_id) || []),
     ])
 
-    // Fetch available alumni
+    // Fetch available alumni — include photo fields for completeness scoring
     const { data: allAlumni } = await supabase
       .from('alumni')
-      .select('id, full_name, company, role, industry, sport, graduation_year, location, linkedin_url, email')
+      .select('id, full_name, company, role, industry, sport, graduation_year, location, linkedin_url, email, photo_url, avatar_url')
       .eq('is_public', true)
       .not('company', 'is', null)
       .limit(5000)
@@ -75,13 +75,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No new alumni available' }, { status: 404 })
     }
 
-    // Score and sort
+    // Score by relevance + profile completeness
+    const GARBAGE = new Set(['...', '-', '--', 'n/a', 'na', 'none', 'unknown', 'null'])
+    const hasValue = (v: string | null | undefined) => !!v && !GARBAGE.has(v.trim().toLowerCase())
+
     const scoredAlumni = availableAlumni.map(a => {
       let score = 0
+
+      // Relevance
       if (profile.primary_industry && a.industry?.toLowerCase() === profile.primary_industry.toLowerCase()) score += 3
       if (profile.secondary_industries?.some((si: string) => a.industry?.toLowerCase() === si.toLowerCase())) score += 1
       if (profile.preferred_locations?.some((loc: string) => a.location?.toLowerCase().includes(loc.toLowerCase()))) score += 2
       if (profile.sport && a.sport?.toLowerCase() === profile.sport.toLowerCase()) score += 1
+
+      // Completeness
+      // Only avatar_url earns the photo bonus — manually uploaded, always a real headshot.
+      if (a.avatar_url) score += 3
+      if (hasValue(a.role)) score += 2
+      if (hasValue(a.company)) score += 2
+      if (hasValue(a.location)) score += 1
+
       return { ...a, score }
     }).sort((a, b) => b.score - a.score)
 
@@ -133,7 +146,7 @@ Do NOT write vague or buzzword-heavy points like "discuss leadership synergies" 
 Respond ONLY with valid JSON.`
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 3000,
       messages: [{ role: 'user', content: prompt }],
     })

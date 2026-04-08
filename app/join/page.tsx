@@ -13,24 +13,39 @@ import {
 } from 'lucide-react'
 
 const sports = [
-  'Basketball',
-  'Soccer',
-  'Football',
-  'Lacrosse',
-  'Tennis',
-  'Swimming',
   'Baseball',
-  'Volleyball',
-  'Hockey',
-  'Track & Field',
-  'Rowing',
-  'Wrestling',
-  'Golf',
-  'Field Hockey',
-  'Cross Country',
+  'Equestrian',
   'Fencing',
-  'Gymnastics',
-  'Other',
+  'Field Hockey',
+  'Football',
+  "Men's Basketball",
+  "Men's Cross Country",
+  "Men's Golf",
+  "Men's Ice Hockey",
+  "Men's Lacrosse",
+  "Men's Rowing",
+  "Men's Soccer",
+  "Men's Squash",
+  "Men's Swimming And Diving",
+  "Men's Tennis",
+  "Men's Track And Field",
+  'Rowing',
+  'Softball',
+  'Sprint Football',
+  "Women's Basketball",
+  "Women's Cross Country",
+  "Women's Gymnastics",
+  "Women's Ice Hockey",
+  "Women's Lacrosse",
+  "Women's Rowing",
+  "Women's Sailing",
+  "Women's Soccer",
+  "Women's Squash",
+  "Women's Swimming And Diving",
+  "Women's Tennis",
+  "Women's Track And Field",
+  "Women's Volleyball",
+  'Wrestling',
 ]
 
 const industries = [
@@ -64,7 +79,6 @@ export default function JoinPage() {
   const [error, setError] = useState('')
 
   const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 30 }, (_, i) => currentYear + 4 - i)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -200,34 +214,36 @@ export default function JoinPage() {
                 <label className="block text-sm text-[--text-tertiary] mb-2">
                   Sport <span className="text-red-400">*</span>
                 </label>
-                <select
+                <input
+                  type="text"
+                  list="sports-list"
                   value={sport}
                   onChange={(e) => setSport(e.target.value)}
+                  placeholder="e.g., Men's Lacrosse"
                   required
-                  className="input-field cursor-pointer"
-                >
-                  <option value="">Select sport</option>
+                  className="input-field"
+                />
+                <datalist id="sports-list">
                   {sports.map((s) => (
-                    <option key={s} value={s}>{s}</option>
+                    <option key={s} value={s} />
                   ))}
-                </select>
+                </datalist>
               </div>
 
               <div>
                 <label className="block text-sm text-[--text-tertiary] mb-2">
                   Graduation Year <span className="text-red-400">*</span>
                 </label>
-                <select
+                <input
+                  type="number"
                   value={graduationYear}
                   onChange={(e) => setGraduationYear(e.target.value)}
+                  placeholder="e.g., 2018"
+                  min={1960}
+                  max={currentYear}
                   required
-                  className="input-field cursor-pointer"
-                >
-                  <option value="">Select year</option>
-                  {years.map((y) => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
-                </select>
+                  className="input-field"
+                />
               </div>
             </div>
 

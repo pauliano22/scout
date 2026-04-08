@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UserNetwork } from '@/types/database'
-import { X, Copy, Check, Linkedin, RefreshCw, Sparkles, Mail, ExternalLink } from 'lucide-react'
+import { X, Copy, Check, Linkedin, RefreshCw, Mail, ExternalLink } from 'lucide-react'
 
 interface MessageModalProps {
   connection: UserNetwork
@@ -11,27 +11,22 @@ interface MessageModalProps {
   onSend: (connectionId: string, message: string, sentVia: 'linkedin' | 'email' | 'copied' | 'marked') => Promise<void>
 }
 
-type Tone = 'friendly' | 'neutral' | 'formal'
+type Tone        = 'friendly' | 'neutral' | 'formal'
 type MessageType = 'introduction' | 'follow_up' | 'thank_you'
 
-const toneConfig = {
-  friendly: { label: 'Friendly', emoji: '😊', description: 'Warm & casual' },
-  neutral: { label: 'Neutral', emoji: '🤝', description: 'Balanced' },
-  formal: { label: 'Formal', emoji: '👔', description: 'Professional' },
-}
+const TONES: { key: Tone; label: string }[] = [
+  { key: 'friendly', label: 'Friendly' },
+  { key: 'neutral',  label: 'Balanced' },
+  { key: 'formal',   label: 'Formal' },
+]
 
-const messageTypeConfig = {
-  introduction: { label: 'Introduction', description: 'First outreach to connect' },
-  follow_up: { label: 'Follow Up', description: 'Check in after initial contact' },
-  thank_you: { label: 'Thank You', description: 'After a call or meeting' },
-}
+const TYPES: { key: MessageType; label: string }[] = [
+  { key: 'introduction', label: 'Introduction' },
+  { key: 'follow_up',    label: 'Follow Up' },
+  { key: 'thank_you',    label: 'Thank You' },
+]
 
-export default function MessageModal({
-  connection,
-  userSport,
-  onClose,
-  onSend,
-}: MessageModalProps) {
+export default function MessageModal({ connection, userSport, onClose, onSend }: MessageModalProps) {
   const alumni = connection.alumni
   const [selectedTone, setSelectedTone] = useState<Tone>('neutral')
   const [selectedType, setSelectedType] = useState<MessageType>('introduction')
@@ -43,66 +38,45 @@ export default function MessageModal({
 
   if (!alumni) return null
 
-  const hasLinkedIn = alumni.linkedin_url && alumni.linkedin_url.trim() !== ''
+  const currentKey = `${selectedType}_${selectedTone}`
+  const currentMessage = messages[currentKey]
+  const isCurrentlyGenerating = !!isGenerating[currentKey]
 
-  // Generate message for a specific tone and type combination
   const generateMessage = async (tone: Tone, type: MessageType) => {
     const key = `${type}_${tone}`
-    setIsGenerating(prev => ({ ...prev, [key]: true }))
+    setIsGenerating(p => ({ ...p, [key]: true }))
     setError(null)
-
     try {
-      const response = await fetch('/api/generate-message', {
+      const res = await fetch('/api/generate-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          alumni,
-          tone,
-          messageType: type,
-        }),
+        body: JSON.stringify({ alumni, tone, messageType: type }),
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to generate message')
-      }
-
-      const data = await response.json()
-      setMessages(prev => ({ ...prev, [key]: data.message }))
-    } catch (err) {
-      console.error('Error generating message:', err)
-      setError('Failed to generate message. Please try again.')
+      if (!res.ok) throw new Error('Failed to generate message')
+      const data = await res.json()
+      setMessages(p => ({ ...p, [key]: data.message }))
+    } catch {
+      setError('Failed to generate. Please try again.')
     } finally {
-      setIsGenerating(prev => ({ ...prev, [key]: false }))
+      setIsGenerating(p => ({ ...p, [key]: false }))
     }
   }
 
-  const currentKey = `${selectedType}_${selectedTone}`
-
-  // Generate initial message on mount
-  useEffect(() => {
-    const key = `${selectedType}_${selectedTone}`
-    if (!messages[key] && !isGenerating[key]) {
-      generateMessage(selectedTone, selectedType)
-    }
-  }, [])
-
-  // Generate message when switching to a tone/type that hasn't been generated yet
   useEffect(() => {
     if (!messages[currentKey] && !isGenerating[currentKey]) {
       generateMessage(selectedTone, selectedType)
     }
   }, [selectedTone, selectedType])
 
-  const currentMessage = messages[currentKey]
+  useEffect(() => {
+    generateMessage(selectedTone, selectedType)
+  }, [])
 
   const handleCopy = async () => {
     if (!currentMessage) return
     await navigator.clipboard.writeText(currentMessage)
     setIsCopied(true)
-
-    // Track the copy action
     await onSend(connection.id, currentMessage, 'copied')
-
     setTimeout(() => setIsCopied(false), 2000)
   }
 
@@ -117,219 +91,169 @@ export default function MessageModal({
     }
   }
 
-  const handleCopyAndOpenLinkedIn = async () => {
+  const handleOpenLinkedIn = async () => {
     if (!currentMessage) return
-    // Copy message to clipboard
     await navigator.clipboard.writeText(currentMessage)
-    setIsCopied(true)
-
-    // Track the LinkedIn action
     await onSend(connection.id, currentMessage, 'linkedin')
-
-    // Open LinkedIn profile
-    if (alumni.linkedin_url) {
-      window.open(alumni.linkedin_url, '_blank')
-    }
-
-    setTimeout(() => {
-      setIsCopied(false)
-      onClose()
-    }, 1000)
+    if (alumni.linkedin_url) window.open(alumni.linkedin_url, '_blank')
+    setTimeout(() => onClose(), 600)
   }
 
-  const handleOpenGmail = async () => {
+  const handleEmail = async (provider: 'gmail' | 'outlook') => {
     if (!currentMessage) return
-
-    // Track the email action
     await onSend(connection.id, currentMessage, 'email')
-
-    const subject = encodeURIComponent(`Cornell ${userSport || 'Athletics'} - Networking Request`)
-    const body = encodeURIComponent(currentMessage)
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${alumni.email || ''}&su=${subject}&body=${body}`
-    window.open(gmailUrl, '_blank')
-
+    const subject = encodeURIComponent(`Cornell ${userSport || 'Athletics'} — Networking Request`)
+    const body    = encodeURIComponent(currentMessage)
+    const to      = alumni.email || ''
+    const url = provider === 'gmail'
+      ? `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`
+      : `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`
+    window.open(url, '_blank')
     setTimeout(() => onClose(), 500)
   }
-
-  const handleOpenOutlook = async () => {
-    if (!currentMessage) return
-
-    // Track the email action
-    await onSend(connection.id, currentMessage, 'email')
-
-    const subject = encodeURIComponent(`Cornell ${userSport || 'Athletics'} - Networking Request`)
-    const body = encodeURIComponent(currentMessage)
-    const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${alumni.email || ''}&subject=${subject}&body=${body}`
-    window.open(outlookUrl, '_blank')
-
-    setTimeout(() => onClose(), 500)
-  }
-
-  const handleRegenerate = () => {
-    generateMessage(selectedTone, selectedType)
-  }
-
-  const isCurrentlyGenerating = isGenerating[currentKey]
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
       <div
-        className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 max-w-lg w-full max-h-[85vh] overflow-auto animate-fade-in"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-[--bg-primary] border border-[--border-primary] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-auto animate-scale-in"
+        onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-5">
-          <div className="flex items-center gap-2">
-            <Sparkles size={18} className="text-[--school-primary]" />
-            <h2 className="text-lg font-semibold">
-              Message to {alumni.full_name}
-            </h2>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[--border-primary]">
+          <div>
+            <h2 className="text-base font-semibold text-[--text-primary]">Write to {alumni.full_name}</h2>
+            <p className="text-xs text-[--text-quaternary] mt-0.5">AI-generated · each message is unique</p>
           </div>
-          <button onClick={onClose} className="btn-ghost p-1">
-            <X size={20} />
+          <button onClick={onClose} className="btn-ghost p-1.5 -mr-1">
+            <X size={16} />
           </button>
         </div>
 
-        {/* Message type selector */}
-        <div className="mb-3">
-          <label className="text-xs text-[--text-tertiary] mb-1.5 block">Message Type</label>
-          <div className="flex gap-2">
-            {(Object.keys(messageTypeConfig) as MessageType[]).map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedType(type)}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  selectedType === type
-                    ? 'bg-[--school-primary] text-white'
-                    : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-primary]'
-                }`}
-              >
-                {messageTypeConfig[type].label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tone selector tabs */}
-        <div className="mb-4">
-          <label className="text-xs text-[--text-tertiary] mb-1.5 block">Tone</label>
-          <div className="flex gap-2">
-            {(Object.keys(toneConfig) as Tone[]).map((tone) => (
-              <button
-                key={tone}
-                onClick={() => setSelectedTone(tone)}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  selectedTone === tone
-                    ? 'bg-[--school-primary]/80 text-white'
-                    : 'bg-[--bg-tertiary] text-[--text-secondary] hover:bg-[--bg-primary]'
-                }`}
-              >
-                <span className="mr-1">{toneConfig[tone].emoji}</span>
-                {toneConfig[tone].label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Generated message preview */}
-        <div className="bg-[--bg-primary] border border-[--border-primary] rounded-lg p-4 mb-4 min-h-[200px]">
-          {isCurrentlyGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full py-8 text-[--text-tertiary]">
-              <div className="w-6 h-6 border-2 border-[--school-primary]/30 border-t-[--school-primary] rounded-full animate-spin mb-3" />
-              <p className="text-sm">Generating {toneConfig[selectedTone].label.toLowerCase()} message...</p>
+        <div className="p-5 space-y-4">
+          {/* Type + Tone in one row */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <p className="text-xs text-[--text-quaternary] mb-1.5 font-medium">Type</p>
+              <div className="flex flex-col gap-1">
+                {TYPES.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedType(key)}
+                    className={`text-left text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${
+                      selectedType === key
+                        ? 'bg-[--school-primary] text-white'
+                        : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center h-full py-8 text-red-400">
-              <p className="text-sm mb-2">{error}</p>
-              <button onClick={handleRegenerate} className="btn-secondary text-xs">
-                Try Again
-              </button>
+            <div className="flex-1">
+              <p className="text-xs text-[--text-quaternary] mb-1.5 font-medium">Tone</p>
+              <div className="flex flex-col gap-1">
+                {TONES.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedTone(key)}
+                    className={`text-left text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${
+                      selectedTone === key
+                        ? 'bg-[--bg-tertiary] text-[--text-primary] border border-[--border-secondary]'
+                        : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : (
-            <p className="text-sm leading-relaxed text-[--text-secondary] whitespace-pre-wrap">
-              {currentMessage}
-            </p>
-          )}
-        </div>
+          </div>
 
-        {/* Regenerate button */}
-        <div className="flex justify-between items-center mb-5">
-          <button
-            onClick={handleRegenerate}
-            disabled={isCurrentlyGenerating}
-            className="btn-ghost text-xs flex items-center gap-1 text-[--text-tertiary] hover:text-[--text-primary]"
-          >
-            <RefreshCw size={12} className={isCurrentlyGenerating ? 'animate-spin' : ''} />
-            Regenerate
-          </button>
-          <p className="text-[--text-quaternary] text-xs">
-            AI-generated • Each message is unique
-          </p>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex gap-2 justify-end flex-wrap">
-          <button
-            onClick={handleCopy}
-            disabled={!currentMessage || isCurrentlyGenerating}
-            className="btn-secondary flex items-center gap-2"
-          >
-            {isCopied ? <Check size={14} /> : <Copy size={14} />}
-            {isCopied ? 'Copied!' : 'Copy'}
-          </button>
-
-          <button
-            onClick={handleOpenGmail}
-            disabled={!currentMessage || isCurrentlyGenerating}
-            className="btn-secondary flex items-center gap-2"
-            title="Opens Gmail in a new tab"
-          >
-            <Mail size={14} />
-            Gmail
-            <ExternalLink size={10} className="opacity-50" />
-          </button>
-
-          <button
-            onClick={handleOpenOutlook}
-            disabled={!currentMessage || isCurrentlyGenerating}
-            className="btn-secondary flex items-center gap-2"
-            title="Opens Outlook in a new tab"
-          >
-            <Mail size={14} />
-            Outlook
-            <ExternalLink size={10} className="opacity-50" />
-          </button>
-
-          {hasLinkedIn && (
-            <button
-              onClick={handleCopyAndOpenLinkedIn}
-              disabled={!currentMessage || isCurrentlyGenerating}
-              className="btn-secondary flex items-center gap-2 hover:text-[#0077b5]"
-            >
-              <Linkedin size={14} />
-              Open LinkedIn
-            </button>
-          )}
-
-          <button
-            onClick={handleSend}
-            disabled={isSending || !currentMessage || isCurrentlyGenerating}
-            className="btn-primary flex items-center gap-2"
-          >
-            {isSending ? (
-              <>
-                <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                Marking...
-              </>
+          {/* Message body */}
+          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 min-h-[180px]">
+            {isCurrentlyGenerating ? (
+              <div className="flex flex-col items-center justify-center h-full py-10 gap-3">
+                <div className="w-5 h-5 border-2 border-[--border-secondary] border-t-[--school-primary] rounded-full animate-spin" />
+                <p className="text-xs text-[--text-quaternary]">Generating…</p>
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center h-full py-10 gap-2">
+                <p className="text-xs text-red-400">{error}</p>
+                <button onClick={() => generateMessage(selectedTone, selectedType)} className="btn-secondary text-xs">Try Again</button>
+              </div>
             ) : (
-              <>
-                <Check size={14} />
-                Mark as Sent
-              </>
+              <p className="text-sm leading-relaxed text-[--text-secondary] whitespace-pre-wrap">{currentMessage}</p>
             )}
-          </button>
+          </div>
+
+          {/* Regenerate */}
+          <div className="flex justify-start">
+            <button
+              onClick={() => generateMessage(selectedTone, selectedType)}
+              disabled={isCurrentlyGenerating}
+              className="flex items-center gap-1.5 text-xs text-[--text-quaternary] hover:text-[--text-secondary] transition-colors"
+            >
+              <RefreshCw size={11} className={isCurrentlyGenerating ? 'animate-spin' : ''} />
+              Regenerate
+            </button>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              onClick={handleCopy}
+              disabled={!currentMessage || isCurrentlyGenerating}
+              className="btn-secondary flex items-center gap-1.5 text-xs"
+            >
+              {isCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+              {isCopied ? 'Copied!' : 'Copy'}
+            </button>
+
+            <button
+              onClick={() => handleEmail('gmail')}
+              disabled={!currentMessage || isCurrentlyGenerating}
+              className="btn-secondary flex items-center gap-1.5 text-xs"
+            >
+              <Mail size={12} />
+              Gmail
+              <ExternalLink size={9} className="opacity-40" />
+            </button>
+
+            <button
+              onClick={() => handleEmail('outlook')}
+              disabled={!currentMessage || isCurrentlyGenerating}
+              className="btn-secondary flex items-center gap-1.5 text-xs"
+            >
+              <Mail size={12} />
+              Outlook
+              <ExternalLink size={9} className="opacity-40" />
+            </button>
+
+            {alumni.linkedin_url && (
+              <button
+                onClick={handleOpenLinkedIn}
+                disabled={!currentMessage || isCurrentlyGenerating}
+                className="btn-secondary flex items-center gap-1.5 text-xs hover:text-[#0077b5]"
+              >
+                <Linkedin size={12} />
+                LinkedIn
+              </button>
+            )}
+
+            <button
+              onClick={handleSend}
+              disabled={isSending || !currentMessage || isCurrentlyGenerating}
+              className="btn-primary flex items-center gap-1.5 text-xs ml-auto"
+            >
+              {isSending ? (
+                <div className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+              ) : (
+                <Check size={12} />
+              )}
+              Mark as Sent
+            </button>
+          </div>
         </div>
       </div>
     </div>

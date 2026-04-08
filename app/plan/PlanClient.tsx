@@ -7,18 +7,14 @@ import { trackEvent } from '@/lib/track'
 import { getStatusConfig } from '@/lib/statusConfig'
 import type { Profile, NetworkingPlan, PlanAlumni, UserNetwork, Alumni } from '@/types/database'
 import Avatar from '@/components/Avatar'
+import { cleanField } from '@/lib/cleanField'
 import {
   ChevronDown,
   ChevronUp,
-  Users,
-  MessageSquare,
-  Calendar,
   Sparkles,
-  Plus,
   X,
   Linkedin,
   Globe,
-  ThumbsDown,
   Mail,
   Loader2,
   Trash2,
@@ -28,11 +24,6 @@ import {
   Check,
   Flame,
 } from 'lucide-react'
-
-function cleanField(value: string | null | undefined): string | null {
-  if (!value || value === '...') return null
-  return value.replace(/-\s*LinkedIn$/i, '').trim() || null
-}
 
 type PlanAlumniWithAlumni = PlanAlumni & { alumni: Alumni }
 type PlanWithAlumni = NetworkingPlan & { plan_alumni: PlanAlumniWithAlumni[] }
@@ -263,41 +254,30 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[--text-primary]">
-          Welcome back, {firstName}
-        </h1>
-        <p className="text-[--text-tertiary] mt-1">
-          Your networking plan and recommended connections
-        </p>
-      </div>
-
-      {/* Stats Bar */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[--school-primary]/5 to-transparent" />
-          <div className="relative">
-            <Users size={20} className="mx-auto mb-2 text-[--school-primary]" />
-            <div className="text-2xl font-bold text-[--text-primary]">{stats.networkCount}</div>
-            <div className="text-xs text-[--text-tertiary]">People in Network</div>
-          </div>
+    <main className="max-w-4xl mx-auto px-4 py-6">
+      {/* Header + inline stats */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-[--text-primary]">
+            Hey, {firstName}
+          </h1>
+          <p className="text-[--text-quaternary] text-sm mt-0.5">Your networking plan</p>
         </div>
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[--school-primary]/5 to-transparent" />
-          <div className="relative">
-            <MessageSquare size={20} className="mx-auto mb-2 text-[--school-primary]" />
-            <div className="text-2xl font-bold text-[--text-primary]">{stats.messagesCount}</div>
-            <div className="text-xs text-[--text-tertiary]">Messages Sent</div>
+        {/* Compact stat strip */}
+        <div className="flex items-center gap-5 text-right">
+          <div>
+            <div className="text-lg font-bold text-[--text-primary] leading-none">{stats.networkCount}</div>
+            <div className="text-xs text-[--text-quaternary] mt-0.5">connections</div>
           </div>
-        </div>
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 text-center relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[--school-primary]/5 to-transparent" />
-          <div className="relative">
-            <Calendar size={20} className="mx-auto mb-2 text-[--school-primary]" />
-            <div className="text-2xl font-bold text-[--text-primary]">{stats.meetingsCount}</div>
-            <div className="text-xs text-[--text-tertiary]">Meetings</div>
+          <div className="w-px h-8 bg-[--border-primary]" />
+          <div>
+            <div className="text-lg font-bold text-[--text-primary] leading-none">{stats.messagesCount}</div>
+            <div className="text-xs text-[--text-quaternary] mt-0.5">messages</div>
+          </div>
+          <div className="w-px h-8 bg-[--border-primary]" />
+          <div>
+            <div className="text-lg font-bold text-[--text-primary] leading-none">{stats.meetingsCount}</div>
+            <div className="text-xs text-[--text-quaternary] mt-0.5">meetings</div>
           </div>
         </div>
       </div>
@@ -310,20 +290,15 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
         </div>
       )}
 
-      {/* No Plan State - Enlarged CTA */}
+      {/* No Plan State */}
       {!plan && (
-        <div className="border-2 border-dashed border-[--school-primary]/40 bg-gradient-to-br from-[--school-primary]/5 via-[--bg-secondary] to-[--bg-secondary] rounded-2xl p-12 text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-[--school-primary]/10 flex items-center justify-center mx-auto mb-6">
-            <Sparkles size={32} className="text-[--school-primary]" />
-          </div>
-          <h2 className="text-2xl font-bold mb-3 text-[--text-primary]">Generate Your Networking Plan</h2>
-          <p className="text-[--text-secondary] text-base mb-4 max-w-lg mx-auto">
-            We&apos;ll analyze your background and interests to recommend the best alumni connections with personalized talking points.
+        <div className="py-16 text-center mb-8">
+          <h2 className="text-2xl font-semibold mb-2 tracking-tight">Build your networking plan</h2>
+          <p className="text-sm text-[--text-secondary] mb-8 max-w-sm mx-auto leading-relaxed">
+            We'll match you with the best alumni connections and generate personalized talking points.
           </p>
 
-          {/* Industry selector */}
           <div className="max-w-xs mx-auto mb-6">
-            <label className="text-sm text-[--text-tertiary] mb-1.5 block">Target Industry</label>
             <select
               value={selectedIndustry}
               onChange={(e) => setSelectedIndustry(e.target.value)}
@@ -339,16 +314,16 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
           <button
             onClick={handleGeneratePlan}
             disabled={isGenerating}
-            className="btn-primary inline-flex items-center gap-3 px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-shadow"
+            className="btn-primary inline-flex items-center gap-2 px-6 py-2.5 text-sm"
           >
             {isGenerating ? (
               <>
-                <Loader2 size={22} className="animate-spin" />
-                Generating your plan...
+                <Loader2 size={14} className="animate-spin" />
+                Generating…
               </>
             ) : (
               <>
-                <Sparkles size={22} />
+                <Sparkles size={14} />
                 Generate Plan
               </>
             )}
@@ -358,49 +333,37 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
 
       {/* Plan Banner */}
       {plan && (
-        <div className="bg-[--school-primary]/10 border border-[--school-primary]/30 rounded-xl p-5 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-[--text-primary]">{plan.title}</h2>
-              <p className="text-sm text-[--text-tertiary]">
-                {activePlanAlumni.length} alumni recommended
-                {plan.goal_count && ` \u00B7 Goal: ${plan.goal_count} connections`}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="btn-ghost p-2 text-[--text-quaternary] hover:text-red-400"
-                title="Delete plan and start fresh"
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
+        <div className="relative flex items-center justify-between px-4 py-3 bg-[--bg-secondary] border border-[--border-primary] rounded-xl mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-[--school-primary]" />
+            <span className="text-sm font-medium text-[--text-primary]">{plan.title}</span>
+            <span className="text-xs text-[--text-quaternary]">{activePlanAlumni.length} alumni</span>
           </div>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-xs text-[--text-quaternary] hover:text-red-400 transition-colors flex items-center gap-1"
+            title="Reset plan"
+          >
+            <Trash2 size={13} />
+            <span className="hidden sm:inline">Reset</span>
+          </button>
 
-          {/* Delete confirmation */}
+          {/* Delete confirmation — inline */}
           {showDeleteConfirm && (
-            <div className="mt-4 pt-4 border-t border-[--school-primary]/20">
+            <div className="absolute top-full mt-2 right-0 bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 shadow-lg z-10 min-w-[280px]">
               <p className="text-sm text-[--text-secondary] mb-3">
-                Delete this plan and start fresh? You can generate a new plan with a different industry focus.
+                Delete this plan and start fresh?
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={handleDeletePlan}
                   disabled={isDeletingPlan}
-                  className="px-4 py-2 text-sm bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors flex items-center gap-2"
+                  className="px-3 py-1.5 text-sm bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-colors flex items-center gap-1.5"
                 >
-                  {isDeletingPlan ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Trash2 size={14} />
-                  )}
-                  Delete Plan
+                  {isDeletingPlan ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                  Delete
                 </button>
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="btn-ghost text-sm"
-                >
+                <button onClick={() => setShowDeleteConfirm(false)} className="btn-ghost text-sm">
                   Cancel
                 </button>
               </div>
@@ -438,7 +401,7 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                     <Avatar
                       name={alumni.full_name || '?'}
                       sport={alumni.sport || undefined}
-                      imageUrl={alumni.photo_url || alumni.avatar_url}
+                      imageUrl={alumni.avatar_url || alumni.photo_url}
                       size="md"
                     />
                     <div className="min-w-0">
@@ -447,14 +410,10 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                           {alumni.full_name}
                         </span>
                         {pa.status === 'contacted' && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 border ${contactedConfig.bgClass} ${contactedConfig.textClass} ${contactedConfig.borderClass}`}>
-                            Contacted
-                          </span>
+                          <span className="text-xs text-emerald-400 flex-shrink-0">· Contacted</span>
                         )}
                         {isInNetwork && (
-                          <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full flex-shrink-0 border border-emerald-500/20">
-                            In Network
-                          </span>
+                          <span className="text-xs text-[--text-quaternary] flex-shrink-0">· Saved</span>
                         )}
                       </div>
                       <div className="text-sm text-[--text-tertiary] truncate">
@@ -470,12 +429,12 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                   <div className="flex items-center gap-3 flex-shrink-0">
                     {/* Sport badge */}
                     {isSameSport ? (
-                      <span className="hidden sm:flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border bg-[--school-primary]/10 text-[--school-primary] border-[--school-primary]/30 font-medium">
+                      <span className="hidden sm:flex items-center gap-1 text-xs text-[--school-primary] font-medium">
                         <Flame size={10} />
                         Same sport
                       </span>
                     ) : (
-                      <span className="text-xs bg-[--bg-tertiary] px-2 py-1 rounded text-[--text-tertiary] hidden sm:inline border border-[--border-primary]">
+                      <span className="text-xs text-[--text-quaternary] hidden sm:inline">
                         {alumni.sport} &apos;{String(alumni.graduation_year).slice(-2)}
                       </span>
                     )}
@@ -486,11 +445,11 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                 {/* Expanded content */}
                 {isExpanded && (
                   <div className="px-5 pb-5 border-t border-[--border-primary]">
-                    {/* Career summary - now first */}
+                    {/* Career summary */}
                     {pa.ai_career_summary && (
                       <div className="mt-4 mb-4">
-                        <h4 className="text-sm font-medium text-[--text-secondary] mb-1">Career Summary</h4>
-                        <p className="text-sm text-[--text-tertiary] leading-relaxed">
+                        <h4 className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-1.5">About</h4>
+                        <p className="text-sm text-[--text-secondary] leading-relaxed">
                           {pa.ai_career_summary}
                         </p>
                       </div>
@@ -498,12 +457,12 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
 
                     {/* Company bio */}
                     {pa.ai_company_bio && alumni.company && (
-                      <div className="mb-4 bg-[--bg-tertiary]/50 rounded-lg p-3">
-                        <h4 className="text-sm font-medium text-[--text-secondary] mb-1 flex items-center gap-1.5">
-                          <Building2 size={14} />
-                          About {cleanField(alumni.company) || alumni.company}
+                      <div className="mb-4 pl-3 border-l border-[--border-secondary]">
+                        <h4 className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                          <Building2 size={11} />
+                          {cleanField(alumni.company) || alumni.company}
                         </h4>
-                        <p className="text-sm text-[--text-tertiary] leading-relaxed">
+                        <p className="text-sm text-[--text-secondary] leading-relaxed">
                           {pa.ai_company_bio}
                         </p>
                       </div>
@@ -512,13 +471,11 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                     {/* Talking points */}
                     {pa.ai_talking_points && pa.ai_talking_points.length > 0 && (
                       <div className="mb-4">
-                        <h4 className="text-sm font-medium text-[--text-secondary] mb-2">Talking Points</h4>
-                        <ul className="space-y-2">
+                        <h4 className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-2">Talking Points</h4>
+                        <ul className="space-y-1.5">
                           {(pa.ai_talking_points as string[]).map((point, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-[--text-tertiary]">
-                              <span className="w-5 h-5 rounded-full bg-[--school-primary]/10 text-[--school-primary] flex items-center justify-center flex-shrink-0 text-xs font-medium mt-0.5">
-                                {i + 1}
-                              </span>
+                            <li key={i} className="flex items-start gap-2 text-sm text-[--text-secondary]">
+                              <span className="text-[--school-primary] mt-1.5 flex-shrink-0">•</span>
                               {point}
                             </li>
                           ))}
@@ -527,44 +484,15 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                     )}
 
                     {/* Details */}
-                    <div className="flex flex-wrap gap-2 text-xs text-[--text-tertiary] mb-4">
-                      {alumni.industry && (
-                        <span className="bg-[--bg-tertiary] px-2 py-1 rounded">{alumni.industry}</span>
-                      )}
-                      {alumni.location && (
-                        <span className="bg-[--bg-tertiary] px-2 py-1 rounded">{alumni.location}</span>
-                      )}
-                      <span className="bg-[--bg-tertiary] px-2 py-1 rounded">
-                        {alumni.sport} &apos;{alumni.graduation_year}
-                      </span>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[--text-quaternary] mb-4">
+                      {alumni.industry && <span>{alumni.industry}</span>}
+                      {alumni.location && <span>{alumni.location}</span>}
+                      <span>{alumni.sport} &apos;{alumni.graduation_year}</span>
                     </div>
 
-                    {/* Action buttons */}
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-[--border-primary]">
-                      {alumni.linkedin_url && (
-                        <a
-                          href={alumni.linkedin_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-secondary text-sm flex items-center gap-1.5 hover:text-[#0077b5]"
-                        >
-                          <Linkedin size={14} />
-                          LinkedIn
-                        </a>
-                      )}
-
-                      {alumni.company && (
-                        <a
-                          href={`https://www.google.com/search?q=${encodeURIComponent(alumni.company)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-secondary text-sm flex items-center gap-1.5"
-                        >
-                          <Globe size={14} />
-                          Company
-                        </a>
-                      )}
-
+                    {/* Action buttons — primary action first */}
+                    <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[--border-primary]">
+                      {/* PRIMARY: Write Message */}
                       <button
                         onClick={() => handleWriteMessage(pa)}
                         className="btn-primary text-sm flex items-center gap-1.5"
@@ -573,7 +501,7 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                         Write Message
                       </button>
 
-                      {/* Add to Network button */}
+                      {/* SECONDARY: Add to Network */}
                       {isInNetwork ? (
                         <span className="btn-success text-sm flex items-center gap-1.5 cursor-default">
                           <Check size={14} />
@@ -583,23 +511,50 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                         <button
                           onClick={() => handleAddToNetwork(alumni.id)}
                           disabled={addingToNetworkId === alumni.id}
-                          className="btn-secondary text-sm flex items-center gap-1.5 hover:border-[--school-primary] hover:text-[--school-primary]"
+                          className="btn-secondary text-sm flex items-center gap-1.5"
                         >
                           {addingToNetworkId === alumni.id ? (
                             <Loader2 size={14} className="animate-spin" />
                           ) : (
                             <UserPlus size={14} />
                           )}
-                          Add to Network
+                          Save
                         </button>
                       )}
 
+                      {/* Utility: LinkedIn */}
+                      {alumni.linkedin_url && (
+                        <a
+                          href={alumni.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-ghost text-sm flex items-center gap-1.5 hover:text-[#0077b5]"
+                        >
+                          <Linkedin size={14} />
+                          <span className="hidden sm:inline">LinkedIn</span>
+                        </a>
+                      )}
+
+                      {/* Utility: Company research */}
+                      {alumni.company && (
+                        <a
+                          href={`https://www.google.com/search?q=${encodeURIComponent(cleanField(alumni.company) || alumni.company)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-ghost text-sm flex items-center gap-1.5"
+                        >
+                          <Globe size={14} />
+                          <span className="hidden sm:inline">Research</span>
+                        </a>
+                      )}
+
+                      {/* Destructive: far right */}
                       <button
                         onClick={() => handleNotInterested(pa.id)}
-                        className="btn-ghost text-sm flex items-center gap-1.5 text-[--text-quaternary] hover:text-red-400 ml-auto"
+                        className="btn-ghost text-sm flex items-center gap-1 text-[--text-quaternary] hover:text-red-400 ml-auto"
                       >
-                        <ThumbsDown size={14} />
-                        Not Interested
+                        <X size={13} />
+                        Skip
                       </button>
                     </div>
                   </div>
@@ -610,23 +565,23 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
         </div>
       )}
 
-      {/* Generate More Button — primary CTA */}
+      {/* Generate More */}
       {plan && (
         <div className="text-center mb-8">
           <button
             onClick={handleGenerateMore}
             disabled={isGeneratingMore}
-            className="btn-primary inline-flex items-center gap-2.5 px-7 py-3 text-base font-semibold shadow-md hover:shadow-lg transition-shadow"
+            className="btn-secondary inline-flex items-center gap-2 px-6 py-2.5 text-sm"
           >
             {isGeneratingMore ? (
               <>
-                <Loader2 size={18} className="animate-spin" />
-                Finding more alumni...
+                <Loader2 size={15} className="animate-spin" />
+                Finding more...
               </>
             ) : (
               <>
-                <RefreshCw size={18} />
-                Generate More Recommendations
+                <RefreshCw size={15} />
+                Load more recommendations
               </>
             )}
           </button>

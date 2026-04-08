@@ -7,7 +7,6 @@ export async function POST(request: Request) {
 
     const { full_name, email, sport, graduation_year, company, role, industry, location, linkedin_url } = body
 
-    // Validate required fields
     if (!full_name || !sport || !graduation_year) {
       return NextResponse.json(
         { error: 'Name, sport, and graduation year are required.' },
@@ -15,24 +14,22 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validate graduation year is a number
     const gradYear = parseInt(graduation_year)
-    if (isNaN(gradYear) || gradYear < 1900 || gradYear > 2040) {
+    if (isNaN(gradYear) || gradYear < 1960 || gradYear > 2040) {
       return NextResponse.json(
-        { error: 'Invalid graduation year.' },
+        { error: 'Please enter a valid graduation year.' },
         { status: 400 }
       )
     }
 
-    // Use service role key to bypass RLS for public submissions
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
     const alumniData = {
-      full_name,
-      email: email || null,
+      full_name: full_name.trim(),
+      email: email?.trim() || null,
       sport,
       graduation_year: gradYear,
       company: company || null,
@@ -42,38 +39,55 @@ export async function POST(request: Request) {
       linkedin_url: linkedin_url || null,
       source: 'opt_in',
       is_public: true,
-      is_verified: false,
+      is_verified: true,
     }
 
-    // If email provided, check for duplicates
-    if (email) {
-      const { data: existing } = await supabase
+    // 1. Match by email (highest confidence)
+    if (email?.trim()) {
+      const { data: emailMatch } = await supabase
         .from('alumni')
         .select('id')
-        .eq('email', email)
+        .eq('email', email.trim())
         .single()
 
-      if (existing) {
-        // Update existing entry
-        const { error } = await supabase
-          .from('alumni')
-          .update(alumniData)
-          .eq('id', existing.id)
-
-        if (error) throw error
-
-        return NextResponse.json({ success: true, updated: true })
+      if (emailMatch) {
+        await supabase.from('alumni').update(alumniData).eq('id', emailMatch.id)
+        return NextResponse.json({ success: true, claimed: true })
       }
     }
 
-    // Insert new alumni
-    const { error } = await supabase
+    // 2. Match by name + sport + graduation year (claims existing scraped profile)
+    const { data: nameMatch } = await supabase
       .from('alumni')
-      .insert(alumniData)
+      .select('id')
+      .ilike('full_name', full_name.trim())
+      .eq('graduation_year', gradYear)
+      .eq('sport', sport)
+      .single()
 
+    if (nameMatch) {
+      await supabase.from('alumni').update(alumniData).eq('id', nameMatch.id)
+      return NextResponse.json({ success: true, claimed: true })
+    }
+
+    // 3. Match by name + graduation year (looser — catches sport name variations)
+    const { data: nameYearMatch } = await supabase
+      .from('alumni')
+      .select('id')
+      .ilike('full_name', full_name.trim())
+      .eq('graduation_year', gradYear)
+      .single()
+
+    if (nameYearMatch) {
+      await supabase.from('alumni').update(alumniData).eq('id', nameYearMatch.id)
+      return NextResponse.json({ success: true, claimed: true })
+    }
+
+    // 4. No match — insert as new opt-in alumni
+    const { error } = await supabase.from('alumni').insert(alumniData)
     if (error) throw error
 
-    return NextResponse.json({ success: true, updated: false })
+    return NextResponse.json({ success: true, claimed: false })
   } catch (error: any) {
     console.error('Alumni submit error:', error)
     return NextResponse.json(

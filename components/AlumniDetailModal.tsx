@@ -8,11 +8,11 @@ import {
   Check,
   MapPin,
   GraduationCap,
-  Building2,
   Users,
-  Briefcase,
   Loader2
 } from 'lucide-react'
+import Avatar from '@/components/Avatar'
+import { cleanField } from '@/lib/cleanField'
 
 // Base alumni type with only fields used by this modal
 export interface AlumniBase {
@@ -25,6 +25,8 @@ export interface AlumniBase {
   graduation_year: number
   linkedin_url: string | null
   location: string | null
+  photo_url?: string | null
+  avatar_url?: string | null
 }
 
 interface AlumniDetailModalProps {
@@ -37,22 +39,6 @@ interface AlumniDetailModalProps {
   networkIds?: Set<string>
 }
 
-// Only show badges for these verified industries
-const validIndustries = new Set(['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Sports', 'Education', 'Real Estate', 'Government', 'Nonprofit'])
-
-const industryBadgeClass: Record<string, string> = {
-  Finance: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  Technology: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  Consulting: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  Healthcare: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
-  Law: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  Media: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  Sports: 'bg-red-500/10 text-red-400 border-red-500/20',
-  Education: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-  'Real Estate': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-  Government: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
-  Nonprofit: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-}
 
 export default function AlumniDetailModal({
   alumni,
@@ -65,6 +51,9 @@ export default function AlumniDetailModal({
 }: AlumniDetailModalProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [addedToNetwork, setAddedToNetwork] = useState(isInNetwork)
+
+  const role = cleanField(alumni.role)
+  const company = cleanField(alumni.company)
 
   const handleAddToNetwork = async () => {
     setIsAdding(true)
@@ -79,91 +68,80 @@ export default function AlumniDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
-      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl animate-scale-in">
-        {/* Close button */}
+      {/* Modal — sheet on mobile, centered card on desktop */}
+      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-hidden animate-scale-in">
+        {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-[--text-quaternary] hover:text-[--text-primary] hover:bg-[--bg-tertiary] rounded-lg transition-colors z-10"
+          className="absolute top-4 right-4 p-1.5 text-[--text-quaternary] hover:text-[--text-primary] hover:bg-[--bg-tertiary] rounded-lg transition-colors z-10"
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        <div className="p-6 overflow-y-auto max-h-[90vh]">
-          {/* Main Info */}
-          <div className="mb-6">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <h2 className="text-2xl font-semibold text-[--text-primary] mb-2">
+        <div className="overflow-y-auto max-h-[92vh]">
+          {/* Hero header — avatar left, info right */}
+          <div className="p-6 pb-4">
+            <div className="flex items-start gap-4">
+              <Avatar
+                name={alumni.full_name}
+                sport={alumni.sport}
+                imageUrl={alumni.avatar_url || alumni.photo_url}
+                size="xl"
+                className="flex-shrink-0 mt-0.5"
+              />
+              <div className="flex-1 min-w-0 pr-6">
+                <h2 className="text-xl font-bold text-[--text-primary] leading-tight mb-1">
                   {alumni.full_name}
                 </h2>
 
-                {alumni.industry && validIndustries.has(alumni.industry) && (
-                  <span className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium border ${
-                    industryBadgeClass[alumni.industry] || 'bg-[--bg-tertiary] text-[--text-secondary] border-[--border-primary]'
-                  }`}>
+                {/* Role + Company */}
+                {(role || company) && (
+                  <p className="text-sm text-[--text-secondary] mb-2 leading-snug">
+                    {role}{role && company && ' · '}{company}
+                  </p>
+                )}
+
+                {/* Trust meta: sport, year, location */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[--text-quaternary]">
+                  {alumni.sport && (
+                    <span className="flex items-center gap-1">
+                      <Users size={11} />
+                      {alumni.sport}
+                    </span>
+                  )}
+                  {alumni.graduation_year && (
+                    <span className="flex items-center gap-1">
+                      <GraduationCap size={11} />
+                      {alumni.graduation_year}
+                    </span>
+                  )}
+                  {alumni.location && (
+                    <span className="flex items-center gap-1">
+                      <MapPin size={11} />
+                      {alumni.location}
+                    </span>
+                  )}
+                </div>
+
+                {/* Industry */}
+                {alumni.industry && (
+                  <span className="inline-block mt-1 text-xs text-[--text-quaternary]">
                     {alumni.industry}
                   </span>
                 )}
               </div>
             </div>
-
-            {/* Career Info */}
-            {(alumni.role || alumni.company) && (
-              <div className="flex items-center gap-2 text-[--text-secondary] mb-3">
-                <Briefcase size={16} className="text-[--text-quaternary]" />
-                <span>
-                  {alumni.role && alumni.role !== '...'
-                    ? alumni.role
-                    : ''}
-                  {alumni.role && alumni.role !== '...' && alumni.company && alumni.company !== '...'
-                    ? ' @ '
-                    : ''}
-                  {alumni.company && alumni.company !== '...'
-                    ? alumni.company
-                    : ''}
-                </span>
-              </div>
-            )}
-
-            {/* Details */}
-            <div className="flex flex-wrap gap-4 text-sm text-[--text-tertiary]">
-              {alumni.graduation_year && (
-                <div className="flex items-center gap-1.5">
-                  <GraduationCap size={14} />
-                  <span>Class of {alumni.graduation_year}</span>
-                </div>
-              )}
-              {alumni.sport && (
-                <div className="flex items-center gap-1.5">
-                  <Users size={14} />
-                  <span>{alumni.sport}</span>
-                </div>
-              )}
-              {alumni.location && (
-                <div className="flex items-center gap-1.5">
-                  <MapPin size={14} />
-                  <span>{alumni.location}</span>
-                </div>
-              )}
-              {alumni.company && alumni.company !== '...' && (
-                <div className="flex items-center gap-1.5">
-                  <Building2 size={14} />
-                  <span>{alumni.company}</span>
-                </div>
-              )}
-            </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 mb-6">
+          {/* CTAs */}
+          <div className="px-6 pb-5 flex gap-2.5">
             {addedToNetwork ? (
               <button className="flex-1 btn-success flex items-center justify-center gap-2 cursor-default">
-                <Check size={16} />
+                <Check size={15} />
                 In Your Network
               </button>
             ) : (
@@ -173,9 +151,9 @@ export default function AlumniDetailModal({
                 className="flex-1 btn-primary flex items-center justify-center gap-2"
               >
                 {isAdding ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={15} className="animate-spin" />
                 ) : (
-                  <Plus size={16} />
+                  <Plus size={15} />
                 )}
                 Add to Network
               </button>
@@ -188,49 +166,55 @@ export default function AlumniDetailModal({
                 rel="noopener noreferrer"
                 className="btn-secondary flex items-center justify-center gap-2 px-4"
               >
-                <Linkedin size={16} />
-                LinkedIn
+                <Linkedin size={15} />
+                <span className="hidden sm:inline">LinkedIn</span>
               </a>
             )}
           </div>
 
-          {/* Similar Alumni Section */}
+          {/* Similar Alumni */}
           {similarAlumni.length > 0 && (
-            <div className="border-t border-[--border-primary] pt-6">
-              <h3 className="text-sm font-medium text-[--text-secondary] mb-4">Similar Alumni</h3>
-              <div className="space-y-2">
-                {similarAlumni.map((similar) => (
-                  <button
-                    key={similar.id}
-                    onClick={() => onSelectAlumni?.(similar)}
-                    className="w-full flex items-center justify-between p-3 rounded-lg bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] transition-colors text-left"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-[--text-primary] truncate">
-                          {similar.full_name}
-                        </span>
-                        {networkIds.has(similar.id) && (
-                          <span className="text-xs text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                            In Network
+            <div className="border-t border-[--border-primary] px-6 py-5">
+              <h3 className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-3">
+                Similar Alumni
+              </h3>
+              <div className="space-y-1.5">
+                {similarAlumni.map((similar) => {
+                  const simRole = cleanField(similar.role)
+                  const simCompany = cleanField(similar.company)
+                  return (
+                    <button
+                      key={similar.id}
+                      onClick={() => onSelectAlumni?.(similar)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] transition-colors text-left group"
+                    >
+                      <Avatar
+                        name={similar.full_name}
+                        sport={similar.sport}
+                        imageUrl={similar.avatar_url || similar.photo_url}
+                        size="sm"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-[--text-primary] truncate">
+                            {similar.full_name}
                           </span>
-                        )}
+                          {networkIds.has(similar.id) && (
+                            <span className="text-xs text-emerald-400 flex-shrink-0">· Connected</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[--text-tertiary] truncate">
+                          {simRole && simCompany ? `${simRole} · ${simCompany}` : simRole || simCompany || similar.sport}
+                        </p>
                       </div>
-                      <p className="text-sm text-[--text-tertiary] truncate">
-                        {similar.role && similar.role !== '...' && similar.company && similar.company !== '...'
-                          ? `${similar.role} @ ${similar.company}`
-                          : (similar.role && similar.role !== '...' ? similar.role : '') || (similar.company && similar.company !== '...' ? similar.company : '') || similar.sport}
-                      </p>
-                    </div>
-                    {similar.industry && validIndustries.has(similar.industry) && (
-                      <span className={`ml-3 px-2 py-0.5 rounded text-xs font-medium ${
-                        industryBadgeClass[similar.industry]?.split(' ').slice(0, 2).join(' ') || 'bg-[--bg-tertiary] text-[--text-secondary]'
-                      }`}>
-                        {similar.industry}
-                      </span>
-                    )}
-                  </button>
-                ))}
+                      {similar.industry && (
+                        <span className="flex-shrink-0 text-xs text-[--text-quaternary]">
+                          {similar.industry}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}

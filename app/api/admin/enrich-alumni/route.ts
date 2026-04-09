@@ -141,7 +141,7 @@ Return ONLY the JSON array.`
 
 // ─── Phase 1: Cleanup ────────────────────────────────────────────────────────
 
-async function runCleanup(supabase: ReturnType<typeof createClient>) {
+async function runCleanup(supabase: any) {
   // Build a filter for rows containing garbage values
   const garbageList = [...GARBAGE_VALUES]
 
@@ -152,10 +152,7 @@ async function runCleanup(supabase: ReturnType<typeof createClient>) {
     .in('role', garbageList)
 
   if ((roleCount ?? 0) > 0) {
-    await supabase
-      .from('alumni')
-      .update({ role: null })
-      .in('role', garbageList)
+    await supabase.from('alumni').update({ role: null }).in('role', garbageList)
   }
 
   // company cleanup
@@ -165,10 +162,7 @@ async function runCleanup(supabase: ReturnType<typeof createClient>) {
     .in('company', garbageList)
 
   if ((companyCount ?? 0) > 0) {
-    await supabase
-      .from('alumni')
-      .update({ company: null })
-      .in('company', garbageList)
+    await supabase.from('alumni').update({ company: null }).in('company', garbageList)
   }
 
   // location cleanup
@@ -178,10 +172,7 @@ async function runCleanup(supabase: ReturnType<typeof createClient>) {
     .in('location', garbageList)
 
   if ((locationCount ?? 0) > 0) {
-    await supabase
-      .from('alumni')
-      .update({ location: null })
-      .in('location', garbageList)
+    await supabase.from('alumni').update({ location: null }).in('location', garbageList)
   }
 
   return {

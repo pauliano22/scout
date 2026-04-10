@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { alumni, tone, messageType = 'introduction' } = body
+    const { alumni, tone, messageType = 'introduction', platform = 'linkedin' } = body
 
     if (!alumni || !tone) {
       return NextResponse.json(
@@ -70,10 +70,24 @@ export async function POST(request: NextRequest) {
 
     const typeConfig = messageTypeInstructions[messageType as keyof typeof messageTypeInstructions] || messageTypeInstructions.introduction
 
+    const linkedInInstructions = platform === 'linkedin' ? `
+PLATFORM: LinkedIn Connection Request
+- HARD LIMIT: 300 characters maximum (LinkedIn enforces this strictly)
+- Do NOT include a greeting like "Hi [Name]," — LinkedIn already shows who is sending
+- Do NOT include a sign-off — your name and photo are shown automatically
+- Get to the point in the first sentence — no preamble
+- One clear ask at the end (e.g. "Would love to connect." or "Happy to chat if you're open to it.")
+- Sound like a real person, not a template
+- Every character counts — be specific but tight` : `
+PLATFORM: Email
+- Include a proper greeting and sign-off using the sender's first name
+- Can be 150-250 words`
+
     const prompt = `Generate a networking message from a current Cornell student-athlete to a Cornell alumni.
 
 MESSAGE TYPE: ${messageType.toUpperCase().replace('_', ' ')}
 ${typeConfig.purpose}
+${linkedInInstructions}
 
 SENDER (STUDENT) PROFILE:
 ${buildUserContext(profile)}
@@ -97,7 +111,6 @@ GENERAL REQUIREMENTS:
 - If the student is exploring careers, the message should reflect curiosity; if they're actively recruiting, it should be more direct about what they're looking for
 - Reference specific shared connections (same sport, same industry interest, same location) naturally
 - Do NOT use placeholder brackets like [Your Name] - use the actual info provided or omit
-- End with a simple sign-off using the sender's first name only
 - Make each message unique - vary the opening, structure, and specific details
 
 Write only the message, no additional commentary.`

@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
     query = query.or(
       `full_name.ilike.${searchTerm},company.ilike.${searchTerm},role.ilike.${searchTerm},industry.ilike.${searchTerm}`
     )
+  } else {
+    // Hide alumni with no career info unless they are being searched by name
+    query = query.or('company.not.is.null,role.not.is.null')
   }
 
   // Apply industry filter

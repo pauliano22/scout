@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { UserNetwork } from '@/types/database'
-import { X, Copy, Check, Linkedin, RefreshCw, Mail, ExternalLink } from 'lucide-react'
+import { X, Copy, Check, Linkedin, RefreshCw, Mail, ExternalLink, ChevronDown } from 'lucide-react'
 
 interface MessageModalProps {
   connection: UserNetwork
@@ -13,6 +13,9 @@ interface MessageModalProps {
 
 type Tone        = 'friendly' | 'neutral' | 'formal'
 type MessageType = 'introduction' | 'follow_up' | 'thank_you'
+type Platform    = 'linkedin' | 'email'
+
+const LINKEDIN_CHAR_LIMIT = 300
 
 const TONES: { key: Tone; label: string }[] = [
   { key: 'friendly', label: 'Friendly' },
@@ -28,75 +31,72 @@ const TYPES: { key: MessageType; label: string }[] = [
 
 export default function MessageModal({ connection, userSport, onClose, onSend }: MessageModalProps) {
   const alumni = connection.alumni
+  const hasLinkedIn = !!alumni?.linkedin_url
+
+  const [platform, setPlatform]         = useState<Platform>(hasLinkedIn ? 'linkedin' : 'email')
   const [selectedTone, setSelectedTone] = useState<Tone>('neutral')
   const [selectedType, setSelectedType] = useState<MessageType>('introduction')
-  const [messages, setMessages] = useState<Record<string, string>>({})
+  const [messages, setMessages]         = useState<Record<string, string>>({})
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({})
-  const [isSending, setIsSending] = useState(false)
-  const [isCopied, setIsCopied] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isSending, setIsSending]       = useState(false)
+  const [isCopied, setIsCopied]         = useState(false)
+  const [showEmailOptions, setShowEmailOptions] = useState(false)
+  const [error, setError]               = useState<string | null>(null)
 
   if (!alumni) return null
 
-  const currentKey = `${selectedType}_${selectedTone}`
-  const currentMessage = messages[currentKey]
+  const currentKey      = `${platform}_${selectedType}_${selectedTone}`
+  const currentMessage  = messages[currentKey] || ''
   const isCurrentlyGenerating = !!isGenerating[currentKey]
+  const charCount       = currentMessage.length
+  const overLimit       = platform === 'linkedin' && charCount > LINKEDIN_CHAR_LIMIT
 
-  const generateMessage = async (tone: Tone, type: MessageType) => {
-    const key = `${type}_${tone}`
-    setIsGenerating(p => ({ ...p, [key]: true }))
+  const generateMessage = async (p: Platform, tone: Tone, type: MessageType) => {
+    const key = `${p}_${type}_${tone}`
+    setIsGenerating(prev => ({ ...prev, [key]: true }))
     setError(null)
     try {
       const res = await fetch('/api/generate-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alumni, tone, messageType: type }),
+        body: JSON.stringify({ alumni, tone, messageType: type, platform: p }),
       })
       if (!res.ok) throw new Error('Failed to generate message')
       const data = await res.json()
-      setMessages(p => ({ ...p, [key]: data.message }))
+      setMessages(prev => ({ ...prev, [key]: data.message }))
     } catch {
       setError('Failed to generate. Please try again.')
     } finally {
-      setIsGenerating(p => ({ ...p, [key]: false }))
+      setIsGenerating(prev => ({ ...prev, [key]: false }))
     }
   }
 
+  // Generate on mount and when controls change
   useEffect(() => {
     if (!messages[currentKey] && !isGenerating[currentKey]) {
-      generateMessage(selectedTone, selectedType)
+      generateMessage(platform, selectedTone, selectedType)
     }
-  }, [selectedTone, selectedType])
+  }, [platform, selectedTone, selectedType])
 
   useEffect(() => {
-    generateMessage(selectedTone, selectedType)
+    generateMessage(platform, selectedTone, selectedType)
   }, [])
 
-  const handleCopy = async () => {
-    if (!currentMessage) return
-    await navigator.clipboard.writeText(currentMessage)
-    setIsCopied(true)
-    await onSend(connection.id, currentMessage, 'copied')
-    setTimeout(() => setIsCopied(false), 2000)
-  }
-
-  const handleSend = async () => {
-    if (!currentMessage) return
-    setIsSending(true)
-    try {
-      await onSend(connection.id, currentMessage, 'marked')
-      onClose()
-    } finally {
-      setIsSending(false)
-    }
-  }
-
-  const handleOpenLinkedIn = async () => {
+  const handleCopyAndOpenLinkedIn = async () => {
     if (!currentMessage) return
     await navigator.clipboard.writeText(currentMessage)
     await onSend(connection.id, currentMessage, 'linkedin')
     if (alumni.linkedin_url) window.open(alumni.linkedin_url, '_blank')
-    setTimeout(() => onClose(), 600)
+    setIsCopied(true)
+    setTimeout(() => { setIsCopied(false); onClose() }, 800)
+  }
+
+  const handleCopy = async () => {
+    if (!currentMessage) return
+    await navigator.clipboard.writeText(currentMessage)
+    await onSend(connection.id, currentMessage, 'copied')
+    setIsCopied(true)
+    setTimeout(() => setIsCopied(false), 2000)
   }
 
   const handleEmail = async (provider: 'gmail' | 'outlook') => {
@@ -112,8 +112,22 @@ export default function MessageModal({ connection, userSport, onClose, onSend }:
     setTimeout(() => onClose(), 500)
   }
 
+  const handleMarkSent = async () => {
+    if (!currentMessage) return
+    setIsSending(true)
+    try {
+      await onSend(connection.id, currentMessage, 'marked')
+      onClose()
+    } finally {
+      setIsSending(false)
+    }
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+      onClick={onClose}
+    >
       <div
         className="bg-[--bg-primary] border border-[--border-primary] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-auto animate-scale-in"
         onClick={e => e.stopPropagation()}
@@ -121,8 +135,12 @@ export default function MessageModal({ connection, userSport, onClose, onSend }:
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[--border-primary]">
           <div>
-            <h2 className="text-base font-semibold text-[--text-primary]">Write to {alumni.full_name}</h2>
-            <p className="text-xs text-[--text-quaternary] mt-0.5">AI-generated · each message is unique</p>
+            <h2 className="text-base font-semibold text-[--text-primary]">
+              Message {alumni.full_name?.split(' ')[0]}
+            </h2>
+            <p className="text-xs text-[--text-quaternary] mt-0.5">
+              AI-drafted · review before sending
+            </p>
           </div>
           <button onClick={onClose} className="btn-ghost p-1.5 -mr-1">
             <X size={16} />
@@ -130,7 +148,43 @@ export default function MessageModal({ connection, userSport, onClose, onSend }:
         </div>
 
         <div className="p-5 space-y-4">
-          {/* Type + Tone in one row */}
+          {/* Platform toggle */}
+          <div className="flex gap-1 p-1 bg-[--bg-secondary] rounded-xl">
+            <button
+              onClick={() => setPlatform('linkedin')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+                platform === 'linkedin'
+                  ? 'bg-[--bg-primary] text-[#0077b5] shadow-sm border border-[--border-primary]'
+                  : 'text-[--text-quaternary] hover:text-[--text-secondary]'
+              }`}
+            >
+              <Linkedin size={12} />
+              LinkedIn
+              {hasLinkedIn && platform !== 'linkedin' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-[--school-primary]" />
+              )}
+            </button>
+            <button
+              onClick={() => setPlatform('email')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-colors ${
+                platform === 'email'
+                  ? 'bg-[--bg-primary] text-[--text-primary] shadow-sm border border-[--border-primary]'
+                  : 'text-[--text-quaternary] hover:text-[--text-secondary]'
+              }`}
+            >
+              <Mail size={12} />
+              Email
+            </button>
+          </div>
+
+          {/* LinkedIn note */}
+          {platform === 'linkedin' && (
+            <p className="text-xs text-[--text-quaternary] -mt-1">
+              Optimized for LinkedIn connection requests · 300 character limit
+            </p>
+          )}
+
+          {/* Type + Tone */}
           <div className="flex gap-3">
             <div className="flex-1">
               <p className="text-xs text-[--text-quaternary] mb-1.5 font-medium">Type</p>
@@ -171,89 +225,134 @@ export default function MessageModal({ connection, userSport, onClose, onSend }:
           </div>
 
           {/* Message body */}
-          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 min-h-[180px]">
+          <div className={`bg-[--bg-secondary] border rounded-xl p-4 min-h-[140px] transition-colors ${
+            overLimit ? 'border-red-500/50' : 'border-[--border-primary]'
+          }`}>
             {isCurrentlyGenerating ? (
               <div className="flex flex-col items-center justify-center h-full py-10 gap-3">
                 <div className="w-5 h-5 border-2 border-[--border-secondary] border-t-[--school-primary] rounded-full animate-spin" />
-                <p className="text-xs text-[--text-quaternary]">Generating…</p>
+                <p className="text-xs text-[--text-quaternary]">Writing your message…</p>
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center h-full py-10 gap-2">
                 <p className="text-xs text-red-400">{error}</p>
-                <button onClick={() => generateMessage(selectedTone, selectedType)} className="btn-secondary text-xs">Try Again</button>
+                <button
+                  onClick={() => generateMessage(platform, selectedTone, selectedType)}
+                  className="btn-secondary text-xs"
+                >
+                  Try Again
+                </button>
               </div>
             ) : (
-              <p className="text-sm leading-relaxed text-[--text-secondary] whitespace-pre-wrap">{currentMessage}</p>
+              <p className="text-sm leading-relaxed text-[--text-secondary] whitespace-pre-wrap">
+                {currentMessage}
+              </p>
             )}
           </div>
 
-          {/* Regenerate */}
-          <div className="flex justify-start">
+          {/* Char count + regenerate */}
+          <div className="flex items-center justify-between -mt-1">
             <button
-              onClick={() => generateMessage(selectedTone, selectedType)}
+              onClick={() => generateMessage(platform, selectedTone, selectedType)}
               disabled={isCurrentlyGenerating}
               className="flex items-center gap-1.5 text-xs text-[--text-quaternary] hover:text-[--text-secondary] transition-colors"
             >
               <RefreshCw size={11} className={isCurrentlyGenerating ? 'animate-spin' : ''} />
               Regenerate
             </button>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            <button
-              onClick={handleCopy}
-              disabled={!currentMessage || isCurrentlyGenerating}
-              className="btn-secondary flex items-center gap-1.5 text-xs"
-            >
-              {isCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
-              {isCopied ? 'Copied!' : 'Copy'}
-            </button>
-
-            <button
-              onClick={() => handleEmail('gmail')}
-              disabled={!currentMessage || isCurrentlyGenerating}
-              className="btn-secondary flex items-center gap-1.5 text-xs"
-            >
-              <Mail size={12} />
-              Gmail
-              <ExternalLink size={9} className="opacity-40" />
-            </button>
-
-            <button
-              onClick={() => handleEmail('outlook')}
-              disabled={!currentMessage || isCurrentlyGenerating}
-              className="btn-secondary flex items-center gap-1.5 text-xs"
-            >
-              <Mail size={12} />
-              Outlook
-              <ExternalLink size={9} className="opacity-40" />
-            </button>
-
-            {alumni.linkedin_url && (
-              <button
-                onClick={handleOpenLinkedIn}
-                disabled={!currentMessage || isCurrentlyGenerating}
-                className="btn-secondary flex items-center gap-1.5 text-xs hover:text-[#0077b5]"
-              >
-                <Linkedin size={12} />
-                LinkedIn
-              </button>
+            {platform === 'linkedin' && currentMessage && (
+              <span className={`text-xs tabular-nums ${
+                overLimit ? 'text-red-400 font-medium' : 'text-[--text-quaternary]'
+              }`}>
+                {charCount} / {LINKEDIN_CHAR_LIMIT}
+              </span>
             )}
-
-            <button
-              onClick={handleSend}
-              disabled={isSending || !currentMessage || isCurrentlyGenerating}
-              className="btn-primary flex items-center gap-1.5 text-xs ml-auto"
-            >
-              {isSending ? (
-                <div className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-              ) : (
-                <Check size={12} />
-              )}
-              Mark as Sent
-            </button>
           </div>
+
+          {/* Primary action */}
+          {platform === 'linkedin' ? (
+            <div className="space-y-2 pt-1">
+              {hasLinkedIn ? (
+                <button
+                  onClick={handleCopyAndOpenLinkedIn}
+                  disabled={!currentMessage || isCurrentlyGenerating || overLimit}
+                  className="w-full btn-primary flex items-center justify-center gap-2 py-3"
+                >
+                  {isCopied ? (
+                    <>
+                      <Check size={15} />
+                      Copied — opening LinkedIn
+                    </>
+                  ) : (
+                    <>
+                      <Linkedin size={15} />
+                      Copy & Open LinkedIn
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleCopy}
+                  disabled={!currentMessage || isCurrentlyGenerating}
+                  className="w-full btn-primary flex items-center justify-center gap-2 py-3"
+                >
+                  {isCopied ? <Check size={15} /> : <Copy size={15} />}
+                  {isCopied ? 'Copied!' : 'Copy Message'}
+                </button>
+              )}
+              {overLimit && (
+                <p className="text-xs text-red-400 text-center">
+                  Over the 300 character limit — try regenerating or switching to Formal tone
+                </p>
+              )}
+              <button
+                onClick={handleMarkSent}
+                disabled={isSending || !currentMessage}
+                className="w-full btn-ghost text-xs text-[--text-quaternary] py-2"
+              >
+                {isSending ? 'Saving…' : 'Mark as sent without copying'}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2 pt-1">
+              {/* Email actions */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEmail('gmail')}
+                  disabled={!currentMessage || isCurrentlyGenerating}
+                  className="flex-1 btn-secondary flex items-center justify-center gap-1.5 text-sm"
+                >
+                  <Mail size={13} />
+                  Gmail
+                  <ExternalLink size={10} className="opacity-40" />
+                </button>
+                <button
+                  onClick={() => handleEmail('outlook')}
+                  disabled={!currentMessage || isCurrentlyGenerating}
+                  className="flex-1 btn-secondary flex items-center justify-center gap-1.5 text-sm"
+                >
+                  <Mail size={13} />
+                  Outlook
+                  <ExternalLink size={10} className="opacity-40" />
+                </button>
+                <button
+                  onClick={handleCopy}
+                  disabled={!currentMessage || isCurrentlyGenerating}
+                  className="btn-secondary flex items-center gap-1.5 text-sm"
+                >
+                  {isCopied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                  {isCopied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <button
+                onClick={handleMarkSent}
+                disabled={isSending || !currentMessage}
+                className="w-full btn-ghost text-xs text-[--text-quaternary] py-2"
+              >
+                {isSending ? 'Saving…' : 'Mark as sent'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -95,7 +95,11 @@ export default function DiscoverClient({
     const data = await res.json()
 
     if (append) {
-      setAlumni(prev => [...prev, ...data.alumni])
+      setAlumni(prev => {
+        const existingIds = new Set(prev.map(a => a.id))
+        const newItems = data.alumni.filter((a: DiscoverAlumni) => !existingIds.has(a.id))
+        return [...prev, ...newItems]
+      })
     } else {
       setAlumni(data.alumni)
     }

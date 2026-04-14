@@ -43,6 +43,21 @@ export default function RootLayout({
         </PostHogProvider>
         <Analytics />
         <SpeedInsights />
+        {/* little guy */}
+        <img
+          src="/mascot.png"
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            right: '24px',
+            width: '64px',
+            zIndex: 50,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+        />
       </body>
     </html>
   )

@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   }
 
   const searchParams = request.nextUrl.searchParams
-  const search = searchParams.get('search') || ''
+  const search = (searchParams.get('search') || '').slice(0, 100)
   const industry = searchParams.get('industry') || 'All'
   const sport = searchParams.get('sport') || ''
   const location = searchParams.get('location') || ''

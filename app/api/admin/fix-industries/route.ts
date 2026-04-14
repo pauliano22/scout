@@ -97,8 +97,9 @@ export async function POST(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const adminKey = searchParams.get('key')
+    const token = process.env.ADMIN_API_TOKEN
 
-    if (adminKey !== process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(-10)) {
+    if (!token || token.length < 32 || adminKey !== token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -195,8 +196,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const adminKey = searchParams.get('key')
     const limit = parseInt(searchParams.get('limit') || '100')
+    const token = process.env.ADMIN_API_TOKEN
 
-    if (adminKey !== process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(-10)) {
+    if (!token || token.length < 32 || adminKey !== token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

@@ -187,7 +187,9 @@ async function runCleanup(supabase: any) {
 function authCheck(request: Request): boolean {
   const { searchParams } = new URL(request.url)
   const adminKey = searchParams.get('key')
-  return adminKey === process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(-10)
+  const token = process.env.ADMIN_API_TOKEN
+  if (!token || token.length < 32) return false
+  return adminKey === token
 }
 
 /** POST: run cleanup + enrichment */

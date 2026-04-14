@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { batchSize = 10 } = await request.json()
+    const body = await request.json()
+    const batchSize = Math.min(Math.max(1, parseInt(body.batchSize) || 10), 20)
 
     // ── Profile ───────────────────────────────────────────────────────────────
     const { data: profile, error: profileError } = await supabase

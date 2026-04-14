@@ -4,9 +4,29 @@ import { NextRequest, NextResponse } from 'next/server'
 // Real headshots are typically 15-100KB. 8KB is a safe threshold.
 const PLACEHOLDER_SIZE_THRESHOLD = 8000
 
+const ALLOWED_HOSTNAMES = [
+  'media.licdn.com',
+  'media-exp1.licdn.com',
+  'media-exp2.licdn.com',
+]
+
+function isAllowedAvatarUrl(raw: string): boolean {
+  try {
+    const parsed = new URL(raw)
+    if (parsed.protocol !== 'https:') return false
+    return ALLOWED_HOSTNAMES.some(h => parsed.hostname === h || parsed.hostname.endsWith('.' + h))
+  } catch {
+    return false
+  }
+}
+
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get('url')
   if (!url) {
+    return NextResponse.json({ isPlaceholder: false })
+  }
+
+  if (!isAllowedAvatarUrl(url)) {
     return NextResponse.json({ isPlaceholder: false })
   }
 

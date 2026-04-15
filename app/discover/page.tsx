@@ -4,6 +4,8 @@ import Navbar from '@/components/Navbar'
 import DiscoverClient from './DiscoverClient'
 import MascotFeedback from '@/components/MascotFeedback'
 
+export const dynamic = 'force-dynamic'
+
 const INITIAL_PAGE_SIZE = 50
 
 export default async function DiscoverPage() {

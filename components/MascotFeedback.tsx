@@ -35,17 +35,17 @@ export default function MascotFeedback() {
             textAlign: 'center',
           }}
         >
-          <p style={{ fontSize: '13px', color: 'var(--text-primary)', margin: '0 0 4px', fontWeight: 600 }}>
-            Have feedback?
+          <p style={{ fontSize: '14px', color: 'var(--text-primary)', margin: '0 0 8px', fontWeight: 600 }}>
+            Hey! 👋
           </p>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px' }}>
-            I'd love to hear from you.
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: '1.5' }}>
+            I would love any feedback on Scout. Thanks!
           </p>
           <a
             href="mailto:ibw22@cornell.edu?subject=Scout Feedback"
             style={{
-              display: 'inline-block',
-              padding: '7px 14px',
+              display: 'block',
+              padding: '8px 14px',
               borderRadius: '8px',
               background: '#B31B1B',
               color: '#fff',

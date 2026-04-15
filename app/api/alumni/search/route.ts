@@ -53,14 +53,12 @@ export async function GET(request: NextRequest) {
     query = query.ilike('location', `%${location.trim()}%`)
   }
 
-  // Sort by profile completeness: avatar_url first (curated, always real),
-  // then role/company/location for data quality, then recency.
-  // photo_url excluded from sort — scraped LinkedIn photos may be silhouettes.
+  // Sort: prestige first (big companies, finance heavy), then profile completeness
   query = query
+    .order('prestige_score', { ascending: false, nullsFirst: false })
     .order('avatar_url', { ascending: false, nullsFirst: false })
     .order('role', { ascending: false, nullsFirst: false })
     .order('company', { ascending: false, nullsFirst: false })
-    .order('location', { ascending: false, nullsFirst: false })
     .order('graduation_year', { ascending: false })
     .range(offset, offset + limit - 1)
 

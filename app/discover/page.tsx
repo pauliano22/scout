@@ -23,13 +23,13 @@ export default async function DiscoverPage() {
     .eq('id', user.id)
     .single()
 
-  // Fetch only the first page of alumni (sorted: industry first, then grad year)
-  // Hide alumni with no career info from the default view (shown only when searched by name)
+  // Fetch only the first page of alumni — sorted by prestige (big companies, finance first)
   const { data: alumni, count: totalCount } = await supabase
     .from('alumni')
     .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, photo_url, avatar_url', { count: 'exact' })
     .eq('is_public', true)
     .or('company.not.is.null,role.not.is.null')
+    .order('prestige_score', { ascending: false, nullsFirst: false })
     .order('avatar_url', { ascending: false, nullsFirst: false })
     .order('role', { ascending: false, nullsFirst: false })
     .order('company', { ascending: false, nullsFirst: false })

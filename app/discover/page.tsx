@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import DiscoverClient from './DiscoverClient'
+import MascotFeedback from '@/components/MascotFeedback'
 
 const INITIAL_PAGE_SIZE = 50
 
@@ -57,6 +58,7 @@ export default async function DiscoverPage() {
         userSport={profile?.sport || null}
         totalAlumniCount={totalCount || 0}
       />
+      <MascotFeedback />
     </>
   )
 }

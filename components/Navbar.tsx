@@ -2,7 +2,7 @@
 
 import Link from '@/components/Link'
 import { usePathname } from 'next/navigation'
-import { Search, Users, LogOut, User, ClipboardList } from 'lucide-react'
+import { Search, Users, LogOut, User, ClipboardList, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import ThemeToggle from './ThemeToggle'
@@ -75,6 +75,7 @@ export default function Navbar({ user, networkCount = 0 }: NavbarProps) {
 
             {navLink('/discover', <Search size={14} />, 'Discover')}
             {navLink('/network',  <Users  size={14} />, 'Network', networkCount > 0 ? networkCount : undefined)}
+            {navLink('/agent',    <Zap    size={14} />, 'Agent')}
 
             <div className="w-px h-4 bg-[--border-primary] mx-1 hidden sm:block" />
 

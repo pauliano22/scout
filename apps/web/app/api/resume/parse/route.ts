@@ -12,7 +12,13 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { storagePath } = await request.json()
-    if (!storagePath) return NextResponse.json({ error: 'Missing storagePath' }, { status: 400 })
+    if (!storagePath || typeof storagePath !== 'string') {
+      return NextResponse.json({ error: 'Missing storagePath' }, { status: 400 })
+    }
+    // Ensure the path belongs to the authenticated user — prevents reading other users' files
+    if (!storagePath.startsWith(`${user.id}/`)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     // Download the PDF using service role (bypasses RLS for server-side access)
     const serviceClient = createServiceClient(

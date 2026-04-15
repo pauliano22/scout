@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import PlanClient from './PlanClient'
+import MascotFeedback from '@/components/MascotFeedback'
 
 export default async function PlanPage() {
   const supabase = createClient()
@@ -85,6 +86,7 @@ export default async function PlanPage() {
         }}
         networkAlumniIds={networkAlumniIds}
       />
+      <MascotFeedback />
     </>
   )
 }

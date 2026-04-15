@@ -66,6 +66,36 @@ function getSportGradient(sport: string): string | null {
   return null
 }
 
+// Map sport to an emoji icon
+function getSportEmoji(sport: string): string | null {
+  const s = sport.toLowerCase()
+  if (s.includes('football'))                          return '🏈'
+  if (s.includes('basketball'))                        return '🏀'
+  if (s.includes('field hockey'))                      return '🏑'
+  if (s.includes('ice hockey') || s.includes('hockey'))return '🏒'
+  if (s.includes('soccer'))                            return '⚽'
+  if (s.includes('lacrosse'))                          return '🥍'
+  if (s.includes('tennis'))                            return '🎾'
+  if (s.includes('softball'))                          return '🥎'
+  if (s.includes('baseball'))                          return '⚾'
+  if (s.includes('volleyball'))                        return '🏐'
+  if (s.includes('swimming') || s.includes('diving'))  return '🏊'
+  if (s.includes('rowing') || s.includes('crew'))      return '🚣'
+  if (s.includes('track') || s.includes('cross country')) return '🏃'
+  if (s.includes('wrestling'))                         return '🤼'
+  if (s.includes('golf'))                              return '⛳'
+  if (s.includes('fencing'))                           return '🤺'
+  if (s.includes('gymnastics'))                        return '🤸'
+  if (s.includes('squash'))                            return '🎾'
+  if (s.includes('polo'))                              return '🏇'
+  if (s.includes('sail'))                              return '⛵'
+  if (s.includes('equestrian'))                        return '🐴'
+  if (s.includes('rugby'))                             return '🏉'
+  if (s.includes('water polo'))                        return '🤽'
+  if (s.includes('sprint'))                            return '🏈'
+  return null
+}
+
 // Fallback: generate a gradient class based on name hash
 function getGradientClass(name: string): string {
   const gradients = [
@@ -122,14 +152,18 @@ export default function Avatar({ name, sport, imageUrl, size = 'md', className =
   }
 
   const sportGradient = sport ? getSportGradient(sport) : null
+  const sportEmoji = sport ? getSportEmoji(sport) : null
 
   if (sportGradient) {
     return (
       <div
-        className={`${sizeClass} rounded-full flex items-center justify-center font-semibold text-white shadow-md flex-shrink-0 ${className}`}
+        className={`${sizeClass} rounded-full flex items-center justify-center shadow-md flex-shrink-0 ${className}`}
         style={{ background: sportGradient }}
       >
-        {initials}
+        {sportEmoji
+          ? <span style={{ fontSize: '220%', lineHeight: 1 }}>{sportEmoji}</span>
+          : <span className="font-semibold text-white">{initials}</span>
+        }
       </div>
     )
   }

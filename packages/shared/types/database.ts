@@ -1,3 +1,20 @@
+export interface WorkHistoryEntry {
+  title:    string | null
+  company:  string | null
+  start:    { year: number; month?: number } | null
+  end:      { year: number; month?: number } | null
+  duration: string | null
+  location: string | null
+}
+
+export interface EducationEntry {
+  school: string
+  degree: string | null
+  field:  string | null
+  start:  number | null
+  end:    number | null
+}
+
 export interface Alumni {
   id: string
   full_name: string
@@ -17,6 +34,13 @@ export interface Alumni {
   school_id: string | null
   created_at: string
   updated_at: string
+  // Rich career fields
+  work_history:        WorkHistoryEntry[] | null
+  skills:              string[] | null
+  education:           EducationEntry[] | null
+  display_headline:    string | null
+  path_summary_stub:   string | null
+  current_status_type: 'current' | 'likely_current' | 'last_known' | 'conflicting' | 'unknown' | null
 }
 
 export interface Profile {

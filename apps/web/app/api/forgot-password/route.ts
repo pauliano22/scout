@@ -2,15 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
-  console.log('=== FORGOT PASSWORD ROUTE HIT ===')
-
   try {
     const body = await request.json()
     const { email } = body
 
-    console.log('Email received:', email)
-
-    if (!email) {
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json(
         { error: 'Email is required' },
         { status: 400 }
@@ -20,9 +16,6 @@ export async function POST(request: NextRequest) {
     // Create Supabase client with service role key (inside function so env vars are available)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    console.log('SUPABASE_URL exists:', !!supabaseUrl)
-    console.log('SUPABASE_SERVICE_ROLE_KEY exists:', !!supabaseServiceKey)
 
     if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Missing Supabase environment variables')
@@ -65,10 +58,6 @@ export async function POST(request: NextRequest) {
 
     // Send email via Resend API
     const resetUrl = `https://scoutcornell.com/reset-password?token=${token}`
-
-    console.log('Calling Resend API...')
-    console.log('Reset URL:', resetUrl)
-    console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY)
 
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -116,19 +105,13 @@ export async function POST(request: NextRequest) {
       })
     })
 
-    console.log('Resend response status:', resendResponse.status)
-
     if (!resendResponse.ok) {
-      const errorData = await resendResponse.json()
-      console.error('Resend API error:', errorData)
+      console.error('Resend API error:', resendResponse.status)
       return NextResponse.json(
         { error: 'Failed to send reset email' },
         { status: 500 }
       )
     }
-
-    const successData = await resendResponse.json()
-    console.log('Resend success:', successData)
 
     return NextResponse.json({ success: true })
   } catch (error) {

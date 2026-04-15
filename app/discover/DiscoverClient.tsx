@@ -21,6 +21,7 @@ export interface DiscoverAlumni {
   location: string | null
   photo_url?: string | null
   avatar_url?: string | null
+  prestige_score?: number | null
 }
 
 interface DiscoverClientProps {

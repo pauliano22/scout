@@ -32,6 +32,20 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Verify the user exists in Supabase auth before creating a token
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: email.toLowerCase(),
+    })
+
+    if (linkError || !linkData?.user) {
+      // No auth account — could be an alumni who submitted via /join but never signed up
+      return NextResponse.json(
+        { error: 'No account found with this email. Please sign up first.' },
+        { status: 404 }
+      )
+    }
+
     // Generate a secure random token
     const token = crypto.randomUUID()
 

@@ -75,18 +75,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the user by email using admin client
-    const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
-
-    if (usersError) {
-      console.error('Error listing users:', usersError)
-      return NextResponse.json(
-        { error: 'Failed to verify user' },
-        { status: 500 }
-      )
+    // Get the user by email - paginate through all users to find a match
+    let user = null
+    let page = 1
+    const perPage = 1000
+    while (!user) {
+      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers({ page, perPage })
+      if (usersError) {
+        console.error('Error listing users:', usersError)
+        return NextResponse.json(
+          { error: 'Failed to verify user' },
+          { status: 500 }
+        )
+      }
+      user = users.find(u => u.email?.toLowerCase() === resetToken.email.toLowerCase()) ?? null
+      if (users.length < perPage) break
+      page++
     }
-
-    const user = users.find(u => u.email?.toLowerCase() === resetToken.email.toLowerCase())
     console.log('User found:', user ? 'yes' : 'no')
 
     if (!user) {

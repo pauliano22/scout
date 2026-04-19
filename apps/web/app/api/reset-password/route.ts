@@ -75,26 +75,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the user by email - paginate through all users to find a match
-    let user = null
-    let page = 1
-    const perPage = 1000
-    while (!user) {
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers({ page, perPage })
-      if (usersError) {
-        console.error('Error listing users:', usersError)
-        return NextResponse.json(
-          { error: 'Failed to verify user' },
-          { status: 500 }
-        )
-      }
-      user = users.find(u => u.email?.toLowerCase() === resetToken.email.toLowerCase()) ?? null
-      if (users.length < perPage) break
-      page++
-    }
-    console.log('User found:', user ? 'yes' : 'no')
+    // Look up the user by email via generateLink (reliable single-call lookup by email)
+    const { data: linkData, error: userError } = await supabase.auth.admin.generateLink({
+      type: 'recovery',
+      email: resetToken.email,
+    })
+    console.log('User found:', linkData?.user ? 'yes' : 'no')
 
-    if (!user) {
+    if (userError || !linkData?.user) {
+      console.error('Error finding user:', userError)
       return NextResponse.json(
         { error: 'User not found' },
         { status: 400 }
@@ -103,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Update the user's password using admin API
     const { error: updateError } = await supabase.auth.admin.updateUserById(
-      user.id,
+      linkData.user.id,
       { password }
     )
 

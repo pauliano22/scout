@@ -36,6 +36,7 @@ export interface ScoreBreakdown {
   company: number;
   graduationYear: number;
   completeness: number;
+  prestige: number;
   total: number;
 }
 
@@ -58,6 +59,9 @@ const BASE_WEIGHTS = {
   company: 10,
   graduationYear: 5,
   completeness: 10,
+  // Prestige is high enough to dominate ties when no preference matches,
+  // but below a real industry+sport match (50pt) so explicit prefs still win.
+  prestige: 25,
 };
 
 const QUALITY_THRESHOLD = 50;
@@ -128,6 +132,16 @@ function computeWhyThisMatch(
   // Career depth signal — only when work history actually backs it up
   if (history.length >= 4 && reasons.length < 3) {
     reasons.push(`${history.length}+ roles across their career`);
+  }
+
+  // Prestige callout — only when no current company is shown (otherwise
+  // implicit) AND the firm is recognizably top-tier
+  if (
+    breakdown.prestige >= 22 &&
+    !reasons.some((r) => r.startsWith('At ') || r.startsWith('Worked at ')) &&
+    reasons.length < 3
+  ) {
+    reasons.push(profile.currentCompany ? `Top-tier firm — ${profile.currentCompany}` : 'Senior alum at a top-tier firm');
   }
 
   if (profile.graduationYear && reasons.length < 3) {
@@ -229,6 +243,7 @@ function scoreAlumnus(
     company: 0,
     graduationYear: 0,
     completeness: 0,
+    prestige: 0,
     total: 0,
   };
 
@@ -310,6 +325,13 @@ function scoreAlumnus(
   const normalized = profile.profileCompletenessScore / 100;
   breakdown.completeness = Math.round(normalized * BASE_WEIGHTS.completeness);
 
+  // Prestige — prestige_score is 0-100 (set by migration 016, scaled by tier).
+  // Linear contribution. Top firms (≥90) get nearly the full weight.
+  const prestigeRaw =
+    typeof alumni.prestige_score === 'number' ? alumni.prestige_score : 0;
+  const prestigeNormalized = Math.max(0, Math.min(prestigeRaw, 100)) / 100;
+  breakdown.prestige = Math.round(prestigeNormalized * BASE_WEIGHTS.prestige);
+
   breakdown.total =
     breakdown.industry +
     breakdown.role +
@@ -317,7 +339,8 @@ function scoreAlumnus(
     breakdown.location +
     breakdown.company +
     breakdown.graduationYear +
-    breakdown.completeness;
+    breakdown.completeness +
+    breakdown.prestige;
 
   const whyThisMatch = computeWhyThisMatch(profile, prefs, breakdown);
 
@@ -410,11 +433,17 @@ export async function fetchRecommendations(
     const networkedIds = new Set((network ?? []).map((n) => n.alumni_id));
     const excludeIds = new Set([...swipedIds, ...networkedIds]);
 
+    // Order by prestige_score DESC at the database level so the candidate
+    // pool itself is biased toward top-tier alumni. Client-side ranking
+    // still applies on top, but at least we're scoring the right pool.
+    // (Migration 016 created the alumni_prestige_score_idx for this query.)
     const { data: alumniData, error } = await supabase
       .from('alumni')
       .select('*')
       .eq('is_public', true)
-      .limit(300);
+      .order('prestige_score', { ascending: false, nullsFirst: false })
+      .order('updated_at', { ascending: false })
+      .limit(500);
 
     if (error || !alumniData) return [];
 

@@ -40,10 +40,12 @@ export default function DiscoverScreen() {
   const saveAnim = useRef(new Animated.Value(1)).current;
   const viewAnim = useRef(new Animated.Value(1)).current;
 
+  // The hook auto-refetches whenever preferences change. We only need to
+  // ensure we have data on first focus (e.g., after sign-in).
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load]),
+      if (deck.length === 0) load();
+    }, [deck.length, load]),
   );
 
   function showToast(message: string, type: 'success' | 'error' = 'success') {

@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { PreferencesProvider } from './src/contexts/PreferencesContext';
 import TabNavigator from './src/navigation/TabNavigator';
 import LoginScreen from './src/screens/LoginScreen';
 import { colors } from './src/theme/scoutTheme';
@@ -28,9 +29,11 @@ function AppContent() {
   }
 
   return (
-    <NavigationContainer>
-      <TabNavigator />
-    </NavigationContainer>
+    <PreferencesProvider>
+      <NavigationContainer>
+        <TabNavigator />
+      </NavigationContainer>
+    </PreferencesProvider>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -11,14 +11,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
 import { colors, radius, spacing, typography } from '../theme/scoutTheme';
 import { useAuth } from '../contexts/AuthContext';
-import {
-  fetchUserPreferences,
-  saveUserPreferences,
-  type UserPreferences,
-} from '../services/recommendations';
+import { usePreferences } from '../contexts/PreferencesContext';
 import AlumniAvatar from '../components/common/AlumniAvatar';
 
 const INDUSTRIES = [
@@ -267,39 +262,16 @@ const ciStyles = StyleSheet.create({
 export default function YouScreen() {
   const insets = useSafeAreaInsets();
   const { user, profile, signOut } = useAuth();
+  const { prefs, setPrefs, saving, lastSavedAt } = usePreferences();
 
-  const [prefs, setPrefs] = useState<UserPreferences>({
-    industries: [],
-    sports: [],
-    locations: [],
-    roles: [],
-    companies: [],
-    priorities: {
-      sameSport: true,
-      similarIndustry: true,
-      seniorAlumni: false,
-    },
-  });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!user) return;
-      fetchUserPreferences(user.id).then((p) => {
-        setPrefs(p);
-      });
-    }, [user]),
-  );
-
-  async function handleSave() {
-    if (!user) return;
-    setSaving(true);
-    await saveUserPreferences(user.id, prefs);
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
-  }
+  // Briefly flash a "Saved" indicator each time a save lands
+  const [savedFlash, setSavedFlash] = useState(false);
+  useEffect(() => {
+    if (!lastSavedAt) return;
+    setSavedFlash(true);
+    const t = setTimeout(() => setSavedFlash(false), 1400);
+    return () => clearTimeout(t);
+  }, [lastSavedAt]);
 
   function handleSignOut() {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -411,15 +383,20 @@ export default function YouScreen() {
         />
       </View>
 
-      <Pressable
-        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
-        onPress={handleSave}
-        disabled={saving}
-      >
-        <Text style={styles.saveButtonText}>
-          {saved ? 'Saved' : saving ? 'Saving…' : 'Save Preferences'}
+      <View style={styles.autosaveRow}>
+        <Ionicons
+          name={saving ? 'sync-outline' : savedFlash ? 'checkmark-circle' : 'cloud-done-outline'}
+          size={14}
+          color={savedFlash ? colors.success : colors.textTertiary}
+        />
+        <Text style={styles.autosaveText}>
+          {saving
+            ? 'Saving…'
+            : savedFlash
+              ? 'Saved'
+              : 'Changes save automatically'}
         </Text>
-      </Pressable>
+      </View>
 
       {/* About */}
       <View style={styles.aboutCard}>
@@ -548,20 +525,18 @@ const styles = StyleSheet.create({
     ...typography.caption1,
     color: colors.textTertiary,
   },
-  saveButton: {
-    backgroundColor: colors.red,
-    borderRadius: radius.lg,
-    paddingVertical: 14,
+  autosaveRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xxl,
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.xl,
   },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    ...typography.headline,
-    color: colors.textInverse,
-    fontWeight: '600',
+  autosaveText: {
+    ...typography.caption1,
+    color: colors.textTertiary,
+    fontWeight: '500',
   },
   aboutCard: {
     backgroundColor: colors.surface,

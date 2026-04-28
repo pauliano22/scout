@@ -15,6 +15,8 @@ export interface EducationEntry {
   end:    number | null
 }
 
+export type AlumniClaimSource = 'self_signup' | 'admin' | 'opt_in'
+
 export interface Alumni {
   id: string
   full_name: string
@@ -41,6 +43,15 @@ export interface Alumni {
   display_headline:    string | null
   path_summary_stub:   string | null
   current_status_type: 'current' | 'likely_current' | 'last_known' | 'conflicting' | 'unknown' | null
+  // Self-serve + claim (mig 018)
+  bio:                          string | null
+  advice:                       string | null
+  share_email_with_students:    boolean
+  is_claimed:                   boolean
+  claimed_at:                   string | null
+  claim_source:                 AlumniClaimSource | null
+  claimed_by_user_id:           string | null
+  profile_reviewed_by_alumni:   boolean
 }
 
 export interface Profile {

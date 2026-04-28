@@ -3,8 +3,10 @@
 import Link from '@/components/Link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, UserPlus } from 'lucide-react'
+import { ArrowRight, GraduationCap, Briefcase } from 'lucide-react'
 import Navbar from '@/components/Navbar'
+import { postLoginPath } from '@/lib/auth/postLoginPath'
+import type { UserRole } from '@scout/shared/types/database'
 
 export default function HomePage() {
   const router = useRouter()
@@ -16,7 +18,18 @@ export default function HomePage() {
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) { router.push('/plan'); return }
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('account_role, onboarding_completed')
+        .eq('id', user.id)
+        .single()
+      router.push(
+        postLoginPath(
+          (profile?.account_role as UserRole | undefined) ?? 'student',
+          Boolean(profile?.onboarding_completed),
+        ),
+      )
     }
     check()
 
@@ -63,18 +76,19 @@ export default function HomePage() {
             {/* CTAs */}
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <Link
-                href="/signup"
+                href="/signup?role=student"
                 className="btn-primary flex items-center gap-2 px-7 py-3 text-sm font-semibold"
               >
-                Get Started Free
+                <GraduationCap size={15} />
+                Join as Student-Athlete
                 <ArrowRight size={15} />
               </Link>
               <Link
-                href="/join"
+                href="/signup?role=alumni"
                 className="btn-secondary flex items-center gap-2 px-7 py-3 text-sm font-medium"
               >
-                <UserPlus size={15} />
-                Alumni? Join Here
+                <Briefcase size={15} />
+                Join as Alumni
               </Link>
             </div>
           </div>
@@ -169,14 +183,19 @@ export default function HomePage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
               <Link
-                href="/signup"
+                href="/signup?role=student"
                 className="btn-primary inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold"
               >
-                Get Started Free
+                <GraduationCap size={15} />
+                Join as Student-Athlete
                 <ArrowRight size={15} />
               </Link>
-              <Link href="/join" className="btn-ghost text-sm">
-                Alumni? Join Here →
+              <Link
+                href="/signup?role=alumni"
+                className="btn-secondary inline-flex items-center gap-2 px-8 py-3.5 text-sm font-medium"
+              >
+                <Briefcase size={15} />
+                Join as Alumni
               </Link>
             </div>
           </div>

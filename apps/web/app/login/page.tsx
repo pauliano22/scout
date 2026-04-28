@@ -4,12 +4,14 @@ import { useState } from 'react'
 import Link from '@/components/Link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { postLoginPath } from '@/lib/auth/postLoginPath'
+import type { UserRole } from '@scout/shared/types/database'
 import { Mail, Lock, ArrowRight } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
-  
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -21,14 +23,28 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) throw error
 
-      router.push('/plan')
+      const userId = signInData.user?.id
+      let dest = '/plan'
+      if (userId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('account_role, onboarding_completed')
+          .eq('id', userId)
+          .single()
+        dest = postLoginPath(
+          (profile?.account_role as UserRole | undefined) ?? 'student',
+          Boolean(profile?.onboarding_completed),
+        )
+      }
+
+      router.push(dest)
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Failed to sign in')

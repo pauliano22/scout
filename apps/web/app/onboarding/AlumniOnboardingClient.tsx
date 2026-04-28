@@ -2,68 +2,36 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { ArrowRight, Check } from 'lucide-react'
-import { trackEvent } from '@/lib/track'
 import Link from '@/components/Link'
+import { ArrowRight, ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react'
+import { trackEvent } from '@/lib/track'
+import AlumniProfileForm, {
+  AlumniProfileFormValues,
+  emptyAlumniProfileValues,
+  SPORTS_LIST,
+} from '@/components/AlumniProfileForm'
 
-const SPORTS_LIST = [
-  'Baseball',
-  'Equestrian',
-  'Fencing',
-  'Field Hockey',
-  'Football',
-  "Men's Basketball",
-  "Men's Cross Country",
-  "Men's Golf",
-  "Men's Ice Hockey",
-  "Men's Lacrosse",
-  "Men's Rowing",
-  "Men's Soccer",
-  "Men's Squash",
-  "Men's Swimming And Diving",
-  "Men's Tennis",
-  "Men's Track And Field",
-  'Rowing',
-  'Softball',
-  'Sprint Football',
-  "Women's Basketball",
-  "Women's Cross Country",
-  "Women's Gymnastics",
-  "Women's Ice Hockey",
-  "Women's Lacrosse",
-  "Women's Rowing",
-  "Women's Sailing",
-  "Women's Soccer",
-  "Women's Squash",
-  "Women's Swimming And Diving",
-  "Women's Tennis",
-  "Women's Track And Field",
-  "Women's Volleyball",
-  'Wrestling',
-]
-
-const INDUSTRIES = [
-  'Finance',
-  'Technology',
-  'Consulting',
-  'Healthcare',
-  'Law',
-  'Media',
-  'Education',
-  'Real Estate',
-  'Non-Profit',
-  'Government',
-  'Sports',
-  'Other',
-]
-
-const currentYear = new Date().getFullYear()
+interface MatchedAlumni {
+  id: string
+  full_name: string
+  sport: string
+  graduation_year: number
+  company: string | null
+  role: string | null
+  industry: string | null
+  location: string | null
+  linkedin_url: string | null
+  photo_url: string | null
+  bio: string | null
+  advice: string | null
+  match_strategy: 'email' | 'name_sport_year' | 'name_year'
+}
 
 interface AlumniOnboardingClientProps {
   userId: string
   userEmail: string
   userName: string
+  prefillAlumniId?: string | null
   prefill?: {
     sport?: string
     graduationYear?: number | null
@@ -75,255 +43,11 @@ interface AlumniOnboardingClientProps {
   }
 }
 
-export default function AlumniOnboardingClient({
-  userId,
-  userEmail,
-  userName,
-  prefill,
-}: AlumniOnboardingClientProps) {
-  const router = useRouter()
-  const supabase = createClient()
+type Step = 'welcome' | 'identify' | 'match' | 'review'
 
-  const firstName = userName?.split(' ')[0] || ''
+const currentYear = new Date().getFullYear()
 
-  const [step, setStep] = useState<0 | 1 | 2>(0)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
-
-  // Step 1 fields
-  const [sport, setSport] = useState(prefill?.sport || '')
-  const [graduationYear, setGraduationYear] = useState(
-    prefill?.graduationYear?.toString() || ''
-  )
-  const [gradYearError, setGradYearError] = useState('')
-
-  // Step 2 fields
-  const [company, setCompany] = useState(prefill?.company || '')
-  const [role, setRole] = useState(prefill?.role || '')
-  const [industry, setIndustry] = useState(prefill?.industry || '')
-  const [location, setLocation] = useState(prefill?.location || '')
-  const [linkedinUrl, setLinkedinUrl] = useState(prefill?.linkedinUrl || '')
-
-  const validateGradYear = (val: string) => {
-    const n = parseInt(val)
-    if (!val) { setGradYearError(''); return true }
-    if (isNaN(n) || n < 1960 || n > currentYear) {
-      setGradYearError(`Enter a year between 1960 and ${currentYear}`)
-      return false
-    }
-    setGradYearError('')
-    return true
-  }
-
-  const handleStep1Next = () => {
-    if (!validateGradYear(graduationYear)) return
-    setStep(2)
-  }
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
-    setError('')
-
-    try {
-      const yearInt = graduationYear ? parseInt(graduationYear) : null
-
-      // Update profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          sport: sport || null,
-          graduation_year: yearInt,
-          company: company || null,
-          role: role || null,
-          industry: industry || null,
-          location: location || null,
-          linkedin_url: linkedinUrl || null,
-          onboarding_completed: true,
-        })
-        .eq('id', userId)
-
-      if (profileError) throw profileError
-
-      // Sync to alumni table
-      if (sport && yearInt) {
-        const alumniData = {
-          full_name: userName,
-          email: userEmail,
-          sport,
-          graduation_year: yearInt,
-          company: company || null,
-          role: role || null,
-          industry: industry || null,
-          location: location || null,
-          linkedin_url: linkedinUrl || null,
-          source: 'opt_in',
-          is_public: true,
-          is_verified: true,
-        }
-
-        const { data: existing } = await supabase
-          .from('alumni')
-          .select('id')
-          .eq('email', userEmail)
-          .single()
-
-        if (existing) {
-          await supabase.from('alumni').update(alumniData).eq('id', existing.id)
-        } else {
-          await supabase.from('alumni').insert(alumniData)
-        }
-      }
-
-      trackEvent('alumni_onboarding_completed', { sport, industry })
-      router.push('/plan')
-    } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.')
-      setIsSubmitting(false)
-    }
-  }
-
-  // ─── Welcome screen ──────────────────────────────────────────────
-  if (step === 0) {
-    return (
-      <main className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <Link href="/" className="flex items-center justify-center gap-2 mb-12">
-            <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
-            <span className="logo-text text-lg">Scout</span>
-          </Link>
-
-          <div className="mb-8">
-            <p className="text-xs font-semibold tracking-widest text-[--school-primary] mb-3 uppercase">
-              Cornell Athletics Alumni Network
-            </p>
-            <h1 className="text-3xl font-semibold text-[--text-primary] leading-tight mb-4">
-              Welcome{firstName ? `, ${firstName}` : ''}.
-            </h1>
-            <p className="text-[--text-secondary] leading-relaxed">
-              Scout helps current Cornell athletes connect with alumni for career guidance.
-              When a student-athlete in your sport reaches out, you'll receive a personalized message —
-              and you decide if and when to respond.
-            </p>
-          </div>
-
-          <div className="space-y-4 mb-10">
-            <div className="flex items-start gap-4 py-4 border-t border-[--border-primary]">
-              <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-[--text-primary]">Only verified Cornell athletes can see your profile</p>
-                <p className="text-xs text-[--text-tertiary] mt-0.5">Access is gated behind a Cornell email verification.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 py-4 border-t border-[--border-primary]">
-              <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-[--text-primary]">You're in control</p>
-                <p className="text-xs text-[--text-tertiary] mt-0.5">No commitments. Respond when it's convenient. Update or remove your profile anytime.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 py-4 border-t border-[--border-primary]">
-              <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-[--text-primary]">Two minutes to set up</p>
-                <p className="text-xs text-[--text-tertiary] mt-0.5">Just your sport, graduation year, and current role. That's it.</p>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => setStep(1)}
-            className="btn-primary w-full flex items-center justify-center gap-2"
-          >
-            Set Up My Profile
-            <ArrowRight size={15} />
-          </button>
-
-          <p className="text-center text-[--text-quaternary] text-xs mt-5">
-            By continuing you confirm you are a Cornell athlete and consent to your profile being visible to verified Cornell athletes.
-          </p>
-        </div>
-      </main>
-    )
-  }
-
-  // ─── Step 1: Athletic background ─────────────────────────────────
-  if (step === 1) {
-    return (
-      <main className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          <Link href="/" className="flex items-center justify-center gap-2 mb-12">
-            <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
-            <span className="logo-text text-lg">Scout</span>
-          </Link>
-
-          {/* Step indicator */}
-          <div className="flex items-center gap-2 mb-8">
-            <div className="flex gap-1.5">
-              <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
-              <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
-            </div>
-            <span className="text-xs text-[--text-quaternary]">Step 1 of 2</span>
-          </div>
-
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-[--text-primary] mb-1">Your Cornell athletics</h2>
-            <p className="text-sm text-[--text-tertiary]">Confirm your sport and the year you graduated.</p>
-          </div>
-
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
-              <select
-                value={sport}
-                onChange={(e) => setSport(e.target.value)}
-                className="input-field cursor-pointer"
-              >
-                <option value="">Select your sport</option>
-                {SPORTS_LIST.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Graduation Year</label>
-              <input
-                type="number"
-                value={graduationYear}
-                onChange={(e) => {
-                  setGraduationYear(e.target.value)
-                  if (gradYearError) validateGradYear(e.target.value)
-                }}
-                onBlur={(e) => validateGradYear(e.target.value)}
-                placeholder={`e.g., ${currentYear - 5}`}
-                min={1960}
-                max={currentYear}
-                className={`input-field ${gradYearError ? 'border-red-500/50 focus:border-red-500' : ''}`}
-              />
-              {gradYearError ? (
-                <p className="text-xs text-red-400 mt-1.5">{gradYearError}</p>
-              ) : (
-                <p className="text-xs text-[--text-quaternary] mt-1.5">Enter the year you graduated from Cornell.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <button
-              onClick={handleStep1Next}
-              disabled={!sport || !graduationYear}
-              className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-40"
-            >
-              Next
-              <ArrowRight size={15} />
-            </button>
-          </div>
-        </div>
-      </main>
-    )
-  }
-
-  // ─── Step 2: Career info ──────────────────────────────────────────
+function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -331,19 +55,242 @@ export default function AlumniOnboardingClient({
           <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
           <span className="logo-text text-lg">Scout</span>
         </Link>
+        {children}
+      </div>
+    </main>
+  )
+}
 
-        {/* Step indicator */}
+export default function AlumniOnboardingClient({
+  userId,
+  userEmail,
+  userName,
+  prefillAlumniId,
+  prefill,
+}: AlumniOnboardingClientProps) {
+  const router = useRouter()
+  const firstName = userName?.split(' ')[0] || ''
+
+  const [step, setStep] = useState<Step>('welcome')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  // Identify-step state.
+  const [sport, setSport] = useState(prefill?.sport || '')
+  const [graduationYear, setGraduationYear] = useState(
+    prefill?.graduationYear?.toString() || '',
+  )
+
+  // Match result.
+  const [match, setMatch] = useState<MatchedAlumni | null>(null)
+  const [matchedAlumniId, setMatchedAlumniId] = useState<string | null>(prefillAlumniId || null)
+
+  // Review-step values.
+  const [values, setValues] = useState<AlumniProfileFormValues>(() => ({
+    ...emptyAlumniProfileValues(),
+    sport: prefill?.sport || '',
+    graduation_year: prefill?.graduationYear?.toString() || '',
+    current_role: prefill?.role || '',
+    current_company: prefill?.company || '',
+    city: prefill?.location || '',
+    linkedin_url: prefill?.linkedinUrl || '',
+  }))
+
+  // ─── Identify: look up a possible starter profile ──────────────────
+  const handleIdentifyNext = async () => {
+    setError('')
+    if (!sport || !graduationYear) {
+      setError('Please enter your sport and graduation year.')
+      return
+    }
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/alumni/match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sport, graduation_year: parseInt(graduationYear, 10) }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Lookup failed')
+
+      if (data.match) {
+        setMatch(data.match as MatchedAlumni)
+        setMatchedAlumniId(data.match.id)
+        setStep('match')
+      } else {
+        // No match — go straight to a blank review.
+        setMatch(null)
+        setMatchedAlumniId(null)
+        seedReviewFromIdentify()
+        setStep('review')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const seedReviewFromIdentify = (fromMatch?: MatchedAlumni) => {
+    setValues({
+      current_role: fromMatch?.role || values.current_role || '',
+      current_company: fromMatch?.company || values.current_company || '',
+      linkedin_url: fromMatch?.linkedin_url || values.linkedin_url || '',
+      city: fromMatch?.location || values.city || '',
+      sport: fromMatch?.sport || sport || values.sport || '',
+      graduation_year:
+        fromMatch?.graduation_year?.toString() || graduationYear || values.graduation_year || '',
+      major: values.major || '',
+      past_experiences: fromMatch?.bio || values.past_experiences || '',
+      advice: fromMatch?.advice || values.advice || '',
+      profile_photo_url: fromMatch?.photo_url || values.profile_photo_url || '',
+      share_email_with_students: values.share_email_with_students,
+    })
+  }
+
+  const handleReviewAndClaim = () => {
+    seedReviewFromIdentify(match || undefined)
+    setStep('review')
+  }
+
+  const handleNotMe = () => {
+    // The matched row isn't this user — fall through to a blank review.
+    setMatch(null)
+    setMatchedAlumniId(null)
+    seedReviewFromIdentify()
+    setStep('review')
+  }
+
+  const handleCreateNew = () => {
+    setMatch(null)
+    setMatchedAlumniId(null)
+    seedReviewFromIdentify()
+    setStep('review')
+  }
+
+  // ─── Save and publish ──────────────────────────────────────────────
+  const handlePublish = async () => {
+    setError('')
+    if (!values.current_role.trim() || !values.current_company.trim()) {
+      setError('Current role and current company are required.')
+      return
+    }
+    if (!values.sport) {
+      setError('Please choose your sport.')
+      return
+    }
+    const yearInt = parseInt(values.graduation_year, 10)
+    if (!values.graduation_year || isNaN(yearInt) || yearInt < 1960 || yearInt > currentYear) {
+      setError(`Please enter a valid graduation year (1960–${currentYear}).`)
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/alumni/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alumni_id: matchedAlumniId,
+          current_role: values.current_role,
+          current_company: values.current_company,
+          linkedin_url: values.linkedin_url,
+          city: values.city,
+          sport: values.sport,
+          graduation_year: yearInt,
+          major: values.major,
+          past_experiences: values.past_experiences,
+          advice: values.advice,
+          profile_photo_url: values.profile_photo_url,
+          share_email_with_students: values.share_email_with_students,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to publish')
+
+      trackEvent('alumni_profile_claimed', {
+        had_match: Boolean(matchedAlumniId),
+      })
+      router.push('/profile')
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.')
+      setIsSubmitting(false)
+    }
+  }
+
+  // ─── Welcome ────────────────────────────────────────────────────────
+  if (step === 'welcome') {
+    return (
+      <Shell>
+        <div className="mb-10">
+          <p className="text-sm font-semibold tracking-widest text-[--school-primary] mb-4 uppercase">
+            Cornell Athletics Alumni Network
+          </p>
+          <h1 className="text-4xl font-semibold text-[--text-primary] leading-tight mb-5">
+            Welcome{firstName ? `, ${firstName}` : ''}.
+          </h1>
+          <p className="text-lg text-[--text-secondary] leading-relaxed">
+            Scout helps current Cornell athletes connect with alumni for career guidance.
+            We'll see if there's already a starter profile for you on Scout, and let you decide
+            what's shared.
+          </p>
+        </div>
+
+        <div className="space-y-4 mb-12">
+          <div className="flex items-start gap-4 py-5 border-t border-[--border-primary]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2.5 flex-shrink-0" />
+            <div>
+              <p className="text-base font-medium text-[--text-primary]">You control what students see</p>
+              <p className="text-sm text-[--text-tertiary] mt-1">Edit anything before it's published. Toggle email visibility on or off.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4 py-5 border-t border-[--border-primary]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2.5 flex-shrink-0" />
+            <div>
+              <p className="text-base font-medium text-[--text-primary]">Verified Cornell athletes only</p>
+              <p className="text-sm text-[--text-tertiary] mt-1">Access is gated behind a Cornell email verification.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-4 py-5 border-t border-[--border-primary]">
+            <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2.5 flex-shrink-0" />
+            <div>
+              <p className="text-base font-medium text-[--text-primary]">Less than two minutes</p>
+              <p className="text-sm text-[--text-tertiary] mt-1">Confirm your sport and graduation year, then review what's shown.</p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setStep('identify')}
+          className="btn-primary w-full flex items-center justify-center gap-2 text-base py-3"
+        >
+          Get Started
+          <ArrowRight size={16} />
+        </button>
+
+        <p className="text-center text-[--text-quaternary] text-sm mt-6">
+          By continuing you confirm you are a Cornell athlete and consent to your profile being visible to verified Cornell athletes.
+        </p>
+      </Shell>
+    )
+  }
+
+  // ─── Identify ───────────────────────────────────────────────────────
+  if (step === 'identify') {
+    return (
+      <Shell>
         <div className="flex items-center gap-2 mb-8">
           <div className="flex gap-1.5">
             <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
-            <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
+            <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
+            <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
           </div>
-          <span className="text-xs text-[--text-quaternary]">Step 2 of 2</span>
+          <span className="text-xs text-[--text-quaternary]">Step 1 of 3</span>
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-[--text-primary] mb-1">Your current career</h2>
-          <p className="text-sm text-[--text-tertiary]">This helps students understand your background and reach out with relevant questions.</p>
+        <div className="mb-10">
+          <h2 className="text-3xl font-semibold text-[--text-primary] mb-2">Your Cornell athletics</h2>
+          <p className="text-base text-[--text-tertiary] leading-relaxed">Confirm your sport and graduation year so we can look up your starter profile.</p>
         </div>
 
         {error && (
@@ -352,91 +299,220 @@ export default function AlumniOnboardingClient({
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Company</label>
-              <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="e.g., Goldman Sachs"
-                className="input-field"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Title</label>
-              <input
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g., VP, Analyst"
-                className="input-field"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Industry</label>
-              <select
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-                className="input-field cursor-pointer"
-              >
-                <option value="">Select</option>
-                {INDUSTRIES.map((i) => (
-                  <option key={i} value={i}>{i}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g., New York, NY"
-                className="input-field"
-              />
-            </div>
+        <div className="space-y-5">
+          <div>
+            <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
+            <select
+              value={sport}
+              onChange={(e) => setSport(e.target.value)}
+              className="input-field cursor-pointer"
+            >
+              <option value="">Select your sport</option>
+              {SPORTS_LIST.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm text-[--text-tertiary] mb-2">LinkedIn URL <span className="text-[--text-quaternary]">(optional)</span></label>
+            <label className="block text-sm text-[--text-tertiary] mb-2">Graduation year</label>
             <input
-              type="url"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              placeholder="https://linkedin.com/in/yourprofile"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{4}"
+              maxLength={4}
+              value={graduationYear}
+              onChange={(e) => setGraduationYear(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder={`e.g., ${currentYear - 5}`}
+              autoComplete="off"
               className="input-field"
             />
           </div>
         </div>
 
         <div className="mt-8 flex gap-3">
-          <button
-            onClick={() => setStep(1)}
-            className="btn-secondary px-5"
-          >
-            Back
+          <button onClick={() => setStep('welcome')} className="btn-secondary px-5">
+            <ArrowLeft size={15} />
           </button>
           <button
-            onClick={handleSubmit}
+            onClick={handleIdentifyNext}
+            disabled={!sport || !graduationYear || isSubmitting}
+            className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-40"
+          >
+            {isSubmitting ? <Loader2 size={15} className="animate-spin" /> : (
+              <>Look up my profile <ArrowRight size={15} /></>
+            )}
+          </button>
+        </div>
+      </Shell>
+    )
+  }
+
+  // ─── Match decision ─────────────────────────────────────────────────
+  if (step === 'match' && match) {
+    return (
+      <Shell>
+        <div className="flex items-center gap-2 mb-8">
+          <div className="flex gap-1.5">
+            <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
+            <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
+            <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
+          </div>
+          <span className="text-xs text-[--text-quaternary]">Step 2 of 3</span>
+        </div>
+
+        <div className="mb-7">
+          <div className="inline-flex items-center gap-2 text-sm text-[--school-primary] mb-3 font-medium">
+            <Sparkles size={14} /> POSSIBLE MATCH
+          </div>
+          <h2 className="text-3xl font-semibold text-[--text-primary] mb-3 leading-tight">
+            We found a possible starter profile for you
+          </h2>
+          <p className="text-base text-[--text-tertiary] leading-relaxed">
+            Please review it and update anything that looks outdated or incorrect.
+            You'll control what students can see.
+          </p>
+        </div>
+
+        {/* High-confidence: name, sport, year */}
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4">
+          <p className="text-xs uppercase tracking-wide text-[--text-quaternary] mb-3">Match identifiers</p>
+          <div className="space-y-2">
+            <Row label="Name" value={match.full_name} />
+            <Row label="Sport" value={match.sport} />
+            <Row label="Graduation year" value={String(match.graduation_year)} />
+          </div>
+        </div>
+
+        {/* Low-confidence: existing role/company */}
+        {(match.role || match.company || match.location) && (
+          <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-5 mb-5">
+            <p className="text-xs uppercase tracking-wide text-[--text-quaternary] mb-1">
+              Existing info on Scout
+            </p>
+            <p className="text-xs text-[--text-quaternary] mb-3 italic">
+              May be outdated. You can edit or remove any of this in the next step.
+            </p>
+            <div className="space-y-2">
+              {match.role && <Row label="Role" value={match.role} muted />}
+              {match.company && <Row label="Company" value={match.company} muted />}
+              {match.location && <Row label="Location" value={match.location} muted />}
+            </div>
+          </div>
+        )}
+
+        <p className="text-xs text-[--text-tertiary] leading-relaxed mb-6">
+          Scout uses starter alumni profiles to help Cornell student-athletes discover relevant people.
+          Once you claim your profile, you decide what is shown.
+        </p>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-4">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <button
+            onClick={handleReviewAndClaim}
+            className="btn-primary w-full flex items-center justify-center gap-2"
+          >
+            Review and claim
+            <ArrowRight size={15} />
+          </button>
+          <button
+            onClick={handleNotMe}
+            className="btn-secondary w-full"
+          >
+            This isn't me
+          </button>
+          <button
+            onClick={handleCreateNew}
+            className="btn-ghost w-full text-sm"
+          >
+            Create new profile instead
+          </button>
+        </div>
+      </Shell>
+    )
+  }
+
+  // ─── Review & publish ───────────────────────────────────────────────
+  return (
+    <main className="min-h-screen px-4 py-12">
+      <div className="w-full max-w-2xl mx-auto">
+        <Link href="/" className="flex items-center justify-center gap-2 mb-10">
+          <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
+          <span className="logo-text text-lg">Scout</span>
+        </Link>
+
+        <div className="flex items-center gap-2 mb-8">
+          <div className="flex gap-1.5">
+            <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
+            <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
+            <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
+          </div>
+          <span className="text-xs text-[--text-quaternary]">
+            {matchedAlumniId ? 'Step 3 of 3 · Review and claim' : 'Step 3 of 3 · Create your profile'}
+          </span>
+        </div>
+
+        <div className="mb-7">
+          <h2 className="text-3xl font-semibold text-[--text-primary] mb-2 leading-tight">
+            {matchedAlumniId ? 'Review and update' : 'Tell students about you'}
+          </h2>
+          <p className="text-base text-[--text-tertiary] leading-relaxed">
+            {matchedAlumniId
+              ? 'Everything below is editable. Your edits replace whatever was on Scout before.'
+              : 'Just current role and current company are required. Everything else is optional but helps students.'}
+          </p>
+        </div>
+
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 md:p-8">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-5">
+              {error}
+            </div>
+          )}
+
+          <AlumniProfileForm values={values} onChange={setValues} showReviewBanner />
+        </div>
+
+        <div className="mt-6 flex gap-3">
+          <button onClick={() => setStep(match ? 'match' : 'identify')} className="btn-secondary px-5">
+            <ArrowLeft size={15} />
+          </button>
+          <button
+            onClick={handlePublish}
             disabled={isSubmitting}
             className="btn-primary flex-1 flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
-              <div className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+              <Loader2 size={15} className="animate-spin" />
             ) : (
               <>
                 <Check size={15} />
-                Finish Setup
+                Save and publish profile
               </>
             )}
           </button>
         </div>
+
+        <p className="text-center text-xs text-[--text-quaternary] mt-5">
+          You can edit your profile anytime from your dashboard.
+        </p>
       </div>
     </main>
+  )
+}
+
+function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+  return (
+    <div className="flex items-baseline gap-3 text-sm">
+      <span className="text-[--text-quaternary] w-32 flex-shrink-0">{label}</span>
+      <span className={muted ? 'text-[--text-tertiary]' : 'text-[--text-primary] font-medium'}>
+        {value}
+      </span>
+    </div>
   )
 }

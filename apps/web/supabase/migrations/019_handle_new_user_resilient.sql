@@ -7,13 +7,22 @@
 -- signup entirely. This version catches every error path and falls back to
 -- a sensible default ('student') so signup always succeeds. The downstream
 -- claim wizard can still upgrade the role when needed.
+--
+-- We also (1) idempotently ensure the user_role enum exists, in case mig 017
+-- was missed or partially rolled back on this database, and (2) fully-qualify
+-- type references as `public.user_role` so SECURITY DEFINER's search_path
+-- can't shadow them.
+
+DO $$ BEGIN
+  CREATE TYPE public.user_role AS ENUM ('student', 'alumni', 'admin');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
   v_raw text;
   v_role text := 'student';
-  v_account_role user_role := 'student';
+  v_account_role public.user_role := 'student';
 BEGIN
   -- Defensively read metadata. Any failure here falls through to defaults.
   BEGIN
@@ -21,10 +30,10 @@ BEGIN
     IF v_raw IN ('student', 'alumni') THEN
       v_role := v_raw;
     END IF;
-    v_account_role := v_role::user_role;
+    v_account_role := v_role::public.user_role;
   EXCEPTION WHEN OTHERS THEN
     v_role := 'student';
-    v_account_role := 'student'::user_role;
+    v_account_role := 'student'::public.user_role;
   END;
 
   -- Insert the profile. If anything goes wrong, log and re-raise so we know,
@@ -36,7 +45,7 @@ BEGIN
       NEW.email,
       COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
       v_account_role,
-      v_account_role = 'alumni'
+      v_account_role = 'alumni'::public.user_role
     );
   EXCEPTION WHEN OTHERS THEN
     RAISE WARNING 'handle_new_user profile insert failed for %: %', NEW.email, SQLERRM;

@@ -56,7 +56,7 @@ function SignupForm() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -68,6 +68,16 @@ function SignupForm() {
       })
 
       if (error) throw error
+
+      // Set the role on the profile after signup. The DB trigger creates a
+      // baseline profile row with default role; this updates it to match
+      // what the user picked. Best-effort — failure here doesn't block signup.
+      if (data.user && role === 'alumni') {
+        await supabase
+          .from('profiles')
+          .update({ account_role: 'alumni', is_alumni: true })
+          .eq('id', data.user.id)
+      }
 
       router.push('/onboarding')
     } catch (err: any) {

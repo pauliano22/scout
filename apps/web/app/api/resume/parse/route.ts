@@ -96,7 +96,9 @@ Return only valid JSON, nothing else.`,
       return NextResponse.json({ error: 'Failed to parse resume content' }, { status: 500 })
     }
 
-    // Update profile with extracted data — only fill fields that are currently empty
+    // Snapshot the profile BEFORE we apply any updates — we return this so
+    // the client can diff and decide whether to offer a "refresh profile"
+    // overwrite confirmation on re-upload.
     const { data: profile } = await supabase
       .from('profiles')
       .select('major, past_experience, primary_industry, target_roles, graduation_year')
@@ -108,7 +110,8 @@ Return only valid JSON, nothing else.`,
       resume_parsed: parsed,
     }
 
-    // Only overwrite profile fields if they're blank
+    // Fill-if-blank: only set top-level columns that are currently empty.
+    // The user can explicitly opt into overwriting via /api/resume/apply.
     if (!profile?.major && parsed.major) updates.major = parsed.major
     if (!profile?.past_experience && parsed.past_experience) updates.past_experience = parsed.past_experience
     if (!profile?.primary_industry && parsed.primary_industry) updates.primary_industry = parsed.primary_industry
@@ -126,7 +129,18 @@ Return only valid JSON, nothing else.`,
       console.error('Profile update error (resume):', updateError)
     }
 
-    return NextResponse.json({ parsed })
+    // Return the pre-update profile alongside the parsed data so the client
+    // can show a diff and let the user opt in to overwriting existing fields.
+    return NextResponse.json({
+      parsed,
+      previous_profile: {
+        major: profile?.major ?? null,
+        past_experience: profile?.past_experience ?? null,
+        primary_industry: profile?.primary_industry ?? null,
+        graduation_year: profile?.graduation_year ?? null,
+        target_roles: profile?.target_roles ?? null,
+      },
+    })
   } catch (error) {
     console.error('Resume parse error:', error)
     return NextResponse.json({ error: 'Failed to process resume' }, { status: 500 })

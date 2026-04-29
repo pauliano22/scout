@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/track'
-import { Upload, FileText, Check, X, Loader } from 'lucide-react'
+import { Upload, FileText, Check, X, Loader, RefreshCw } from 'lucide-react'
 
 interface ParsedResume {
   full_name?: string | null
@@ -17,19 +17,92 @@ interface ParsedResume {
   location?: string | null
 }
 
+interface PreviousProfile {
+  major: string | null
+  past_experience: string | null
+  primary_industry: string | null
+  graduation_year: number | null
+  target_roles: string[] | null
+}
+
 interface ResumeUploadProps {
   userId: string
   onParsed?: (data: ParsedResume) => void
   compact?: boolean  // true = inline card style, false = full step style
 }
 
-type UploadState = 'idle' | 'uploading' | 'parsing' | 'done' | 'error'
+type UploadState = 'idle' | 'uploading' | 'parsing' | 'done' | 'applying' | 'error'
+
+type DiffField = 'major' | 'past_experience' | 'primary_industry' | 'graduation_year' | 'target_roles'
+
+interface FieldDiff {
+  field: DiffField
+  label: string
+  oldValue: string
+  newValue: string
+}
+
+const FIELD_LABELS: Record<DiffField, string> = {
+  major: 'Major',
+  past_experience: 'Past experience',
+  primary_industry: 'Primary industry',
+  graduation_year: 'Graduation year',
+  target_roles: 'Target roles',
+}
+
+const isBlank = (v: unknown) =>
+  v === null || v === undefined || v === '' ||
+  (Array.isArray(v) && v.length === 0)
+
+const formatValue = (v: unknown): string => {
+  if (isBlank(v)) return ''
+  if (Array.isArray(v)) return v.join(', ')
+  return String(v)
+}
+
+const truncate = (s: string, n: number) =>
+  s.length > n ? s.slice(0, n - 1) + '…' : s
+
+function computeDiffs(parsed: ParsedResume, previous: PreviousProfile): FieldDiff[] {
+  const fields: DiffField[] = [
+    'major',
+    'primary_industry',
+    'graduation_year',
+    'target_roles',
+    'past_experience',
+  ]
+  const diffs: FieldDiff[] = []
+
+  for (const field of fields) {
+    const oldVal = (previous as unknown as Record<string, unknown>)[field]
+    const newVal = (parsed as unknown as Record<string, unknown>)[field]
+
+    // Only diff when there WAS an old value AND there's a new value AND they differ.
+    // (If the old value was blank, the parse route already filled it — nothing to confirm.)
+    if (isBlank(oldVal) || isBlank(newVal)) continue
+
+    const oldStr = formatValue(oldVal)
+    const newStr = formatValue(newVal)
+    if (oldStr === newStr) continue
+
+    diffs.push({
+      field,
+      label: FIELD_LABELS[field],
+      oldValue: truncate(oldStr, 80),
+      newValue: truncate(newStr, 80),
+    })
+  }
+
+  return diffs
+}
 
 export default function ResumeUpload({ userId, onParsed, compact = false }: ResumeUploadProps) {
   const [state, setState] = useState<UploadState>('idle')
   const [parsed, setParsed] = useState<ParsedResume | null>(null)
   const [fileName, setFileName] = useState<string>('')
   const [errorMsg, setErrorMsg] = useState<string>('')
+  const [diffs, setDiffs] = useState<FieldDiff[]>([])
+  const [appliedFields, setAppliedFields] = useState<DiffField[] | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
@@ -76,15 +149,50 @@ export default function ResumeUpload({ userId, onParsed, compact = false }: Resu
       return
     }
 
-    const { parsed: data } = await res.json()
+    const { parsed: data, previous_profile } = await res.json()
     setParsed(data)
+    setAppliedFields(null)
+
+    // If the user already had values on file that differ from what the new
+    // resume says, surface a diff panel so they can opt into refreshing.
+    const newDiffs: FieldDiff[] = previous_profile
+      ? computeDiffs(data, previous_profile as PreviousProfile)
+      : []
+    setDiffs(newDiffs)
+
     setState('done')
     trackEvent('resume_uploaded', {
       has_major: !!data.major,
       has_industry: !!data.primary_industry,
       has_roles: (data.target_roles?.length ?? 0) > 0,
+      has_diffs: newDiffs.length > 0,
     })
     onParsed?.(data)
+  }
+
+  async function applyDiffs() {
+    if (diffs.length === 0) return
+    setState('applying')
+    try {
+      const res = await fetch('/api/resume/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: diffs.map((d) => d.field) }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to apply')
+      setAppliedFields(diffs.map((d) => d.field))
+      setDiffs([])
+      trackEvent('resume_applied', { fields: data.applied })
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Failed to apply updates')
+    } finally {
+      setState('done')
+    }
+  }
+
+  function dismissDiffs() {
+    setDiffs([])
   }
 
   function handleDrop(e: React.DragEvent) {
@@ -103,10 +211,12 @@ export default function ResumeUpload({ userId, onParsed, compact = false }: Resu
     setParsed(null)
     setFileName('')
     setErrorMsg('')
+    setDiffs([])
+    setAppliedFields(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  if (state === 'done' && parsed) {
+  if ((state === 'done' || state === 'applying') && parsed) {
     return (
       <div className={`rounded-xl border-2 border-green-500/40 bg-green-500/5 ${compact ? 'p-4' : 'p-6'}`}>
         <div className="flex items-center gap-2 mb-3">
@@ -140,7 +250,66 @@ export default function ResumeUpload({ userId, onParsed, compact = false }: Resu
             <div className="mt-2 text-[--text-tertiary] italic">{parsed.past_experience}</div>
           )}
         </div>
-        <p className="text-xs text-green-600 mt-3">Profile updated with your resume info.</p>
+
+        {/* Diff panel: only shows when re-uploading and the new resume changes
+            fields the user already had set. Lets them opt into overwriting. */}
+        {diffs.length > 0 && (
+          <div className="mt-4 rounded-lg border border-[--school-primary]/40 bg-[--school-primary]/5 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <RefreshCw size={13} className="text-[--school-primary]" />
+              <p className="text-xs font-semibold text-[--text-primary]">
+                Refresh profile from this resume?
+              </p>
+            </div>
+            <p className="text-xs text-[--text-tertiary] mb-3">
+              Your profile already has values for these fields. Apply the new ones?
+            </p>
+            <div className="space-y-2 mb-3">
+              {diffs.map((d) => (
+                <div key={d.field} className="text-xs leading-relaxed">
+                  <div className="text-[--text-quaternary] font-medium mb-0.5">{d.label}</div>
+                  <div className="text-[--text-tertiary] line-through decoration-[--text-quaternary]/50">
+                    {d.oldValue}
+                  </div>
+                  <div className="text-[--text-primary]">{d.newValue}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={applyDiffs}
+                disabled={state === 'applying'}
+                className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1.5 disabled:opacity-50"
+              >
+                {state === 'applying' ? (
+                  <Loader size={12} className="animate-spin" />
+                ) : (
+                  <RefreshCw size={12} />
+                )}
+                Apply to profile
+              </button>
+              <button
+                onClick={dismissDiffs}
+                disabled={state === 'applying'}
+                className="btn-ghost text-xs px-3 py-1.5"
+              >
+                Keep current
+              </button>
+            </div>
+          </div>
+        )}
+
+        {appliedFields && appliedFields.length > 0 && diffs.length === 0 && (
+          <p className="text-xs text-green-600 mt-3">
+            Profile refreshed with new values for {appliedFields.map((f) => FIELD_LABELS[f]).join(', ')}.
+          </p>
+        )}
+        {!appliedFields && diffs.length === 0 && (
+          <p className="text-xs text-green-600 mt-3">Profile updated with your resume info.</p>
+        )}
+        {errorMsg && (
+          <p className="text-xs text-red-500 mt-2">{errorMsg}</p>
+        )}
       </div>
     )
   }

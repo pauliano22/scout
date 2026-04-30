@@ -1,130 +1,173 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Scout Networking Agent — Scoring Engine
-//
-// Ranks alumni by how well they match the user's career goal and preferences.
-// Scores are additive and transparent — each factor is tracked separately
-// so the UI can explain why each person was recommended.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { AgentAlumni, AgentInput, RankedAlumni } from './types'
+import type { AgentAlumni, AgentInput, AlumniTag, RankedAlumni } from './types'
 
-const WEIGHTS = {
-  industryMatch:    30,   // per keyword match against preferences.industries
-  sportMatch:       20,   // alumni played same sport as the user's preference
-  locationMatch:    15,   // alumni location contains one of the preferred cities
-  hasRole:           5,   // profile has a job title
-  hasCompany:        5,   // profile has a company
-  hasLinkedIn:       5,   // LinkedIn URL present (easier to reach)
-  seniorityBonus:   10,   // graduated 4+ years ago — more established career
+const W = {
+  industryFieldMatch: 40,   // alumni.industry DB field exactly matches a keyword
+  roleTextMatch:      15,   // keyword found in alumni.role text
+  companyTextMatch:    5,   // keyword found in alumni.company text
+  sportMatch:         20,
+  locationMatch:      15,
+  hasRole:             5,
+  hasCompany:          5,
+  hasLinkedIn:         5,
+  seniority:          10,   // graduated 4+ years ago
 }
 
-/** True if the alumni's industry/role/company overlap with any preference keyword. */
-function industryScore(alumni: AgentAlumni, keywords: string[]): number {
-  const haystack = [alumni.industry, alumni.role, alumni.company]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
+// Industries considered "finance" — used to exclude irrelevant results
+const FINANCE_INDUSTRIES = [
+  'finance', 'banking', 'investment', 'wealth management',
+  'private equity', 'hedge fund', 'asset management',
+  'financial services', 'capital markets',
+]
 
-  let score = 0
-  for (const kw of keywords) {
-    if (haystack.includes(kw.toLowerCase())) score += WEIGHTS.industryMatch
+// Keywords that are too generic and fire false positives in role/company text
+const ROLE_TEXT_BLOCKLIST = ['strategy', 'management', 'solutions', 'services', 'group']
+
+function isFinanceAlumni(alumni: AgentAlumni): boolean {
+  if (!alumni.industry) return false
+  const ind = alumni.industry.toLowerCase()
+  return FINANCE_INDUSTRIES.some(f => ind.includes(f))
+}
+
+function isFinanceGoal(keywords: string[]): boolean {
+  return keywords.some(kw =>
+    FINANCE_INDUSTRIES.some(f => f.includes(kw.toLowerCase()) || kw.toLowerCase().includes(f))
+  )
+}
+
+function industryPts(alumni: AgentAlumni, keywords: string[]): number {
+  let pts = 0
+
+  // Tier 1: exact match against the industry DB field (high confidence)
+  if (alumni.industry) {
+    const ind = alumni.industry.toLowerCase()
+    for (const kw of keywords) {
+      if (ind.includes(kw.toLowerCase())) {
+        pts += W.industryFieldMatch
+        break // one industry-field match is enough, no stacking
+      }
+    }
   }
-  // Cap at 2x to avoid inflating on extremely keyword-heavy profiles
-  return Math.min(score, WEIGHTS.industryMatch * 2)
-}
 
-/** True if the alumni's sport loosely matches the preferred sport. */
-function sportScore(alumni: AgentAlumni, preferredSport?: string): number {
-  if (!preferredSport) return 0
-  const alumniSport = alumni.sport.toLowerCase()
-  const pref = preferredSport.toLowerCase()
-  // Handle "Football" matching "Sprint Football", "Women's Football", etc.
-  if (alumniSport.includes(pref) || pref.includes(alumniSport)) {
-    return WEIGHTS.sportMatch
+  // Tier 2: keyword found in role text (medium confidence)
+  // Skip keywords that are too generic and fire false positives
+  if (alumni.role) {
+    const role = alumni.role.toLowerCase()
+    for (const kw of keywords) {
+      const kwLower = kw.toLowerCase()
+      if (ROLE_TEXT_BLOCKLIST.includes(kwLower)) continue
+      if (role.includes(kwLower)) {
+        pts += W.roleTextMatch
+        break
+      }
+    }
   }
-  return 0
+
+  // Tier 3: keyword found in company name (low confidence, only non-generic terms)
+  if (alumni.company) {
+    const co = alumni.company.toLowerCase()
+    for (const kw of keywords) {
+      const kwLower = kw.toLowerCase()
+      if (ROLE_TEXT_BLOCKLIST.includes(kwLower)) continue
+      if (co.includes(kwLower)) {
+        pts += W.companyTextMatch
+        break
+      }
+    }
+  }
+
+  return pts
 }
 
-/** Score based on how closely the alumni's location matches preferred cities. */
-function locationScore(alumni: AgentAlumni, locations: string[]): number {
+function sportPts(alumni: AgentAlumni, preferred?: string): number {
+  if (!preferred) return 0
+  const a = alumni.sport.toLowerCase()
+  const p = preferred.toLowerCase()
+  return (a.includes(p) || p.includes(a)) ? W.sportMatch : 0
+}
+
+function locationPts(alumni: AgentAlumni, locations: string[]): number {
   if (!alumni.location) return 0
   const loc = alumni.location.toLowerCase()
-  for (const city of locations) {
-    if (loc.includes(city.toLowerCase())) return WEIGHTS.locationMatch
-  }
-  return 0
+  return locations.some(l => loc.includes(l.toLowerCase())) ? W.locationMatch : 0
 }
 
-/** Build a single human-readable sentence explaining why this person was picked. */
-function buildReason(alumni: RankedAlumni, input: AgentInput): string {
+function buildTags(
+  alumni: AgentAlumni,
+  input: AgentInput,
+  breakdown: { industryMatch: number; sportMatch: number; locationMatch: number },
+): AlumniTag[] {
+  const tags: AlumniTag[] = []
+
+  if (breakdown.sportMatch > 0) {
+    tags.push({ type: 'sport', label: `${input.preferences.sport ?? alumni.sport}` })
+  }
+
+  const matchedKw = input.preferences.industries.find(kw =>
+    alumni.industry?.toLowerCase().includes(kw.toLowerCase()) ||
+    (!ROLE_TEXT_BLOCKLIST.includes(kw.toLowerCase()) &&
+      [alumni.role, alumni.company]
+        .filter(Boolean).join(' ').toLowerCase()
+        .includes(kw.toLowerCase()))
+  )
+  if (matchedKw) tags.push({ type: 'industry', label: matchedKw })
+
+  if (breakdown.locationMatch > 0 && alumni.location) {
+    const city = alumni.location.split(',')[0]
+    tags.push({ type: 'location', label: city })
+  }
+
+  return tags
+}
+
+function buildReason(alumni: AgentAlumni, input: AgentInput, tags: AlumniTag[]): string {
   const parts: string[] = []
 
-  if (alumni.scoreBreakdown.sportMatch > 0) {
-    parts.push(`fellow Cornell ${input.preferences.sport ?? alumni.sport} player`)
-  }
+  const sport = tags.find(t => t.type === 'sport')
+  if (sport) parts.push(`Cornell ${sport.label}`)
 
   if (alumni.role && alumni.company) {
     parts.push(`${alumni.role} at ${alumni.company}`)
   } else if (alumni.company) {
-    parts.push(`works at ${alumni.company}`)
+    parts.push(alumni.company)
   }
 
-  const industryKw = input.preferences.industries.find(kw =>
-    [alumni.industry, alumni.role, alumni.company]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-      .includes(kw.toLowerCase())
-  )
-  if (industryKw) parts.push(`strong ${industryKw} connection`)
-
-  if (alumni.scoreBreakdown.locationMatch > 0 && alumni.location) {
-    parts.push(`based in ${alumni.location.split(',')[0]}`)
+  const ind = tags.find(t => t.type === 'industry')
+  if (ind && !parts.some(p => p.toLowerCase().includes(ind.label.toLowerCase()))) {
+    parts.push(`${ind.label} focus`)
   }
 
-  if (parts.length === 0) return 'Cornell athlete with relevant career experience.'
-
-  // Capitalize first word and join naturally
-  const joined = parts.join(' · ')
-  return joined.charAt(0).toUpperCase() + joined.slice(1) + '.'
+  return parts.length ? parts.join(' · ') + '.' : 'Cornell athlete, relevant career path.'
 }
 
-/**
- * Score all alumni against the input and return them sorted best-first.
- * Only returns alumni with a score > 0.
- */
-export function rankAlumni(
-  alumni: AgentAlumni[],
-  input: AgentInput,
-): RankedAlumni[] {
-  const scored: RankedAlumni[] = alumni.map(a => {
-    const industryPts  = industryScore(a, input.preferences.industries)
-    const sportPts     = sportScore(a, input.preferences.sport)
-    const locationPts  = locationScore(a, input.preferences.locations)
-    const qualityPts   =
-      (a.role        ? WEIGHTS.hasRole     : 0) +
-      (a.company     ? WEIGHTS.hasCompany  : 0) +
-      (a.linkedin_url ? WEIGHTS.hasLinkedIn : 0) +
-      (new Date().getFullYear() - a.graduation_year >= 4 ? WEIGHTS.seniorityBonus : 0)
+export function rankAlumni(alumni: AgentAlumni[], input: AgentInput): RankedAlumni[] {
+  const goalIsFinance = isFinanceGoal(input.preferences.industries)
 
-    const total = industryPts + sportPts + locationPts + qualityPts
+  return alumni
+    .map(a => {
+      // Exclude finance alumni when the goal is not finance
+      if (!goalIsFinance && isFinanceAlumni(a)) {
+        return { ...a, score: 0, tags: [], reason: '' }
+      }
 
-    const ranked: RankedAlumni = {
-      ...a,
-      score: total,
-      reason: '',                   // filled in below after full object exists
-      scoreBreakdown: {
-        industryMatch: industryPts,
-        sportMatch:    sportPts,
-        locationMatch: locationPts,
-        profileQuality: qualityPts,
-      },
-    }
-    ranked.reason = buildReason(ranked, input)
-    return ranked
-  })
+      const iMatch = industryPts(a, input.preferences.industries)
+      const sMatch = sportPts(a, input.preferences.sport)
+      const lMatch = locationPts(a, input.preferences.locations)
+      const quality =
+        (a.role         ? W.hasRole     : 0) +
+        (a.company      ? W.hasCompany  : 0) +
+        (a.linkedin_url ? W.hasLinkedIn : 0) +
+        (new Date().getFullYear() - a.graduation_year >= 4 ? W.seniority : 0)
 
-  return scored
+      const score = iMatch + sMatch + lMatch + quality
+      const breakdown = { industryMatch: iMatch, sportMatch: sMatch, locationMatch: lMatch }
+      const tags = buildTags(a, input, breakdown)
+
+      return { ...a, score, tags, reason: buildReason(a, input, tags) }
+    })
     .filter(a => a.score > 0)
     .sort((a, b) => b.score - a.score)
 }

@@ -230,6 +230,11 @@ export function isHighQualityAlumniProfile(
   return profile.profileCompletenessScore >= threshold;
 }
 
+export function formatSportLabel(sport: string | null): string | null {
+  if (!sport) return null;
+  return sport.replace(/'S\b/g, "'s");
+}
+
 export function formatGradYearShort(year: number | null): string | null {
   if (!year) return null;
   return `'${String(year).slice(-2)}`;

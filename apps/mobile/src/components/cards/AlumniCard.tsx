@@ -5,20 +5,14 @@ import {
   Image,
   PanResponder,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, shadows, spacing, typography } from '../../theme/scoutTheme';
 import type { ScoredAlumni } from '../../services/recommendations';
-import {
-  formatExperienceDates,
-  formatGradYearShort,
-} from '../../lib/alumniProfile';
-import AlumniAvatar from '../common/AlumniAvatar';
+import { formatGradYearShort, formatSportLabel } from '../../lib/alumniProfile';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_HORIZONTAL_PADDING = spacing.xl;
@@ -49,7 +43,6 @@ export default function AlumniCard({
   const scale = useRef(new Animated.Value(1)).current;
   const [imageError, setImageError] = useState(false);
   const swipeAnimating = useRef(false);
-  const isHorizontalGesture = useRef(false);
 
   const profile = alumni.profile;
 
@@ -71,7 +64,6 @@ export default function AlumniCard({
     extrapolate: 'clamp',
   });
 
-  // Subtle photo zoom following swipe direction
   const photoTilt = position.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
     outputRange: [-12, 0, 12],
@@ -80,26 +72,21 @@ export default function AlumniCard({
 
   const completeSwipe = (direction: 'left' | 'right', velocityY: number) => {
     swipeAnimating.current = true;
-    Animated.parallel([
-      Animated.timing(position, {
-        toValue: {
-          x: direction === 'right' ? SCREEN_WIDTH + 140 : -SCREEN_WIDTH - 140,
-          y: velocityY * 80,
-        },
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
+    Animated.timing(position, {
+      toValue: {
+        x: direction === 'right' ? SCREEN_WIDTH + 140 : -SCREEN_WIDTH - 140,
+        y: velocityY * 80,
+      },
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
       direction === 'right' ? onSwipeRight() : onSwipeLeft();
     });
   };
 
   const panResponder = PanResponder.create({
-    // Don't capture taps — let the ScrollView and Pressables receive them
     onStartShouldSetPanResponder: () => false,
     onStartShouldSetPanResponderCapture: () => false,
-    // Only steal the gesture when it's clearly a horizontal swipe.
-    // This lets vertical scroll inside the card work naturally.
     onMoveShouldSetPanResponder: (_, g) => {
       if (!isTop) return false;
       const horizontal = Math.abs(g.dx);
@@ -113,26 +100,16 @@ export default function AlumniCard({
       return horizontal > 12 && horizontal > vertical * 1.4;
     },
     onPanResponderGrant: () => {
-      isHorizontalGesture.current = true;
-      Animated.spring(scale, {
-        toValue: 1.015,
-        friction: 8,
-        useNativeDriver: true,
-      }).start();
+      Animated.spring(scale, { toValue: 1.015, friction: 8, useNativeDriver: true }).start();
     },
     onPanResponderMove: (_, g) => {
-      // Dampen vertical drag slightly so the card feels anchored
       position.setValue({ x: g.dx, y: g.dy * 0.4 });
     },
     onPanResponderRelease: (_, g) => {
-      isHorizontalGesture.current = false;
       Animated.spring(scale, { toValue: 1, friction: 6, useNativeDriver: true }).start();
-
       if (swipeAnimating.current) return;
-
       const passedDistance = Math.abs(g.dx) > SWIPE_DISTANCE_THRESHOLD;
       const passedVelocity = Math.abs(g.vx) > SWIPE_VELOCITY_THRESHOLD;
-
       if ((passedDistance || passedVelocity) && g.dx > 0) {
         completeSwipe('right', g.vy);
       } else if ((passedDistance || passedVelocity) && g.dx < 0) {
@@ -177,40 +154,24 @@ export default function AlumniCard({
   const showPhoto = !!photoUri && !imageError;
   const yearShort = formatGradYearShort(profile.graduationYear);
 
-  const metaParts = [
+  const sportLabel = formatSportLabel(profile.sport);
+  const tags = [
     profile.industry,
-    profile.sport && yearShort
-      ? `${profile.sport} ${yearShort}`
-      : profile.sport ?? (yearShort ? `Cornell ${yearShort}` : null),
+    sportLabel
+      ? yearShort ? `${sportLabel} '${yearShort.slice(-2)}` : sportLabel
+      : null,
     profile.location,
-  ].filter(Boolean) as string[];
+  ].filter(Boolean).slice(0, 3) as string[];
 
-  const visibleExperiences = profile.pastExperiences.slice(0, 4);
-
-  // Compact "Previously: A · B · C" line — past companies excluding the current one
-  const previousCompanies = (() => {
-    const seen = new Set<string>();
-    const out: string[] = [];
-    const currentLower = profile.currentCompany?.toLowerCase() ?? null;
-    for (const e of profile.pastExperiences) {
-      const c = e?.company?.trim();
-      if (!c) continue;
-      const key = c.toLowerCase();
-      if (key === currentLower) continue;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(c);
-      if (out.length >= 3) break;
-    }
-    return out;
-  })();
+  const initials = getInitials(profile.name);
+  const industryColor = getIndustryColor(profile.industry);
+  const sportEmoji = getSportEmoji(profile.sport);
 
   return (
     <Animated.View
       style={[styles.card, cardStyle]}
       {...(isTop ? panResponder.panHandlers : {})}
     >
-      {/* Swipe overlay badges sit above everything */}
       {isTop ? (
         <>
           <Animated.View
@@ -228,23 +189,13 @@ export default function AlumniCard({
         </>
       ) : null}
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        bounces
-        // Allow vertical scroll while pan is idle. PanResponder steals the gesture
-        // only when horizontal motion dominates, so this composes cleanly.
-        scrollEnabled={isTop}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Photo / fallback */}
-        <View style={styles.media}>
+      {/* Full-card pressable — taps anywhere open the profile */}
+      <Pressable style={styles.cardPressable} onPress={isTop ? onPress : undefined}>
+
+        {/* Photo or styled fallback */}
+        <View style={styles.photoArea}>
           {showPhoto ? (
-            <Animated.View
-              style={[
-                styles.photoWrapper,
-                { transform: [{ translateX: photoTilt }] },
-              ]}
-            >
+            <Animated.View style={[styles.photoWrapper, { transform: [{ translateX: photoTilt }] }]}>
               <Image
                 source={{ uri: photoUri! }}
                 style={styles.photo}
@@ -253,131 +204,124 @@ export default function AlumniCard({
               />
             </Animated.View>
           ) : (
-            <View style={styles.photoFallback}>
-              <AlumniAvatar alumni={profile} size={88} />
-              <Text style={styles.photoFallbackName} numberOfLines={1}>
-                {profile.firstName}
-              </Text>
-              <Text style={styles.photoFallbackSub} numberOfLines={1}>
-                {profile.headline ?? profile.industry ?? 'Cornell Athletics Alumni'}
-              </Text>
+            <View style={[styles.photoFallback, { backgroundColor: industryColor }]}>
+              {/* Subtle top-to-bottom shading over the tint */}
+              <LinearGradient
+                colors={['rgba(255,255,255,0.07)', 'rgba(0,0,0,0.30)']}
+                style={StyleSheet.absoluteFillObject}
+                pointerEvents="none"
+              />
+
+              {/* Sport watermark */}
+              <View style={styles.sportIconBg} pointerEvents="none">
+                <Text style={styles.sportEmoji}>{sportEmoji}</Text>
+              </View>
+
+              {/* Initials badge */}
+              <View style={styles.initialsCircle}>
+                <Text style={styles.initialsText}>{initials}</Text>
+              </View>
+
+              {profile.sport ? (
+                <Text style={styles.fallbackSportLabel}>{profile.sport}</Text>
+              ) : null}
             </View>
           )}
 
-          {showPhoto ? (
-            <LinearGradient
-              colors={['rgba(0,0,0,0.20)', 'rgba(0,0,0,0)']}
-              style={styles.topFade}
-              pointerEvents="none"
-            />
-          ) : null}
+          {/* Bottom gradient — tall enough to cover name + company + role + tags */}
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.78)']}
+            style={styles.gradient}
+            pointerEvents="none"
+          />
 
-          {yearShort && showPhoto ? (
-            <View style={styles.yearPill} pointerEvents="none">
-              <Text style={styles.yearPillText}>Cornell {yearShort}</Text>
-            </View>
-          ) : null}
-
-          {/* Scroll hint chevron */}
-          <View style={styles.scrollHint} pointerEvents="none">
-            <Ionicons name="chevron-up" size={14} color={colors.textTertiary} />
-            <Text style={styles.scrollHintText}>Scroll for more</Text>
-          </View>
-        </View>
-
-        {/* Body */}
-        <View style={styles.body}>
-          <Text style={styles.name} numberOfLines={1}>
-            {profile.name}
-          </Text>
-
-          {profile.currentRole || profile.currentCompany ? (
-            <Text style={styles.roleLine} numberOfLines={2}>
-              {profile.currentRole && profile.currentCompany
-                ? `${profile.currentRole}  ·  ${profile.currentCompany}`
-                : profile.currentRole ?? profile.currentCompany}
-            </Text>
-          ) : null}
-
-          {metaParts.length > 0 ? (
-            <Text style={styles.metaLine} numberOfLines={2}>
-              {metaParts.join('  ·  ')}
-            </Text>
-          ) : null}
-
-          {previousCompanies.length > 0 ? (
-            <View style={styles.previouslyRow}>
-              <Text style={styles.previouslyLabel}>Previously</Text>
-              <Text style={styles.previouslyText} numberOfLines={1}>
-                {previousCompanies.join('  ·  ')}
-              </Text>
-            </View>
-          ) : null}
-
-          {profile.bio ? (
-            <View style={styles.bioBlock}>
-              <Text style={styles.bio}>{profile.bio}</Text>
-            </View>
-          ) : null}
-
-          {alumni.whyThisMatch.length > 0 ? (
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Why this match</Text>
-              <View style={{ gap: 6 }}>
-                {alumni.whyThisMatch.slice(0, 3).map((reason, i) => (
-                  <View key={i} style={styles.matchRow}>
-                    <Ionicons
-                      name="checkmark"
-                      size={14}
-                      color={colors.red}
-                      style={{ marginTop: 2 }}
-                    />
-                    <Text style={styles.matchText}>{reason}</Text>
+          {/* Info overlay */}
+          <View style={styles.overlay}>
+            <Text style={styles.name} numberOfLines={1}>{profile.name}</Text>
+            {profile.currentCompany ? (
+              <Text style={styles.company} numberOfLines={1}>{profile.currentCompany}</Text>
+            ) : null}
+            {profile.currentRole ? (
+              <Text style={styles.role}>{profile.currentRole}</Text>
+            ) : null}
+            {tags.length > 0 ? (
+              <View style={styles.tags}>
+                {tags.map((tag) => (
+                  <View key={tag} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
                   </View>
                 ))}
               </View>
-            </View>
-          ) : null}
-
-          {visibleExperiences.length > 0 ? (
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>Past Experience</Text>
-              <View style={styles.timeline}>
-                {visibleExperiences.map((entry, i) => {
-                  const dates = formatExperienceDates(entry);
-                  return (
-                    <View key={i} style={styles.timelineRow}>
-                      <View style={styles.timelineColumn}>
-                        <View style={styles.timelineDot} />
-                        {i < visibleExperiences.length - 1 ? (
-                          <View style={styles.timelineLine} />
-                        ) : null}
-                      </View>
-                      <View style={styles.timelineContent}>
-                        {entry.title ? (
-                          <Text style={styles.expTitle}>{entry.title}</Text>
-                        ) : null}
-                        {entry.company ? (
-                          <Text style={styles.expCompany}>{entry.company}</Text>
-                        ) : null}
-                        {dates ? <Text style={styles.expDates}>{dates}</Text> : null}
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-          ) : null}
-
-          <Pressable style={styles.viewFull} onPress={isTop ? onPress : undefined}>
-            <Text style={styles.viewFullText}>View full profile</Text>
-            <Ionicons name="arrow-forward" size={16} color={colors.textPrimary} />
-          </Pressable>
+            ) : null}
+          </View>
         </View>
-      </ScrollView>
+
+      </Pressable>
     </Animated.View>
   );
 }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return ((parts[0][0] ?? '') + (parts[parts.length - 1][0] ?? '')).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+function getIndustryColor(industry: string | null): string {
+  if (!industry) return '#111114';
+  const i = industry.toLowerCase();
+  if (i.includes('finance') || i.includes('banking') || i.includes('investment') || i.includes('equity') || i.includes('hedge')) return '#08131C';
+  if (i.includes('tech') || i.includes('software') || i.includes('saas') || i.includes('startup') || i.includes('data') || i.includes('ai')) return '#07141E';
+  if (i.includes('health') || i.includes('medical') || i.includes('bio') || i.includes('pharma')) return '#081A0C';
+  if (i.includes('consult')) return '#17140A';
+  if (i.includes('law') || i.includes('legal')) return '#16110A';
+  if (i.includes('media') || i.includes('entertainment') || i.includes('sport')) return '#14091A';
+  if (i.includes('real estate') || i.includes('construction')) return '#110E08';
+  return '#111114';
+}
+
+function getSportEmoji(sport: string | null): string {
+  if (!sport) return '🏅';
+  const s = sport.toLowerCase();
+  if (s.includes('basketball'))                         return '🏀';
+  if (s.includes('baseball'))                           return '⚾';
+  if (s.includes('softball'))                           return '🥎';
+  if (s.includes('football'))                           return '🏈';
+  if (s.includes('soccer'))                             return '⚽';
+  if (s.includes('volleyball'))                         return '🏐';
+  if (s.includes('tennis'))                             return '🎾';
+  if (s.includes('squash') || s.includes('racquetball')) return '🏸';
+  if (s.includes('lacrosse'))                           return '🥍';
+  if (s.includes('field hockey'))                       return '🏑';
+  if (s.includes('ice hockey') || s.includes('hockey')) return '🏒';
+  if (s.includes('swim'))                               return '🏊';
+  if (s.includes('diving'))                             return '🤽';
+  if (s.includes('water polo'))                         return '🤽';
+  if (s.includes('row') || s.includes('crew'))          return '🚣';
+  if (s.includes('sail') || s.includes('yacht'))        return '⛵';
+  if (s.includes('track') || s.includes('sprint') || s.includes('hurdle')) return '🏃';
+  if (s.includes('cross country') || s.includes('cross-country')) return '🏔️';
+  if (s.includes('marathon') || s.includes('run'))      return '🏃';
+  if (s.includes('golf'))                               return '⛳';
+  if (s.includes('cycle') || s.includes('bike'))        return '🚴';
+  if (s.includes('weight') || s.includes('lift') || s.includes('power')) return '🏋️';
+  if (s.includes('fencing'))                            return '🤺';
+  if (s.includes('wrestling'))                          return '🤼';
+  if (s.includes('judo') || s.includes('martial'))      return '🥋';
+  if (s.includes('gymnastics') || s.includes('cheer'))  return '🤸';
+  if (s.includes('polo') || s.includes('equestrian') || s.includes('horse')) return '🏇';
+  if (s.includes('archery'))                            return '🏹';
+  if (s.includes('ski') || s.includes('skiing'))        return '⛷️';
+  if (s.includes('climb') || s.includes('rock'))        return '🧗';
+  if (s.includes('box') || s.includes('boxing'))        return '🥊';
+  return '🏅';
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   card: {
@@ -385,21 +329,18 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     borderRadius: radius.xxl,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.borderHairline,
     ...shadows.card,
   },
-  scrollContent: {
-    paddingBottom: spacing.lg,
+  cardPressable: {
+    flex: 1,
   },
-  media: {
-    width: '100%',
-    height: CARD_HEIGHT * 0.5,
-    backgroundColor: colors.surfaceMuted,
+  photoArea: {
+    flex: 1,
     position: 'relative',
-    overflow: 'hidden',
   },
   photoWrapper: {
     width: '100%',
@@ -409,192 +350,100 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+
+  // No-photo fallback
   photoFallback: {
     flex: 1,
-    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.xxl,
-    gap: spacing.sm,
+    gap: 14,
   },
-  photoFallbackName: {
-    ...typography.title3,
-    color: colors.textPrimary,
-    marginTop: spacing.xs,
+  sportIconBg: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  photoFallbackSub: {
-    ...typography.footnote,
-    color: colors.textTertiary,
-    textAlign: 'center',
+  sportEmoji: {
+    fontSize: 196,
+    opacity: 0.09,
   },
-  topFade: {
+  initialsCircle: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.38)',
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  initialsText: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.88)',
+    letterSpacing: 3,
+  },
+  fallbackSportLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.38)',
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
+  },
+
+  // Gradient + overlay
+  gradient: {
     position: 'absolute',
-    top: 0,
+    bottom: 0,
     left: 0,
     right: 0,
-    height: 80,
+    height: '62%',
   },
-  yearPill: {
+  overlay: {
     position: 'absolute',
-    top: spacing.lg,
-    right: spacing.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.92)',
-  },
-  yearPillText: {
-    ...typography.caption1,
-    color: colors.textPrimary,
-    fontWeight: '600',
-  },
-  scrollHint: {
-    position: 'absolute',
-    bottom: 8,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.full,
-  },
-  scrollHintText: {
-    ...typography.caption2,
-    color: colors.textTertiary,
-    fontWeight: '500',
-  },
-  body: {
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xl,
     paddingTop: spacing.lg,
+    gap: 4,
   },
   name: {
     ...typography.title2,
-    fontSize: 24,
-    marginBottom: 4,
+    fontSize: 22,
+    color: '#fff',
+    fontWeight: '700',
   },
-  roleLine: {
-    ...typography.callout,
-    color: colors.textPrimary,
-    fontWeight: '500',
-    marginBottom: 4,
-    lineHeight: 22,
+  company: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.1,
   },
-  metaLine: {
+  role: {
     ...typography.subhead,
-    color: colors.textTertiary,
-    marginBottom: spacing.sm,
+    color: 'rgba(255,255,255,0.78)',
+    fontWeight: '400',
     lineHeight: 20,
   },
-  previouslyRow: {
+  tags: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    flexWrap: 'wrap',
     gap: 6,
-    marginBottom: spacing.md,
+    marginTop: 6,
   },
-  previouslyLabel: {
-    ...typography.caption2,
-    color: colors.textTertiary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+  tag: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
   },
-  previouslyText: {
-    ...typography.footnote,
-    color: colors.textSecondary,
-    fontWeight: '500',
-    flex: 1,
-  },
-  bioBlock: {
-    marginBottom: spacing.lg,
-  },
-  bio: {
-    ...typography.subhead,
-    color: colors.textSecondary,
-    lineHeight: 22,
-  },
-  section: {
-    paddingTop: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.borderLight,
-    marginBottom: spacing.lg,
-  },
-  sectionLabel: {
-    ...typography.eyebrow,
-    color: colors.textTertiary,
-    marginBottom: spacing.sm,
-  },
-  matchRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  matchText: {
-    ...typography.subhead,
-    color: colors.textPrimary,
-    flex: 1,
-    lineHeight: 21,
-  },
-  timeline: {
-    gap: 0,
-  },
-  timelineRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    paddingBottom: spacing.md,
-  },
-  timelineColumn: {
-    width: 12,
-    alignItems: 'center',
-  },
-  timelineDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.red,
-    marginTop: 4,
-  },
-  timelineLine: {
-    flex: 1,
-    width: 1.5,
-    backgroundColor: colors.border,
-    marginTop: 4,
-  },
-  timelineContent: {
-    flex: 1,
-    paddingBottom: 2,
-    gap: 2,
-  },
-  expTitle: {
-    ...typography.subhead,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  expCompany: {
-    ...typography.subhead,
-    color: colors.textSecondary,
-  },
-  expDates: {
+  tagText: {
     ...typography.caption1,
-    color: colors.textTertiary,
-    marginTop: 1,
-  },
-  viewFull: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
-    marginTop: spacing.xs,
-  },
-  viewFullText: {
-    ...typography.subhead,
-    color: colors.textPrimary,
+    color: '#fff',
     fontWeight: '600',
   },
   actionBadge: {

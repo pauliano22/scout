@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Alert,
+  Image,
   Linking,
   Modal,
   Pressable,
@@ -10,16 +11,20 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spacing, typography } from '../../theme/scoutTheme';
 import {
   formatExperienceDates,
   formatGradYearShort,
+  formatSportLabel,
   type NormalizedAlumni,
 } from '../../lib/alumniProfile';
 import type { ScoredAlumni } from '../../services/recommendations';
 import AlumniAvatar from '../common/AlumniAvatar';
+
+const HERO_HEIGHT = 260;
 
 interface Props {
   alumni: ScoredAlumni | null;
@@ -27,7 +32,6 @@ interface Props {
   onClose: () => void;
   onSave: (alumni: ScoredAlumni) => void;
   onPass: (alumni: ScoredAlumni) => void;
-  onGenerateMessage: (alumni: ScoredAlumni) => void;
 }
 
 export default function AlumniDetailModal({
@@ -36,14 +40,15 @@ export default function AlumniDetailModal({
   onClose,
   onSave,
   onPass,
-  onGenerateMessage,
 }: Props) {
   const insets = useSafeAreaInsets();
   const [copyHint, setCopyHint] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   if (!alumni) return null;
 
   const profile = alumni.profile;
+  const showPhoto = !!profile.photoUrl && !imageError;
 
   const flashCopy = (label: string) => {
     setCopyHint(label);
@@ -52,9 +57,7 @@ export default function AlumniDetailModal({
 
   const handleOpenLinkedIn = () => {
     if (!profile.linkedinUrl) return;
-    Linking.openURL(profile.linkedinUrl).catch(() =>
-      Alert.alert('Could not open LinkedIn'),
-    );
+    Linking.openURL(profile.linkedinUrl).catch(() => Alert.alert('Could not open LinkedIn'));
   };
 
   const handleCopyLinkedIn = async () => {
@@ -65,9 +68,7 @@ export default function AlumniDetailModal({
 
   const handleOpenEmail = () => {
     if (!profile.email) return;
-    Linking.openURL(`mailto:${profile.email}`).catch(() =>
-      Alert.alert('Could not open email'),
-    );
+    Linking.openURL(`mailto:${profile.email}`).catch(() => Alert.alert('Could not open email'));
   };
 
   const handleCopyEmail = async () => {
@@ -77,11 +78,6 @@ export default function AlumniDetailModal({
   };
 
   const yearShort = formatGradYearShort(profile.graduationYear);
-  const cornellLine = [profile.sport, yearShort ? `Class of ${profile.graduationYear}` : null]
-    .filter(Boolean)
-    .join(' · ');
-
-  const metaPills = buildMetaPills(profile);
 
   return (
     <Modal
@@ -91,93 +87,82 @@ export default function AlumniDetailModal({
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        {/* Drag handle */}
-        <View style={styles.handleRow}>
-          <View style={styles.handle} />
-        </View>
-
-        {/* Close button */}
+        {/* Close button floats above everything */}
         <Pressable style={styles.closeButton} onPress={onClose} hitSlop={10}>
-          <Ionicons name="close" size={20} color={colors.textSecondary} />
+          <Ionicons name="close" size={20} color={showPhoto ? '#fff' : colors.textSecondary} />
         </Pressable>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
           bounces
+          contentContainerStyle={styles.scrollContent}
         >
-          {/* Header — avatar, name, role */}
-          <View style={styles.header}>
-            <AlumniAvatar alumni={profile} size={96} />
-            <Text style={styles.name}>{profile.name}</Text>
-            {profile.currentRole || profile.currentCompany ? (
-              <Text style={styles.role}>
-                {profile.currentRole && profile.currentCompany
-                  ? `${profile.currentRole}  ·  ${profile.currentCompany}`
-                  : profile.currentRole ?? profile.currentCompany}
-              </Text>
-            ) : null}
-            {cornellLine ? (
-              <Text style={styles.cornellLine}>{cornellLine}</Text>
-            ) : null}
+          {/* Drag handle */}
+          <View style={[styles.handleRow, showPhoto && styles.handleRowOnPhoto]}>
+            <View style={[styles.handle, showPhoto && styles.handleOnPhoto]} />
           </View>
 
-          {/* Meta pills */}
-          {metaPills.length > 0 ? (
-            <View style={styles.pillRow}>
-              {metaPills.map((p) => (
-                <View key={p} style={styles.pill}>
-                  <Text style={styles.pillText}>{p}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-
-          {/* Career summary */}
-          {profile.bio ? (
-            <Section label="Career Summary">
-              <Text style={styles.bodyText}>{profile.bio}</Text>
-            </Section>
-          ) : null}
-
-          {/* Why this match */}
-          {alumni.whyThisMatch.length > 0 ? (
-            <Section label="Why this match">
-              <View style={{ gap: 8 }}>
-                {alumni.whyThisMatch.map((reason, i) => (
-                  <View key={i} style={styles.reasonRow}>
-                    <View style={styles.reasonDot} />
-                    <Text style={styles.reasonText}>{reason}</Text>
-                  </View>
-                ))}
+          {/* Hero */}
+          {showPhoto ? (
+            <View style={styles.hero}>
+              <Image
+                source={{ uri: profile.photoUrl! }}
+                style={styles.heroPhoto}
+                onError={() => setImageError(true)}
+                resizeMode="cover"
+              />
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.70)']}
+                style={styles.heroGradient}
+                pointerEvents="none"
+              />
+              <View style={styles.heroOverlay}>
+                <Text style={styles.heroName} numberOfLines={1}>{profile.name}</Text>
+                {(profile.currentRole || profile.currentCompany) ? (
+                  <Text style={styles.heroRole} numberOfLines={1}>
+                    {profile.currentRole && profile.currentCompany
+                      ? `${profile.currentRole}  ·  ${profile.currentCompany}`
+                      : profile.currentRole ?? profile.currentCompany}
+                  </Text>
+                ) : null}
               </View>
-            </Section>
-          ) : null}
+            </View>
+          ) : (
+            <View style={styles.fallbackHeader}>
+              <AlumniAvatar alumni={profile} size={80} />
+              <Text style={styles.fallbackName}>{profile.name}</Text>
+              {(profile.currentRole || profile.currentCompany) ? (
+                <Text style={styles.fallbackRole}>
+                  {profile.currentRole && profile.currentCompany
+                    ? `${profile.currentRole}  ·  ${profile.currentCompany}`
+                    : profile.currentRole ?? profile.currentCompany}
+                </Text>
+              ) : null}
+              {yearShort || profile.sport ? (
+                <Text style={styles.fallbackCornell}>
+                  {[profile.sport, yearShort ? `Cornell ${yearShort}` : null].filter(Boolean).join('  ·  ')}
+                </Text>
+              ) : null}
+            </View>
+          )}
 
-          {/* Past Experience */}
+          {/* Experience */}
           {profile.pastExperiences.length > 0 ? (
-            <Section label="Past Experience">
+            <Section label="Experience">
               <View style={styles.timeline}>
-                {profile.pastExperiences.slice(0, 5).map((entry, i) => {
+                {profile.pastExperiences.slice(0, 6).map((entry, i) => {
                   const dates = formatExperienceDates(entry);
+                  const isLast = i === Math.min(profile.pastExperiences.length, 6) - 1;
                   return (
                     <View key={i} style={styles.timelineRow}>
                       <View style={styles.timelineColumn}>
                         <View style={styles.timelineDot} />
-                        {i < Math.min(profile.pastExperiences.length, 5) - 1 ? (
-                          <View style={styles.timelineLine} />
-                        ) : null}
+                        {!isLast ? <View style={styles.timelineLine} /> : null}
                       </View>
                       <View style={styles.timelineContent}>
-                        {entry.title ? (
-                          <Text style={styles.expTitle}>{entry.title}</Text>
-                        ) : null}
-                        {entry.company ? (
-                          <Text style={styles.expCompany}>{entry.company}</Text>
-                        ) : null}
-                        {dates ? (
-                          <Text style={styles.expDates}>{dates}</Text>
-                        ) : null}
+                        {entry.title ? <Text style={styles.expTitle}>{entry.title}</Text> : null}
+                        {entry.company ? <Text style={styles.expCompany}>{entry.company}</Text> : null}
+                        {dates ? <Text style={styles.expDates}>{dates}</Text> : null}
                       </View>
                     </View>
                   );
@@ -192,8 +177,8 @@ export default function AlumniDetailModal({
               <View style={{ gap: 6 }}>
                 {profile.sport ? (
                   <Text style={styles.bodyText}>
-                    {profile.sport}
-                    {yearShort ? `  ·  Class of ${profile.graduationYear}` : ''}
+                    {formatSportLabel(profile.sport)}
+                    {profile.graduationYear ? `  ·  Class of ${profile.graduationYear}` : ''}
                   </Text>
                 ) : profile.graduationYear ? (
                   <Text style={styles.bodyText}>Class of {profile.graduationYear}</Text>
@@ -212,7 +197,7 @@ export default function AlumniDetailModal({
             </Section>
           ) : null}
 
-          {/* Contact / Links */}
+          {/* Contact */}
           {(profile.linkedinUrl || profile.email) ? (
             <Section label="Contact">
               <View style={styles.contactGroup}>
@@ -235,9 +220,7 @@ export default function AlumniDetailModal({
                   />
                 ) : null}
               </View>
-              {copyHint ? (
-                <Text style={styles.copyHint}>{copyHint}</Text>
-              ) : null}
+              {copyHint ? <Text style={styles.copyHint}>{copyHint}</Text> : null}
             </Section>
           ) : null}
 
@@ -245,37 +228,18 @@ export default function AlumniDetailModal({
         </ScrollView>
 
         {/* Action bar */}
-        <View
-          style={[
-            styles.actions,
-            { paddingBottom: insets.bottom + spacing.md },
-          ]}
-        >
+        <View style={[styles.actions, { paddingBottom: insets.bottom + spacing.md }]}>
           <Pressable
             style={styles.passAction}
-            onPress={() => {
-              onPass(alumni);
-              onClose();
-            }}
+            onPress={() => { onPass(alumni); onClose(); }}
           >
             <Ionicons name="close" size={20} color={colors.textSecondary} />
             <Text style={styles.passActionText}>Pass</Text>
           </Pressable>
 
           <Pressable
-            style={styles.messageAction}
-            onPress={() => onGenerateMessage(alumni)}
-          >
-            <Ionicons name="create-outline" size={18} color={colors.textPrimary} />
-            <Text style={styles.messageActionText}>Message</Text>
-          </Pressable>
-
-          <Pressable
             style={styles.saveAction}
-            onPress={() => {
-              onSave(alumni);
-              onClose();
-            }}
+            onPress={() => { onSave(alumni); onClose(); }}
           >
             <Ionicons name="bookmark" size={18} color={colors.textInverse} />
             <Text style={styles.saveActionText}>Save</Text>
@@ -285,6 +249,14 @@ export default function AlumniDetailModal({
     </Modal>
   );
 }
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function prettyUrl(url: string): string {
+  return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -312,9 +284,7 @@ function ContactRow({ icon, primary, secondary, onPress, onCopy }: ContactRowPro
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.contactPrimary}>{primary}</Text>
-          <Text style={styles.contactSecondary} numberOfLines={1}>
-            {secondary}
-          </Text>
+          <Text style={styles.contactSecondary} numberOfLines={1}>{secondary}</Text>
         </View>
       </Pressable>
       <Pressable style={styles.copyButton} onPress={onCopy} hitSlop={8}>
@@ -324,32 +294,12 @@ function ContactRow({ icon, primary, secondary, onPress, onCopy }: ContactRowPro
   );
 }
 
-function buildMetaPills(profile: NormalizedAlumni): string[] {
-  const pills: string[] = [];
-  if (profile.industry) pills.push(profile.industry);
-  if (profile.location) pills.push(profile.location);
-  return pills;
-}
-
-function prettyUrl(url: string): string {
-  return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-}
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  handleRow: {
-    alignItems: 'center',
-    paddingTop: 10,
-    paddingBottom: 4,
-  },
-  handle: {
-    width: 36,
-    height: 4,
-    borderRadius: radius.full,
-    backgroundColor: colors.border,
   },
   closeButton: {
     position: 'absolute',
@@ -358,60 +308,104 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    zIndex: 20,
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   scrollContent: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
+    paddingBottom: 0,
   },
-  header: {
+
+  // Handle
+  handleRow: {
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: 4,
+    zIndex: 10,
+  },
+  handleRowOnPhoto: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 10,
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: radius.full,
+    backgroundColor: colors.border,
+  },
+  handleOnPhoto: {
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+
+  // Hero photo
+  hero: {
+    width: '100%',
+    height: HERO_HEIGHT,
+    position: 'relative',
+    backgroundColor: colors.surfaceMuted,
+  },
+  heroPhoto: {
+    width: '100%',
+    height: '100%',
+  },
+  heroGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: HERO_HEIGHT * 0.55,
+  },
+  heroOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: spacing.xl,
+    gap: 4,
+  },
+  heroName: {
+    ...typography.title2,
+    fontSize: 26,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  heroRole: {
+    ...typography.subhead,
+    color: 'rgba(255,255,255,0.85)',
+    fontWeight: '500',
+  },
+
+  // Fallback header (no photo)
+  fallbackHeader: {
     alignItems: 'center',
     gap: 6,
-    marginBottom: spacing.lg,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.xl,
   },
-  name: {
+  fallbackName: {
     ...typography.title2,
     fontSize: 24,
     textAlign: 'center',
     marginTop: spacing.md,
   },
-  role: {
+  fallbackRole: {
     ...typography.callout,
     color: colors.textSecondary,
     textAlign: 'center',
   },
-  cornellLine: {
+  fallbackCornell: {
     ...typography.footnote,
     color: colors.red,
     fontWeight: '600',
-    letterSpacing: 0.2,
     marginTop: 2,
   },
-  pillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-    justifyContent: 'center',
-    marginBottom: spacing.xl,
-  },
-  pill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  pillText: {
-    ...typography.footnote,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
+
+  // Sections wrapper
   section: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -420,12 +414,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
     marginBottom: spacing.md,
+    marginHorizontal: spacing.xl,
+    marginTop: 0,
   },
   sectionLabel: {
     ...typography.eyebrow,
     color: colors.textTertiary,
     marginBottom: spacing.md,
   },
+
+  // Body text
   bodyText: {
     ...typography.callout,
     color: colors.textPrimary,
@@ -436,24 +434,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 21,
   },
-  reasonRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  reasonDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: colors.red,
-    marginTop: 8,
-  },
-  reasonText: {
-    ...typography.subhead,
-    color: colors.textPrimary,
-    flex: 1,
-    lineHeight: 22,
-  },
+
+  // Experience timeline
   timeline: {
     gap: 0,
   },
@@ -500,6 +482,8 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     marginTop: 1,
   },
+
+  // Contact
   contactGroup: {
     gap: spacing.sm,
   },
@@ -544,6 +528,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: spacing.sm,
   },
+
+  // Action bar
   actions: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -568,23 +554,6 @@ const styles = StyleSheet.create({
   passActionText: {
     ...typography.subhead,
     color: colors.textSecondary,
-    fontWeight: '600',
-  },
-  messageAction: {
-    flex: 1.2,
-    flexDirection: 'row',
-    gap: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  messageActionText: {
-    ...typography.subhead,
-    color: colors.textPrimary,
     fontWeight: '600',
   },
   saveAction: {

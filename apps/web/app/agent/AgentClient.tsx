@@ -1,11 +1,434 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { CheckCircle, Clock, Zap, ChevronDown, ChevronUp, Send, ThumbsUp, ArrowRight, Linkedin, User, MapPin, Calendar, AlertCircle } from 'lucide-react'
-import { runScoutNetworkingAgent, DEMO_INPUT } from '@/lib/agent/runScoutNetworkingAgent'
-import type { AgentResult, DraftMessage } from '@/lib/agent/types'
+import { useState, useRef, useEffect } from 'react'
+import { ArrowRight, Check, Linkedin, MapPin, ChevronRight } from 'lucide-react'
+import { runScoutNetworkingAgent } from '@/lib/agent/runScoutNetworkingAgent'
+import type { AgentInput } from '@/lib/agent/types'
+
+// ─── Goal presets ─────────────────────────────────────────────────────────────
+
+type GoalPreset = {
+  id: string
+  label: string
+  input: Omit<AgentInput, 'goalDomain'>
+}
+
+const GOAL_PRESETS: GoalPreset[] = [
+  {
+    id: 'sports-marketing',
+    label: 'Sports marketing',
+    input: {
+      goal: 'Break into sports marketing',
+      sport: 'Football',
+      weekly_time_hours: 2,
+      target_count: 3,
+      preferences: {
+        industries: ['Sports', 'Marketing', 'Media', 'Brand'],
+        locations: ['New York', 'Boston'],
+        sport: 'Football',
+      },
+    },
+  },
+  {
+    id: 'finance',
+    label: 'Finance',
+    input: {
+      goal: 'Break into finance',
+      sport: 'Football',
+      weekly_time_hours: 2,
+      target_count: 3,
+      preferences: {
+        industries: ['Finance', 'Banking', 'Investment', 'Private Equity', 'Wealth'],
+        locations: ['New York', 'Boston'],
+        sport: 'Football',
+      },
+    },
+  },
+  {
+    id: 'consulting',
+    label: 'Consulting',
+    input: {
+      goal: 'Break into consulting',
+      sport: 'Football',
+      weekly_time_hours: 2,
+      target_count: 3,
+      preferences: {
+        industries: ['Consulting', 'McKinsey', 'BCG', 'Bain', 'Deloitte', 'Accenture', 'Oliver Wyman', 'Advisory'],
+        locations: ['New York', 'Boston', 'Chicago'],
+        sport: 'Football',
+      },
+    },
+  },
+  {
+    id: 'tech',
+    label: 'Tech',
+    input: {
+      goal: 'Break into tech',
+      sport: 'Football',
+      weekly_time_hours: 2,
+      target_count: 3,
+      preferences: {
+        industries: ['Technology', 'Software', 'Product', 'Engineering'],
+        locations: ['New York', 'San Francisco', 'Seattle'],
+        sport: 'Football',
+      },
+    },
+  },
+  {
+    id: 'media',
+    label: 'Media',
+    input: {
+      goal: 'Break into media',
+      sport: 'Football',
+      weekly_time_hours: 2,
+      target_count: 3,
+      preferences: {
+        industries: ['Media', 'Journalism', 'Broadcasting', 'Entertainment'],
+        locations: ['New York', 'Los Angeles'],
+        sport: 'Football',
+      },
+    },
+  },
+]
+import { agentTrack } from '@/lib/agent/track'
+import type { AgentResult, DraftMessage, RankedAlumni } from '@/lib/agent/types'
 import Avatar from '@/components/Avatar'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Tiny design primitives
+// ─────────────────────────────────────────────────────────────────────────────
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-[--text-quaternary] mb-3 select-none">
+      {children}
+    </p>
+  )
+}
+
+function Rule() {
+  return <div className="h-px bg-[--border-primary] my-8" />
+}
+
+function TagPill({ label, variant }: { label: string; variant: 'sport' | 'industry' | 'location' }) {
+  const color = {
+    sport:    'text-blue-400   bg-blue-500/8   border-blue-500/15',
+    industry: 'text-[--school-primary] bg-[--school-primary]/8 border-[--school-primary]/15',
+    location: 'text-emerald-400 bg-emerald-500/8 border-emerald-500/15',
+  }[variant]
+
+  return (
+    <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${color}`}>
+      {label}
+    </span>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alumni row (no card border — just clean list rows)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function AlumniRow({
+  alumni,
+  rank,
+  agentRunId,
+  goalId,
+  onClick,
+}: {
+  alumni: RankedAlumni
+  rank: number
+  agentRunId: string
+  goalId: string
+  onClick?: () => void
+}) {
+  const city = alumni.location?.split(',')[0]
+
+  return (
+    <div
+      className="flex items-center gap-4 py-3.5 cursor-default group"
+      onClick={() => {
+        agentTrack('recommendation_clicked', { agent_run_id: agentRunId, goal_id: goalId, alumni_id: alumni.id })
+        onClick?.()
+      }}
+    >
+      {/* Rank */}
+      <span className="text-[11px] font-semibold text-[--text-quaternary] w-4 flex-shrink-0 text-right">
+        {rank}
+      </span>
+
+      {/* Avatar */}
+      <Avatar name={alumni.full_name} sport={alumni.sport} size="md" className="flex-shrink-0" />
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold text-[--text-primary] truncate">{alumni.full_name}</p>
+          {alumni.linkedin_url && (
+            <a
+              href={alumni.linkedin_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[--text-quaternary] hover:text-[#0077b5] transition-colors flex-shrink-0"
+              onClick={e => e.stopPropagation()}
+            >
+              <Linkedin size={11} />
+            </a>
+          )}
+        </div>
+        <p className="text-xs text-[--text-tertiary] truncate mt-0.5">
+          {alumni.role && alumni.company
+            ? `${alumni.role} · ${alumni.company}`
+            : alumni.company ?? alumni.role ?? ''}
+        </p>
+        <p className="text-[11px] text-[--text-quaternary] mt-1 truncate">{alumni.reason}</p>
+      </div>
+
+      {/* Right: tags + location */}
+      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+        <div className="flex gap-1 flex-wrap justify-end">
+          {alumni.tags.slice(0, 2).map((tag, i) => (
+            <TagPill key={i} label={tag.label} variant={tag.type} />
+          ))}
+        </div>
+        {city && (
+          <span className="flex items-center gap-0.5 text-[10px] text-[--text-quaternary]">
+            <MapPin size={8} />
+            {city}
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Draft card — one at a time
+// ─────────────────────────────────────────────────────────────────────────────
+
+function DraftView({
+  draft,
+  index,
+  total,
+  result,
+  onApprove,
+  onSkip,
+}: {
+  draft: DraftMessage
+  index: number
+  total: number
+  result: AgentResult
+  onApprove: (id: string) => void
+  onSkip: (id: string) => void
+}) {
+  const [justApproved, setJustApproved] = useState(false)
+
+  // Find this draft's alumni so we can get their LinkedIn URL
+  const alumni = result.topAlumni.find(a => a.id === draft.alumniId)
+
+  async function handleApprove() {
+    agentTrack('draft_approved', {
+      agent_run_id: result.agentRunId,
+      goal_id:      result.goalId,
+      alumni_id:    draft.alumniId,
+      draft_id:     draft.id,
+    })
+
+    // 1. Copy the message to the clipboard
+    try {
+      await navigator.clipboard.writeText(draft.body)
+    } catch {
+      // Clipboard API blocked (e.g. iframe) — silent fail, message is still visible
+    }
+
+    // 2. Open LinkedIn profile in a new tab so user can paste and send
+    if (alumni?.linkedin_url) {
+      window.open(alumni.linkedin_url, '_blank', 'noopener,noreferrer')
+    }
+
+    setJustApproved(true)
+    setTimeout(() => {
+      setJustApproved(false)
+      onApprove(draft.id)
+    }, 700)
+  }
+
+  function handleSkip() {
+    agentTrack('draft_skipped', {
+      agent_run_id: result.agentRunId,
+      goal_id:      result.goalId,
+      alumni_id:    draft.alumniId,
+      draft_id:     draft.id,
+    })
+    onSkip(draft.id)
+  }
+
+  useEffect(() => {
+    agentTrack('draft_viewed', {
+      agent_run_id: result.agentRunId,
+      goal_id:      result.goalId,
+      alumni_id:    draft.alumniId,
+      draft_id:     draft.id,
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft.id])
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <Label>Draft ready</Label>
+        <span className="text-[11px] text-[--text-quaternary]">
+          {draft.alumniName.split(' ')[0]}  ·  {index + 1} of {total}
+        </span>
+      </div>
+
+      {/* Message body */}
+      <div className="bg-[--bg-secondary] rounded-xl border border-[--border-primary] px-6 py-5">
+        <pre className="text-sm text-[--text-secondary] whitespace-pre-wrap font-sans leading-[1.7]">
+          {draft.body}
+        </pre>
+      </div>
+
+      {/* Actions */}
+      <div className="mt-4 space-y-2.5">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleApprove}
+            disabled={justApproved}
+            className={`btn-primary flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all ${
+              justApproved ? 'bg-emerald-600' : ''
+            }`}
+          >
+            {justApproved ? (
+              <><Check size={13} /> Copied &amp; opening LinkedIn</>
+            ) : (
+              <>Approve &amp; send</>
+            )}
+          </button>
+
+          {total > 1 && (
+            <button
+              onClick={handleSkip}
+              className="btn-ghost flex items-center gap-1.5 text-sm text-[--text-quaternary]"
+            >
+              Skip
+              <ChevronRight size={13} />
+            </button>
+          )}
+        </div>
+
+        {/* Hint — shown only when LinkedIn URL is available */}
+        {alumni?.linkedin_url && !justApproved && (
+          <p className="text-[11px] text-[--text-quaternary]">
+            Copies message · opens {alumni.full_name.split(' ')[0]}'s LinkedIn — just paste and send.
+          </p>
+        )}
+        {!alumni?.linkedin_url && !justApproved && (
+          <p className="text-[11px] text-[--text-quaternary]">
+            Copies message to clipboard — paste into LinkedIn to send.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Status strip — 3 rows, deliberately quiet
+// ─────────────────────────────────────────────────────────────────────────────
+
+function StatusStrip({
+  result,
+  approvedCount,
+}: {
+  result: AgentResult
+  approvedCount: number
+}) {
+  const waitingText = approvedCount === result.drafts.length
+    ? 'All outreach queued'
+    : approvedCount > 0
+      ? `${approvedCount} of ${result.drafts.length} approved`
+      : result.status.waiting
+
+  return (
+    <div className="space-y-2.5">
+      {[
+        { label: 'Prepared',   value: result.status.prepared },
+        { label: 'Waiting',    value: waitingText },
+        { label: 'Next',       value: approvedCount > 0 ? result.status.next : 'Waiting for approval' },
+      ].map(({ label, value }) => (
+        <div key={label} className="flex items-baseline gap-3 text-sm">
+          <span className="text-[--text-quaternary] w-20 flex-shrink-0 text-xs">{label}</span>
+          <span className="text-[--text-secondary]">{value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Running animation
+// ─────────────────────────────────────────────────────────────────────────────
+
+const THINKING_STEPS = [
+  'Reading your goal…',
+  'Searching 14,680 alumni profiles…',
+  'Scoring by sport, industry, location…',
+  'Selecting your top 3 matches…',
+  'Drafting outreach messages…',
+]
+
+function RunningView() {
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    const iv = setInterval(() => setStep(s => Math.min(s + 1, THINKING_STEPS.length - 1)), 420)
+    return () => clearInterval(iv)
+  }, [])
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-6">
+      {/* Minimal pulse */}
+      <div className="flex gap-1.5">
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full bg-[--school-primary] animate-pulse"
+            style={{ animationDelay: `${i * 160}ms` }}
+          />
+        ))}
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-medium text-[--text-primary]">{THINKING_STEPS[step]}</p>
+        <p className="text-xs text-[--text-quaternary] mt-1">Scout is working</p>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Complete view — all drafts queued
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CompleteView({ result, onReset }: { result: AgentResult; onReset: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] gap-5 text-center animate-fade-in-up">
+      <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+        <Check size={18} className="text-emerald-400" />
+      </div>
+      <div className="space-y-1">
+        <p className="text-lg font-semibold text-[--text-primary]">All {result.drafts.length} messages queued.</p>
+        <p className="text-sm text-[--text-secondary]">Follow-ups scheduled for Friday.</p>
+        <p className="text-xs text-[--text-quaternary] mt-1">Scout will notify you when someone replies.</p>
+      </div>
+      <button onClick={onReset} className="btn-ghost text-sm text-[--text-quaternary] mt-2">
+        ← Start over
+      </button>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Root component
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -13,466 +436,275 @@ interface Props {
   userName: string | null
 }
 
-// ─── Small display components ─────────────────────────────────────────────────
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-[--school-primary] mb-4">
-      {children}
-    </p>
-  )
-}
-
-function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 ${className}`}>
-      {children}
-    </div>
-  )
-}
-
-function StatusDot({ status }: { status: 'done' | 'pending' | 'waiting' }) {
-  const colors = {
-    done:    'bg-emerald-500',
-    pending: 'bg-amber-500',
-    waiting: 'bg-[--school-primary]',
-  }
-  return <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${colors[status]}`} />
-}
-
-// ─── Draft Message Card ───────────────────────────────────────────────────────
-
-function DraftCard({
-  draft,
-  rank,
-  onApprove,
-}: {
-  draft: DraftMessage
-  rank: number
-  onApprove: (id: string) => void
-}) {
-  const [expanded, setExpanded] = useState(rank === 0)
-
-  return (
-    <div
-      className={`border rounded-xl overflow-hidden transition-all ${
-        draft.status === 'approved'
-          ? 'border-emerald-500/30 bg-emerald-500/5'
-          : 'border-[--border-primary] bg-[--bg-secondary]'
-      }`}
-    >
-      {/* Header */}
-      <button
-        className="w-full flex items-center gap-3 px-5 py-4 text-left"
-        onClick={() => setExpanded(e => !e)}
-      >
-        <Avatar name={draft.alumniName} size="sm" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[--text-primary] truncate">{draft.alumniName}</p>
-          <p className="text-xs text-[--text-quaternary] mt-0.5">
-            {draft.platform === 'linkedin' ? 'LinkedIn message' : 'Email'}
-            {draft.status === 'approved' && (
-              <span className="ml-2 text-emerald-400 font-medium">· Approved</span>
-            )}
-          </p>
-        </div>
-        {draft.status === 'approved' ? (
-          <CheckCircle size={16} className="text-emerald-400 flex-shrink-0" />
-        ) : (
-          expanded ? <ChevronUp size={14} className="text-[--text-quaternary]" /> : <ChevronDown size={14} className="text-[--text-quaternary]" />
-        )}
-      </button>
-
-      {/* Body */}
-      {expanded && (
-        <div className="px-5 pb-5 border-t border-[--border-primary]">
-          <pre className="mt-4 text-sm text-[--text-secondary] whitespace-pre-wrap leading-relaxed font-sans">
-            {draft.body}
-          </pre>
-
-          {draft.status === 'pending' && (
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => onApprove(draft.id)}
-                className="btn-primary flex items-center gap-2 px-4 py-2 text-xs font-semibold"
-              >
-                <ThumbsUp size={12} />
-                Approve &amp; Queue
-              </button>
-              <button className="btn-secondary flex items-center gap-2 px-4 py-2 text-xs">
-                Edit draft
-              </button>
-            </div>
-          )}
-
-          {draft.status === 'approved' && draft.approvedAt && (
-            <div className="mt-4 flex items-center gap-2 text-xs text-emerald-400">
-              <CheckCircle size={12} />
-              Approved — follow-up reminder queued for day 5
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
+type Phase = 'ready' | 'running' | 'result' | 'complete'
 
 export default function AgentClient({ userSport, userName }: Props) {
-  const [phase, setPhase] = useState<'idle' | 'thinking' | 'done'>('idle')
-  const [result, setResult] = useState<AgentResult | null>(null)
-  const [drafts, setDrafts] = useState<DraftMessage[]>([])
-  const [thinkingStep, setThinkingStep] = useState(0)
+  const [phase, setPhase]             = useState<Phase>('ready')
+  const [result, setResult]           = useState<AgentResult | null>(null)
+  const [draftIndex, setDraftIndex]   = useState(0)
+  const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set())
+  const [selectedGoalId, setSelectedGoalId] = useState('sports-marketing')
   const resultRef = useRef<HTMLDivElement>(null)
 
-  // Fake "Scout is thinking" steps shown while the result is computed
-  const thinkingSteps = [
-    'Analyzing your career goal…',
-    'Searching 14,680+ Cornell alumni profiles…',
-    'Scoring by sport, industry, and location…',
-    'Selecting your top matches…',
-    'Drafting personalized outreach messages…',
-    'Building your action plan…',
-  ]
+  const selectedPreset = GOAL_PRESETS.find(p => p.id === selectedGoalId) ?? GOAL_PRESETS[0]
+  // Override sport with user's real sport if available
+  const activeInput = { ...selectedPreset.input, sport: userSport ?? selectedPreset.input.sport }
 
-  function handleRun() {
-    setPhase('thinking')
-    setThinkingStep(0)
+  async function handleRun() {
+    agentTrack('agent_run_started', { goal: activeInput.goal, user_sport: activeInput.sport })
+    setPhase('running')
 
-    // Advance the thinking label every 400ms
-    const interval = setInterval(() => {
-      setThinkingStep(prev => {
-        if (prev >= thinkingSteps.length - 1) {
-          clearInterval(interval)
-          return prev
-        }
-        return prev + 1
+    try {
+      const res = await fetch('/api/agent/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: activeInput }),
       })
-    }, 420)
+      if (!res.ok) throw new Error('API error')
+      const { result: r } = await res.json()
 
-    // Actually run the (synchronous) agent after a short delay
-    // so the animation has time to play
-    setTimeout(() => {
-      clearInterval(interval)
-      const input = { ...DEMO_INPUT, sport: userSport ?? DEMO_INPUT.sport }
-      const agentResult = runScoutNetworkingAgent(input)
-      setResult(agentResult)
-      setDrafts(agentResult.drafts)
-      setPhase('done')
-      // Scroll to results
-      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
-    }, thinkingSteps.length * 420 + 200)
+      agentTrack('agent_run_completed', {
+        agent_run_id: r.agentRunId,
+        goal_id:      r.goalId,
+        alumni_count: r.topAlumni.length,
+      })
+      agentTrack('recommendations_generated', {
+        agent_run_id: r.agentRunId,
+        goal_id:      r.goalId,
+        alumni_ids:   r.topAlumni.map((a: { id: string }) => a.id),
+      })
+      setResult(r)
+      setPhase('result')
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth' }), 80)
+    } catch {
+      // Fall back to mock data if API fails
+      const r = runScoutNetworkingAgent(activeInput)
+      setResult(r)
+      setPhase('result')
+    }
   }
 
   function handleApprove(draftId: string) {
-    setDrafts(prev =>
-      prev.map(d =>
-        d.id === draftId
-          ? { ...d, status: 'approved', approvedAt: new Date().toISOString(), followUpQueuedFor: new Date(Date.now() + 5 * 86400000).toISOString() }
-          : d
-      )
-    )
+    const newApproved = new Set([...approvedIds, draftId])
+    setApprovedIds(newApproved)
+
+    // Schedule follow-up tracking
+    const draft = result?.drafts.find(d => d.id === draftId)
+    if (draft && result) {
+      const followUpDate = new Date(Date.now() + 5 * 86400000).toISOString()
+      agentTrack('followup_scheduled', {
+        agent_run_id: result.agentRunId,
+        goal_id:      result.goalId,
+        alumni_id:    draft.alumniId,
+        due_date:     followUpDate,
+      })
+    }
+
+    // Advance to next draft or complete
+    if (result && newApproved.size >= result.drafts.length) {
+      setTimeout(() => setPhase('complete'), 400)
+    } else {
+      const next = result?.drafts.findIndex((d, i) => i > draftIndex && !newApproved.has(d.id))
+      if (next !== undefined && next >= 0) setDraftIndex(next)
+    }
   }
 
-  const approvedCount = drafts.filter(d => d.status === 'approved').length
+  function handleSkip(draftId: string) {
+    const next = result?.drafts.findIndex((d, i) => i > draftIndex && !approvedIds.has(d.id))
+    if (next !== undefined && next >= 0) setDraftIndex(next)
+  }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  function handleReset() {
+    setPhase('ready')
+    setResult(null)
+    setDraftIndex(0)
+    setApprovedIds(new Set())
+  }
+
+  function handleSelectGoal(id: string) {
+    setSelectedGoalId(id)
+    // Reset results if we switch goals after a run
+    if (phase === 'result' || phase === 'complete') {
+      setPhase('ready')
+      setResult(null)
+      setDraftIndex(0)
+      setApprovedIds(new Set())
+    }
+  }
+
+  // The active draft shown in the draft section
+  const activeDraft = result?.drafts[draftIndex]
+  const approvedCount = approvedIds.size
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[--bg-primary]">
-      {/* ── Header ── */}
-      <div className="border-b border-[--border-primary] px-6 py-4 flex items-center gap-3 sticky top-0 bg-[--bg-primary]/90 backdrop-blur z-10">
-        <div className="relative w-6 h-6 bg-[--bg-secondary] border border-[--school-primary] rounded-md overflow-hidden flex-shrink-0">
-          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-black text-[--school-primary] z-10">S</span>
-          <span className="absolute top-0 right-0 w-2 h-2 bg-[--school-primary]" />
+
+      {/* ── Sticky header ── */}
+      <header className="sticky top-0 z-10 bg-[--bg-primary]/90 backdrop-blur border-b border-[--border-primary]">
+        <div className="max-w-2xl mx-auto px-6 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* Scout logo mark */}
+            <div className="relative w-5 h-5 rounded-[4px] bg-[--bg-secondary] border border-[--school-primary] overflow-hidden flex-shrink-0">
+              <span className="absolute inset-0 flex items-center justify-center text-[9px] font-black text-[--school-primary] z-10">S</span>
+              <span className="absolute top-0 right-0 w-1.5 h-1.5 bg-[--school-primary]" />
+            </div>
+            <span className="text-sm font-bold tracking-tight text-[--text-primary]">Scout</span>
+            <span className="text-[--border-secondary] mx-0.5 text-xs">·</span>
+            <span className="text-xs text-[--text-quaternary]">Networking Agent</span>
+          </div>
+          <span className="text-[9px] font-bold tracking-[0.12em] uppercase px-2 py-0.5 rounded-full bg-[--bg-tertiary] text-[--text-quaternary] border border-[--border-primary]">
+            Demo
+          </span>
         </div>
-        <span className="text-sm font-bold tracking-tight text-[--text-primary]">Scout</span>
-        <span className="text-[--border-secondary] mx-1">·</span>
-        <span className="text-sm text-[--text-quaternary]">Networking Agent</span>
-        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[--school-primary]/10 text-[--school-primary] border border-[--school-primary]/20 tracking-wide uppercase">
-          Demo
-        </span>
-      </div>
+      </header>
 
-      <div className="max-w-3xl mx-auto px-6 py-10">
+      {/* ── Content ── */}
+      <main className="max-w-2xl mx-auto px-6 pb-24">
 
-        {/* ── Intro / Run card ── */}
-        {phase === 'idle' && (
-          <div className="space-y-8 animate-fade-in-up">
-            {/* Hero */}
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-[--school-primary] mb-3">
-                Scout Networking Agent
-              </p>
-              <h1 className="text-3xl font-bold tracking-tight text-[--text-primary] mb-3">
-                {userName ? `Hi ${userName.split(' ')[0]}` : 'Ready to work'}. Let Scout do the legwork.
-              </h1>
-              <p className="text-[--text-secondary] leading-relaxed max-w-lg">
-                Tell Scout your goal once. It searches thousands of Cornell alumni, ranks the best fits, and drafts your outreach — so you just review and send.
-              </p>
+        {/* ════════════════ READY ════════════════ */}
+        {phase === 'ready' && (
+          <div className="pt-20 animate-fade-in-up">
+            <Label>Your goal</Label>
+            <h1 className="text-3xl font-bold tracking-tight text-[--text-primary] leading-snug">
+              {selectedPreset.input.goal}.
+            </h1>
+            <p className="text-sm text-[--text-secondary] mt-3 leading-relaxed">
+              Scout finds your best Cornell alumni contacts, ranks them, and prepares outreach — before you take a single action.
+            </p>
+
+            {/* Goal selector */}
+            <div className="flex items-center gap-2 mt-6 flex-wrap">
+              {GOAL_PRESETS.map(preset => (
+                <button
+                  key={preset.id}
+                  onClick={() => handleSelectGoal(preset.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors font-medium ${
+                    selectedGoalId === preset.id
+                      ? 'bg-[--school-primary] text-white border-transparent'
+                      : 'bg-[--bg-secondary] text-[--text-secondary] border-[--border-primary] hover:border-[--border-secondary]'
+                  }`}
+                >
+                  {preset.label}
+                </button>
+              ))}
             </div>
 
-            {/* Demo input preview */}
-            <Card>
-              <SectionLabel>Demo Input</SectionLabel>
-              <div className="space-y-3">
-                {[
-                  ['Goal',        DEMO_INPUT.goal],
-                  ['Sport',       DEMO_INPUT.sport],
-                  ['Time per week', `${DEMO_INPUT.weekly_time_hours} hrs`],
-                  ['Target contacts', `${DEMO_INPUT.target_count} alumni`],
-                  ['Industries',  DEMO_INPUT.preferences.industries.join(', ')],
-                  ['Locations',   DEMO_INPUT.preferences.locations.join(', ')],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex gap-3 text-sm">
-                    <span className="text-[--text-quaternary] w-32 flex-shrink-0">{label}</span>
-                    <span className="text-[--text-primary] font-medium">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
+            {/* Meta */}
+            <div className="flex items-center gap-2 mt-3 flex-wrap">
+              {[
+                `${activeInput.weekly_time_hours} hrs / week`,
+                activeInput.preferences.locations.join(' · '),
+                activeInput.preferences.sport ?? activeInput.sport,
+              ].map(tag => (
+                <span key={tag} className="text-xs text-[--text-quaternary] bg-[--bg-secondary] border border-[--border-primary] px-2.5 py-1 rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
 
             <button
               onClick={handleRun}
-              className="btn-primary flex items-center gap-2 px-6 py-3 text-sm font-semibold"
+              className="btn-primary flex items-center gap-2 mt-8 px-6 py-3 text-sm font-semibold"
             >
-              <Zap size={15} />
-              Run Scout Agent
+              Run Scout
+              <ArrowRight size={14} />
             </button>
           </div>
         )}
 
-        {/* ── Thinking state ── */}
-        {phase === 'thinking' && (
-          <div className="flex flex-col items-center justify-center py-32 gap-5 animate-fade-in">
-            {/* Spinner */}
-            <div className="relative w-12 h-12">
-              <div className="absolute inset-0 rounded-full border-2 border-[--border-primary]" />
-              <div className="absolute inset-0 rounded-full border-2 border-t-[--school-primary] animate-spin" />
-            </div>
-            <div className="text-center space-y-1">
-              <p className="text-sm font-semibold text-[--text-primary]">{thinkingSteps[thinkingStep]}</p>
-              <p className="text-xs text-[--text-quaternary]">Scout is working…</p>
-            </div>
-            {/* Completed steps */}
-            <div className="mt-4 space-y-1.5">
-              {thinkingSteps.slice(0, thinkingStep).map(step => (
-                <div key={step} className="flex items-center gap-2 text-xs text-[--text-tertiary]">
-                  <CheckCircle size={11} className="text-emerald-500" />
-                  {step}
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* ════════════════ RUNNING ════════════════ */}
+        {phase === 'running' && <RunningView />}
+
+        {/* ════════════════ COMPLETE ════════════════ */}
+        {phase === 'complete' && result && (
+          <CompleteView result={result} onReset={handleReset} />
         )}
 
-        {/* ── Results ── */}
-        {phase === 'done' && result && (
-          <div ref={resultRef} className="space-y-10 animate-fade-in-up">
+        {/* ════════════════ RESULT ════════════════ */}
+        {phase === 'result' && result && (
+          <div ref={resultRef} className="pt-12 animate-fade-in-up">
 
-            {/* ── ① GOAL ── */}
+            {/* Goal bar */}
+            <div className="mb-1">
+              <h2 className="text-xl font-bold tracking-tight text-[--text-primary]">
+                {result.input.goal}.
+              </h2>
+              <p className="text-xs text-[--text-quaternary] mt-1">
+                {result.input.preferences.locations.join(' · ')}
+                {result.input.preferences.sport && ` · ${result.input.preferences.sport}`}
+              </p>
+            </div>
+
+            <Rule />
+
+            {/* ── NEXT MOVE ── */}
             <section>
-              <SectionLabel>① Goal</SectionLabel>
-              <Card>
-                <p className="text-[--text-secondary] leading-relaxed text-sm">{result.goalSummary}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {result.input.preferences.industries.map(ind => (
-                    <span key={ind} className="tag text-xs">{ind}</span>
-                  ))}
-                  {result.input.preferences.locations.map(loc => (
-                    <span key={loc} className="tag text-xs">📍 {loc}</span>
-                  ))}
-                </div>
-              </Card>
+              <Label>Next move</Label>
+              <p className="text-xl font-semibold text-[--text-primary] leading-snug tracking-tight">
+                {result.nextStep.headline}
+              </p>
+              <p className="text-sm text-[--text-secondary] mt-1.5">
+                {result.nextStep.subline}
+              </p>
+              <button
+                className="mt-4 btn-primary flex items-center gap-2 text-sm font-semibold px-5 py-2.5"
+                onClick={() => {
+                  document.getElementById('draft-section')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+              >
+                Review draft
+                <ArrowRight size={13} />
+              </button>
             </section>
 
-            {/* ── ② PLAN ── */}
-            <section>
-              <SectionLabel>② Plan</SectionLabel>
-              <div className="space-y-3">
-                {result.plan.map((step, i) => (
-                  <Card key={i} className="flex gap-4 items-start">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[--school-primary]/10 border border-[--school-primary]/20 flex items-center justify-center">
-                      <span className="text-xs font-bold text-[--school-primary]">W{step.week}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[--text-primary] mb-1">{step.action}</p>
-                      <p className="text-xs text-[--text-secondary] leading-relaxed">{step.detail}</p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
+            <Rule />
 
-            {/* ── ③ TOP ALUMNI ── */}
+            {/* ── BEST MATCHES ── */}
             <section>
-              <SectionLabel>③ Top Alumni Picks</SectionLabel>
-              <div className="space-y-3">
+              <Label>Best matches</Label>
+              <div className="divide-y divide-[--border-primary]">
                 {result.topAlumni.map((alumni, i) => (
-                  <Card key={alumni.id} className="flex gap-4 items-start">
-                    {/* Rank badge */}
-                    <div className="flex-shrink-0 w-7 h-7 rounded-full bg-[--bg-tertiary] border border-[--border-primary] flex items-center justify-center">
-                      <span className="text-[11px] font-bold text-[--text-quaternary]">#{i + 1}</span>
-                    </div>
-
-                    {/* Avatar + details */}
-                    <Avatar name={alumni.full_name} sport={alumni.sport} size="md" />
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-semibold text-[--text-primary]">{alumni.full_name}</p>
-                        {alumni.linkedin_url && (
-                          <a
-                            href={alumni.linkedin_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[--text-quaternary] hover:text-[#0077b5] transition-colors"
-                          >
-                            <Linkedin size={12} />
-                          </a>
-                        )}
-                      </div>
-                      <p className="text-xs text-[--text-secondary] mt-0.5">
-                        {alumni.role ?? 'Alumni'}{alumni.company ? ` · ${alumni.company}` : ''}
-                      </p>
-                      <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                        <span className="text-[10px] text-[--text-quaternary]">{alumni.sport} · Cornell '{String(alumni.graduation_year).slice(2)}</span>
-                        {alumni.location && (
-                          <span className="text-[10px] text-[--text-quaternary] flex items-center gap-0.5">
-                            <MapPin size={9} />
-                            {alumni.location.split(',')[0]}
-                          </span>
-                        )}
-                      </div>
-                      {/* Score breakdown pills */}
-                      <div className="flex gap-1.5 mt-2 flex-wrap">
-                        {alumni.scoreBreakdown.industryMatch > 0 && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[--school-primary]/10 text-[--school-primary] border border-[--school-primary]/20 font-medium">
-                            Industry match
-                          </span>
-                        )}
-                        {alumni.scoreBreakdown.sportMatch > 0 && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
-                            Shared sport
-                          </span>
-                        )}
-                        {alumni.scoreBreakdown.locationMatch > 0 && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-                            {result.input.preferences.locations.find(l => alumni.location?.toLowerCase().includes(l.toLowerCase()))}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-[--text-tertiary] mt-2 italic">{alumni.reason}</p>
-                    </div>
-
-                    {/* Match score */}
-                    <div className="flex-shrink-0 text-right">
-                      <div className="text-lg font-bold text-[--school-primary]">{alumni.score}</div>
-                      <div className="text-[10px] text-[--text-quaternary]">match score</div>
-                    </div>
-                  </Card>
+                  <AlumniRow
+                    key={alumni.id}
+                    alumni={alumni}
+                    rank={i + 1}
+                    agentRunId={result.agentRunId}
+                    goalId={result.goalId}
+                  />
                 ))}
               </div>
             </section>
 
-            {/* ── ④ DRAFT OUTREACH ── */}
-            <section>
-              <SectionLabel>④ Draft Outreach</SectionLabel>
-              <div className="space-y-3">
-                {drafts.map((draft, i) => (
-                  <DraftCard key={draft.id} draft={draft} rank={i} onApprove={handleApprove} />
-                ))}
-              </div>
-              {approvedCount > 0 && (
-                <div className="mt-3 flex items-center gap-2 text-xs text-emerald-400 px-1">
-                  <CheckCircle size={12} />
-                  {approvedCount} draft{approvedCount > 1 ? 's' : ''} approved — follow-up reminders queued.
-                </div>
+            <Rule />
+
+            {/* ── DRAFT ── */}
+            <section id="draft-section">
+              {activeDraft && (
+                <DraftView
+                  draft={activeDraft}
+                  index={draftIndex}
+                  total={result.drafts.length}
+                  result={result}
+                  onApprove={handleApprove}
+                  onSkip={handleSkip}
+                />
               )}
             </section>
 
-            {/* ── ⑤ SCOUT ALREADY DID ── */}
+            <Rule />
+
+            {/* ── STATUS ── */}
             <section>
-              <SectionLabel>⑤ Scout Already Did</SectionLabel>
-              <Card>
-                <ul className="space-y-2.5">
-                  {result.alreadyDid.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm">
-                      <CheckCircle size={14} className="text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-[--text-secondary]">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
+              <Label>Status</Label>
+              <StatusStrip result={result} approvedCount={approvedCount} />
             </section>
 
-            {/* ── ⑥ WAITING ON YOU ── */}
-            <section>
-              <SectionLabel>⑥ Waiting on You</SectionLabel>
-              <div className="space-y-3">
-                {result.waitingOn.map(item => {
-                  const linkedDraft = drafts.find(d => d.id === item.draftId)
-                  const isResolved = linkedDraft?.status === 'approved'
-                  return (
-                    <Card
-                      key={item.id}
-                      className={`flex items-start gap-3 transition-all ${isResolved ? 'opacity-50' : ''}`}
-                    >
-                      {isResolved
-                        ? <CheckCircle size={16} className="text-emerald-400 flex-shrink-0 mt-0.5" />
-                        : <AlertCircle size={16} className="text-[--school-primary] flex-shrink-0 mt-0.5" />
-                      }
-                      <div className="flex-1">
-                        <p className="text-sm text-[--text-primary]">
-                          {isResolved ? <s className="text-[--text-tertiary]">{item.label}</s> : item.label}
-                        </p>
-                        {isResolved && (
-                          <p className="text-xs text-emerald-400 mt-0.5">Done ✓</p>
-                        )}
-                      </div>
-                    </Card>
-                  )
-                })}
-              </div>
-            </section>
-
-            {/* ── ⑦ NEXT ACTIONS ── */}
-            <section>
-              <SectionLabel>⑦ Next Actions</SectionLabel>
-              <div className="space-y-2">
-                {result.nextActions.map(action => {
-                  const blocked = !!action.dependsOnApproval && !drafts.some(d => d.id === result.waitingOn.find(w => w.id === action.dependsOnApproval)?.draftId && d.status === 'approved')
-                  return (
-                    <div
-                      key={action.id}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${
-                        blocked
-                          ? 'border-[--border-primary] bg-[--bg-secondary] opacity-40'
-                          : 'border-[--border-primary] bg-[--bg-secondary]'
-                      }`}
-                    >
-                      {action.dueInDays === 0
-                        ? <ArrowRight size={13} className="text-[--school-primary] flex-shrink-0" />
-                        : <Clock size={13} className="text-[--text-quaternary] flex-shrink-0" />
-                      }
-                      <span className="flex-1 text-sm text-[--text-secondary]">{action.label}</span>
-                      <span className="text-[10px] text-[--text-quaternary] font-medium flex-shrink-0">
-                        {action.dueInDays === 0 ? 'Now' : `Day ${action.dueInDays}`}
-                      </span>
-                      {blocked && (
-                        <span className="text-[10px] text-[--text-quaternary] italic ml-1">· needs approval</span>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-
-            {/* ── Reset ── */}
-            <div className="pb-16">
+            {/* Reset */}
+            <div className="mt-10">
               <button
-                onClick={() => { setPhase('idle'); setResult(null); setDrafts([]) }}
-                className="btn-ghost text-xs text-[--text-quaternary]"
+                onClick={handleReset}
+                className="text-xs text-[--text-quaternary] hover:text-[--text-tertiary] transition-colors"
               >
                 ← Reset demo
               </button>
@@ -480,7 +712,8 @@ export default function AgentClient({ userSport, userName }: Props) {
 
           </div>
         )}
-      </div>
+
+      </main>
     </div>
   )
 }

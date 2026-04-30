@@ -12,23 +12,18 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
 import AlumniCard from '../components/cards/AlumniCard';
 import AlumniDetailModal from '../components/modals/AlumniDetailModal';
-import GenerateMessageModal from '../components/modals/GenerateMessageModal';
 import Toast from '../components/common/Toast';
 import SkeletonCard from '../components/common/SkeletonCard';
 import { useRecommendations } from '../hooks/useRecommendations';
-import { useAuth } from '../contexts/AuthContext';
 import type { ScoredAlumni } from '../services/recommendations';
 
 export default function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
-  const { profile } = useAuth();
   const { deck, loading, load, swipe } = useRecommendations();
 
   const [selectedAlumni, setSelectedAlumni] = useState<ScoredAlumni | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
-  const [messageAlumni, setMessageAlumni] = useState<ScoredAlumni | null>(null);
-  const [messageVisible, setMessageVisible] = useState(false);
 
   const [toast, setToast] = useState({
     visible: false,
@@ -90,12 +85,6 @@ export default function DiscoverScreen() {
     bounce(viewAnim);
     setSelectedAlumni(alumni);
     setDetailVisible(true);
-  }
-
-  function handleGenerateMessage(alumni: ScoredAlumni) {
-    setMessageAlumni(alumni);
-    setDetailVisible(false);
-    setTimeout(() => setMessageVisible(true), 240);
   }
 
   const visibleDeck = deck.slice(0, 3);
@@ -219,16 +208,6 @@ export default function DiscoverScreen() {
           handleSwipeLeft(a.id);
           setDetailVisible(false);
         }}
-        onGenerateMessage={handleGenerateMessage}
-      />
-
-      <GenerateMessageModal
-        alumni={messageAlumni}
-        senderName={profile?.full_name ?? 'A Cornell Athlete'}
-        senderSport={profile?.sport}
-        senderYear={profile?.graduation_year}
-        visible={messageVisible}
-        onClose={() => setMessageVisible(false)}
       />
 
       <Toast visible={toast.visible} message={toast.message} type={toast.type} />

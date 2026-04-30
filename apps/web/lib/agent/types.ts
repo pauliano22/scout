@@ -1,21 +1,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Scout Networking Agent — Type Definitions
+// Scout Networking Agent — Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** What the user tells Scout they want. */
 export interface AgentInput {
-  goal: string
-  sport: string                 // user's sport (for shared-connection scoring)
+  goal: string             // raw user goal, e.g. "Break into sports marketing"
+  goalDomain: string       // cleaned, e.g. "sports marketing"
+  sport: string            // user's own sport
   weekly_time_hours: number
   target_count: number
   preferences: {
-    industries: string[]        // keyword list, case-insensitive matched
-    locations: string[]         // partial match against alumni.location
-    sport?: string              // preferred alumni sport (bonus, not required)
+    industries: string[]   // keyword list, matched case-insensitively
+    locations: string[]    // partial matched against alumni.location
+    sport?: string         // preferred alumni sport (bonus)
   }
 }
 
-/** One alumni record used inside the agent (subset of the real Alumni type). */
 export interface AgentAlumni {
   id: string
   full_name: string
@@ -28,61 +27,51 @@ export interface AgentAlumni {
   linkedin_url: string | null
 }
 
-/** Alumni ranked with a score and human-readable reason. */
 export interface RankedAlumni extends AgentAlumni {
   score: number
-  reason: string          // one sentence Scout writes about why this person
-  scoreBreakdown: {
-    industryMatch: number
-    sportMatch: number
-    locationMatch: number
-    profileQuality: number
-  }
+  reason: string                 // one-line, shown in UI
+  tags: AlumniTag[]              // compact match labels
 }
 
-/** A drafted outreach message, with approval state. */
+export type AlumniTag =
+  | { type: 'sport';    label: string }
+  | { type: 'industry'; label: string }
+  | { type: 'location'; label: string }
+
 export interface DraftMessage {
   id: string
   alumniId: string
   alumniName: string
-  platform: 'linkedin' | 'email'
-  subject: string | null   // only for email
+  platform: 'linkedin'
   body: string
   status: 'pending' | 'approved' | 'skipped'
   approvedAt?: string
-  followUpQueuedFor?: string  // ISO date string if follow-up was queued
 }
 
-/** A single step in the agent's generated plan. */
-export interface PlanStep {
-  week: number
-  action: string
-  detail: string
+/** The single most important action right now. */
+export interface NextStep {
+  alumniId: string
+  headline: string    // "Reach out to James Rivera at Octagon."
+  subline: string     // "Cornell Football → Sports Marketing. Your most direct path."
+  draftId: string
 }
 
-/** The structured output of a full agent run. */
+/** Three-line status summary — no more, no less. */
+export interface AgentStatus {
+  prepared: string   // "3 matches · 3 drafts ready"
+  waiting: string    // "Approve outreach to James Rivera"
+  next: string       // "Follow-up Friday if no reply"
+}
+
 export interface AgentResult {
+  // Tracking IDs
+  goalId: string
+  agentRunId: string
+
   input: AgentInput
-  goalSummary: string               // one sentence Scout writes about the goal
-  plan: PlanStep[]
   topAlumni: RankedAlumni[]
   drafts: DraftMessage[]
-  alreadyDid: string[]              // things Scout completed automatically
-  waitingOn: WaitingItem[]          // things needing user approval
-  nextActions: NextAction[]
-  generatedAt: string               // ISO timestamp
-}
-
-export interface WaitingItem {
-  id: string
-  type: 'approve_draft' | 'confirm_plan' | 'review_list'
-  label: string
-  draftId?: string                  // linked draft when type = 'approve_draft'
-}
-
-export interface NextAction {
-  id: string
-  label: string
-  dueInDays: number
-  dependsOnApproval?: string        // waiting item id this unlocks
+  nextStep: NextStep
+  status: AgentStatus
+  generatedAt: string
 }

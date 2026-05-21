@@ -80,10 +80,10 @@ export default function LoginScreen() {
         {/* Logo / Wordmark */}
         <View style={styles.logoSection}>
           <View style={styles.logoMark}>
+            <View style={styles.logoCorner} />
             <Text style={styles.logoText}>S</Text>
           </View>
           <Text style={styles.wordmark}>Scout</Text>
-          <Text style={styles.tagline}>Cornell Athlete Alumni Network</Text>
         </View>
 
         {/* Form Card */}
@@ -94,7 +94,7 @@ export default function LoginScreen() {
           <Text style={styles.cardSub}>
             {mode === 'login'
               ? 'Sign in to your Scout account'
-              : 'Join the Cornell athlete network'}
+              : 'Join the athlete alumni network'}
           </Text>
 
           {mode === 'signup' && (
@@ -170,7 +170,7 @@ export default function LoginScreen() {
 
         {/* Footer */}
         <Text style={styles.footer}>
-          Cornell Athletics · Student-Athlete Platform
+          Athlete Alumni Network
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -192,29 +192,36 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxxl,
   },
   logoMark: {
-    width: 72,
-    height: 72,
-    borderRadius: radius.xl,
-    backgroundColor: colors.red,
+    width: 56,
+    height: 56,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.red,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
+    overflow: 'hidden',
     ...shadows.md,
   },
+  logoCorner: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    backgroundColor: colors.red,
+  },
   logoText: {
-    fontSize: 36,
+    fontSize: 28,
     fontWeight: '800',
-    color: colors.textInverse,
+    color: colors.red,
     letterSpacing: -1,
   },
   wordmark: {
     ...typography.title1,
     color: colors.textPrimary,
     marginBottom: 4,
-  },
-  tagline: {
-    ...typography.footnote,
-    color: colors.textTertiary,
   },
   card: {
     width: '100%',

@@ -313,7 +313,7 @@ export default function YouScreen() {
           {profile?.sport ? (
             <Text style={styles.profileMeta} numberOfLines={1}>
               {profile.sport}
-              {yearShort ? `  ·  Cornell ${yearShort}` : ''}
+              {yearShort ? `  ·  Class of ${yearShort}` : ''}
             </Text>
           ) : null}
           <Text style={styles.profileEmail} numberOfLines={1}>
@@ -402,7 +402,7 @@ export default function YouScreen() {
       <View style={styles.aboutCard}>
         <View style={styles.aboutRow}>
           <Text style={styles.aboutLabel}>Platform</Text>
-          <Text style={styles.aboutValue}>Scout · Cornell Athletics</Text>
+          <Text style={styles.aboutValue}>Scout · Athlete Alumni Network</Text>
         </View>
         <View style={[styles.aboutRow, styles.aboutRowLast]}>
           <Text style={styles.aboutLabel}>Version</Text>

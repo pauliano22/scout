@@ -139,12 +139,43 @@ export default function AlumniDetailModal({
                 </Text>
               ) : null}
               {yearShort || profile.sport ? (
-                <Text style={styles.fallbackCornell}>
-                  {[profile.sport, yearShort ? `Cornell ${yearShort}` : null].filter(Boolean).join('  ·  ')}
+                <Text style={styles.fallbackMeta}>
+                  {[profile.sport, yearShort ? `Class of ${yearShort}` : null].filter(Boolean).join('  ·  ')}
                 </Text>
               ) : null}
             </View>
           )}
+
+          {/* Profile summary */}
+          <View style={styles.profileSummary}>
+            <View style={styles.profileSummaryName}>
+              <Text style={styles.summaryName}>{profile.name}</Text>
+              {yearShort ? (
+                <Text style={styles.summaryGradYear}>Class of {yearShort}</Text>
+              ) : null}
+            </View>
+            {(profile.currentRole || profile.currentCompany) ? (
+              <Text style={styles.summaryRole} numberOfLines={2}>
+                {profile.currentRole && profile.currentCompany
+                  ? `${profile.currentRole} · ${profile.currentCompany}`
+                  : profile.currentRole ?? profile.currentCompany}
+              </Text>
+            ) : null}
+            <View style={styles.summaryPills}>
+              {profile.sport ? (
+                <View style={styles.pill}>
+                  <Ionicons name="football-outline" size={12} color={colors.red} />
+                  <Text style={styles.pillText}>{formatSportLabel(profile.sport)}</Text>
+                </View>
+              ) : null}
+              {profile.location ? (
+                <View style={styles.pill}>
+                  <Ionicons name="location-outline" size={12} color={colors.textTertiary} />
+                  <Text style={styles.pillText}>{profile.location}</Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
 
           {/* Experience */}
           {profile.pastExperiences.length > 0 ? (
@@ -171,9 +202,9 @@ export default function AlumniDetailModal({
             </Section>
           ) : null}
 
-          {/* Cornell Background */}
+          {/* Athletic Background */}
           {(profile.sport || profile.graduationYear || profile.education.length > 0) ? (
-            <Section label="Cornell Background">
+            <Section label="Athletic Background">
               <View style={{ gap: 6 }}>
                 {profile.sport ? (
                   <Text style={styles.bodyText}>
@@ -398,11 +429,60 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
-  fallbackCornell: {
+  fallbackMeta: {
     ...typography.footnote,
     color: colors.red,
     fontWeight: '600',
     marginTop: 2,
+  },
+
+  // Profile summary
+  profileSummary: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+    gap: 6,
+  },
+  profileSummaryName: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+  },
+  summaryName: {
+    ...typography.title2,
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  summaryGradYear: {
+    ...typography.footnote,
+    color: colors.red,
+    fontWeight: '600',
+  },
+  summaryRole: {
+    ...typography.callout,
+    color: colors.textSecondary,
+  },
+  summaryPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: 4,
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  pillText: {
+    ...typography.caption1,
+    color: colors.textSecondary,
+    fontWeight: '500',
   },
 
   // Sections wrapper

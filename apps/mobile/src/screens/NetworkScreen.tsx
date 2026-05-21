@@ -266,7 +266,7 @@ export default function NetworkScreen() {
 
       <GenerateMessageModal
         alumni={messageAlumni}
-        senderName={profile?.full_name ?? 'A Cornell Athlete'}
+        senderName={profile?.full_name ?? 'An Athlete'}
         senderSport={profile?.sport}
         senderYear={profile?.graduation_year}
         visible={messageVisible}
@@ -287,7 +287,7 @@ function NetworkRow({ entry, isFirst, isLast, onPress }: NetworkRowProps) {
   const p = entry.profile;
   const yearShort = formatGradYearShort(p.graduationYear);
 
-  const meta = [p.sport, yearShort ? `Cornell ${yearShort}` : null]
+  const meta = [p.sport, yearShort ? `Class of ${yearShort}` : null]
     .filter(Boolean)
     .join(' · ');
 

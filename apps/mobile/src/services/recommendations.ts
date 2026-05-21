@@ -117,7 +117,7 @@ function computeWhyThisMatch(
   }
 
   if (breakdown.sport > 0 && profile.sport && prefs.sports.length > 0) {
-    reasons.push(`Same Cornell sport — ${profile.sport}`);
+    reasons.push(`Same sport — ${profile.sport}`);
   }
   if (breakdown.location > 0 && profile.location && reasons.length < 3) {
     reasons.push(`Based in ${profile.location}`);

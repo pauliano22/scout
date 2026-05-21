@@ -32,11 +32,11 @@ function generateMessage(
 ): string {
   const greeting = `Hi ${profile.firstName}`;
   const yearTag = senderYear ? ` ('${String(senderYear).slice(-2)})` : '';
-  const intro = `My name is ${senderName}, and I'm a ${senderSport ?? 'student-athlete'} at Cornell${yearTag}.`;
+  const intro = `My name is ${senderName}, and I'm a ${senderSport ?? 'student-athlete'}${yearTag}.`;
 
   const connection =
     profile.sport && senderSport && profile.sport.toLowerCase() === senderSport.toLowerCase()
-      ? `I saw that you played ${profile.sport} at Cornell — I'd love to connect with a fellow ${profile.sport} alum.`
+      ? `I saw that you played ${profile.sport} — I'd love to connect with a fellow ${profile.sport} alum.`
       : `I came across your profile on Scout and was impressed by your path.`;
 
   const interest = profile.currentCompany

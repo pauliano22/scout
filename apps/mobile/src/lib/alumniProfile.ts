@@ -69,7 +69,7 @@ export function normalizeAlumniProfile(input: Alumni | (Record<string, unknown> 
 
   const name =
     pickFirst(a.full_name, a.name, [a.first_name, a.last_name].filter(Boolean).join(' ')) ??
-    'Cornell Alumnus';
+    'Scout Alumnus';
 
   const photoUrl = pickFirst(
     a.photo_url,
@@ -209,7 +209,7 @@ export function isHighQualityAlumniProfile(
 ): boolean {
   const profile = 'profileCompletenessScore' in input ? input : normalizeAlumniProfile(input);
 
-  if (!profile.name || profile.name === 'Cornell Alumnus') return false;
+  if (!profile.name || profile.name === 'Scout Alumnus') return false;
 
   const signals: boolean[] = [
     !!profile.currentRole,

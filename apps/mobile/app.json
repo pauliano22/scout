@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.scout.mobile",
       "buildNumber": "1",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Choose a profile photo from your library."
       }
     },
     "android": {

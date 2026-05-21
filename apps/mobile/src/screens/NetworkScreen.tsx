@@ -20,7 +20,6 @@ import StatusBadge from '../components/common/StatusBadge';
 import AlumniDetailModal from '../components/modals/AlumniDetailModal';
 import GenerateMessageModal from '../components/modals/GenerateMessageModal';
 import {
-  formatGradYearShort,
   normalizeAlumniProfile,
   type NormalizedAlumni,
 } from '../lib/alumniProfile';
@@ -39,11 +38,8 @@ interface NetworkEntry {
 
 const STATUS_FILTERS: { id: string; label: string }[] = [
   { id: 'All', label: 'All' },
-  { id: 'saved', label: 'Saved' },
-  { id: 'message_drafted', label: 'Drafted' },
-  { id: 'contacted', label: 'Contacted' },
-  { id: 'replied', label: 'Replied' },
-  { id: 'meeting_set', label: 'Meeting' },
+  { id: 'to_contact', label: 'To Contact' },
+  { id: 'in_progress', label: 'In Progress' },
 ];
 
 export default function NetworkScreen() {
@@ -135,7 +131,12 @@ export default function NetworkScreen() {
         (p.industry && p.industry.toLowerCase().includes(q));
 
       const status = entry.status ?? 'saved';
-      const matchStatus = statusFilter === 'All' || status === statusFilter;
+      const matchStatus =
+        statusFilter === 'All' ||
+        (statusFilter === 'to_contact' &&
+          (status === 'saved' || status === 'message_drafted')) ||
+        (statusFilter === 'in_progress' &&
+          (status === 'contacted' || status === 'replied' || status === 'meeting_set'));
 
       return matchSearch && matchStatus;
     });
@@ -285,12 +286,6 @@ interface NetworkRowProps {
 
 function NetworkRow({ entry, isFirst, isLast, onPress }: NetworkRowProps) {
   const p = entry.profile;
-  const yearShort = formatGradYearShort(p.graduationYear);
-
-  const meta = [p.sport, yearShort ? `Class of ${yearShort}` : null]
-    .filter(Boolean)
-    .join(' · ');
-
   const roleLine = [p.currentRole, p.currentCompany].filter(Boolean).join(' · ');
 
   return (
@@ -314,11 +309,6 @@ function NetworkRow({ entry, isFirst, isLast, onPress }: NetworkRowProps) {
         {roleLine ? (
           <Text style={styles.rowRole} numberOfLines={1}>
             {roleLine}
-          </Text>
-        ) : null}
-        {meta ? (
-          <Text style={styles.rowMeta} numberOfLines={1}>
-            {meta}
           </Text>
         ) : null}
       </View>
@@ -444,7 +434,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.lg,
     gap: spacing.md,
     backgroundColor: colors.surface,
@@ -472,9 +462,5 @@ const styles = StyleSheet.create({
   rowRole: {
     ...typography.subhead,
     color: colors.textSecondary,
-  },
-  rowMeta: {
-    ...typography.caption1,
-    color: colors.textTertiary,
   },
 });

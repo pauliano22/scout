@@ -18,6 +18,7 @@ import { supabase } from '../lib/supabase';
 import { saveUserPreferences } from '../services/recommendations';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
+import { INTEREST_SUGGESTIONS } from '@scout/shared/constants/interests';
 
 const TOTAL_STEPS = 4;
 
@@ -27,10 +28,7 @@ const SPORTS = [
   'Baseball', 'Volleyball', 'Hockey', 'Track & Field', 'Rowing', 'Wrestling',
   'Golf', 'Field Hockey', 'Cross Country', 'Fencing', 'Gymnastics',
 ];
-const INDUSTRIES = [
-  'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law',
-  'Media', 'Real Estate', 'Private Equity', 'Marketing', 'Other',
-];
+const INDUSTRIES = INTEREST_SUGGESTIONS;
 const LOCATIONS = [
   'New York', 'San Francisco', 'Boston', 'Chicago', 'Los Angeles',
   'Washington DC', 'Seattle', 'Austin', 'Houston', 'Miami',
@@ -356,7 +354,11 @@ const tiStyles = StyleSheet.create({
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
-export default function OnboardingScreen() {
+interface Props {
+  onComplete: () => void;
+}
+
+export default function OnboardingScreen({ onComplete }: Props) {
   const insets = useSafeAreaInsets();
   const { user, profile, refreshProfile } = useAuth();
   const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
@@ -393,8 +395,7 @@ export default function OnboardingScreen() {
       const year = parseInt(gradYear, 10);
       const validYear = !isNaN(year) && year > 2000 && year < 2100 ? year : null;
 
-      // Save profile data
-      await supabase.from('profiles').update({
+      const { error: profileError } = await supabase.from('profiles').update({
         sport: sport || null,
         graduation_year: validYear,
         primary_industry: industries[0] ?? null,
@@ -407,6 +408,8 @@ export default function OnboardingScreen() {
         onboarding_completed: true,
       }).eq('id', user.id);
 
+      if (profileError) throw profileError;
+
       // Pre-populate user_preferences so You page is ready
       await saveUserPreferences(user.id, {
         industries,
@@ -418,6 +421,7 @@ export default function OnboardingScreen() {
       });
 
       await refreshProfile();
+      onComplete();
     } catch {
       Alert.alert('Error', 'Something went wrong. Please try again.');
       setSubmitting(false);

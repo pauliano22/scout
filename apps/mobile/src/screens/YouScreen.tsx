@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,262 +12,325 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spacing, typography } from '../theme/scoutTheme';
 import { useAuth } from '../contexts/AuthContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import AlumniAvatar from '../components/common/AlumniAvatar';
+import TagInput from '../components/common/TagInput';
+import { supabase } from '../lib/supabase';
+import { WEB_API_BASE_URL } from '../lib/api';
+import { INTEREST_SUGGESTIONS } from '@scout/shared/constants/interests';
 
-const INDUSTRIES = [
-  'Finance',
-  'Technology',
-  'Consulting',
-  'Healthcare',
-  'Law',
-  'Media',
-  'Real Estate',
-  'Private Equity',
-  'Marketing',
-  'Other',
-];
 const SPORTS = [
-  'Basketball',
-  'Soccer',
-  'Football',
-  'Lacrosse',
-  'Tennis',
-  'Swimming',
-  'Baseball',
-  'Volleyball',
-  'Hockey',
-  'Track & Field',
-  'Rowing',
-  'Wrestling',
-  'Golf',
-  'Field Hockey',
-  'Cross Country',
-  'Fencing',
-  'Gymnastics',
-];
-const LOCATIONS = [
-  'New York',
-  'San Francisco',
-  'Boston',
-  'Chicago',
-  'Los Angeles',
-  'Washington DC',
-  'Seattle',
-  'Austin',
-  'Houston',
-  'Miami',
+  'Basketball', 'Soccer', 'Football', 'Lacrosse', 'Tennis', 'Swimming',
+  'Baseball', 'Volleyball', 'Hockey', 'Track & Field', 'Rowing', 'Wrestling',
+  'Golf', 'Field Hockey', 'Cross Country', 'Fencing', 'Gymnastics',
 ];
 
-interface MultiSelectProps {
-  label: string;
-  options: string[];
-  selected: string[];
-  onChange: (val: string[]) => void;
-}
+const LOCATION_SUGGESTIONS = [
+  'New York', 'San Francisco', 'Boston', 'Chicago', 'Los Angeles',
+  'Washington DC', 'Seattle', 'Austin', 'Houston', 'Miami',
+  'Atlanta', 'Denver', 'Philadelphia', 'Dallas', 'Minneapolis',
+];
 
-function MultiSelect({ label, options, selected, onChange }: MultiSelectProps) {
-  function toggle(item: string) {
-    if (selected.includes(item)) {
-      onChange(selected.filter((s) => s !== item));
-    } else {
-      onChange([...selected, item]);
-    }
-  }
+const ROLE_SUGGESTIONS = [
+  'Investment Banking Analyst', 'Software Engineer', 'Product Manager',
+  'Management Consultant', 'Financial Analyst', 'Marketing Manager',
+  'Data Analyst', 'Sales', 'Operations', 'Strategy', 'Account Executive',
+  'Associate Consultant', 'Analyst', 'Associate', 'Engineer',
+];
 
+// ─── SectionHeader ────────────────────────────────────────────────────────────
+
+function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
-    <View style={msStyles.container}>
-      <Text style={msStyles.label}>{label}</Text>
-      <View style={msStyles.options}>
-        {options.map((opt) => {
-          const active = selected.includes(opt);
-          return (
-            <Pressable
-              key={opt}
-              style={[msStyles.chip, active && msStyles.chipActive]}
-              onPress={() => toggle(opt)}
-            >
-              <Text style={[msStyles.chipText, active && msStyles.chipTextActive]}>
-                {opt}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {sub ? <Text style={styles.sectionSub}>{sub}</Text> : null}
     </View>
   );
 }
 
-const msStyles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.xl,
-  },
-  label: {
-    ...typography.eyebrow,
-    color: colors.textTertiary,
-    marginBottom: spacing.sm,
-  },
-  options: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 7,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  chipActive: {
-    backgroundColor: colors.textPrimary,
-    borderColor: colors.textPrimary,
-  },
-  chipText: {
-    ...typography.footnote,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  chipTextActive: {
-    color: colors.textInverse,
-    fontWeight: '600',
-  },
-});
+// ─── ToggleRow ────────────────────────────────────────────────────────────────
 
-interface CompanyInputProps {
-  companies: string[];
-  onChange: (val: string[]) => void;
+interface ToggleRowProps {
+  label: string;
+  sub: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+  last?: boolean;
 }
 
-function CompanyInput({ companies, onChange }: CompanyInputProps) {
-  const [draft, setDraft] = useState('');
+function ToggleRow({ label, sub, value, onChange, last }: ToggleRowProps) {
+  return (
+    <View style={[styles.toggleRow, last && styles.toggleRowLast]}>
+      <View style={styles.toggleInfo}>
+        <Text style={styles.toggleLabel}>{label}</Text>
+        <Text style={styles.toggleSub}>{sub}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ false: colors.border, true: colors.red }}
+        thumbColor={colors.surface}
+      />
+    </View>
+  );
+}
 
-  function addCurrent() {
-    const value = draft.trim();
-    if (!value) return;
-    if (companies.some((c) => c.toLowerCase() === value.toLowerCase())) {
-      setDraft('');
+// ─── ProfileCard ──────────────────────────────────────────────────────────────
+
+interface ProfileCardProps {
+  userId: string;
+  profile: import('../types/database').Profile | null;
+  onProfileSaved: () => Promise<void>;
+}
+
+function ProfileCard({ userId, profile, onProfileSaved }: ProfileCardProps) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const [draftName, setDraftName] = useState('');
+  const [draftSport, setDraftSport] = useState('');
+  const [draftYear, setDraftYear] = useState('');
+  const [draftMajor, setDraftMajor] = useState('');
+  // localAvatarUri holds a freshly-picked image URI before it's been uploaded,
+  // so the UI updates immediately without waiting for the round-trip.
+  const [localAvatarUri, setLocalAvatarUri] = useState<string | null>(null);
+
+  function startEdit() {
+    setDraftName(profile?.full_name ?? '');
+    setDraftSport(profile?.sport ?? '');
+    setDraftYear(profile?.graduation_year ? String(profile.graduation_year) : '');
+    setDraftMajor(profile?.major ?? '');
+    setLocalAvatarUri(null);
+    setEditing(true);
+  }
+
+  function cancelEdit() {
+    setEditing(false);
+    setLocalAvatarUri(null);
+  }
+
+  async function pickAvatar() {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Allow photo library access to change your profile photo.');
       return;
     }
-    onChange([...companies, value]);
-    setDraft('');
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    const asset = result.assets[0];
+    setLocalAvatarUri(asset.uri);
+    setUploadingAvatar(true);
+
+    try {
+      const response = await fetch(asset.uri);
+      const blob = await response.blob();
+      const path = `${userId}/avatar.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('user-avatars')
+        .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('user-avatars')
+        .getPublicUrl(path);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', userId);
+
+      if (updateError) throw updateError;
+
+      await onProfileSaved();
+    } catch {
+      Alert.alert('Upload failed', 'Could not save your photo. Please try again.');
+      setLocalAvatarUri(null);
+    } finally {
+      setUploadingAvatar(false);
+    }
   }
 
-  function remove(name: string) {
-    onChange(companies.filter((c) => c !== name));
+  async function saveProfile() {
+    const yearNum = draftYear.trim() ? parseInt(draftYear.trim(), 10) : null;
+    if (draftYear.trim() && (isNaN(yearNum!) || yearNum! < 1900 || yearNum! > 2100)) {
+      Alert.alert('Invalid year', 'Enter a 4-digit graduation year, e.g. 2027.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: draftName.trim() || null,
+          sport: draftSport.trim() || null,
+          graduation_year: yearNum,
+          major: draftMajor.trim() || null,
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      await onProfileSaved();
+      setEditing(false);
+    } catch {
+      Alert.alert('Save failed', 'Could not update your profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const displayAvatarUri = localAvatarUri ?? profile?.avatar_url ?? null;
+  const avatarSubject = {
+    name: profile?.full_name ?? 'You',
+    photoUrl: displayAvatarUri,
+  };
+
+  const yearShort = profile?.graduation_year
+    ? `'${String(profile.graduation_year).slice(-2)}`
+    : null;
+  const sportLine = [profile?.sport, yearShort ? `Class of ${yearShort}` : null]
+    .filter(Boolean)
+    .join('  ·  ');
+
+  if (editing) {
+    return (
+      <View style={styles.profileCard}>
+        {/* Avatar with camera overlay */}
+        <Pressable onPress={pickAvatar} style={styles.avatarWrap} disabled={uploadingAvatar}>
+          <AlumniAvatar alumni={avatarSubject} size={72} />
+          <View style={styles.cameraBadge}>
+            {uploadingAvatar ? (
+              <ActivityIndicator size="small" color={colors.textInverse} />
+            ) : (
+              <Ionicons name="camera" size={14} color={colors.textInverse} />
+            )}
+          </View>
+        </Pressable>
+
+        {/* Edit fields */}
+        <View style={styles.editFields}>
+          <TextInput
+            style={styles.editInput}
+            value={draftName}
+            onChangeText={setDraftName}
+            placeholder="Full name"
+            placeholderTextColor={colors.textDisabled}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.editInput}
+            value={draftSport}
+            onChangeText={setDraftSport}
+            placeholder="Sport (e.g. Lacrosse)"
+            placeholderTextColor={colors.textDisabled}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+          <TextInput
+            style={styles.editInput}
+            value={draftYear}
+            onChangeText={setDraftYear}
+            placeholder="Grad year (e.g. 2027)"
+            placeholderTextColor={colors.textDisabled}
+            keyboardType="number-pad"
+            maxLength={4}
+          />
+          <TextInput
+            style={[styles.editInput, styles.editInputLast]}
+            value={draftMajor}
+            onChangeText={setDraftMajor}
+            placeholder="Major"
+            placeholderTextColor={colors.textDisabled}
+            autoCapitalize="words"
+            autoCorrect={false}
+          />
+        </View>
+
+        {/* Save / Cancel */}
+        <View style={styles.editActions}>
+          <Pressable style={styles.cancelBtn} onPress={cancelEdit} disabled={saving}>
+            <Text style={styles.cancelBtnText}>Cancel</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
+            onPress={saveProfile}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color={colors.textInverse} />
+            ) : (
+              <Text style={styles.saveBtnText}>Save</Text>
+            )}
+          </Pressable>
+        </View>
+      </View>
+    );
   }
 
   return (
-    <View style={msStyles.container}>
-      <Text style={msStyles.label}>Target Companies</Text>
-      <Text style={ciStyles.help}>
-        Alumni who worked here — current or past — get prioritized.
-      </Text>
-
-      <View style={ciStyles.inputRow}>
-        <TextInput
-          style={ciStyles.input}
-          value={draft}
-          onChangeText={setDraft}
-          placeholder="Add a company"
-          placeholderTextColor={colors.textDisabled}
-          autoCapitalize="words"
-          autoCorrect={false}
-          returnKeyType="done"
-          onSubmitEditing={addCurrent}
-        />
-        <Pressable
-          style={[ciStyles.addButton, !draft.trim() && ciStyles.addButtonDisabled]}
-          onPress={addCurrent}
-          disabled={!draft.trim()}
-        >
-          <Ionicons name="add" size={20} color={colors.textInverse} />
-        </Pressable>
+    <View style={styles.profileCard}>
+      <Pressable onPress={pickAvatar} style={styles.avatarWrap} disabled={uploadingAvatar}>
+        {displayAvatarUri ? (
+          <Image source={{ uri: displayAvatarUri }} style={styles.avatarImage} />
+        ) : (
+          <AlumniAvatar alumni={avatarSubject} size={72} />
+        )}
+        {uploadingAvatar && (
+          <View style={[styles.cameraBadge, styles.cameraBadgeUploading]}>
+            <ActivityIndicator size="small" color={colors.textInverse} />
+          </View>
+        )}
+      </Pressable>
+      <View style={styles.profileText}>
+        <Text style={styles.profileName} numberOfLines={1}>
+          {profile?.full_name ?? 'Student Athlete'}
+        </Text>
+        {sportLine ? (
+          <Text style={styles.profileSport} numberOfLines={1}>
+            {sportLine}
+          </Text>
+        ) : null}
+        {profile?.major ? (
+          <Text style={styles.profileMajor} numberOfLines={1}>
+            {profile.major}
+          </Text>
+        ) : null}
       </View>
-
-      {companies.length > 0 ? (
-        <View style={ciStyles.chips}>
-          {companies.map((c) => (
-            <Pressable key={c} style={ciStyles.chip} onPress={() => remove(c)}>
-              <Text style={ciStyles.chipText}>{c}</Text>
-              <Ionicons name="close" size={14} color={colors.textSecondary} />
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
+      <Pressable style={styles.editIconBtn} onPress={startEdit} hitSlop={8}>
+        <Ionicons name="pencil-outline" size={16} color={colors.textSecondary} />
+      </Pressable>
     </View>
   );
 }
 
-const ciStyles = StyleSheet.create({
-  help: {
-    ...typography.caption1,
-    color: colors.textTertiary,
-    marginBottom: spacing.sm,
-    marginTop: -4,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    ...typography.callout,
-    color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.textPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonDisabled: {
-    opacity: 0.4,
-  },
-  chips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 7,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  chipText: {
-    ...typography.footnote,
-    color: colors.textPrimary,
-    fontWeight: '500',
-  },
-});
+// ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function YouScreen() {
   const insets = useSafeAreaInsets();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
   const { prefs, setPrefs, saving, lastSavedAt } = usePreferences();
 
-  // Briefly flash a "Saved" indicator each time a save lands
   const [savedFlash, setSavedFlash] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   useEffect(() => {
     if (!lastSavedAt) return;
     setSavedFlash(true);
@@ -280,85 +345,145 @@ export default function YouScreen() {
     ]);
   }
 
-  const avatarSubject = {
-    name: profile?.full_name ?? user?.email ?? 'You',
-    photoUrl: profile?.avatar_url ?? null,
-  };
+  function handleDeleteAccount() {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your profile, network, and all data. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete My Account',
+          style: 'destructive',
+          onPress: confirmDeleteAccount,
+        },
+      ],
+    );
+  }
 
-  const yearShort = profile?.graduation_year
-    ? `'${String(profile.graduation_year).slice(-2)}`
-    : null;
+  async function confirmDeleteAccount() {
+    if (!user) return;
+    setDeletingAccount(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) throw new Error('No session');
+
+      const response = await fetch(`${WEB_API_BASE_URL}/api/profile/delete`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error ?? `HTTP ${response.status}`);
+      }
+
+      await signOut();
+    } catch (err: any) {
+      setDeletingAccount(false);
+      Alert.alert(
+        'Could not delete account',
+        err?.message ?? 'Something went wrong. Please try again.',
+      );
+    }
+  }
 
   return (
     <ScrollView
-      style={styles.container}
+      style={styles.root}
       contentContainerStyle={[
         styles.content,
-        { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + 32 },
+        { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + 40 },
       ]}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={styles.headerWrap}>
+      <View style={styles.headerRow}>
         <Text style={styles.headerTitle}>You</Text>
       </View>
 
-      {/* Profile card */}
-      <View style={styles.profileCard}>
-        <AlumniAvatar alumni={avatarSubject} size={64} />
-        <View style={styles.profileInfo}>
-          <Text style={styles.profileName} numberOfLines={1}>
-            {profile?.full_name ?? 'Student Athlete'}
-          </Text>
-          {profile?.sport ? (
-            <Text style={styles.profileMeta} numberOfLines={1}>
-              {profile.sport}
-              {yearShort ? `  ·  Class of ${yearShort}` : ''}
-            </Text>
-          ) : null}
-          <Text style={styles.profileEmail} numberOfLines={1}>
-            {user?.email ?? ''}
-          </Text>
+      {/* Profile card with inline editing */}
+      {user && (
+        <ProfileCard
+          userId={user.id}
+          profile={profile}
+          onProfileSaved={refreshProfile}
+        />
+      )}
+
+      {/* ── Career Interests ─────────────────────────── */}
+      <SectionHeader title="Career Interests" sub="Industries and roles you're targeting" />
+      <View style={styles.card}>
+        <TagInput
+          compact
+          label="Industries"
+          placeholder="e.g. Government / Policy"
+          suggestions={INTEREST_SUGGESTIONS}
+          tags={prefs.industries}
+          onAdd={(tag) => setPrefs((p) => ({ ...p, industries: [...p.industries, tag] }))}
+          onRemove={(tag) =>
+            setPrefs((p) => ({ ...p, industries: p.industries.filter((i) => i !== tag) }))
+          }
+        />
+        <TagInput
+          compact
+          label="Roles"
+          placeholder="e.g. Financial Analyst"
+          suggestions={ROLE_SUGGESTIONS}
+          tags={prefs.roles}
+          onAdd={(tag) => setPrefs((p) => ({ ...p, roles: [...p.roles, tag] }))}
+          onRemove={(tag) =>
+            setPrefs((p) => ({ ...p, roles: p.roles.filter((r) => r !== tag) }))
+          }
+          style={{ marginBottom: 0 }}
+        />
+      </View>
+
+      {/* ── Discovery ────────────────────────────────── */}
+      <SectionHeader title="Discovery" sub="Who Scout surfaces for you" />
+      <View style={styles.card}>
+        <TagInput
+          compact
+          label="Sports"
+          placeholder="e.g. Lacrosse"
+          suggestions={SPORTS}
+          tags={prefs.sports}
+          onAdd={(tag) => setPrefs((p) => ({ ...p, sports: [...p.sports, tag] }))}
+          onRemove={(tag) =>
+            setPrefs((p) => ({ ...p, sports: p.sports.filter((s) => s !== tag) }))
+          }
+        />
+        <TagInput
+          compact
+          label="Locations"
+          placeholder="e.g. New York"
+          suggestions={LOCATION_SUGGESTIONS}
+          tags={prefs.locations}
+          onAdd={(tag) => setPrefs((p) => ({ ...p, locations: [...p.locations, tag] }))}
+          onRemove={(tag) =>
+            setPrefs((p) => ({ ...p, locations: p.locations.filter((l) => l !== tag) }))
+          }
+        />
+        <TagInput
+          compact
+          label="Target Companies"
+          placeholder="e.g. Goldman Sachs"
+          suggestions={[]}
+          hint="Alumni who worked here get prioritized."
+          tags={prefs.companies ?? []}
+          onAdd={(tag) => setPrefs((p) => ({ ...p, companies: [...(p.companies ?? []), tag] }))}
+          onRemove={(tag) =>
+            setPrefs((p) => ({ ...p, companies: (p.companies ?? []).filter((c) => c !== tag) }))
+          }
+          style={{ marginBottom: spacing.md }}
+        />
+
+        <View style={styles.priorityDivider}>
+          <Text style={styles.priorityTitle}>Priorities</Text>
         </View>
-      </View>
-
-      {/* Preferences */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Preferences</Text>
-        <Text style={styles.sectionSub}>Customize who you discover</Text>
-      </View>
-
-      <View style={styles.prefsCard}>
-        <MultiSelect
-          label="Target Industries"
-          options={INDUSTRIES}
-          selected={prefs.industries}
-          onChange={(val) => setPrefs((p) => ({ ...p, industries: val }))}
-        />
-
-        <MultiSelect
-          label="Sports to prioritize"
-          options={SPORTS}
-          selected={prefs.sports}
-          onChange={(val) => setPrefs((p) => ({ ...p, sports: val }))}
-        />
-
-        <MultiSelect
-          label="Target Locations"
-          options={LOCATIONS}
-          selected={prefs.locations}
-          onChange={(val) => setPrefs((p) => ({ ...p, locations: val }))}
-        />
-
-        <CompanyInput
-          companies={prefs.companies ?? []}
-          onChange={(val) => setPrefs((p) => ({ ...p, companies: val }))}
-        />
-
-        <Text style={msStyles.label}>Priorities</Text>
         <ToggleRow
           label="Same sport"
-          sub="Boost alumni from your sport"
+          sub="Boost alumni who played your sport"
           value={prefs.priorities.sameSport}
           onChange={(v) =>
             setPrefs((p) => ({ ...p, priorities: { ...p.priorities, sameSport: v } }))
@@ -374,7 +499,7 @@ export default function YouScreen() {
         />
         <ToggleRow
           label="Senior alumni"
-          sub="More years of experience (10+ yrs out)"
+          sub="Prefer alumni 10+ years out"
           value={prefs.priorities.seniorAlumni}
           onChange={(v) =>
             setPrefs((p) => ({ ...p, priorities: { ...p.priorities, seniorAlumni: v } }))
@@ -383,110 +508,200 @@ export default function YouScreen() {
         />
       </View>
 
+      {/* Autosave indicator */}
       <View style={styles.autosaveRow}>
         <Ionicons
-          name={saving ? 'sync-outline' : savedFlash ? 'checkmark-circle' : 'cloud-done-outline'}
+          name={
+            saving ? 'sync-outline' : savedFlash ? 'checkmark-circle' : 'cloud-done-outline'
+          }
           size={14}
           color={savedFlash ? colors.success : colors.textTertiary}
         />
         <Text style={styles.autosaveText}>
-          {saving
-            ? 'Saving…'
-            : savedFlash
-              ? 'Saved'
-              : 'Changes save automatically'}
+          {saving ? 'Saving…' : savedFlash ? 'Saved' : 'Changes save automatically'}
         </Text>
       </View>
 
-      {/* About */}
-      <View style={styles.aboutCard}>
-        <View style={styles.aboutRow}>
-          <Text style={styles.aboutLabel}>Platform</Text>
-          <Text style={styles.aboutValue}>Scout · Athlete Alumni Network</Text>
+      {/* ── Account ──────────────────────────────────── */}
+      <SectionHeader title="Account" />
+      <View style={styles.card}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Email</Text>
+          <Text style={styles.infoValue} numberOfLines={1}>{user?.email ?? ''}</Text>
         </View>
-        <View style={[styles.aboutRow, styles.aboutRowLast]}>
-          <Text style={styles.aboutLabel}>Version</Text>
-          <Text style={styles.aboutValue}>1.0.0</Text>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>Platform</Text>
+          <Text style={styles.infoValue}>Scout · Athlete Network</Text>
+        </View>
+        <View style={[styles.infoRow, styles.infoRowLast]}>
+          <Text style={styles.infoLabel}>Version</Text>
+          <Text style={styles.infoValue}>1.0.0</Text>
         </View>
       </View>
 
-      {/* Sign out */}
-      <Pressable style={styles.signOutButton} onPress={handleSignOut}>
+      <Pressable style={styles.signOutBtn} onPress={handleSignOut}>
         <Ionicons name="log-out-outline" size={18} color={colors.error} />
         <Text style={styles.signOutText}>Sign Out</Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.deleteBtn, deletingAccount && styles.deleteBtnDisabled]}
+        onPress={handleDeleteAccount}
+        disabled={deletingAccount}
+      >
+        {deletingAccount ? (
+          <ActivityIndicator size="small" color={colors.textTertiary} />
+        ) : (
+          <Text style={styles.deleteText}>Delete Account</Text>
+        )}
       </Pressable>
     </ScrollView>
   );
 }
 
-interface ToggleRowProps {
-  label: string;
-  sub: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-  last?: boolean;
-}
-
-function ToggleRow({ label, sub, value, onChange, last }: ToggleRowProps) {
-  return (
-    <View style={[styles.toggleRow, last && { borderBottomWidth: 0 }]}>
-      <View style={styles.toggleInfo}>
-        <Text style={styles.toggleLabel}>{label}</Text>
-        <Text style={styles.toggleSub}>{sub}</Text>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onChange}
-        trackColor={{ false: colors.border, true: colors.red }}
-        thumbColor={colors.surface}
-      />
-    </View>
-  );
-}
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: spacing.xl,
   },
-  headerWrap: {
+  headerRow: {
     paddingBottom: spacing.lg,
   },
   headerTitle: {
     ...typography.largeTitle,
   },
+  // Profile card — centered, with edit icon in corner
   profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.lg,
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.md,
     marginBottom: spacing.xxl,
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
-  profileInfo: {
-    flex: 1,
-    gap: 3,
+  avatarWrap: {
+    position: 'relative',
+    width: 72,
+    height: 72,
+  },
+  avatarImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.surface,
+  },
+  cameraBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.textPrimary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.surface,
+  },
+  cameraBadgeUploading: {
+    backgroundColor: colors.red,
+  },
+  profileText: {
+    alignItems: 'center',
+    gap: 4,
   },
   profileName: {
-    ...typography.headline,
+    ...typography.title2,
+    textAlign: 'center',
   },
-  profileMeta: {
+  profileSport: {
     ...typography.footnote,
     color: colors.red,
     fontWeight: '600',
+    textAlign: 'center',
   },
-  profileEmail: {
+  profileMajor: {
     ...typography.caption1,
     color: colors.textTertiary,
+    textAlign: 'center',
   },
+  editIconBtn: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  // Edit mode fields
+  editFields: {
+    width: '100%',
+    gap: spacing.sm,
+  },
+  editInput: {
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 12,
+    ...typography.callout,
+    color: colors.textPrimary,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  editInputLast: {
+    marginBottom: 0,
+  },
+  editActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    width: '100%',
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: radius.md,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  cancelBtnText: {
+    ...typography.subhead,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  saveBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: radius.md,
+    backgroundColor: colors.textPrimary,
+    alignItems: 'center',
+  },
+  saveBtnDisabled: {
+    opacity: 0.5,
+  },
+  saveBtnText: {
+    ...typography.subhead,
+    color: colors.textInverse,
+    fontWeight: '600',
+  },
+  // Section headers
   sectionHeader: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
+    marginTop: spacing.xs,
   },
   sectionTitle: {
     ...typography.title3,
@@ -496,7 +711,8 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     marginTop: 2,
   },
-  prefsCard: {
+  // Generic card container
+  card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
@@ -504,6 +720,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
+  // Priorities sub-section inside Discovery card
+  priorityDivider: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.borderLight,
+    paddingTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  priorityTitle: {
+    ...typography.subhead,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  // Toggle rows
   toggleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -512,9 +741,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.borderLight,
   },
+  toggleRowLast: {
+    borderBottomWidth: 0,
+  },
   toggleInfo: {
     flex: 1,
     gap: 2,
+    paddingRight: spacing.md,
   },
   toggleLabel: {
     ...typography.subhead,
@@ -525,6 +758,7 @@ const styles = StyleSheet.create({
     ...typography.caption1,
     color: colors.textTertiary,
   },
+  // Autosave indicator
   autosaveRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -538,44 +772,58 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     fontWeight: '500',
   },
-  aboutCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  aboutRow: {
+  // Account info rows
+  infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.borderLight,
   },
-  aboutRowLast: {
+  infoRowLast: {
     borderBottomWidth: 0,
   },
-  aboutLabel: {
+  infoLabel: {
     ...typography.subhead,
     color: colors.textTertiary,
   },
-  aboutValue: {
+  infoValue: {
     ...typography.subhead,
     color: colors.textPrimary,
     fontWeight: '500',
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: spacing.md,
   },
-  signOutButton: {
+  // Sign out
+  signOutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
     paddingVertical: spacing.md,
-    marginBottom: spacing.lg,
+    marginTop: spacing.sm,
   },
   signOutText: {
     ...typography.subhead,
     color: colors.error,
     fontWeight: '600',
+  },
+  // Delete account — muted so it doesn't compete visually with Sign Out
+  deleteBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    marginTop: 2,
+    minHeight: 44,
+  },
+  deleteBtnDisabled: {
+    opacity: 0.5,
+  },
+  deleteText: {
+    ...typography.footnote,
+    color: colors.textDisabled,
+    fontWeight: '500',
   },
 });

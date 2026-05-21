@@ -20,7 +20,7 @@ import type { ScoredAlumni } from '../services/recommendations';
 export default function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
-  const { deck, loading, load, swipe } = useRecommendations();
+  const { deck, loading, load, swipe, limitReached } = useRecommendations();
 
   const [selectedAlumni, setSelectedAlumni] = useState<ScoredAlumni | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -88,7 +88,7 @@ export default function DiscoverScreen() {
   }
 
   const visibleDeck = deck.slice(0, 3);
-  const isEmpty = !loading && deck.length === 0;
+  const isEmpty = !loading && deck.length === 0 && !limitReached;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -99,7 +99,7 @@ export default function DiscoverScreen() {
           <Text style={styles.headerSub}>Alumni picked for you</Text>
         </View>
         <View style={styles.headerActions}>
-          {!loading && deck.length > 0 ? (
+          {!loading && !limitReached && deck.length > 0 ? (
             <View style={styles.countPill}>
               <Text style={styles.countText}>{deck.length}</Text>
             </View>
@@ -118,12 +118,28 @@ export default function DiscoverScreen() {
       <View style={styles.deckContainer}>
         {loading ? (
           <SkeletonCard />
+        ) : limitReached ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="moon-outline" size={28} color={colors.textTertiary} />
+            </View>
+            <Text style={styles.emptyTitle}>Come back tomorrow</Text>
+            <Text style={styles.emptySub}>
+              You've reached your {20} alumni discoveries for today. Recommendations reset at midnight.
+            </Text>
+            <Pressable
+              style={styles.primaryCta}
+              onPress={() => navigation.navigate('Network')}
+            >
+              <Text style={styles.primaryCtaText}>View My Network</Text>
+            </Pressable>
+          </View>
         ) : isEmpty ? (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIcon}>
               <Ionicons name="checkmark-circle-outline" size={32} color={colors.textTertiary} />
             </View>
-            <Text style={styles.emptyTitle}>You’re caught up.</Text>
+            <Text style={styles.emptyTitle}>You're caught up.</Text>
             <Text style={styles.emptySub}>
               Update your preferences or check back soon for more alumni.
             </Text>
@@ -157,7 +173,7 @@ export default function DiscoverScreen() {
       </View>
 
       {/* Action buttons */}
-      {!loading && !isEmpty ? (
+      {!loading && !isEmpty && !limitReached ? (
         <View style={[styles.actionRow, { paddingBottom: spacing.lg }]}>
           <Animated.View style={{ transform: [{ scale: passAnim }] }}>
             <Pressable

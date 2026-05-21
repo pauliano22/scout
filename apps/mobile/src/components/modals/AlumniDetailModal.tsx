@@ -32,6 +32,7 @@ interface Props {
   onClose: () => void;
   onSave: (alumni: ScoredAlumni) => void;
   onPass: (alumni: ScoredAlumni) => void;
+  onGenerateMessage?: (alumni: ScoredAlumni) => void;
 }
 
 export default function AlumniDetailModal({
@@ -40,6 +41,7 @@ export default function AlumniDetailModal({
   onClose,
   onSave,
   onPass,
+  onGenerateMessage,
 }: Props) {
   const insets = useSafeAreaInsets();
   const [copyHint, setCopyHint] = useState<string | null>(null);
@@ -268,13 +270,23 @@ export default function AlumniDetailModal({
             <Text style={styles.passActionText}>Pass</Text>
           </Pressable>
 
-          <Pressable
-            style={styles.saveAction}
-            onPress={() => { onSave(alumni); onClose(); }}
-          >
-            <Ionicons name="bookmark" size={18} color={colors.textInverse} />
-            <Text style={styles.saveActionText}>Save</Text>
-          </Pressable>
+          {onGenerateMessage ? (
+            <Pressable
+              style={styles.messageAction}
+              onPress={() => onGenerateMessage(alumni)}
+            >
+              <Ionicons name="mail-outline" size={18} color={colors.textInverse} />
+              <Text style={styles.saveActionText}>Message</Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              style={styles.saveAction}
+              onPress={() => { onSave(alumni); onClose(); }}
+            >
+              <Ionicons name="bookmark" size={18} color={colors.textInverse} />
+              <Text style={styles.saveActionText}>Save</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </Modal>
@@ -645,6 +657,16 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: radius.lg,
     backgroundColor: colors.red,
+  },
+  messageAction: {
+    flex: 1.2,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: radius.lg,
+    backgroundColor: colors.textPrimary,
   },
   saveActionText: {
     ...typography.subhead,

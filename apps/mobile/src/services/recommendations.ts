@@ -5,6 +5,7 @@ import {
   type NormalizedAlumni,
 } from '../lib/alumniProfile';
 import type { Alumni } from '../types/database';
+import { INTEREST_ALIASES, INTEREST_DB_INDUSTRIES } from '@scout/shared/constants/interests';
 
 export interface UserPreferences {
   industries: string[];
@@ -229,6 +230,26 @@ function guessIndustryBucket(company: string): string | null {
   return null;
 }
 
+/**
+ * Returns whether an alumni's DB industry value matches any of the user's
+ * saved interest labels, expanding through INTEREST_ALIASES so labels like
+ * "Government / Policy" match alumni with industry="Government".
+ */
+function industryMatchStrength(
+  alumniIndustry: string | null,
+  userInterests: string[],
+): boolean {
+  if (!alumniIndustry) return false;
+  for (const interest of userInterests) {
+    // Direct exact match handles both old format and new format that happen to match
+    if (ciEquals(interest, alumniIndustry)) return true;
+    // Alias expansion — maps user-friendly labels to DB taxonomy values
+    const aliases = INTEREST_ALIASES[interest] ?? [interest];
+    if (aliases.some((a) => ciEquals(a, alumniIndustry))) return true;
+  }
+  return false;
+}
+
 function scoreAlumnus(
   alumni: Alumni,
   prefs: UserPreferences,
@@ -247,10 +268,10 @@ function scoreAlumnus(
     total: 0,
   };
 
-  // Industry match
-  if (profile.industry && prefs.industries.length > 0) {
-    const match = prefs.industries.some((ind) => ciEquals(ind, profile.industry));
-    if (match) {
+  // Industry match — uses alias expansion so "Government / Policy" matches
+  // alumni with industry="Government" etc. similarIndustry toggle zeroes this out.
+  if (profile.industry && prefs.industries.length > 0 && prefs.priorities.similarIndustry !== false) {
+    if (industryMatchStrength(profile.industry, prefs.industries)) {
       const adj = swipeWeights.industry?.[profile.industry] ?? 0;
       breakdown.industry = Math.max(0, Math.min(BASE_WEIGHTS.industry + adj, 40));
     }
@@ -331,6 +352,13 @@ function scoreAlumnus(
     typeof alumni.prestige_score === 'number' ? alumni.prestige_score : 0;
   const prestigeNormalized = Math.max(0, Math.min(prestigeRaw, 100)) / 100;
   breakdown.prestige = Math.round(prestigeNormalized * BASE_WEIGHTS.prestige);
+
+  // Prestige dampening: when the user has stated industry interests but this
+  // alumni doesn't match any of them, cap prestige contribution. Prevents
+  // finance-heavy prestige scores from burying government/nonprofit alumni.
+  if (prefs.industries.length > 0 && breakdown.industry === 0) {
+    breakdown.prestige = Math.min(breakdown.prestige, 10);
+  }
 
   breakdown.total =
     breakdown.industry +
@@ -433,11 +461,32 @@ export async function fetchRecommendations(
     const networkedIds = new Set((network ?? []).map((n) => n.alumni_id));
     const excludeIds = new Set([...swipedIds, ...networkedIds]);
 
-    // Order by prestige_score DESC at the database level so the candidate
-    // pool itself is biased toward top-tier alumni. Client-side ranking
-    // still applies on top, but at least we're scoring the right pool.
-    // (Migration 016 created the alumni_prestige_score_idx for this query.)
-    const { data: alumniData, error } = await supabase
+    // Two-pass fetch so interest-matched alumni are never crowded out by
+    // prestige-heavy pools that don't match the user's stated interests.
+    //
+    // Pass 1: all public alumni whose industry is in the user's target set.
+    //         No size limit — we want every match, not just the top-N.
+    // Pass 2: prestige-ordered fallback pool to fill the rest of the deck.
+    //         Deduped against pass-1 results in JS.
+    const targetDbIndustries = Array.from(
+      new Set(
+        prefs.industries.flatMap((ind) => INTEREST_DB_INDUSTRIES[ind] ?? [ind])
+      )
+    );
+
+    let pass1: Alumni[] = [];
+    if (targetDbIndustries.length > 0) {
+      const { data } = await supabase
+        .from('alumni')
+        .select('*')
+        .eq('is_public', true)
+        .in('industry', targetDbIndustries);
+      pass1 = (data ?? []) as Alumni[];
+    }
+
+    const pass1Ids = new Set(pass1.map((a) => a.id));
+
+    const { data: pass2Data, error } = await supabase
       .from('alumni')
       .select('*')
       .eq('is_public', true)
@@ -445,7 +494,10 @@ export async function fetchRecommendations(
       .order('updated_at', { ascending: false })
       .limit(500);
 
-    if (error || !alumniData) return [];
+    if (error) return [];
+
+    const pass2 = ((pass2Data ?? []) as Alumni[]).filter((a) => !pass1Ids.has(a.id));
+    const alumniData = [...pass1, ...pass2];
 
     const unseen = alumniData.filter((a) => !excludeIds.has(a.id));
 

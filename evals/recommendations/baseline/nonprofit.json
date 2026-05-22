@@ -1,0 +1,426 @@
+{
+  "seeker": {
+    "id": "nonprofit",
+    "field": "Nonprofit",
+    "note": "Picks 'Nonprofit / Social Impact' -> DB 'Nonprofit' (thin corpus).",
+    "prefs": {
+      "industries": [
+        "Nonprofit / Social Impact"
+      ],
+      "sports": [
+        "Rowing"
+      ],
+      "locations": [],
+      "roles": [
+        "Program",
+        "Coordinator",
+        "Director"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Nonprofit"
+    ]
+  },
+  "metrics": {
+    "id": "nonprofit",
+    "field": "Nonprofit",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 0.1,
+    "financeLeakage": 0.6,
+    "sportsShare": 0,
+    "distinctIndustries": 5,
+    "topIndustry": "Finance",
+    "topIndustryShare": 0.6,
+    "avgReasons": 3,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Software": 1,
+      "Nonprofit": 1,
+      "Technology": 1,
+      "Finance": 6,
+      "Education": 1
+    },
+    "top": [
+      {
+        "name": "Chris Massey",
+        "industry": "Software",
+        "score": 64,
+        "why": [
+          "Same sport — Rowing",
+          "Currently a Regional Sales Director, Commercial ...",
+          "At Salesforce"
+        ]
+      },
+      {
+        "name": "Kira Pritchard",
+        "industry": "Nonprofit",
+        "score": 58,
+        "why": [
+          "Works in Nonprofit",
+          "Currently a Senior Program Officer, Laurie M. Tisch ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Demian Caponi",
+        "industry": "Technology",
+        "score": 48,
+        "why": [
+          "Same sport — Rowing",
+          "Currently a Scaling high impact programs. [moving to ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Taylor Flynn",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Managing Director, Head of Portfolio ...",
+          "At Lighthousepartners",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Sarah Icke",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Director - Asset Management - Atlas Capital ...",
+          "At Director - Asset Management - Atlas Capital",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Michael Connors",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Executive Director , Non-Bank Financial ...",
+          "At Executive Director , Non-Bank",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Kevin Nee",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Executive Director, Private Wealth Advisor with ...",
+          "At Executive Director, Private Wealth",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Chris Murray",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Managing Director - Head Of Asset ...",
+          "At Timberlinerev",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Chris Leonberg",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Assistant Director of Capital Projects ...",
+          "At Assistant Director of Capital",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Tim Randall",
+        "industry": "Education",
+        "score": 44,
+        "why": [
+          "Currently a Director of Financial Aid, Associate ...",
+          "At Director of Financial",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Chris Massey",
+      "industry": "Software",
+      "company": "Salesforce",
+      "role": "Regional Sales Director, Commercial ...",
+      "sport": "Rowing",
+      "graduation_year": 2013,
+      "prestige_score": 40,
+      "score": 64,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 64
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing",
+        "Currently a Regional Sales Director, Commercial ...",
+        "At Salesforce"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Kira Pritchard",
+      "industry": "Nonprofit",
+      "company": null,
+      "role": "Senior Program Officer, Laurie M. Tisch ...",
+      "sport": "Women's Rowing",
+      "graduation_year": 2013,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Nonprofit",
+        "Currently a Senior Program Officer, Laurie M. Tisch ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Demian Caponi",
+      "industry": "Technology",
+      "company": null,
+      "role": "Scaling high impact programs. [moving to ...",
+      "sport": "Rowing",
+      "graduation_year": 2005,
+      "prestige_score": 0,
+      "score": 48,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 48
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing",
+        "Currently a Scaling high impact programs. [moving to ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Taylor Flynn",
+      "industry": "Finance",
+      "company": "Lighthousepartners",
+      "role": "Managing Director, Head of Portfolio ...",
+      "sport": "Women's Basketball",
+      "graduation_year": 2013,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Managing Director, Head of Portfolio ...",
+        "At Lighthousepartners",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Sarah Icke",
+      "industry": "Finance",
+      "company": "Director - Asset Management - Atlas Capital",
+      "role": "Director - Asset Management - Atlas Capital ...",
+      "sport": "Women's Swimming And Diving",
+      "graduation_year": 2013,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Director - Asset Management - Atlas Capital ...",
+        "At Director - Asset Management - Atlas Capital",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Michael Connors",
+      "industry": "Finance",
+      "company": "Executive Director , Non-Bank",
+      "role": "Executive Director , Non-Bank Financial ...",
+      "sport": "Men's Lacrosse",
+      "graduation_year": 2008,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Executive Director , Non-Bank Financial ...",
+        "At Executive Director , Non-Bank",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Kevin Nee",
+      "industry": "Finance",
+      "company": "Executive Director, Private Wealth",
+      "role": "Executive Director, Private Wealth Advisor with ...",
+      "sport": "Men's Lacrosse",
+      "graduation_year": 2006,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Executive Director, Private Wealth Advisor with ...",
+        "At Executive Director, Private Wealth",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Chris Murray",
+      "industry": "Finance",
+      "company": "Timberlinerev",
+      "role": "Managing Director - Head Of Asset ...",
+      "sport": "Football",
+      "graduation_year": 2012,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Managing Director - Head Of Asset ...",
+        "At Timberlinerev",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Chris Leonberg",
+      "industry": "Finance",
+      "company": "Assistant Director of Capital",
+      "role": "Assistant Director of Capital Projects ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2008,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Assistant Director of Capital Projects ...",
+        "At Assistant Director of Capital",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Tim Randall",
+      "industry": "Education",
+      "company": "Director of Financial",
+      "role": "Director of Financial Aid, Associate ...",
+      "sport": "Men's Lacrosse",
+      "graduation_year": 2008,
+      "prestige_score": 40,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Director of Financial Aid, Associate ...",
+        "At Director of Financial",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

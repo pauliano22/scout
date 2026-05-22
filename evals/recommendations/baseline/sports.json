@@ -1,0 +1,422 @@
+{
+  "seeker": {
+    "id": "sports",
+    "field": "Sports",
+    "note": "Picks 'Sports & Athletics' -> DB 'Sports'.",
+    "prefs": {
+      "industries": [
+        "Sports & Athletics"
+      ],
+      "sports": [
+        "Football"
+      ],
+      "locations": [],
+      "roles": [
+        "Coach",
+        "Scout",
+        "Operations"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Sports"
+    ]
+  },
+  "metrics": {
+    "id": "sports",
+    "field": "Sports",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 1,
+    "financeLeakage": 0,
+    "sportsShare": 1,
+    "distinctIndustries": 1,
+    "topIndustry": "Sports",
+    "topIndustryShare": 1,
+    "avgReasons": 3,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Sports": 10
+    },
+    "top": [
+      {
+        "name": "Malick Diomande",
+        "industry": "Sports",
+        "score": 83,
+        "why": [
+          "Works in Sports",
+          "Currently a Assistant Coach, Union College Cross ...",
+          "At Union College"
+        ]
+      },
+      {
+        "name": "Hunter Nourzad",
+        "industry": "Sports",
+        "score": 77,
+        "why": [
+          "Works in Sports",
+          "Same sport — Football",
+          "4 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Aidan Tierney",
+        "industry": "Sports",
+        "score": 77,
+        "why": [
+          "Works in Sports",
+          "Currently a Assistant Coach & Director of Football ...",
+          "4 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Nate McDonald",
+        "industry": "Sports",
+        "score": 77,
+        "why": [
+          "Works in Sports",
+          "Currently a Assistant Coach, North Bay Battalion ...",
+          "4 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Rashad Campbell",
+        "industry": "Sports",
+        "score": 74,
+        "why": [
+          "Works in Sports",
+          "Same sport — Football",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Jon Jaques",
+        "industry": "Sports",
+        "score": 74,
+        "why": [
+          "Works in Sports",
+          "Currently a Head Coach, Men's Basketball, Cornell ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Braden Birch",
+        "industry": "Sports",
+        "score": 74,
+        "why": [
+          "Works in Sports",
+          "Currently a Director of Hockey Operations & Salary Cap ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "William Boyce",
+        "industry": "Sports",
+        "score": 74,
+        "why": [
+          "Works in Sports",
+          "Currently a Head Coach - Harvard Men's Lightweight ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Bruno Hortelano-Roig",
+        "industry": "Sports",
+        "score": 74,
+        "why": [
+          "Works in Sports",
+          "Currently a Head Coach, Men's Track & Field ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Colby Wyatt",
+        "industry": "Sports",
+        "score": 63,
+        "why": [
+          "Works in Sports",
+          "At Baseball Systems",
+          "5 years out — recent enough for practical advice"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Malick Diomande",
+      "industry": "Sports",
+      "company": "Union College",
+      "role": "Assistant Coach, Union College Cross ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2020,
+      "prestige_score": 65,
+      "score": 83,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 16,
+        "total": 83
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Currently a Assistant Coach, Union College Cross ...",
+        "At Union College"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Hunter Nourzad",
+      "industry": "Sports",
+      "company": null,
+      "role": "Professional Athlete for the Kansas City ...",
+      "sport": "Football",
+      "graduation_year": 2022,
+      "prestige_score": 65,
+      "score": 77,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 77
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Same sport — Football",
+        "4 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Aidan Tierney",
+      "industry": "Sports",
+      "company": null,
+      "role": "Assistant Coach & Director of Football ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2022,
+      "prestige_score": 65,
+      "score": 77,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 77
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Currently a Assistant Coach & Director of Football ...",
+        "4 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Nate McDonald",
+      "industry": "Sports",
+      "company": null,
+      "role": "Assistant Coach, North Bay Battalion ...",
+      "sport": "Men's Ice Hockey",
+      "graduation_year": 2022,
+      "prestige_score": 65,
+      "score": 77,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 77
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Currently a Assistant Coach, North Bay Battalion ...",
+        "4 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Rashad Campbell",
+      "industry": "Sports",
+      "company": null,
+      "role": "Empowering 50000+ athletes to ...",
+      "sport": "Football",
+      "graduation_year": 2012,
+      "prestige_score": 65,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Same sport — Football",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Jon Jaques",
+      "industry": "Sports",
+      "company": null,
+      "role": "Head Coach, Men's Basketball, Cornell ...",
+      "sport": "Men's Basketball",
+      "graduation_year": 2010,
+      "prestige_score": 65,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Currently a Head Coach, Men's Basketball, Cornell ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Braden Birch",
+      "industry": "Sports",
+      "company": null,
+      "role": "Director of Hockey Operations & Salary Cap ...",
+      "sport": "Men's Ice Hockey",
+      "graduation_year": 2013,
+      "prestige_score": 65,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Currently a Director of Hockey Operations & Salary Cap ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "William Boyce",
+      "industry": "Sports",
+      "company": null,
+      "role": "Head Coach - Harvard Men's Lightweight ...",
+      "sport": "Men's Rowing",
+      "graduation_year": 2007,
+      "prestige_score": 65,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Currently a Head Coach - Harvard Men's Lightweight ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Bruno Hortelano-Roig",
+      "industry": "Sports",
+      "company": null,
+      "role": "Head Coach, Men's Track & Field ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2013,
+      "prestige_score": 65,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 16,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "Currently a Head Coach, Men's Track & Field ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Colby Wyatt",
+      "industry": "Sports",
+      "company": "Baseball Systems",
+      "role": "Baseball Systems Operator with Hawk-Eye ...",
+      "sport": "Baseball",
+      "graduation_year": 2021,
+      "prestige_score": 65,
+      "score": 63,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 16,
+        "total": 63
+      },
+      "whyThisMatch": [
+        "Works in Sports",
+        "At Baseball Systems",
+        "5 years out — recent enough for practical advice"
+      ]
+    }
+  ]
+}

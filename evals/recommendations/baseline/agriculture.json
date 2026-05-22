@@ -1,0 +1,400 @@
+{
+  "seeker": {
+    "id": "agriculture",
+    "field": "Agriculture",
+    "note": "No agriculture option and nothing fits — user skips (empty industries).",
+    "prefs": {
+      "industries": [],
+      "sports": [
+        "Wrestling"
+      ],
+      "locations": [],
+      "roles": [
+        "Farm",
+        "Agriculture",
+        "Agronomist"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": []
+  },
+  "metrics": {
+    "id": "agriculture",
+    "field": "Agriculture",
+    "isFinance": false,
+    "picksWereEmpty": true,
+    "n": 10,
+    "fieldRelevance": null,
+    "financeLeakage": 0.7,
+    "sportsShare": 0.2,
+    "distinctIndustries": 3,
+    "topIndustry": "Finance",
+    "topIndustryShare": 0.7,
+    "avgReasons": 2,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Finance": 7,
+      "Technology": 1,
+      "Sports": 2
+    },
+    "top": [
+      {
+        "name": "Taylor Moore",
+        "industry": "Finance",
+        "score": 46,
+        "why": [
+          "Same sport — Wrestling",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Keith Dickey",
+        "industry": "Technology",
+        "score": 44,
+        "why": [
+          "Same sport — Wrestling",
+          "At TD",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Richie Kenney",
+        "industry": "Finance",
+        "score": 40,
+        "why": [
+          "At Merrill Lynch Wealth",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Jake McCulloch",
+        "industry": "Finance",
+        "score": 35,
+        "why": [
+          "At Senior Underwriter - Financial",
+          "6 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Ian Rawn",
+        "industry": "Finance",
+        "score": 35,
+        "why": [
+          "At Strategy & Special Projects, Treville Capital",
+          "8 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Erika Tillotson",
+        "industry": "Finance",
+        "score": 35,
+        "why": [
+          "At Supply Chain Contract & Capital",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Annika Bissinger",
+        "industry": "Finance",
+        "score": 35,
+        "why": [
+          "At Finance & Business Management",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Malick Diomande",
+        "industry": "Sports",
+        "score": 33,
+        "why": [
+          "At Union College",
+          "6 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Colby Wyatt",
+        "industry": "Sports",
+        "score": 33,
+        "why": [
+          "At Baseball Systems",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Victoria Hansen",
+        "industry": "Finance",
+        "score": 32,
+        "why": [
+          "At Technology Investment Bank"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Taylor Moore",
+      "industry": "Finance",
+      "company": null,
+      "role": "Managing Director/Portfolio ...",
+      "sport": "Wrestling",
+      "graduation_year": 2009,
+      "prestige_score": 70,
+      "score": 46,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 18,
+        "total": 46
+      },
+      "whyThisMatch": [
+        "Same sport — Wrestling",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Keith Dickey",
+      "industry": "Technology",
+      "company": "TD",
+      "role": "Product Manager | Specialist in enterprise ...",
+      "sport": "Wrestling",
+      "graduation_year": 2007,
+      "prestige_score": 40,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Wrestling",
+        "At TD",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Richie Kenney",
+      "industry": "Finance",
+      "company": "Merrill Lynch Wealth",
+      "role": "Merrill Lynch Wealth ...",
+      "sport": "Football",
+      "graduation_year": 2021,
+      "prestige_score": 90,
+      "score": 40,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 23,
+        "total": 40
+      },
+      "whyThisMatch": [
+        "At Merrill Lynch Wealth",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Jake McCulloch",
+      "industry": "Finance",
+      "company": "Senior Underwriter - Financial",
+      "role": "Senior Underwriter - Financial Institutions ...",
+      "sport": "Men's Lacrosse",
+      "graduation_year": 2020,
+      "prestige_score": 70,
+      "score": 35,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 18,
+        "total": 35
+      },
+      "whyThisMatch": [
+        "At Senior Underwriter - Financial",
+        "6 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Ian Rawn",
+      "industry": "Finance",
+      "company": "Strategy & Special Projects, Treville Capital",
+      "role": "Strategy & Special Projects, Treville Capital ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2018,
+      "prestige_score": 70,
+      "score": 35,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 18,
+        "total": 35
+      },
+      "whyThisMatch": [
+        "At Strategy & Special Projects, Treville Capital",
+        "8 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Erika Tillotson",
+      "industry": "Finance",
+      "company": "Supply Chain Contract & Capital",
+      "role": "Supply Chain Contract & Capital ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2021,
+      "prestige_score": 70,
+      "score": 35,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 18,
+        "total": 35
+      },
+      "whyThisMatch": [
+        "At Supply Chain Contract & Capital",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Annika Bissinger",
+      "industry": "Finance",
+      "company": "Finance & Business Management",
+      "role": "Finance & Business Management ...",
+      "sport": "Women's Cross Country",
+      "graduation_year": 2023,
+      "prestige_score": 70,
+      "score": 35,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 18,
+        "total": 35
+      },
+      "whyThisMatch": [
+        "At Finance & Business Management",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Malick Diomande",
+      "industry": "Sports",
+      "company": "Union College",
+      "role": "Assistant Coach, Union College Cross ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2020,
+      "prestige_score": 65,
+      "score": 33,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 16,
+        "total": 33
+      },
+      "whyThisMatch": [
+        "At Union College",
+        "6 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Colby Wyatt",
+      "industry": "Sports",
+      "company": "Baseball Systems",
+      "role": "Baseball Systems Operator with Hawk-Eye ...",
+      "sport": "Baseball",
+      "graduation_year": 2021,
+      "prestige_score": 65,
+      "score": 33,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 16,
+        "total": 33
+      },
+      "whyThisMatch": [
+        "At Baseball Systems",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Victoria Hansen",
+      "industry": "Finance",
+      "company": "Technology Investment Bank",
+      "role": "Technology Investment Banking Analyst ...",
+      "sport": "Women's Rowing",
+      "graduation_year": 2025,
+      "prestige_score": 70,
+      "score": 32,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 18,
+        "total": 32
+      },
+      "whyThisMatch": [
+        "At Technology Investment Bank"
+      ]
+    }
+  ]
+}

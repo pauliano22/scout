@@ -1,0 +1,407 @@
+{
+  "seeker": {
+    "id": "hospitality",
+    "field": "Hospitality",
+    "note": "No hospitality option and nothing fits — user skips (empty industries).",
+    "prefs": {
+      "industries": [],
+      "sports": [
+        "Baseball"
+      ],
+      "locations": [],
+      "roles": [
+        "Hotel",
+        "Hospitality",
+        "Manager"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": []
+  },
+  "metrics": {
+    "id": "hospitality",
+    "field": "Hospitality",
+    "isFinance": false,
+    "picksWereEmpty": true,
+    "n": 10,
+    "fieldRelevance": null,
+    "financeLeakage": 0.7,
+    "sportsShare": 0.1,
+    "distinctIndustries": 4,
+    "topIndustry": "Finance",
+    "topIndustryShare": 0.7,
+    "avgReasons": 2.3,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Finance": 7,
+      "Sports": 1,
+      "Real Estate": 1,
+      "Technology": 1
+    },
+    "top": [
+      {
+        "name": "Ryan Karl",
+        "industry": "Finance",
+        "score": 69,
+        "why": [
+          "Same sport — Baseball",
+          "Currently a Relationship Manager with Value ..."
+        ]
+      },
+      {
+        "name": "Colby Wyatt",
+        "industry": "Sports",
+        "score": 53,
+        "why": [
+          "Same sport — Baseball",
+          "At Baseball Systems",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Matt Langseth",
+        "industry": "Finance",
+        "score": 52,
+        "why": [
+          "Same sport — Baseball",
+          "At Wealth Management",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Jimmy Lannon",
+        "industry": "Finance",
+        "score": 52,
+        "why": [
+          "Currently a Vice President, Bank Portfolio Manager ...",
+          "At Vice President, Bank",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Max Wilkinson",
+        "industry": "Finance",
+        "score": 49,
+        "why": [
+          "Currently a Middle Market Relationship Manager ..."
+        ]
+      },
+      {
+        "name": "Jacob Weston",
+        "industry": "Finance",
+        "score": 49,
+        "why": [
+          "Same sport — Baseball",
+          "8 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "William Gilbert",
+        "industry": "Real Estate",
+        "score": 47,
+        "why": [
+          "Same sport — Baseball",
+          "At Bhsusa",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Alec Rodriguez",
+        "industry": "Technology",
+        "score": 47,
+        "why": [
+          "Currently a IT Project Manager II @South ...",
+          "At South Jersey Industries",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "John McCarron",
+        "industry": "Finance",
+        "score": 46,
+        "why": [
+          "Currently a Investment Portfolio Manager, Hoffmann ..."
+        ]
+      },
+      {
+        "name": "Denis Bilodeau",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Same sport — Baseball",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Ryan Karl",
+      "industry": "Finance",
+      "company": null,
+      "role": "Relationship Manager with Value ...",
+      "sport": "Baseball",
+      "graduation_year": 2016,
+      "prestige_score": 70,
+      "score": 69,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 18,
+        "total": 69
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "Currently a Relationship Manager with Value ..."
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Colby Wyatt",
+      "industry": "Sports",
+      "company": "Baseball Systems",
+      "role": "Baseball Systems Operator with Hawk-Eye ...",
+      "sport": "Baseball",
+      "graduation_year": 2021,
+      "prestige_score": 65,
+      "score": 53,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 16,
+        "total": 53
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Baseball Systems",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Matt Langseth",
+      "industry": "Finance",
+      "company": "Wealth Management",
+      "role": "Wealth Management and Financial ...",
+      "sport": "Baseball",
+      "graduation_year": 2011,
+      "prestige_score": 70,
+      "score": 52,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 18,
+        "total": 52
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Wealth Management",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Jimmy Lannon",
+      "industry": "Finance",
+      "company": "Vice President, Bank",
+      "role": "Vice President, Bank Portfolio Manager ...",
+      "sport": "Men's Soccer",
+      "graduation_year": 2012,
+      "prestige_score": 70,
+      "score": 52,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 18,
+        "total": 52
+      },
+      "whyThisMatch": [
+        "Currently a Vice President, Bank Portfolio Manager ...",
+        "At Vice President, Bank",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Max Wilkinson",
+      "industry": "Finance",
+      "company": null,
+      "role": "Middle Market Relationship Manager ...",
+      "sport": "Men's Golf",
+      "graduation_year": 2017,
+      "prestige_score": 70,
+      "score": 49,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 18,
+        "total": 49
+      },
+      "whyThisMatch": [
+        "Currently a Middle Market Relationship Manager ..."
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Jacob Weston",
+      "industry": "Finance",
+      "company": null,
+      "role": "Managing Director and Portfolio ...",
+      "sport": "Baseball",
+      "graduation_year": 2018,
+      "prestige_score": 70,
+      "score": 49,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 18,
+        "total": 49
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "8 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "William Gilbert",
+      "industry": "Real Estate",
+      "company": "Bhsusa",
+      "role": "Licensed Real Estate Agent on the Jay K. ...",
+      "sport": "Baseball",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 47,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 47
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Bhsusa",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Alec Rodriguez",
+      "industry": "Technology",
+      "company": "South Jersey Industries",
+      "role": "IT Project Manager II @South ...",
+      "sport": "Football",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 47,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 47
+      },
+      "whyThisMatch": [
+        "Currently a IT Project Manager II @South ...",
+        "At South Jersey Industries",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "John McCarron",
+      "industry": "Finance",
+      "company": null,
+      "role": "Investment Portfolio Manager, Hoffmann ...",
+      "sport": "Men's Ice Hockey",
+      "graduation_year": 2015,
+      "prestige_score": 70,
+      "score": 46,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 18,
+        "total": 46
+      },
+      "whyThisMatch": [
+        "Currently a Investment Portfolio Manager, Hoffmann ..."
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Denis Bilodeau",
+      "industry": "Finance",
+      "company": null,
+      "role": "Global Recruiters of Bridgewater (GRN ...",
+      "sport": "Baseball",
+      "graduation_year": 1977,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 0,
+        "completeness": 6,
+        "prestige": 18,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

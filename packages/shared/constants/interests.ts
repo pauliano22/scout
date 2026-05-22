@@ -28,7 +28,7 @@ export const INTEREST_SUGGESTIONS: string[] = [
 export const INTEREST_ALIASES: Record<string, string[]> = {
   // Primary suggestions
   'Finance': ['Finance'],
-  'Technology': ['Technology'],
+  'Technology': ['Technology', 'Software'],
   'Consulting': ['Consulting'],
   'Healthcare': ['Healthcare'],
   'Law': ['Law'],
@@ -46,7 +46,7 @@ export const INTEREST_ALIASES: Record<string, string[]> = {
   'Private Equity / Venture Capital': [
     'Finance', 'Private Equity', 'Venture Capital', 'Private Equity / Venture Capital',
   ],
-  'Marketing': ['Marketing', 'Advertising'],
+  'Marketing': ['Marketing', 'Advertising', 'Media'],
   // Legacy: raw DB values users may have saved before this taxonomy
   'Government': ['Government'],
   'Nonprofit': ['Nonprofit'],
@@ -58,7 +58,7 @@ export const INTEREST_ALIASES: Record<string, string[]> = {
 
 export const INTEREST_DB_INDUSTRIES: Record<string, string[]> = {
   'Finance': ['Finance'],
-  'Technology': ['Technology'],
+  'Technology': ['Technology', 'Software'],
   'Consulting': ['Consulting'],
   'Healthcare': ['Healthcare'],
   'Law': ['Law'],
@@ -69,7 +69,7 @@ export const INTEREST_DB_INDUSTRIES: Record<string, string[]> = {
   'Education': ['Education'],
   'Real Estate': ['Real Estate'],
   'Private Equity / Venture Capital': ['Finance'],
-  'Marketing': [],
+  'Marketing': ['Media'],
   // Legacy
   'Government': ['Government'],
   'Nonprofit': ['Nonprofit'],

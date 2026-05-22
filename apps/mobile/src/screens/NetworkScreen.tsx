@@ -12,7 +12,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { colors, radius, spacing, typography } from '../theme/scoutTheme';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import AlumniAvatar from '../components/common/AlumniAvatar';
@@ -31,6 +32,7 @@ interface NetworkEntry {
   alumni_id: string;
   contacted: boolean;
   status?: string;
+  notes?: string | null;
   created_at: string;
   alumni: Alumni;
   profile: NormalizedAlumni;
@@ -44,6 +46,7 @@ const STATUS_FILTERS: { id: string; label: string }[] = [
 
 export default function NetworkScreen() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
   const { user, profile } = useAuth();
 
   const [network, setNetwork] = useState<NetworkEntry[]>([]);
@@ -53,6 +56,9 @@ export default function NetworkScreen() {
   const [statusFilter, setStatusFilter] = useState('All');
 
   const [selectedAlumni, setSelectedAlumni] = useState<ScoredAlumni | null>(null);
+  const [selectedEntryId, setSelectedEntryId] = useState<string | undefined>();
+  const [selectedEntryStatus, setSelectedEntryStatus] = useState<string | undefined>();
+  const [selectedEntryNotes, setSelectedEntryNotes] = useState<string | null | undefined>();
   const [detailVisible, setDetailVisible] = useState(false);
   const [messageAlumni, setMessageAlumni] = useState<ScoredAlumni | null>(null);
   const [messageVisible, setMessageVisible] = useState(false);
@@ -67,6 +73,7 @@ export default function NetworkScreen() {
           alumni_id,
           contacted,
           status,
+          notes,
           created_at,
           alumni (*)
         `)
@@ -109,6 +116,9 @@ export default function NetworkScreen() {
       scoreBreakdown: {} as any,
       whyThisMatch: [],
     } as ScoredAlumni);
+    setSelectedEntryId(entry.id);
+    setSelectedEntryStatus(entry.status ?? 'saved');
+    setSelectedEntryNotes(entry.notes);
     setDetailVisible(true);
   }
 
@@ -204,7 +214,7 @@ export default function NetworkScreen() {
           style={styles.list}
           contentContainerStyle={[
             styles.listContent,
-            { paddingBottom: insets.bottom + 24 },
+            { paddingBottom: tabBarHeight + spacing.md },
           ]}
           refreshControl={
             <RefreshControl
@@ -242,13 +252,10 @@ export default function NetworkScreen() {
           ) : (
             <View style={styles.listGroup}>
               {filtered.map((entry, i) => (
-                <NetworkRow
-                  key={entry.id}
-                  entry={entry}
-                  isFirst={i === 0}
-                  isLast={i === filtered.length - 1}
-                  onPress={() => openDetail(entry)}
-                />
+                <React.Fragment key={entry.id}>
+                  <NetworkRow entry={entry} onPress={() => openDetail(entry)} />
+                  {i < filtered.length - 1 ? <View style={styles.insetDivider} /> : null}
+                </React.Fragment>
               ))}
             </View>
           )}
@@ -259,10 +266,13 @@ export default function NetworkScreen() {
       <AlumniDetailModal
         alumni={selectedAlumni}
         visible={detailVisible}
-        onClose={() => setDetailVisible(false)}
+        onClose={() => { setDetailVisible(false); fetchNetwork(); }}
         onSave={() => setDetailVisible(false)}
         onPass={() => setDetailVisible(false)}
         onGenerateMessage={handleGenerateMessage}
+        networkEntryId={selectedEntryId}
+        networkStatus={selectedEntryStatus}
+        networkNotes={selectedEntryNotes}
       />
 
       <GenerateMessageModal
@@ -279,26 +289,26 @@ export default function NetworkScreen() {
 
 interface NetworkRowProps {
   entry: NetworkEntry;
-  isFirst: boolean;
-  isLast: boolean;
   onPress: () => void;
 }
 
-function NetworkRow({ entry, isFirst, isLast, onPress }: NetworkRowProps) {
+function NetworkRow({ entry, onPress }: NetworkRowProps) {
   const p = entry.profile;
   const roleLine = [p.currentRole, p.currentCompany].filter(Boolean).join(' · ');
 
+  const showFollowUpDot = useMemo(() => {
+    const status = entry.status ?? 'saved';
+    if (!['saved', 'message_drafted'].includes(status)) return false;
+    const daysSince = (Date.now() - new Date(entry.created_at).getTime()) / 86_400_000;
+    return daysSince > 14;
+  }, [entry.status, entry.created_at]);
+
   return (
-    <Pressable
-      style={[
-        styles.row,
-        isFirst && styles.rowFirst,
-        isLast && styles.rowLast,
-        !isLast && styles.rowDivider,
-      ]}
-      onPress={onPress}
-    >
-      <AlumniAvatar alumni={p} size={48} />
+    <Pressable style={styles.row} onPress={onPress}>
+      <View>
+        <AlumniAvatar alumni={p} size={48} />
+        {showFollowUpDot && <View style={styles.followUpDot} />}
+      </View>
       <View style={styles.rowContent}>
         <View style={styles.rowTop}>
           <Text style={styles.rowName} numberOfLines={1}>
@@ -342,12 +352,10 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    paddingVertical: spacing.md,
     gap: spacing.sm,
   },
   searchInput: {
@@ -367,15 +375,12 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: 7,
+    paddingVertical: spacing.sm,
     borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    backgroundColor: colors.surfaceMuted,
   },
   chipActive: {
     backgroundColor: colors.textPrimary,
-    borderColor: colors.textPrimary,
   },
   chipText: {
     ...typography.footnote,
@@ -400,9 +405,13 @@ const styles = StyleSheet.create({
   listGroup: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
     overflow: 'hidden',
+    ...shadows.sm,
+  },
+  insetDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.borderLight,
+    marginLeft: spacing.lg + 48 + spacing.md,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -439,11 +448,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     backgroundColor: colors.surface,
   },
-  rowFirst: {},
-  rowLast: {},
-  rowDivider: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.borderLight,
+  followUpDot: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: colors.warning,
+    borderWidth: 2,
+    borderColor: colors.surface,
   },
   rowContent: {
     flex: 1,

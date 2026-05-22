@@ -1,13 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
+import { ScoutMark, Wordmark } from '../components/common/ScoutMark';
+import PressableScale from '../components/common/PressableScale';
 
 interface Props {
   onSignIn: () => void;
@@ -17,12 +13,14 @@ interface Props {
 export default function WelcomeScreen({ onSignIn, onCreateAccount }: Props) {
   const insets = useSafeAreaInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const riseAnim = useRef(new Animated.Value(24)).current;
+  const riseAnim = useRef(new Animated.Value(16)).current;
+  const markScale = useRef(new Animated.Value(0.92)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 700, delay: 100, useNativeDriver: true }),
-      Animated.timing(riseAnim, { toValue: 0, duration: 700, delay: 100, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 280, delay: 60, useNativeDriver: true }),
+      Animated.timing(riseAnim, { toValue: 0, duration: 280, delay: 60, useNativeDriver: true }),
+      Animated.spring(markScale, { toValue: 1, stiffness: 300, damping: 30, mass: 1, delay: 60, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -31,11 +29,10 @@ export default function WelcomeScreen({ onSignIn, onCreateAccount }: Props) {
 
       {/* Hero */}
       <Animated.View style={[styles.hero, { opacity: fadeAnim, transform: [{ translateY: riseAnim }] }]}>
-        <View style={styles.logoMark}>
-          <View style={styles.logoCorner} />
-          <Text style={styles.logoS}>S</Text>
-        </View>
-        <Text style={styles.wordmark}>Scout</Text>
+        <Animated.View style={[styles.mark, { transform: [{ scale: markScale }] }]}>
+          <ScoutMark size={64} />
+        </Animated.View>
+        <Wordmark style={styles.wordmark} />
         <Text style={styles.headline}>Your network{'\n'}starts here.</Text>
         <Text style={styles.sub}>
           Connect with athletes who've built{'\n'}careers you want.
@@ -49,19 +46,13 @@ export default function WelcomeScreen({ onSignIn, onCreateAccount }: Props) {
           { opacity: fadeAnim, transform: [{ translateY: riseAnim }] },
         ]}
       >
-        <Pressable
-          style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
-          onPress={onCreateAccount}
-        >
+        <PressableScale style={styles.primaryBtn} onPress={onCreateAccount}>
           <Text style={styles.primaryBtnText}>Create Account</Text>
-        </Pressable>
+        </PressableScale>
 
-        <Pressable
-          style={({ pressed }) => [styles.secondaryBtn, pressed && styles.pressed]}
-          onPress={onSignIn}
-        >
+        <PressableScale style={styles.secondaryBtn} onPress={onSignIn}>
           <Text style={styles.secondaryBtnText}>Sign In</Text>
-        </Pressable>
+        </PressableScale>
 
         <Text style={styles.legal}>Athletes only · Your data is never sold</Text>
       </Animated.View>
@@ -82,45 +73,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: spacing.sm,
   },
-  logoMark: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.red,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+  mark: {
     marginBottom: spacing.lg,
-    ...shadows.md,
-  },
-  logoCorner: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 14,
-    height: 14,
-    backgroundColor: colors.red,
-  },
-  logoS: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: colors.red,
-    letterSpacing: -1,
   },
   wordmark: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    letterSpacing: -0.5,
     marginBottom: spacing.xxxl,
   },
   headline: {
     fontSize: 40,
     fontWeight: '700',
     color: colors.textPrimary,
-    letterSpacing: -1,
+    letterSpacing: -0.8,
     textAlign: 'center',
     lineHeight: 46,
     marginBottom: spacing.md,
@@ -138,7 +101,7 @@ const styles = StyleSheet.create({
   primaryBtn: {
     backgroundColor: colors.red,
     borderRadius: radius.lg,
-    paddingVertical: 16,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     ...shadows.sm,
   },
@@ -149,21 +112,16 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   secondaryBtn: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.redDim,
     borderRadius: radius.lg,
-    paddingVertical: 16,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   secondaryBtnText: {
     fontSize: 17,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: colors.red,
     letterSpacing: -0.2,
-  },
-  pressed: {
-    opacity: 0.75,
   },
   legal: {
     ...typography.caption1,

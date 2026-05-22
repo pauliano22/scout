@@ -19,6 +19,7 @@ import { saveUserPreferences } from '../services/recommendations';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
 import { INTEREST_SUGGESTIONS } from '@scout/shared/constants/interests';
+import PressableScale from '../components/common/PressableScale';
 
 const TOTAL_STEPS = 4;
 
@@ -125,16 +126,14 @@ const acStyles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
     paddingHorizontal: spacing.md,
   },
   searchIcon: { marginRight: spacing.sm },
   input: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     ...typography.callout,
     color: colors.textPrimary,
   },
@@ -169,7 +168,7 @@ const acStyles = StyleSheet.create({
     backgroundColor: colors.red,
     borderRadius: radius.full,
     paddingHorizontal: spacing.md,
-    paddingVertical: 9,
+    paddingVertical: spacing.sm,
   },
   selectedChipText: {
     ...typography.subhead,
@@ -288,14 +287,12 @@ const tiStyles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     ...typography.callout,
     color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
   },
   addBtn: {
     width: 44,
@@ -341,13 +338,11 @@ const tiStyles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: spacing.xs,
     paddingHorizontal: spacing.md,
-    paddingVertical: 7,
+    paddingVertical: spacing.sm,
     borderRadius: radius.full,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    backgroundColor: colors.surfaceMuted,
   },
   chipText: { ...typography.footnote, color: colors.textPrimary, fontWeight: '500' },
 });
@@ -574,8 +569,8 @@ export default function OnboardingScreen({ onComplete }: Props) {
 
         {/* Footer */}
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.xl) }]}>
-          <Pressable
-            style={({ pressed }) => [styles.continueBtn, (pressed || submitting) && { opacity: 0.8 }]}
+          <PressableScale
+            style={[styles.continueBtn, submitting && { opacity: 0.8 }]}
             onPress={() => isLastStep ? handleSubmit() : transition(step + 1)}
             disabled={submitting}
           >
@@ -590,7 +585,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
                 </View>
               )
             }
-          </Pressable>
+          </PressableScale>
           {!isLastStep && (
             <Pressable onPress={() => transition(step + 1)} style={styles.skipBtn}>
               <Text style={styles.skipText}>Skip for now</Text>
@@ -633,14 +628,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   textInput: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: spacing.md,
     ...typography.callout,
     color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
   },
 
   // Stage cards

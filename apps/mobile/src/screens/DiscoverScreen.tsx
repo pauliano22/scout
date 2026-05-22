@@ -9,18 +9,23 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
 import AlumniCard from '../components/cards/AlumniCard';
 import AlumniDetailModal from '../components/modals/AlumniDetailModal';
 import Toast from '../components/common/Toast';
 import SkeletonCard from '../components/common/SkeletonCard';
+import { ScoutMark } from '../components/common/ScoutMark';
 import { useRecommendations } from '../hooks/useRecommendations';
+import { DAILY_LIMIT } from '../services/dailyLimit';
 import type { ScoredAlumni } from '../services/recommendations';
 
 export default function DiscoverScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
-  const { deck, loading, load, swipe, limitReached } = useRecommendations();
+  const tabBarHeight = useBottomTabBarHeight();
+  const { deck, loading, load, swipe, rewind, canRewind, limitReached, swipeCount } =
+    useRecommendations();
 
   const [selectedAlumni, setSelectedAlumni] = useState<ScoredAlumni | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
@@ -50,8 +55,8 @@ export default function DiscoverScreen() {
 
   function bounce(anim: Animated.Value) {
     Animated.sequence([
-      Animated.spring(anim, { toValue: 0.9, useNativeDriver: true, friction: 5 }),
-      Animated.spring(anim, { toValue: 1, useNativeDriver: true, friction: 4 }),
+      Animated.spring(anim, { toValue: 0.94, useNativeDriver: true, stiffness: 400, damping: 25, mass: 0.7 }),
+      Animated.spring(anim, { toValue: 1, useNativeDriver: true, stiffness: 300, damping: 30, mass: 1 }),
     ]).start();
   }
 
@@ -81,6 +86,11 @@ export default function DiscoverScreen() {
     showToast('Saved to your Network');
   }
 
+  async function handleRewind() {
+    await rewind();
+    showToast('Last swipe undone');
+  }
+
   function openDetail(alumni: ScoredAlumni) {
     bounce(viewAnim);
     setSelectedAlumni(alumni);
@@ -89,16 +99,34 @@ export default function DiscoverScreen() {
 
   const visibleDeck = deck.slice(0, 3);
   const isEmpty = !loading && deck.length === 0 && !limitReached;
+  const showActions = !loading && !isEmpty && !limitReached;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text style={styles.headerTitle}>Discover</Text>
-          <Text style={styles.headerSub}>Alumni picked for you</Text>
+          <View style={styles.titleRow}>
+            <ScoutMark size={24} />
+            <Text style={styles.headerTitle}>Discover</Text>
+          </View>
+          <Text style={styles.headerSub}>
+            {limitReached
+              ? 'Come back tomorrow'
+              : `${swipeCount} / ${DAILY_LIMIT} today`}
+          </Text>
         </View>
         <View style={styles.headerActions}>
+          {canRewind ? (
+            <Pressable
+              style={styles.iconButton}
+              onPress={handleRewind}
+              accessibilityLabel="Rewind last swipe"
+              hitSlop={8}
+            >
+              <Ionicons name="arrow-undo-outline" size={18} color={colors.textPrimary} />
+            </Pressable>
+          ) : null}
           {!loading && !limitReached && deck.length > 0 ? (
             <View style={styles.countPill}>
               <Text style={styles.countText}>{deck.length}</Text>
@@ -115,7 +143,7 @@ export default function DiscoverScreen() {
       </View>
 
       {/* Card Stack */}
-      <View style={styles.deckContainer}>
+      <View style={[styles.deckContainer, !showActions && { paddingBottom: tabBarHeight }]}>
         {loading ? (
           <SkeletonCard />
         ) : limitReached ? (
@@ -136,9 +164,7 @@ export default function DiscoverScreen() {
           </View>
         ) : isEmpty ? (
           <View style={styles.emptyContainer}>
-            <View style={styles.emptyIcon}>
-              <Ionicons name="checkmark-circle-outline" size={32} color={colors.textTertiary} />
-            </View>
+            <ScoutMark size={72} muted style={styles.emptyMark} />
             <Text style={styles.emptyTitle}>You're caught up.</Text>
             <Text style={styles.emptySub}>
               Update your preferences or check back soon for more alumni.
@@ -173,8 +199,8 @@ export default function DiscoverScreen() {
       </View>
 
       {/* Action buttons */}
-      {!loading && !isEmpty && !limitReached ? (
-        <View style={[styles.actionRow, { paddingBottom: spacing.lg }]}>
+      {showActions ? (
+        <View style={[styles.actionRow, { paddingBottom: tabBarHeight }]}>
           <Animated.View style={{ transform: [{ scale: passAnim }] }}>
             <Pressable
               style={styles.passButton}
@@ -247,9 +273,14 @@ const styles = StyleSheet.create({
   headerCopy: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: 2,
+  },
   headerTitle: {
     ...typography.largeTitle,
-    marginBottom: 2,
   },
   headerSub: {
     ...typography.subhead,
@@ -308,6 +339,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.sm,
+  },
+  emptyMark: {
+    marginBottom: spacing.md,
+    opacity: 0.6,
   },
   emptyTitle: {
     ...typography.title2,

@@ -610,3 +610,27 @@ export async function recordSwipe(
     // Fail gracefully
   }
 }
+
+export async function undoSwipe(
+  userId: string,
+  alumniId: string,
+  action: 'save' | 'pass',
+): Promise<void> {
+  try {
+    await supabase
+      .from('alumni_swipes')
+      .delete()
+      .eq('user_id', userId)
+      .eq('alumni_id', alumniId);
+
+    if (action === 'save') {
+      await supabase
+        .from('user_networks')
+        .delete()
+        .eq('user_id', userId)
+        .eq('alumni_id', alumniId);
+    }
+  } catch {
+    // Fail gracefully
+  }
+}

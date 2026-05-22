@@ -14,6 +14,8 @@ import WelcomeScreen from './src/screens/WelcomeScreen';
 import SignInScreen from './src/screens/SignInScreen';
 import SignUpScreen from './src/screens/SignUpScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import OnboardingIntroScreen from './src/screens/OnboardingIntroScreen';
+import OnboardingCompleteScreen from './src/screens/OnboardingCompleteScreen';
 import { colors } from './src/theme/scoutTheme';
 
 type AuthScreen = 'welcome' | 'signin' | 'signup';
@@ -21,6 +23,12 @@ type AuthScreen = 'welcome' | 'signin' | 'signup';
 function AppContent() {
   const { session, profile, loading } = useAuth();
   const [authScreen, setAuthScreen] = useState<AuthScreen>('welcome');
+  const [showIntro, setShowIntro] = useState(true);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [localOnboardingDone, setLocalOnboardingDone] = useState(false);
+
+  // True if DB confirms done (returning user) OR user just finished this session
+  const onboardingDone = (profile?.onboarding_completed ?? false) || localOnboardingDone;
 
   if (loading) {
     return (
@@ -51,9 +59,23 @@ function AppContent() {
     );
   }
 
+  if (showCompletion) {
+    return <OnboardingCompleteScreen onEnter={() => setShowCompletion(false)} />;
+  }
+
   // Authenticated but onboarding not done
-  if (!profile?.onboarding_completed) {
-    return <OnboardingScreen />;
+  if (!onboardingDone) {
+    if (showIntro) {
+      return <OnboardingIntroScreen onBegin={() => setShowIntro(false)} />;
+    }
+    return (
+      <OnboardingScreen
+        onComplete={() => {
+          setLocalOnboardingDone(true);
+          setShowCompletion(true);
+        }}
+      />
+    );
   }
 
   // Fully authenticated

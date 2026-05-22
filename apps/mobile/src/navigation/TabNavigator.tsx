@@ -1,7 +1,8 @@
 import React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../theme/scoutTheme';
 import DiscoverScreen from '../screens/DiscoverScreen';
@@ -20,13 +21,10 @@ interface TabIconProps {
 }
 
 function TabIcon({ iconActive, iconInactive, label, focused }: TabIconProps) {
+  const color = focused ? colors.tabActive : colors.tabInactive;
   return (
     <View style={styles.tabIconWrapper}>
-      <Ionicons
-        name={focused ? iconActive : iconInactive}
-        size={24}
-        color={focused ? colors.tabActive : colors.tabInactive}
-      />
+      <Ionicons name={focused ? iconActive : iconInactive} size={24} color={color} />
       <Text
         style={[styles.tabLabel, focused && styles.tabLabelFocused]}
         numberOfLines={1}
@@ -47,6 +45,7 @@ export default function TabNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarActiveTintColor: colors.tabActive,
         tabBarStyle: [
           styles.tabBar,
           {
@@ -55,6 +54,9 @@ export default function TabNavigator() {
             paddingTop: 8,
           },
         ],
+        tabBarBackground: () => (
+          <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
+        ),
       }}
     >
       <Tab.Screen
@@ -105,17 +107,14 @@ export default function TabNavigator() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.tabBackground,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.tabBorder,
-    ...Platform.select({
-      ios: {
-        shadowColor: 'transparent',
-      },
-      android: {
-        elevation: 0,
-      },
-    }),
+    elevation: 0,
   },
   tabIconWrapper: {
     alignItems: 'center',

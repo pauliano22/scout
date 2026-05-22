@@ -32,17 +32,18 @@ export const colors = {
   error: '#C53030',
   errorLight: '#FCEBEB',
 
-  // Status badges (Apple Wallet pill feel)
-  statusSaved: '#B31B1B',
-  statusSavedBg: '#F5E4E4',
-  statusDrafted: '#7A4FCC',
-  statusDraftedBg: '#EFE7FB',
-  statusContacted: '#1F6FEB',
-  statusContactedBg: '#E2EBFB',
-  statusReplied: '#1F8F58',
+  // Status pipeline — neutral → amber (in progress) → green (outcome).
+  // Accent is reserved for actions, so statuses use only neutrals + semantics.
+  statusSaved: '#6B7280',
+  statusSavedBg: '#F1F1EE',
+  statusDrafted: '#3F3F46',
+  statusDraftedBg: '#EAEAE6',
+  statusContacted: '#B0820B',
+  statusContactedBg: '#FAF3D6',
+  statusReplied: '#16834A',
   statusRepliedBg: '#DDF1E6',
-  statusMeeting: '#0F8F3D',
-  statusMeetingBg: '#D6F1DE',
+  statusMeeting: '#0F7A3D',
+  statusMeetingBg: '#D2EFDC',
 
   // Swipe — pass is neutral, save is brand
   swipePass: '#9CA3AF',
@@ -85,36 +86,36 @@ export const shadows = {
       shadowColor: '#0A0A0A',
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.04,
-      shadowRadius: 2,
+      shadowRadius: 8,
     },
     android: { elevation: 1 },
   }),
   md: Platform.select({
     ios: {
       shadowColor: '#0A0A0A',
-      shadowOffset: { width: 0, height: 4 },
+      shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.06,
-      shadowRadius: 12,
+      shadowRadius: 14,
     },
-    android: { elevation: 3 },
+    android: { elevation: 2 },
   }),
   lg: Platform.select({
     ios: {
       shadowColor: '#0A0A0A',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.08,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.07,
       shadowRadius: 20,
     },
-    android: { elevation: 6 },
+    android: { elevation: 4 },
   }),
   card: Platform.select({
     ios: {
       shadowColor: '#0A0A0A',
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.10,
-      shadowRadius: 28,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 24,
     },
-    android: { elevation: 10 },
+    android: { elevation: 6 },
   }),
 };
 
@@ -122,25 +123,25 @@ export const typography = {
   largeTitle: {
     fontSize: 34,
     fontWeight: '700' as const,
-    letterSpacing: 0.36,
+    letterSpacing: -0.68,
     color: colors.textPrimary,
   },
   title1: {
     fontSize: 28,
     fontWeight: '700' as const,
-    letterSpacing: 0.34,
+    letterSpacing: -0.56,
     color: colors.textPrimary,
   },
   title2: {
     fontSize: 22,
     fontWeight: '700' as const,
-    letterSpacing: 0.32,
+    letterSpacing: -0.44,
     color: colors.textPrimary,
   },
   title3: {
     fontSize: 20,
     fontWeight: '600' as const,
-    letterSpacing: 0.36,
+    letterSpacing: -0.4,
     color: colors.textPrimary,
   },
   headline: {
@@ -153,18 +154,21 @@ export const typography = {
     fontSize: 17,
     fontWeight: '400' as const,
     letterSpacing: -0.41,
+    lineHeight: 25,
     color: colors.textPrimary,
   },
   callout: {
     fontSize: 16,
     fontWeight: '400' as const,
     letterSpacing: -0.32,
+    lineHeight: 23,
     color: colors.textPrimary,
   },
   subhead: {
     fontSize: 15,
     fontWeight: '400' as const,
     letterSpacing: -0.24,
+    lineHeight: 21,
     color: colors.textSecondary,
   },
   footnote: {

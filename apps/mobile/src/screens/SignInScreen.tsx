@@ -8,13 +8,14 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
 import { useAuth } from '../contexts/AuthContext';
+import Input from '../components/common/Input';
+import PressableScale from '../components/common/PressableScale';
 
 interface Props {
   onBack: () => void;
@@ -68,37 +69,29 @@ export default function SignInScreen({ onBack, onCreateAccount }: Props) {
 
         {/* Form */}
         <View style={styles.card}>
-          <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="you@cornell.edu"
-              placeholderTextColor={colors.textDisabled}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="next"
-            />
-          </View>
+          <Input
+            label="Email"
+            placeholder="you@cornell.edu"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+          />
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              placeholderTextColor={colors.textDisabled}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              returnKeyType="done"
-              onSubmitEditing={handleSignIn}
-            />
-          </View>
+          <Input
+            label="Password"
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            returnKeyType="done"
+            onSubmitEditing={handleSignIn}
+          />
 
-          <Pressable
-            style={({ pressed }) => [styles.btn, pressed && styles.pressed, loading && styles.btnDisabled]}
+          <PressableScale
+            style={[styles.btn, loading && styles.btnDisabled]}
             onPress={handleSignIn}
             disabled={loading}
           >
@@ -106,7 +99,7 @@ export default function SignInScreen({ onBack, onCreateAccount }: Props) {
               ? <ActivityIndicator color={colors.textInverse} />
               : <Text style={styles.btnText}>Sign In</Text>
             }
-          </Pressable>
+          </PressableScale>
         </View>
 
         {/* Footer */}
@@ -159,36 +152,15 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     ...shadows.md,
   },
-  field: {
-    gap: spacing.xs,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-  },
-  input: {
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 14,
-    ...typography.callout,
-    color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
   btn: {
     backgroundColor: colors.red,
     borderRadius: radius.lg,
-    paddingVertical: 15,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     marginTop: spacing.xs,
     ...shadows.sm,
   },
   btnDisabled: { opacity: 0.7 },
-  pressed: { opacity: 0.8 },
   btnText: {
     fontSize: 17,
     fontWeight: '600',

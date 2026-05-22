@@ -271,16 +271,16 @@ function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+// Restrained near-black tints — subtle variation, never a rainbow.
 function getIndustryColor(industry: string | null): string {
   if (!industry) return '#111114';
   const i = industry.toLowerCase();
-  if (i.includes('finance') || i.includes('banking') || i.includes('investment') || i.includes('equity') || i.includes('hedge')) return '#08131C';
-  if (i.includes('tech') || i.includes('software') || i.includes('saas') || i.includes('startup') || i.includes('data') || i.includes('ai')) return '#07141E';
-  if (i.includes('health') || i.includes('medical') || i.includes('bio') || i.includes('pharma')) return '#081A0C';
-  if (i.includes('consult')) return '#17140A';
-  if (i.includes('law') || i.includes('legal')) return '#16110A';
-  if (i.includes('media') || i.includes('entertainment') || i.includes('sport')) return '#14091A';
-  if (i.includes('real estate') || i.includes('construction')) return '#110E08';
+  // Cool near-black for analytical fields
+  if (i.includes('finance') || i.includes('banking') || i.includes('investment') || i.includes('equity') || i.includes('hedge') ||
+      i.includes('tech') || i.includes('software') || i.includes('saas') || i.includes('startup') || i.includes('data') || i.includes('ai') ||
+      i.includes('consult') || i.includes('law') || i.includes('legal')) return '#0B1014';
+  // Warm green near-black for life sciences
+  if (i.includes('health') || i.includes('medical') || i.includes('bio') || i.includes('pharma')) return '#0A130D';
   return '#111114';
 }
 

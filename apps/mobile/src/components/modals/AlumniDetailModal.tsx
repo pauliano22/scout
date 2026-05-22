@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spacing, typography } from '../../theme/scoutTheme';
+import { supabase } from '../../lib/supabase';
+import { WEB_API_BASE_URL } from '../../lib/api';
 import {
   formatExperienceDates,
   formatGradYearShort,
@@ -26,6 +29,14 @@ import AlumniAvatar from '../common/AlumniAvatar';
 
 const HERO_HEIGHT = 260;
 
+const STATUS_STEPS: { value: string; label: string; color: string; bg: string }[] = [
+  { value: 'saved',           label: 'Saved',       color: colors.statusSaved,     bg: colors.statusSavedBg },
+  { value: 'message_drafted', label: 'Drafted',     color: colors.statusDrafted,   bg: colors.statusDraftedBg },
+  { value: 'contacted',       label: 'Contacted',   color: colors.statusContacted, bg: colors.statusContactedBg },
+  { value: 'replied',         label: 'Replied',     color: colors.statusReplied,   bg: colors.statusRepliedBg },
+  { value: 'meeting_set',     label: 'Meeting Set', color: colors.statusMeeting,   bg: colors.statusMeetingBg },
+];
+
 interface Props {
   alumni: ScoredAlumni | null;
   visible: boolean;
@@ -33,6 +44,9 @@ interface Props {
   onSave: (alumni: ScoredAlumni) => void;
   onPass: (alumni: ScoredAlumni) => void;
   onGenerateMessage?: (alumni: ScoredAlumni) => void;
+  networkEntryId?: string;
+  networkStatus?: string;
+  networkNotes?: string | null;
 }
 
 export default function AlumniDetailModal({
@@ -42,10 +56,52 @@ export default function AlumniDetailModal({
   onSave,
   onPass,
   onGenerateMessage,
+  networkEntryId,
+  networkStatus,
+  networkNotes,
 }: Props) {
   const insets = useSafeAreaInsets();
   const [copyHint, setCopyHint] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+
+  const [localStatus, setLocalStatus] = useState(networkStatus ?? 'saved');
+  const [notesDraft, setNotesDraft] = useState(networkNotes ?? '');
+  const notesSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync incoming props when modal reopens for a different entry.
+  useEffect(() => {
+    setLocalStatus(networkStatus ?? 'saved');
+    setNotesDraft(networkNotes ?? '');
+  }, [networkEntryId, networkStatus, networkNotes]);
+
+  async function patchNetwork(updates: Record<string, unknown>) {
+    if (!networkEntryId) return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) return;
+      await fetch(`${WEB_API_BASE_URL}/api/network/${networkEntryId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updates),
+      });
+    } catch {
+      // Fail silently — status is already updated optimistically in UI.
+    }
+  }
+
+  function handleStatusTap(value: string) {
+    setLocalStatus(value);
+    patchNetwork({ status: value });
+  }
+
+  function handleNotesBlur() {
+    if (notesSaveTimer.current) clearTimeout(notesSaveTimer.current);
+    patchNetwork({ notes: notesDraft || null });
+  }
 
   if (!alumni) return null;
 
@@ -178,6 +234,59 @@ export default function AlumniDetailModal({
               ) : null}
             </View>
           </View>
+
+          {/* Tracking — Network context only */}
+          {networkEntryId ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Tracking</Text>
+
+              {/* Status chips */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                nestedScrollEnabled
+                contentContainerStyle={styles.statusChipsRow}
+              >
+                {STATUS_STEPS.map((step) => {
+                  const active = localStatus === step.value;
+                  return (
+                    <Pressable
+                      key={step.value}
+                      style={[
+                        styles.statusChip,
+                        active
+                          ? { backgroundColor: step.bg, borderColor: step.color }
+                          : { backgroundColor: colors.surface, borderColor: colors.borderLight },
+                      ]}
+                      onPress={() => handleStatusTap(step.value)}
+                    >
+                      <Text
+                        style={[
+                          styles.statusChipText,
+                          { color: active ? step.color : colors.textTertiary },
+                        ]}
+                      >
+                        {step.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+
+              {/* Notes */}
+              <TextInput
+                style={styles.notesInput}
+                value={notesDraft}
+                onChangeText={setNotesDraft}
+                onBlur={handleNotesBlur}
+                placeholder="Add a note…"
+                placeholderTextColor={colors.textDisabled}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
+          ) : null}
 
           {/* Experience */}
           {profile.pastExperiences.length > 0 ? (
@@ -619,6 +728,33 @@ const styles = StyleSheet.create({
     color: colors.success,
     fontWeight: '600',
     marginTop: spacing.sm,
+  },
+
+  // Tracking section
+  statusChipsRow: {
+    gap: spacing.sm,
+    paddingBottom: spacing.md,
+  },
+  statusChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 7,
+    borderRadius: radius.full,
+    borderWidth: 1,
+  },
+  statusChipText: {
+    ...typography.footnote,
+    fontWeight: '600',
+  },
+  notesInput: {
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    ...typography.callout,
+    color: colors.textPrimary,
+    minHeight: 72,
   },
 
   // Action bar

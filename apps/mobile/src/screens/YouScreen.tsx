@@ -14,11 +14,13 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, spacing, typography } from '../theme/scoutTheme';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
 import { useAuth } from '../contexts/AuthContext';
 import { usePreferences } from '../contexts/PreferencesContext';
 import AlumniAvatar from '../components/common/AlumniAvatar';
 import TagInput from '../components/common/TagInput';
+import PressableScale from '../components/common/PressableScale';
 import { supabase } from '../lib/supabase';
 import { WEB_API_BASE_URL } from '../lib/api';
 import { INTEREST_SUGGESTIONS } from '@scout/shared/constants/interests';
@@ -266,10 +268,10 @@ function ProfileCard({ userId, profile, onProfileSaved }: ProfileCardProps) {
 
         {/* Save / Cancel */}
         <View style={styles.editActions}>
-          <Pressable style={styles.cancelBtn} onPress={cancelEdit} disabled={saving}>
+          <PressableScale style={styles.cancelBtn} onPress={cancelEdit} disabled={saving}>
             <Text style={styles.cancelBtnText}>Cancel</Text>
-          </Pressable>
-          <Pressable
+          </PressableScale>
+          <PressableScale
             style={[styles.saveBtn, saving && styles.saveBtnDisabled]}
             onPress={saveProfile}
             disabled={saving}
@@ -279,7 +281,7 @@ function ProfileCard({ userId, profile, onProfileSaved }: ProfileCardProps) {
             ) : (
               <Text style={styles.saveBtnText}>Save</Text>
             )}
-          </Pressable>
+          </PressableScale>
         </View>
       </View>
     );
@@ -314,9 +316,9 @@ function ProfileCard({ userId, profile, onProfileSaved }: ProfileCardProps) {
           </Text>
         ) : null}
       </View>
-      <Pressable style={styles.editIconBtn} onPress={startEdit} hitSlop={8}>
+      <PressableScale style={styles.editIconBtn} onPress={startEdit} hitSlop={8}>
         <Ionicons name="pencil-outline" size={16} color={colors.textSecondary} />
-      </Pressable>
+      </PressableScale>
     </View>
   );
 }
@@ -325,6 +327,7 @@ function ProfileCard({ userId, profile, onProfileSaved }: ProfileCardProps) {
 
 export default function YouScreen() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = useBottomTabBarHeight();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const { prefs, setPrefs, saving, lastSavedAt } = usePreferences();
 
@@ -393,7 +396,7 @@ export default function YouScreen() {
       style={styles.root}
       contentContainerStyle={[
         styles.content,
-        { paddingTop: insets.top + spacing.sm, paddingBottom: insets.bottom + 40 },
+        { paddingTop: insets.top + spacing.sm, paddingBottom: tabBarHeight + spacing.lg },
       ]}
       showsVerticalScrollIndicator={false}
     >
@@ -539,12 +542,12 @@ export default function YouScreen() {
         </View>
       </View>
 
-      <Pressable style={styles.signOutBtn} onPress={handleSignOut}>
+      <PressableScale style={styles.signOutBtn} onPress={handleSignOut}>
         <Ionicons name="log-out-outline" size={18} color={colors.error} />
         <Text style={styles.signOutText}>Sign Out</Text>
-      </Pressable>
+      </PressableScale>
 
-      <Pressable
+      <PressableScale
         style={[styles.deleteBtn, deletingAccount && styles.deleteBtnDisabled]}
         onPress={handleDeleteAccount}
         disabled={deletingAccount}
@@ -554,7 +557,7 @@ export default function YouScreen() {
         ) : (
           <Text style={styles.deleteText}>Delete Account</Text>
         )}
-      </Pressable>
+      </PressableScale>
     </ScrollView>
   );
 }
@@ -584,8 +587,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     marginBottom: spacing.xxl,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    ...shadows.sm,
   },
   avatarWrap: {
     position: 'relative',
@@ -640,11 +642,9 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
   },
   // Edit mode fields
   editFields: {
@@ -652,14 +652,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   editInput: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     ...typography.callout,
     color: colors.textPrimary,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
   },
   editInputLast: {
     marginBottom: 0,
@@ -671,12 +669,10 @@ const styles = StyleSheet.create({
   },
   cancelBtn: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
   },
   cancelBtnText: {
     ...typography.subhead,
@@ -717,8 +713,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     padding: spacing.lg,
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    ...shadows.sm,
   },
   // Priorities sub-section inside Discovery card
   priorityDivider: {

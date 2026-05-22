@@ -2,10 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   fetchRecommendations,
   recordSwipe,
+  undoSwipe,
   type ScoredAlumni,
 } from '../services/recommendations';
 import {
   DAILY_LIMIT,
+  decrementSwipeCount,
   getDailySwipeCount,
   incrementSwipeCount,
 } from '../services/dailyLimit';
@@ -16,17 +18,28 @@ export function useRecommendations() {
   const { user } = useAuth();
   const { prefs, prefsVersion, loaded: prefsLoaded } = usePreferences();
   const [deck, setDeck] = useState<ScoredAlumni[]>([]);
+  const [history, setHistory] = useState<
+    { alumni: ScoredAlumni; action: 'save' | 'pass' }[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [limitReached, setLimitReached] = useState(false);
+  const [swipeCount, setSwipeCount] = useState(0);
   const lastLoadedVersion = useRef<number | null>(null);
   const lastLoadedUserId = useRef<string | null>(null);
 
-  // Restore limit state on mount so returning users don't see stale UI.
+  // Sync the daily count whenever the signed-in user changes, so a new account
+  // starts fresh instead of inheriting the previous account's count.
   useEffect(() => {
-    getDailySwipeCount().then((count) => {
-      if (count >= DAILY_LIMIT) setLimitReached(true);
+    if (!user) {
+      setSwipeCount(0);
+      setLimitReached(false);
+      return;
+    }
+    getDailySwipeCount(user.id).then((count) => {
+      setSwipeCount(count);
+      setLimitReached(count >= DAILY_LIMIT);
     });
-  }, []);
+  }, [user?.id]);
 
   const load = useCallback(async () => {
     if (!user || !prefsLoaded) return;
@@ -34,6 +47,7 @@ export function useRecommendations() {
     try {
       const results = await fetchRecommendations(user.id, prefs);
       setDeck(results);
+      setHistory([]); // fresh deck — nothing to rewind into
       lastLoadedVersion.current = prefsVersion;
       lastLoadedUserId.current = user.id;
     } finally {
@@ -59,13 +73,39 @@ export function useRecommendations() {
   const swipe = useCallback(
     async (alumniId: string, action: 'save' | 'pass') => {
       if (!user) return;
+      const swiped = deck.find((a) => a.id === alumniId);
       setDeck((prev) => prev.filter((a) => a.id !== alumniId));
+      if (swiped) setHistory((h) => [...h, { alumni: swiped, action }]);
       await recordSwipe(user.id, alumniId, action);
-      const newCount = await incrementSwipeCount();
+      const newCount = await incrementSwipeCount(user.id);
+      setSwipeCount(newCount);
       if (newCount >= DAILY_LIMIT) setLimitReached(true);
     },
-    [user],
+    [user, deck],
   );
 
-  return { deck, loading, prefs, load, swipe, limitReached };
+  const rewind = useCallback(async () => {
+    if (!user || history.length === 0) return;
+    const last = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    setDeck((prev) =>
+      prev.some((a) => a.id === last.alumni.id) ? prev : [last.alumni, ...prev],
+    );
+    await undoSwipe(user.id, last.alumni.id, last.action);
+    const newCount = await decrementSwipeCount(user.id);
+    setSwipeCount(newCount);
+    setLimitReached(newCount >= DAILY_LIMIT);
+  }, [user, history]);
+
+  return {
+    deck,
+    loading,
+    prefs,
+    load,
+    swipe,
+    rewind,
+    canRewind: history.length > 0,
+    limitReached,
+    swipeCount,
+  };
 }

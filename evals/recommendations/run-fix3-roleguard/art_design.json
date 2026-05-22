@@ -1,0 +1,402 @@
+{
+  "seeker": {
+    "id": "art_design",
+    "field": "Art / Design",
+    "note": "No art/design option. User picks nearest 'Media & Entertainment'.",
+    "prefs": {
+      "industries": [
+        "Media & Entertainment"
+      ],
+      "sports": [
+        "Women's Lacrosse"
+      ],
+      "locations": [],
+      "roles": [
+        "Designer",
+        "Creative",
+        "Artist"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Media"
+    ]
+  },
+  "metrics": {
+    "id": "art_design",
+    "field": "Art / Design",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 1,
+    "financeLeakage": 0,
+    "sportsShare": 0,
+    "distinctIndustries": 1,
+    "topIndustry": "Media",
+    "topIndustryShare": 1,
+    "avgReasons": 2,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Media": 10
+    },
+    "top": [
+      {
+        "name": "Lauren McLemore",
+        "industry": "Media",
+        "score": 58,
+        "why": [
+          "Works in Media",
+          "Same sport — Women's Lacrosse",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Nathan Crabtree",
+        "industry": "Media",
+        "score": 54,
+        "why": [
+          "Works in Media",
+          "At Environmental Planning/Resource ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Jarrod Watson-Lewis",
+        "industry": "Media",
+        "score": 41,
+        "why": [
+          "Works in Media"
+        ]
+      },
+      {
+        "name": "Marlène Boissonnault",
+        "industry": "Media",
+        "score": 41,
+        "why": [
+          "Works in Media",
+          "7 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Spenser Gruenenfelder",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Victoria Imbesi",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Peter McDonough",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media"
+        ]
+      },
+      {
+        "name": "Max Martinez",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Lauren Marchese",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Emma Shalaway",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Lauren McLemore",
+      "industry": "Media",
+      "company": null,
+      "role": "Lead Producer with experience ...",
+      "sport": "Women's Lacrosse",
+      "graduation_year": 2011,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Same sport — Women's Lacrosse",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Nathan Crabtree",
+      "industry": "Media",
+      "company": "Environmental Planning/Resource ...",
+      "role": "Environmental Planning/Resource ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2009,
+      "prestige_score": 40,
+      "score": 54,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 54
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "At Environmental Planning/Resource ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Jarrod Watson-Lewis",
+      "industry": "Media",
+      "company": null,
+      "role": "Regional Sales Manager, Sports ...",
+      "sport": "Football",
+      "graduation_year": 2016,
+      "prestige_score": 0,
+      "score": 41,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 41
+      },
+      "whyThisMatch": [
+        "Works in Media"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Marlène Boissonnault",
+      "industry": "Media",
+      "company": null,
+      "role": "PWHL Minnesota Frost Goalie #33 ...",
+      "sport": "Women's Ice Hockey",
+      "graduation_year": 2019,
+      "prestige_score": 0,
+      "score": 41,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 41
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "7 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Spenser Gruenenfelder",
+      "industry": "Media",
+      "company": null,
+      "role": "Themed Entertainment Team ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2014,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Victoria Imbesi",
+      "industry": "Media",
+      "company": null,
+      "role": "The Alan B. '53 and Elizabeth Heekin ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2013,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Peter McDonough",
+      "industry": "Media",
+      "company": null,
+      "role": "Executive Assistant / Administrative ...",
+      "sport": "Football",
+      "graduation_year": 2015,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Max Martinez",
+      "industry": "Media",
+      "company": null,
+      "role": "Founder, Strategist, Producer, Walking ...",
+      "sport": "Football",
+      "graduation_year": 2013,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Lauren Marchese",
+      "industry": "Media",
+      "company": null,
+      "role": "Senior marketing professional with over ...",
+      "sport": "Women's Swimming And Diving",
+      "graduation_year": 2014,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Emma Shalaway",
+      "industry": "Media",
+      "company": null,
+      "role": "Marketing Director | Driving Innovative ...",
+      "sport": "Women's Basketball",
+      "graduation_year": 2011,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

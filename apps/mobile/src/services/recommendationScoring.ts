@@ -84,6 +84,24 @@ function ciEquals(a: string | null, b: string | null): boolean {
   return a.toLowerCase() === b.toLowerCase();
 }
 
+// Seniority/rank words that exist in every field ("Director", "Manager", …).
+// A role preference that is ONLY one of these matches across all industries —
+// e.g. a nonprofit seeker's "Director" matching a finance "Managing Director" —
+// so it must not, on its own, count as a role match. Mirrors the web scorer's
+// ROLE_TEXT_BLOCKLIST. Substantive role words (Engineer, Attorney, Producer, …)
+// are intentionally NOT here.
+const GENERIC_ROLE_TOKENS = new Set([
+  'director', 'managing director', 'executive director', 'manager', 'executive',
+  'senior', 'junior', 'vp', 'svp', 'evp', 'vice president', 'president', 'chief',
+  'head', 'lead', 'principal', 'officer', 'coordinator', 'associate', 'staff',
+  'intern', 'fellow', 'member', 'partner', 'owner', 'founder',
+  'ceo', 'cfo', 'coo', 'cto',
+]);
+
+function isGenericRoleToken(role: string): boolean {
+  return GENERIC_ROLE_TOKENS.has(role.trim().toLowerCase());
+}
+
 function computeWhyThisMatch(
   profile: NormalizedAlumni,
   prefs: UserPreferences,
@@ -326,9 +344,11 @@ export function scoreAlumnus(
     }
   }
 
-  // Role match
+  // Role match — ignore preferences that are bare seniority words, which match
+  // every field's "Director"/"Manager"/etc. and leak off-field alumni in.
   if (profile.currentRole && prefs.roles.length > 0) {
-    const matchesRole = prefs.roles.some(
+    const meaningfulRoles = prefs.roles.filter((r) => !isGenericRoleToken(r));
+    const matchesRole = meaningfulRoles.some(
       (r) => ciIncludes(profile.currentRole, r) || ciIncludes(r, profile.currentRole ?? ''),
     );
     if (matchesRole) breakdown.role = BASE_WEIGHTS.role;

@@ -1,0 +1,419 @@
+{
+  "seeker": {
+    "id": "manufacturing",
+    "field": "Manufacturing",
+    "note": "No manufacturing option — user skips. (Corpus HAS Manufacturing rows they cannot reach.)",
+    "prefs": {
+      "industries": [],
+      "sports": [
+        "Football"
+      ],
+      "locations": [],
+      "roles": [
+        "Manufacturing",
+        "Plant",
+        "Production"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Manufacturing"
+    ]
+  },
+  "metrics": {
+    "id": "manufacturing",
+    "field": "Manufacturing",
+    "isFinance": false,
+    "picksWereEmpty": true,
+    "n": 10,
+    "fieldRelevance": 0,
+    "financeLeakage": 0.5,
+    "sportsShare": 0,
+    "distinctIndustries": 4,
+    "topIndustry": "Finance",
+    "topIndustryShare": 0.5,
+    "avgReasons": 2.8,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Finance": 5,
+      "Technology": 3,
+      "Education": 1,
+      "Healthcare": 1
+    },
+    "top": [
+      {
+        "name": "Richie Kenney",
+        "industry": "Finance",
+        "score": 60,
+        "why": [
+          "Same sport — Football",
+          "At Merrill Lynch Wealth",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Alec Rodriguez",
+        "industry": "Technology",
+        "score": 47,
+        "why": [
+          "Same sport — Football",
+          "At South Jersey Industries",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Jordan Calaguire",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Chief Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Jonathan Lucas",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Head of Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Dario Arezzo",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Chief Financial Services",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Chris Murray",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Timberlinerev",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Tye Chirico",
+        "industry": "Education",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Graduated from Cornell University"
+        ]
+      },
+      {
+        "name": "Tucker Maggio",
+        "industry": "Technology",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At CX orgs use tools ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Jack Powers",
+        "industry": "Healthcare",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Washington University School"
+        ]
+      },
+      {
+        "name": "Emile Chang",
+        "industry": "Technology",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Information Technology Services",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Richie Kenney",
+      "industry": "Finance",
+      "company": "Merrill Lynch Wealth",
+      "role": "Merrill Lynch Wealth ...",
+      "sport": "Football",
+      "graduation_year": 2021,
+      "prestige_score": 90,
+      "score": 60,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 23,
+        "total": 60
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Merrill Lynch Wealth",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Alec Rodriguez",
+      "industry": "Technology",
+      "company": "South Jersey Industries",
+      "role": "IT Project Manager II @South ...",
+      "sport": "Football",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 47,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 47
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At South Jersey Industries",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Jordan Calaguire",
+      "industry": "Finance",
+      "company": "Chief Investment",
+      "role": "Chief Investment and Development ...",
+      "sport": "Football",
+      "graduation_year": 2006,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Chief Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Jonathan Lucas",
+      "industry": "Finance",
+      "company": "Head of Investment",
+      "role": "Head of Investment Oversight ...",
+      "sport": "Football",
+      "graduation_year": 2007,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Head of Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Dario Arezzo",
+      "industry": "Finance",
+      "company": "Chief Financial Services",
+      "role": "Chief Financial Services ...",
+      "sport": "Football",
+      "graduation_year": 2009,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Chief Financial Services",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Chris Murray",
+      "industry": "Finance",
+      "company": "Timberlinerev",
+      "role": "Managing Director - Head Of Asset ...",
+      "sport": "Football",
+      "graduation_year": 2012,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Timberlinerev",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Tye Chirico",
+      "industry": "Education",
+      "company": "Graduated from Cornell University",
+      "role": "Graduated from Cornell University as ...",
+      "sport": "Football",
+      "graduation_year": 2025,
+      "prestige_score": 40,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Graduated from Cornell University"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Tucker Maggio",
+      "industry": "Technology",
+      "company": "CX orgs use tools ...",
+      "role": "Helping great CX orgs use tools ...",
+      "sport": "Football",
+      "graduation_year": 2014,
+      "prestige_score": 40,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At CX orgs use tools ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Jack Powers",
+      "industry": "Healthcare",
+      "company": "Washington University School",
+      "role": "Washington University School of Medicine in ...",
+      "sport": "Football",
+      "graduation_year": 2025,
+      "prestige_score": 40,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Washington University School"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Emile Chang",
+      "industry": "Technology",
+      "company": "Information Technology Services",
+      "role": "Information Technology Services ...",
+      "sport": "Football",
+      "graduation_year": 2012,
+      "prestige_score": 40,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Information Technology Services",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

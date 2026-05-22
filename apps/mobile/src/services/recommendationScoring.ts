@@ -423,13 +423,13 @@ export function scoreAlumnus(
   const prestigeNormalized = Math.max(0, Math.min(prestigeRaw, 100)) / 100;
   breakdown.prestige = Math.round(prestigeNormalized * BASE_WEIGHTS.prestige);
 
-  // Prestige dampening: when the user has stated industry interests but this
-  // alumni doesn't match any of them, prestige should not boost them at all.
-  // A notable employer in the wrong field is not more relevant than a quiet one
-  // in the wrong field — only the match dimensions (sport/location/role) should
-  // decide filler order. (Previously capped at 10, which still let finance
-  // out-rank other non-matching fields in every filler slot.)
-  if (prefs.industries.length > 0 && breakdown.industry === 0) {
+  // Prestige only boosts alumni who match a field the seeker cares about. With
+  // no industry match — whether because the alum is off-field, or because the
+  // seeker stated no field at all — prestige contributes 0. Otherwise the
+  // recognizable-employer signal (finance/consulting/tech-heavy) re-skews every
+  // no-preference deck back toward finance. Filler is then ordered by the actual
+  // fit signals: sport, location, role, completeness.
+  if (breakdown.industry === 0) {
     breakdown.prestige = 0;
   }
 

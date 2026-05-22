@@ -1,0 +1,411 @@
+{
+  "seeker": {
+    "id": "entertainment",
+    "field": "Entertainment",
+    "note": "Picks 'Media & Entertainment' -> DB 'Media'.",
+    "prefs": {
+      "industries": [
+        "Media & Entertainment"
+      ],
+      "sports": [
+        "Baseball"
+      ],
+      "locations": [
+        "Los Angeles, Calif."
+      ],
+      "roles": [
+        "Producer",
+        "Talent",
+        "Manager"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Media"
+    ]
+  },
+  "metrics": {
+    "id": "entertainment",
+    "field": "Entertainment",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 0.9,
+    "financeLeakage": 0.1,
+    "sportsShare": 0,
+    "distinctIndustries": 2,
+    "topIndustry": "Media",
+    "topIndustryShare": 0.9,
+    "avgReasons": 2.3,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Media": 9,
+      "Finance": 1
+    },
+    "top": [
+      {
+        "name": "Jarrod Watson-Lewis",
+        "industry": "Media",
+        "score": 76,
+        "why": [
+          "Works in Media",
+          "Based in Los Angeles",
+          "Currently a Regional Sales Manager, Sports ..."
+        ]
+      },
+      {
+        "name": "Max Martinez",
+        "industry": "Media",
+        "score": 58,
+        "why": [
+          "Works in Media",
+          "Currently a Founder, Strategist, Producer, Walking ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Lauren McLemore",
+        "industry": "Media",
+        "score": 58,
+        "why": [
+          "Works in Media",
+          "Currently a Lead Producer with experience ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Nathan Crabtree",
+        "industry": "Media",
+        "score": 54,
+        "why": [
+          "Works in Media",
+          "At Environmental Planning/Resource ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Ryan Karl",
+        "industry": "Finance",
+        "score": 51,
+        "why": [
+          "Same sport — Baseball",
+          "Currently a Relationship Manager with Value ..."
+        ]
+      },
+      {
+        "name": "Marlène Boissonnault",
+        "industry": "Media",
+        "score": 41,
+        "why": [
+          "Works in Media",
+          "7 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Spenser Gruenenfelder",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Victoria Imbesi",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Peter McDonough",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media"
+        ]
+      },
+      {
+        "name": "Lauren Marchese",
+        "industry": "Media",
+        "score": 38,
+        "why": [
+          "Works in Media",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Jarrod Watson-Lewis",
+      "industry": "Media",
+      "company": null,
+      "role": "Regional Sales Manager, Sports ...",
+      "sport": "Football",
+      "graduation_year": 2016,
+      "prestige_score": 0,
+      "score": 76,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 15,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 76
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Based in Los Angeles",
+        "Currently a Regional Sales Manager, Sports ..."
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Max Martinez",
+      "industry": "Media",
+      "company": null,
+      "role": "Founder, Strategist, Producer, Walking ...",
+      "sport": "Football",
+      "graduation_year": 2013,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Currently a Founder, Strategist, Producer, Walking ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Lauren McLemore",
+      "industry": "Media",
+      "company": null,
+      "role": "Lead Producer with experience ...",
+      "sport": "Women's Lacrosse",
+      "graduation_year": 2011,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Currently a Lead Producer with experience ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Nathan Crabtree",
+      "industry": "Media",
+      "company": "Environmental Planning/Resource ...",
+      "role": "Environmental Planning/Resource ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2009,
+      "prestige_score": 40,
+      "score": 54,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 54
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "At Environmental Planning/Resource ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Ryan Karl",
+      "industry": "Finance",
+      "company": null,
+      "role": "Relationship Manager with Value ...",
+      "sport": "Baseball",
+      "graduation_year": 2016,
+      "prestige_score": 70,
+      "score": 51,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 51
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "Currently a Relationship Manager with Value ..."
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Marlène Boissonnault",
+      "industry": "Media",
+      "company": null,
+      "role": "PWHL Minnesota Frost Goalie #33 ...",
+      "sport": "Women's Ice Hockey",
+      "graduation_year": 2019,
+      "prestige_score": 0,
+      "score": 41,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 41
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "7 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Spenser Gruenenfelder",
+      "industry": "Media",
+      "company": null,
+      "role": "Themed Entertainment Team ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2014,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Victoria Imbesi",
+      "industry": "Media",
+      "company": null,
+      "role": "The Alan B. '53 and Elizabeth Heekin ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2013,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Peter McDonough",
+      "industry": "Media",
+      "company": null,
+      "role": "Executive Assistant / Administrative ...",
+      "sport": "Football",
+      "graduation_year": 2015,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Lauren Marchese",
+      "industry": "Media",
+      "company": null,
+      "role": "Senior marketing professional with over ...",
+      "sport": "Women's Swimming And Diving",
+      "graduation_year": 2014,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Media",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

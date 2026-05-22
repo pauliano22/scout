@@ -1,0 +1,424 @@
+{
+  "seeker": {
+    "id": "finance",
+    "field": "Finance (control)",
+    "note": "Picks 'Finance' -> DB 'Finance'. Control: must not regress.",
+    "prefs": {
+      "industries": [
+        "Finance"
+      ],
+      "sports": [
+        "Football"
+      ],
+      "locations": [
+        "New York, N.Y."
+      ],
+      "roles": [
+        "Analyst",
+        "Associate",
+        "Investment"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Finance"
+    ]
+  },
+  "metrics": {
+    "id": "finance",
+    "field": "Finance (control)",
+    "isFinance": true,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 1,
+    "financeLeakage": 1,
+    "sportsShare": 0,
+    "distinctIndustries": 1,
+    "topIndustry": "Finance",
+    "topIndustryShare": 1,
+    "avgReasons": 3,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Finance": 10
+    },
+    "top": [
+      {
+        "name": "Jordan Calaguire",
+        "industry": "Finance",
+        "score": 94,
+        "why": [
+          "Works in Finance",
+          "Same sport — Football",
+          "Currently a Chief Investment and Development ..."
+        ]
+      },
+      {
+        "name": "Jonathan Lucas",
+        "industry": "Finance",
+        "score": 94,
+        "why": [
+          "Works in Finance",
+          "Same sport — Football",
+          "Currently a Head of Investment Oversight ..."
+        ]
+      },
+      {
+        "name": "Richie Kenney",
+        "industry": "Finance",
+        "score": 90,
+        "why": [
+          "Works in Finance",
+          "Same sport — Football",
+          "At Merrill Lynch Wealth"
+        ]
+      },
+      {
+        "name": "Victoria Hansen",
+        "industry": "Finance",
+        "score": 74,
+        "why": [
+          "Works in Finance",
+          "Currently a Technology Investment Banking Analyst ...",
+          "At Technology Investment Bank"
+        ]
+      },
+      {
+        "name": "Stephen Pawlak",
+        "industry": "Finance",
+        "score": 74,
+        "why": [
+          "Works in Finance",
+          "Currently a Investment Analyst - Harpswell Capital ...",
+          "At Investment Analyst - Harpswell Capital"
+        ]
+      },
+      {
+        "name": "Dario Arezzo",
+        "industry": "Finance",
+        "score": 74,
+        "why": [
+          "Works in Finance",
+          "Same sport — Football",
+          "At Chief Financial Services"
+        ]
+      },
+      {
+        "name": "Chris Murray",
+        "industry": "Finance",
+        "score": 74,
+        "why": [
+          "Works in Finance",
+          "Same sport — Football",
+          "At Timberlinerev"
+        ]
+      },
+      {
+        "name": "Vincenzo Marozzi",
+        "industry": "Finance",
+        "score": 74,
+        "why": [
+          "Works in Finance",
+          "Currently a Investment & Wealth ...",
+          "At Investment & Wealth"
+        ]
+      },
+      {
+        "name": "Jason Noble",
+        "industry": "Finance",
+        "score": 74,
+        "why": [
+          "Works in Finance",
+          "Currently a Associate, Client Services - CIBC Capital ...",
+          "At Associate, Client Services - CIBC Capital"
+        ]
+      },
+      {
+        "name": "Annika Bissinger",
+        "industry": "Finance",
+        "score": 72,
+        "why": [
+          "Works in Finance",
+          "Based in New York",
+          "At Finance & Business Management"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Jordan Calaguire",
+      "industry": "Finance",
+      "company": "Chief Investment",
+      "role": "Chief Investment and Development ...",
+      "sport": "Football",
+      "graduation_year": 2006,
+      "prestige_score": 70,
+      "score": 94,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 94
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Same sport — Football",
+        "Currently a Chief Investment and Development ..."
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Jonathan Lucas",
+      "industry": "Finance",
+      "company": "Head of Investment",
+      "role": "Head of Investment Oversight ...",
+      "sport": "Football",
+      "graduation_year": 2007,
+      "prestige_score": 70,
+      "score": 94,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 94
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Same sport — Football",
+        "Currently a Head of Investment Oversight ..."
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Richie Kenney",
+      "industry": "Finance",
+      "company": "Merrill Lynch Wealth",
+      "role": "Merrill Lynch Wealth ...",
+      "sport": "Football",
+      "graduation_year": 2021,
+      "prestige_score": 90,
+      "score": 90,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 23,
+        "total": 90
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Same sport — Football",
+        "At Merrill Lynch Wealth"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Victoria Hansen",
+      "industry": "Finance",
+      "company": "Technology Investment Bank",
+      "role": "Technology Investment Banking Analyst ...",
+      "sport": "Women's Rowing",
+      "graduation_year": 2025,
+      "prestige_score": 70,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Currently a Technology Investment Banking Analyst ...",
+        "At Technology Investment Bank"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Stephen Pawlak",
+      "industry": "Finance",
+      "company": "Investment Analyst - Harpswell Capital",
+      "role": "Investment Analyst - Harpswell Capital ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2015,
+      "prestige_score": 70,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Currently a Investment Analyst - Harpswell Capital ...",
+        "At Investment Analyst - Harpswell Capital"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Dario Arezzo",
+      "industry": "Finance",
+      "company": "Chief Financial Services",
+      "role": "Chief Financial Services ...",
+      "sport": "Football",
+      "graduation_year": 2009,
+      "prestige_score": 70,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Same sport — Football",
+        "At Chief Financial Services"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Chris Murray",
+      "industry": "Finance",
+      "company": "Timberlinerev",
+      "role": "Managing Director - Head Of Asset ...",
+      "sport": "Football",
+      "graduation_year": 2012,
+      "prestige_score": 70,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Same sport — Football",
+        "At Timberlinerev"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Vincenzo Marozzi",
+      "industry": "Finance",
+      "company": "Investment & Wealth",
+      "role": "Investment & Wealth ...",
+      "sport": "Men's Ice Hockey",
+      "graduation_year": 2015,
+      "prestige_score": 70,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Currently a Investment & Wealth ...",
+        "At Investment & Wealth"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Jason Noble",
+      "industry": "Finance",
+      "company": "Associate, Client Services - CIBC Capital",
+      "role": "Associate, Client Services - CIBC Capital ...",
+      "sport": "Men's Lacrosse",
+      "graduation_year": 2014,
+      "prestige_score": 70,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Currently a Associate, Client Services - CIBC Capital ...",
+        "At Associate, Client Services - CIBC Capital"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Annika Bissinger",
+      "industry": "Finance",
+      "company": "Finance & Business Management",
+      "role": "Finance & Business Management ...",
+      "sport": "Women's Cross Country",
+      "graduation_year": 2023,
+      "prestige_score": 70,
+      "score": 72,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 15,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 72
+      },
+      "whyThisMatch": [
+        "Works in Finance",
+        "Based in New York",
+        "At Finance & Business Management"
+      ]
+    }
+  ]
+}

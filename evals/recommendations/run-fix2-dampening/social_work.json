@@ -1,0 +1,408 @@
+{
+  "seeker": {
+    "id": "social_work",
+    "field": "Social Work",
+    "note": "Picks 'Nonprofit / Social Impact' -> DB 'Nonprofit' (thin corpus).",
+    "prefs": {
+      "industries": [
+        "Nonprofit / Social Impact"
+      ],
+      "sports": [
+        "Field Hockey"
+      ],
+      "locations": [],
+      "roles": [
+        "Social Worker",
+        "Caseworker",
+        "Counselor"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Nonprofit"
+    ]
+  },
+  "metrics": {
+    "id": "social_work",
+    "field": "Social Work",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 0.2,
+    "financeLeakage": 0,
+    "sportsShare": 0.1,
+    "distinctIndustries": 7,
+    "topIndustry": "Consulting",
+    "topIndustryShare": 0.3,
+    "avgReasons": 2,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Nonprofit": 2,
+      "Technology": 1,
+      "Consulting": 3,
+      "Education": 1,
+      "Manufacturing": 1,
+      "Sports": 1,
+      "Healthcare": 1
+    },
+    "top": [
+      {
+        "name": "Kira Pritchard",
+        "industry": "Nonprofit",
+        "score": 38,
+        "why": [
+          "Works in Nonprofit",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Kevin Rex",
+        "industry": "Nonprofit",
+        "score": 38,
+        "why": [
+          "Works in Nonprofit",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Julianne Mangano",
+        "industry": "Technology",
+        "score": 36,
+        "why": [
+          "Same sport — Field Hockey",
+          "At Revenue Management",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Olivia Friedberg",
+        "industry": "Consulting",
+        "score": 33,
+        "why": [
+          "Same sport — Field Hockey",
+          "At Graduate of Cornell University"
+        ]
+      },
+      {
+        "name": "Claire Wolfe",
+        "industry": "Education",
+        "score": 33,
+        "why": [
+          "Same sport — Field Hockey",
+          "At Graduate from Cornell University"
+        ]
+      },
+      {
+        "name": "Rose Gorski",
+        "industry": "Manufacturing",
+        "score": 31,
+        "why": [
+          "Same sport — Field Hockey",
+          "6 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Luisa Schulte-Bockum",
+        "industry": "Consulting",
+        "score": 31,
+        "why": [
+          "Same sport — Field Hockey"
+        ]
+      },
+      {
+        "name": "Melanie Jue",
+        "industry": "Sports",
+        "score": 28,
+        "why": [
+          "Same sport — Field Hockey",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Steph Casella",
+        "industry": "Consulting",
+        "score": 28,
+        "why": [
+          "Same sport — Field Hockey",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Stephanie Brownstein",
+        "industry": "Healthcare",
+        "score": 28,
+        "why": [
+          "Same sport — Field Hockey",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Kira Pritchard",
+      "industry": "Nonprofit",
+      "company": null,
+      "role": "Senior Program Officer, Laurie M. Tisch ...",
+      "sport": "Women's Rowing",
+      "graduation_year": 2013,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Nonprofit",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Kevin Rex",
+      "industry": "Nonprofit",
+      "company": null,
+      "role": "Empowering families to face the future ...",
+      "sport": "Football",
+      "graduation_year": 2006,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Nonprofit",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Julianne Mangano",
+      "industry": "Technology",
+      "company": "Revenue Management",
+      "role": "Revenue Management Analyst ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2021,
+      "prestige_score": 40,
+      "score": 36,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 7,
+        "prestige": 0,
+        "total": 36
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey",
+        "At Revenue Management",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Olivia Friedberg",
+      "industry": "Consulting",
+      "company": "Graduate of Cornell University",
+      "role": "Graduate of Cornell University Nolan ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2024,
+      "prestige_score": 40,
+      "score": 33,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 7,
+        "prestige": 0,
+        "total": 33
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey",
+        "At Graduate of Cornell University"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Claire Wolfe",
+      "industry": "Education",
+      "company": "Graduate from Cornell University",
+      "role": "Graduate from Cornell University with a ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2024,
+      "prestige_score": 40,
+      "score": 33,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 7,
+        "prestige": 0,
+        "total": 33
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey",
+        "At Graduate from Cornell University"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Rose Gorski",
+      "industry": "Manufacturing",
+      "company": null,
+      "role": "Director of Operations & Business ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2020,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey",
+        "6 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Luisa Schulte-Bockum",
+      "industry": "Consulting",
+      "company": null,
+      "role": "Consumer Strategy & Marketing ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2017,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Melanie Jue",
+      "industry": "Sports",
+      "company": null,
+      "role": "4X World Champion, Cornell Hall of Fame, ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2010,
+      "prestige_score": 65,
+      "score": 28,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 28
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Steph Casella",
+      "industry": "Consulting",
+      "company": null,
+      "role": "Experienced Product Marketing ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2009,
+      "prestige_score": 0,
+      "score": 28,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 28
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Stephanie Brownstein",
+      "industry": "Healthcare",
+      "company": null,
+      "role": "Assistant Scientist, Research ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2009,
+      "prestige_score": 0,
+      "score": 28,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 28
+      },
+      "whyThisMatch": [
+        "Same sport — Field Hockey",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

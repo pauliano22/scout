@@ -404,10 +404,13 @@ export function scoreAlumnus(
   breakdown.prestige = Math.round(prestigeNormalized * BASE_WEIGHTS.prestige);
 
   // Prestige dampening: when the user has stated industry interests but this
-  // alumni doesn't match any of them, cap prestige contribution. Prevents
-  // finance-heavy prestige scores from burying government/nonprofit alumni.
+  // alumni doesn't match any of them, prestige should not boost them at all.
+  // A notable employer in the wrong field is not more relevant than a quiet one
+  // in the wrong field — only the match dimensions (sport/location/role) should
+  // decide filler order. (Previously capped at 10, which still let finance
+  // out-rank other non-matching fields in every filler slot.)
   if (prefs.industries.length > 0 && breakdown.industry === 0) {
-    breakdown.prestige = Math.min(breakdown.prestige, 10);
+    breakdown.prestige = 0;
   }
 
   breakdown.total =

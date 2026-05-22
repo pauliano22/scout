@@ -1,0 +1,419 @@
+{
+  "seeker": {
+    "id": "engineering",
+    "field": "Engineering",
+    "note": "No engineering option. User picks 'Technology' -> DB 'Technology' (also Manufacturing).",
+    "prefs": {
+      "industries": [
+        "Technology"
+      ],
+      "sports": [
+        "Men’s Track And Field"
+      ],
+      "locations": [],
+      "roles": [
+        "Engineer",
+        "Developer",
+        "Scientist"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Technology",
+      "Manufacturing"
+    ]
+  },
+  "metrics": {
+    "id": "engineering",
+    "field": "Engineering",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 1,
+    "financeLeakage": 0,
+    "sportsShare": 0,
+    "distinctIndustries": 1,
+    "topIndustry": "Technology",
+    "topIndustryShare": 1,
+    "avgReasons": 2.8,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Technology": 10
+    },
+    "top": [
+      {
+        "name": "Tyler Fisher",
+        "industry": "Technology",
+        "score": 77,
+        "why": [
+          "Works in Technology",
+          "Currently a Senior Systems Engineer, Product Owner & ...",
+          "At Senior Systems"
+        ]
+      },
+      {
+        "name": "Zoe Lequeux",
+        "industry": "Technology",
+        "score": 61,
+        "why": [
+          "Works in Technology",
+          "Currently a PhD- Advanced Polymer Scientist I ...",
+          "7 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Skylar Carfi",
+        "industry": "Technology",
+        "score": 61,
+        "why": [
+          "Works in Technology",
+          "Currently a Experienced Front End Software Engineer ..."
+        ]
+      },
+      {
+        "name": "Jack Brenneman",
+        "industry": "Technology",
+        "score": 61,
+        "why": [
+          "Works in Technology",
+          "Currently a Senior Software Engineering Manager ...",
+          "8 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Ben Francis",
+        "industry": "Technology",
+        "score": 61,
+        "why": [
+          "Works in Technology",
+          "Currently a Electrical Engineer | Passionate about ...",
+          "7 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Marguerite  Lorenzo",
+        "industry": "Technology",
+        "score": 61,
+        "why": [
+          "Works in Technology",
+          "Currently a CU Boulder Civil Engineering ...",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Marguerite Lorenzo",
+        "industry": "Technology",
+        "score": 61,
+        "why": [
+          "Works in Technology",
+          "Currently a CU Boulder Civil Engineering ...",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Trevin Cowman",
+        "industry": "Technology",
+        "score": 58,
+        "why": [
+          "Works in Technology",
+          "Currently a Engineer Bridging Design, Integration, ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Ross Blankenship",
+        "industry": "Technology",
+        "score": 58,
+        "why": [
+          "Works in Technology",
+          "Currently a Tech Investor, Real Estate Developer ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Phil Pozdnyakov",
+        "industry": "Technology",
+        "score": 58,
+        "why": [
+          "Works in Technology",
+          "Currently a Design Engineer – Improving reliability ..."
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Tyler Fisher",
+      "industry": "Technology",
+      "company": "Senior Systems",
+      "role": "Senior Systems Engineer, Product Owner & ...",
+      "sport": "Men's Cross Country",
+      "graduation_year": 2019,
+      "prestige_score": 40,
+      "score": 77,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 77
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a Senior Systems Engineer, Product Owner & ...",
+        "At Senior Systems"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Zoe Lequeux",
+      "industry": "Technology",
+      "company": null,
+      "role": "PhD- Advanced Polymer Scientist I ...",
+      "sport": "Women's Volleyball",
+      "graduation_year": 2019,
+      "prestige_score": 0,
+      "score": 61,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 61
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a PhD- Advanced Polymer Scientist I ...",
+        "7 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Skylar Carfi",
+      "industry": "Technology",
+      "company": null,
+      "role": "Experienced Front End Software Engineer ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2016,
+      "prestige_score": 0,
+      "score": 61,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 61
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a Experienced Front End Software Engineer ..."
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Jack Brenneman",
+      "industry": "Technology",
+      "company": null,
+      "role": "Senior Software Engineering Manager ...",
+      "sport": "Men's Swimming And Diving",
+      "graduation_year": 2018,
+      "prestige_score": 0,
+      "score": 61,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 61
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a Senior Software Engineering Manager ...",
+        "8 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Ben Francis",
+      "industry": "Technology",
+      "company": null,
+      "role": "Electrical Engineer | Passionate about ...",
+      "sport": "Men's Squash",
+      "graduation_year": 2019,
+      "prestige_score": 0,
+      "score": 61,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 61
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a Electrical Engineer | Passionate about ...",
+        "7 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Marguerite  Lorenzo",
+      "industry": "Technology",
+      "company": null,
+      "role": "CU Boulder Civil Engineering ...",
+      "sport": "Womens Track And Field",
+      "graduation_year": 2021,
+      "prestige_score": 0,
+      "score": 61,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 61
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a CU Boulder Civil Engineering ...",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Marguerite Lorenzo",
+      "industry": "Technology",
+      "company": null,
+      "role": "CU Boulder Civil Engineering ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2021,
+      "prestige_score": 0,
+      "score": 61,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 61
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a CU Boulder Civil Engineering ...",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Trevin Cowman",
+      "industry": "Technology",
+      "company": null,
+      "role": "Engineer Bridging Design, Integration, ...",
+      "sport": "Football",
+      "graduation_year": 2010,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a Engineer Bridging Design, Integration, ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Ross Blankenship",
+      "industry": "Technology",
+      "company": null,
+      "role": "Tech Investor, Real Estate Developer ...",
+      "sport": "Rowing",
+      "graduation_year": 2005,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a Tech Investor, Real Estate Developer ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Phil Pozdnyakov",
+      "industry": "Technology",
+      "company": null,
+      "role": "Design Engineer – Improving reliability ...",
+      "sport": "Men's Swimming And Diving",
+      "graduation_year": 2024,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Technology",
+        "Currently a Design Engineer – Improving reliability ..."
+      ]
+    }
+  ]
+}

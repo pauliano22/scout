@@ -1,0 +1,416 @@
+{
+  "seeker": {
+    "id": "education",
+    "field": "Education",
+    "note": "Picks 'Education' — clean mapping to DB 'Education'.",
+    "prefs": {
+      "industries": [
+        "Education"
+      ],
+      "sports": [
+        "Women's Rowing"
+      ],
+      "locations": [],
+      "roles": [
+        "Teacher",
+        "Professor",
+        "Educator"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Education"
+    ]
+  },
+  "metrics": {
+    "id": "education",
+    "field": "Education",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 1,
+    "financeLeakage": 0,
+    "sportsShare": 0,
+    "distinctIndustries": 1,
+    "topIndustry": "Education",
+    "topIndustryShare": 1,
+    "avgReasons": 2.7,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Education": 10
+    },
+    "top": [
+      {
+        "name": "Charles Mencke",
+        "industry": "Education",
+        "score": 61,
+        "why": [
+          "Works in Education",
+          "Currently a Educator and Consultant, Urban ...",
+          "6 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Reid Pauly",
+        "industry": "Education",
+        "score": 58,
+        "why": [
+          "Works in Education",
+          "Currently a Dean's Assistant Professor of Nuclear Security ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Kristin Sellers",
+        "industry": "Education",
+        "score": 58,
+        "why": [
+          "Works in Education",
+          "Currently a Assistant Professor, Department of ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Kristen Rhinehardt",
+        "industry": "Education",
+        "score": 58,
+        "why": [
+          "Works in Education",
+          "Currently a Associate Professor and Assistant ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Anna Paisley Gray",
+        "industry": "Education",
+        "score": 58,
+        "why": [
+          "Works in Education",
+          "Same sport — Women's Rowing"
+        ]
+      },
+      {
+        "name": "Samantha Burke",
+        "industry": "Education",
+        "score": 57,
+        "why": [
+          "Works in Education",
+          "At Case Western Reserve University",
+          "4 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Eve Glasergreen",
+        "industry": "Education",
+        "score": 57,
+        "why": [
+          "Works in Education",
+          "At University of Chicago",
+          "7 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Tye Chirico",
+        "industry": "Education",
+        "score": 54,
+        "why": [
+          "Works in Education",
+          "At Graduated from Cornell University"
+        ]
+      },
+      {
+        "name": "Tim Randall",
+        "industry": "Education",
+        "score": 54,
+        "why": [
+          "Works in Education",
+          "At Director of Financial",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Claire Wolfe",
+        "industry": "Education",
+        "score": 53,
+        "why": [
+          "Works in Education",
+          "At Graduate from Cornell University"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Charles Mencke",
+      "industry": "Education",
+      "company": null,
+      "role": "Educator and Consultant, Urban ...",
+      "sport": "Men's Rowing",
+      "graduation_year": 2020,
+      "prestige_score": 0,
+      "score": 61,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 61
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "Currently a Educator and Consultant, Urban ...",
+        "6 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Reid Pauly",
+      "industry": "Education",
+      "company": null,
+      "role": "Dean's Assistant Professor of Nuclear Security ...",
+      "sport": "Rowing",
+      "graduation_year": 2010,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "Currently a Dean's Assistant Professor of Nuclear Security ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Kristin Sellers",
+      "industry": "Education",
+      "company": null,
+      "role": "Assistant Professor, Department of ...",
+      "sport": "Women's Cross Country",
+      "graduation_year": 2011,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "Currently a Assistant Professor, Department of ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Kristen Rhinehardt",
+      "industry": "Education",
+      "company": null,
+      "role": "Associate Professor and Assistant ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2010,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "Currently a Associate Professor and Assistant ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Anna Paisley Gray",
+      "industry": "Education",
+      "company": null,
+      "role": "Masters in Aerospace Engineering '26 ...",
+      "sport": "Women's Rowing",
+      "graduation_year": 2024,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "Same sport — Women's Rowing"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Samantha Burke",
+      "industry": "Education",
+      "company": "Case Western Reserve University",
+      "role": "Case Western Reserve University ...",
+      "sport": "Women's Ice Hockey",
+      "graduation_year": 2022,
+      "prestige_score": 40,
+      "score": 57,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 57
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "At Case Western Reserve University",
+        "4 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Eve Glasergreen",
+      "industry": "Education",
+      "company": "University of Chicago",
+      "role": "Writer: Fiction, poetry. PhD student in ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2019,
+      "prestige_score": 40,
+      "score": 57,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 57
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "At University of Chicago",
+        "7 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Tye Chirico",
+      "industry": "Education",
+      "company": "Graduated from Cornell University",
+      "role": "Graduated from Cornell University as ...",
+      "sport": "Football",
+      "graduation_year": 2025,
+      "prestige_score": 40,
+      "score": 54,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 54
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "At Graduated from Cornell University"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Tim Randall",
+      "industry": "Education",
+      "company": "Director of Financial",
+      "role": "Director of Financial Aid, Associate ...",
+      "sport": "Men's Lacrosse",
+      "graduation_year": 2008,
+      "prestige_score": 40,
+      "score": 54,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 54
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "At Director of Financial",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Claire Wolfe",
+      "industry": "Education",
+      "company": "Graduate from Cornell University",
+      "role": "Graduate from Cornell University with a ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2024,
+      "prestige_score": 40,
+      "score": 53,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 7,
+        "prestige": 10,
+        "total": 53
+      },
+      "whyThisMatch": [
+        "Works in Education",
+        "At Graduate from Cornell University"
+      ]
+    }
+  ]
+}

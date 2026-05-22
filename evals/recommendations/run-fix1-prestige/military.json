@@ -1,0 +1,421 @@
+{
+  "seeker": {
+    "id": "military",
+    "field": "Military",
+    "note": "No military option. User picks nearest 'Government / Policy' -> DB 'Government'.",
+    "prefs": {
+      "industries": [
+        "Government / Policy"
+      ],
+      "sports": [
+        "Football"
+      ],
+      "locations": [],
+      "roles": [
+        "Officer",
+        "Analyst",
+        "Veteran"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Government"
+    ]
+  },
+  "metrics": {
+    "id": "military",
+    "field": "Military",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 0.2,
+    "financeLeakage": 0.5,
+    "sportsShare": 0,
+    "distinctIndustries": 4,
+    "topIndustry": "Finance",
+    "topIndustryShare": 0.5,
+    "avgReasons": 2.8,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Government": 2,
+      "Finance": 5,
+      "Consulting": 1,
+      "Technology": 2
+    },
+    "top": [
+      {
+        "name": "Drew Alston",
+        "industry": "Government",
+        "score": 78,
+        "why": [
+          "Works in Government",
+          "Same sport — Football",
+          "Currently a S-3 Operations Officer | Military Police ..."
+        ]
+      },
+      {
+        "name": "Connor Eaton",
+        "industry": "Government",
+        "score": 74,
+        "why": [
+          "Works in Government",
+          "Currently a Marine Corps Officer | Cornell University ...",
+          "At Marine Corp"
+        ]
+      },
+      {
+        "name": "Richie Kenney",
+        "industry": "Finance",
+        "score": 47,
+        "why": [
+          "Same sport — Football",
+          "At Merrill Lynch Wealth",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Ashley Durik",
+        "industry": "Consulting",
+        "score": 47,
+        "why": [
+          "Currently a Acquisitions and Asset Management Analyst ...",
+          "At Acquisitions and Asset Management",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Alec Rodriguez",
+        "industry": "Technology",
+        "score": 47,
+        "why": [
+          "Same sport — Football",
+          "At South Jersey Industries",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Julianne Mangano",
+        "industry": "Technology",
+        "score": 46,
+        "why": [
+          "Currently a Revenue Management Analyst ...",
+          "At Revenue Management",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Victoria Hansen",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Technology Investment Banking Analyst ...",
+          "At Technology Investment Bank"
+        ]
+      },
+      {
+        "name": "Stephen Pawlak",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Currently a Investment Analyst - Harpswell Capital ...",
+          "At Investment Analyst - Harpswell Capital"
+        ]
+      },
+      {
+        "name": "Jordan Calaguire",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Chief Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Jonathan Lucas",
+        "industry": "Finance",
+        "score": 44,
+        "why": [
+          "Same sport — Football",
+          "At Head of Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Drew Alston",
+      "industry": "Government",
+      "company": null,
+      "role": "S-3 Operations Officer | Military Police ...",
+      "sport": "Football",
+      "graduation_year": 2011,
+      "prestige_score": 0,
+      "score": 78,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 78
+      },
+      "whyThisMatch": [
+        "Works in Government",
+        "Same sport — Football",
+        "Currently a S-3 Operations Officer | Military Police ..."
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Connor Eaton",
+      "industry": "Government",
+      "company": "Marine Corp",
+      "role": "Marine Corps Officer | Cornell University ...",
+      "sport": "Men's Rowing",
+      "graduation_year": 2025,
+      "prestige_score": 40,
+      "score": 74,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 74
+      },
+      "whyThisMatch": [
+        "Works in Government",
+        "Currently a Marine Corps Officer | Cornell University ...",
+        "At Marine Corp"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Richie Kenney",
+      "industry": "Finance",
+      "company": "Merrill Lynch Wealth",
+      "role": "Merrill Lynch Wealth ...",
+      "sport": "Football",
+      "graduation_year": 2021,
+      "prestige_score": 90,
+      "score": 47,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 47
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Merrill Lynch Wealth",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Ashley Durik",
+      "industry": "Consulting",
+      "company": "Acquisitions and Asset Management",
+      "role": "Acquisitions and Asset Management Analyst ...",
+      "sport": "Women's Soccer",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 47,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 47
+      },
+      "whyThisMatch": [
+        "Currently a Acquisitions and Asset Management Analyst ...",
+        "At Acquisitions and Asset Management",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Alec Rodriguez",
+      "industry": "Technology",
+      "company": "South Jersey Industries",
+      "role": "IT Project Manager II @South ...",
+      "sport": "Football",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 47,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 47
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At South Jersey Industries",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Julianne Mangano",
+      "industry": "Technology",
+      "company": "Revenue Management",
+      "role": "Revenue Management Analyst ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2021,
+      "prestige_score": 40,
+      "score": 46,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 7,
+        "prestige": 10,
+        "total": 46
+      },
+      "whyThisMatch": [
+        "Currently a Revenue Management Analyst ...",
+        "At Revenue Management",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Victoria Hansen",
+      "industry": "Finance",
+      "company": "Technology Investment Bank",
+      "role": "Technology Investment Banking Analyst ...",
+      "sport": "Women's Rowing",
+      "graduation_year": 2025,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Technology Investment Banking Analyst ...",
+        "At Technology Investment Bank"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Stephen Pawlak",
+      "industry": "Finance",
+      "company": "Investment Analyst - Harpswell Capital",
+      "role": "Investment Analyst - Harpswell Capital ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2015,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Currently a Investment Analyst - Harpswell Capital ...",
+        "At Investment Analyst - Harpswell Capital"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Jordan Calaguire",
+      "industry": "Finance",
+      "company": "Chief Investment",
+      "role": "Chief Investment and Development ...",
+      "sport": "Football",
+      "graduation_year": 2006,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Chief Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Jonathan Lucas",
+      "industry": "Finance",
+      "company": "Head of Investment",
+      "role": "Head of Investment Oversight ...",
+      "sport": "Football",
+      "graduation_year": 2007,
+      "prestige_score": 70,
+      "score": 44,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 44
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Head of Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

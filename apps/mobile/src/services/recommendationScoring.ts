@@ -236,6 +236,49 @@ function guessIndustryBucket(company: string): string | null {
   return null;
 }
 
+// Recognizable employers, field-neutral. This is the *legitimate* half of the
+// migration-016 prestige tiers (notable companies across finance, consulting,
+// tech, sports, media) WITHOUT the industry-label bonus that handed every
+// finance/sports alum a free 70/65. A finance analyst with no company now scores
+// the same prestige as a teacher with no company; an alum at Google or ESPN
+// still scores high because the *employer* is notable to a seeker in that field.
+const RECOGNIZED_EMPLOYERS: Array<{ score: number; patterns: RegExp }> = [
+  {
+    score: 100,
+    patterns:
+      /goldman sachs|morgan stanley|jpmorgan|jp morgan|blackstone|blackrock|kkr|apollo|carlyle|citadel|two sigma|bridgewater|point72|d\.e\. shaw|renaissance technologies|warburg pincus|general atlantic|sequoia/i,
+  },
+  {
+    score: 90,
+    patterns:
+      /mckinsey|boston consulting|\bbcg\b|bain|bank of america|merrill lynch|lazard|evercore|moelis|guggenheim|citigroup|\bciti\b|barclays|\bubs\b|deutsche bank|credit suisse|hsbc/i,
+  },
+  {
+    score: 80,
+    patterns:
+      /deloitte|pwc|pricewaterhousecoopers|ernst & young|\bey\b|kpmg|accenture|oliver wyman|booz allen|google|apple|\bmeta\b|microsoft|amazon|wells fargo|fidelity|vanguard|charles schwab|jefferies|\brbc\b|piper sandler|stifel|raymond james|cowen|william blair|tpg|advent international|vista equity|ares management|brookfield|nfl|nba|mlb|nhl|mls|espn|nike|\bimg\b|\bcaa\b|endeavor|\bwme\b|wasserman|octagon/i,
+  },
+];
+
+/**
+ * Field-neutral prestige (0–100). Recognizable employer first, then a small
+ * floor for having a complete-enough employment record. No industry input — this
+ * is what removes the finance/sports head start while still surfacing alumni at
+ * notable employers in any field.
+ */
+export function computeNeutralPrestige(
+  company: string | null,
+  role: string | null,
+): number {
+  if (company) {
+    for (const tier of RECOGNIZED_EMPLOYERS) {
+      if (tier.patterns.test(company)) return tier.score;
+    }
+    return role ? 40 : 20;
+  }
+  return 0;
+}
+
 /**
  * Returns whether an alumni's DB industry value matches any of the user's
  * saved interest labels, expanding through INTEREST_ALIASES so labels like
@@ -352,10 +395,11 @@ export function scoreAlumnus(
   const normalized = profile.profileCompletenessScore / 100;
   breakdown.completeness = Math.round(normalized * BASE_WEIGHTS.completeness);
 
-  // Prestige — prestige_score is 0-100 (set by migration 016, scaled by tier).
-  // Linear contribution. Top firms (≥90) get nearly the full weight.
-  const prestigeRaw =
-    typeof alumni.prestige_score === 'number' ? alumni.prestige_score : 0;
+  // Prestige — field-neutral notability (recognizable employer + profile depth).
+  // We intentionally do NOT use alumni.prestige_score: migration 016 inflates it
+  // for the finance/sports *industry label* alone, which buried every other field
+  // (see docs/decisions/prestige-neutralization.md). Linear contribution.
+  const prestigeRaw = computeNeutralPrestige(profile.currentCompany, profile.currentRole);
   const prestigeNormalized = Math.max(0, Math.min(prestigeRaw, 100)) / 100;
   breakdown.prestige = Math.round(prestigeNormalized * BASE_WEIGHTS.prestige);
 

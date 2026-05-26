@@ -120,17 +120,27 @@ function buildReasonFromMatch(
 
 export function rankAlumni(pool: AgentAlumni[], input: AgentInput): RankedAlumni[] {
   const prefs = agentInputToPrefs(input)
-  return pool
-    .map((a) => {
-      const scored = scoreAlumnus(agentToAlumni(a), prefs, {})
-      const tags = buildTagsFromBreakdown(a, prefs, scored.scoreBreakdown)
-      return {
+  const ranked = pool.map((a) => {
+    const scored = scoreAlumnus(agentToAlumni(a), prefs, {})
+    const tags = buildTagsFromBreakdown(a, prefs, scored.scoreBreakdown)
+    return {
+      alumni: a,
+      industryMatched: scored.scoreBreakdown.industry > 0,
+      ranked: {
         ...a,
         score: scored.score,
         tags,
         reason: buildReasonFromMatch(a, scored.whyThisMatch, tags),
-      }
-    })
+      } as RankedAlumni,
+    }
+  })
+
+  const filtered = input.strictFieldFilter
+    ? ranked.filter((r) => r.industryMatched)
+    : ranked
+
+  return filtered
+    .map((r) => r.ranked)
     .filter((a) => a.score > 0)
     .sort((a, b) => b.score - a.score)
 }

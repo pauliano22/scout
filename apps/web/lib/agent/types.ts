@@ -13,6 +13,11 @@ export interface AgentInput {
     locations: string[]    // partial matched against alumni.location
     sport?: string         // preferred alumni sport (bonus)
   }
+  // When true, alumni whose industry doesn't match any of preferences.industries
+  // are excluded entirely from the result (not just down-ranked). Restores the
+  // pre-unification "strict field" behavior — opt-in because the field-neutral
+  // ranking is the default for fairness across fields.
+  strictFieldFilter?: boolean
 }
 
 export interface AgentAlumni {

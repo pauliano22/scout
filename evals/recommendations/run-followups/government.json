@@ -1,0 +1,416 @@
+{
+  "seeker": {
+    "id": "government",
+    "field": "Government",
+    "note": "Picks 'Government / Policy' -> DB 'Government' (via alias).",
+    "prefs": {
+      "industries": [
+        "Government / Policy"
+      ],
+      "sports": [
+        "Women's Track And Field"
+      ],
+      "locations": [
+        "Washington, D.C."
+      ],
+      "roles": [
+        "Policy",
+        "Analyst",
+        "Government"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Government"
+    ]
+  },
+  "metrics": {
+    "id": "government",
+    "field": "Government",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 0.5,
+    "financeLeakage": 0.2,
+    "sportsShare": 0,
+    "distinctIndustries": 5,
+    "topIndustry": "Government",
+    "topIndustryShare": 0.5,
+    "avgReasons": 2.4,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Government": 5,
+      "Healthcare": 1,
+      "Finance": 2,
+      "Education": 1,
+      "Consulting": 1
+    },
+    "top": [
+      {
+        "name": "Sloane Fleming-Hickey",
+        "industry": "Government",
+        "score": 78,
+        "why": [
+          "Works in Government",
+          "Same sport — Women's Track And Field",
+          "Currently a B.A in Government from Cornell ..."
+        ]
+      },
+      {
+        "name": "Nikolia Kanaris",
+        "industry": "Healthcare",
+        "score": 57,
+        "why": [
+          "Same sport — Women's Track And Field",
+          "Currently a MPH, Public Health Policy and ...",
+          "At MPH, Public Health"
+        ]
+      },
+      {
+        "name": "Connor Eaton",
+        "industry": "Government",
+        "score": 54,
+        "why": [
+          "Works in Government",
+          "At Marine Corp"
+        ]
+      },
+      {
+        "name": "Gaynelle Boham",
+        "industry": "Finance",
+        "score": 51,
+        "why": [
+          "Same sport — Women's Track And Field",
+          "Currently a Analyst | Sustainable Pricing and ..."
+        ]
+      },
+      {
+        "name": "Sumner Roberts",
+        "industry": "Government",
+        "score": 38,
+        "why": [
+          "Works in Government"
+        ]
+      },
+      {
+        "name": "Drew Alston",
+        "industry": "Government",
+        "score": 38,
+        "why": [
+          "Works in Government",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Annie Berkery",
+        "industry": "Government",
+        "score": 38,
+        "why": [
+          "Works in Government",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Erika Tillotson",
+        "industry": "Finance",
+        "score": 37,
+        "why": [
+          "Same sport — Women's Track And Field",
+          "At Supply Chain Contract & Capital",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Eve Glasergreen",
+        "industry": "Education",
+        "score": 37,
+        "why": [
+          "Same sport — Women's Track And Field",
+          "At University of Chicago",
+          "7 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Ashley Durik",
+        "industry": "Consulting",
+        "score": 37,
+        "why": [
+          "Currently a Acquisitions and Asset Management Analyst ...",
+          "At Acquisitions and Asset Management",
+          "3 years out — recent enough for practical advice"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Sloane Fleming-Hickey",
+      "industry": "Government",
+      "company": null,
+      "role": "B.A in Government from Cornell ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2025,
+      "prestige_score": 0,
+      "score": 78,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 78
+      },
+      "whyThisMatch": [
+        "Works in Government",
+        "Same sport — Women's Track And Field",
+        "Currently a B.A in Government from Cornell ..."
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Nikolia Kanaris",
+      "industry": "Healthcare",
+      "company": "MPH, Public Health",
+      "role": "MPH, Public Health Policy and ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2020,
+      "prestige_score": 40,
+      "score": 57,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 57
+      },
+      "whyThisMatch": [
+        "Same sport — Women's Track And Field",
+        "Currently a MPH, Public Health Policy and ...",
+        "At MPH, Public Health"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Connor Eaton",
+      "industry": "Government",
+      "company": "Marine Corp",
+      "role": "Marine Corps Officer | Cornell University ...",
+      "sport": "Men's Rowing",
+      "graduation_year": 2025,
+      "prestige_score": 40,
+      "score": 54,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 54
+      },
+      "whyThisMatch": [
+        "Works in Government",
+        "At Marine Corp"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Gaynelle Boham",
+      "industry": "Finance",
+      "company": null,
+      "role": "Analyst | Sustainable Pricing and ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2017,
+      "prestige_score": 70,
+      "score": 51,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 51
+      },
+      "whyThisMatch": [
+        "Same sport — Women's Track And Field",
+        "Currently a Analyst | Sustainable Pricing and ..."
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Sumner Roberts",
+      "industry": "Government",
+      "company": null,
+      "role": "Fmr. Harris-Walz Staffer and White ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2025,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Government"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Drew Alston",
+      "industry": "Government",
+      "company": null,
+      "role": "S-3 Operations Officer | Military Police ...",
+      "sport": "Football",
+      "graduation_year": 2011,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Government",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Annie Berkery",
+      "industry": "Government",
+      "company": null,
+      "role": "Public Sector Partner Development ...",
+      "sport": "Women's Lacrosse",
+      "graduation_year": 2006,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Government",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Erika Tillotson",
+      "industry": "Finance",
+      "company": "Supply Chain Contract & Capital",
+      "role": "Supply Chain Contract & Capital ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2021,
+      "prestige_score": 70,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Same sport — Women's Track And Field",
+        "At Supply Chain Contract & Capital",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Eve Glasergreen",
+      "industry": "Education",
+      "company": "University of Chicago",
+      "role": "Writer: Fiction, poetry. PhD student in ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2019,
+      "prestige_score": 40,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Same sport — Women's Track And Field",
+        "At University of Chicago",
+        "7 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Ashley Durik",
+      "industry": "Consulting",
+      "company": "Acquisitions and Asset Management",
+      "role": "Acquisitions and Asset Management Analyst ...",
+      "sport": "Women's Soccer",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Currently a Acquisitions and Asset Management Analyst ...",
+        "At Acquisitions and Asset Management",
+        "3 years out — recent enough for practical advice"
+      ]
+    }
+  ]
+}

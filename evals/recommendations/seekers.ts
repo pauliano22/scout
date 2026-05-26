@@ -101,9 +101,9 @@ export const SEEKERS: Seeker[] = [
   },
   {
     id: 'engineering', field: 'Engineering', isFinance: false,
-    note: "No engineering option. User picks 'Technology' -> DB 'Technology' (also Manufacturing).",
+    note: "Picks 'Engineering' (chip added; maps to Technology + Software + Manufacturing in DB).",
     expectedIndustries: ['Technology', 'Manufacturing'],
-    prefs: prefs(['Technology'], 'Men’s Track And Field', ['Engineer', 'Developer', 'Scientist']),
+    prefs: prefs(['Engineering'], 'Men’s Track And Field', ['Engineer', 'Developer', 'Scientist']),
   },
   {
     id: 'academia', field: 'Academia', isFinance: false,
@@ -143,9 +143,9 @@ export const SEEKERS: Seeker[] = [
   },
   {
     id: 'manufacturing', field: 'Manufacturing', isFinance: false,
-    note: 'No manufacturing option — user skips. (Corpus HAS Manufacturing rows they cannot reach.)',
+    note: "Picks 'Manufacturing' (chip added) -> DB 'Manufacturing'.",
     expectedIndustries: ['Manufacturing'],
-    prefs: prefs([], 'Football', ['Manufacturing', 'Plant', 'Production']),
+    prefs: prefs(['Manufacturing'], 'Football', ['Manufacturing', 'Plant', 'Production']),
   },
   {
     id: 'government', field: 'Government', isFinance: false,

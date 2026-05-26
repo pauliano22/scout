@@ -1,0 +1,418 @@
+{
+  "seeker": {
+    "id": "manufacturing",
+    "field": "Manufacturing",
+    "note": "Picks 'Manufacturing' (chip added) -> DB 'Manufacturing'.",
+    "prefs": {
+      "industries": [
+        "Manufacturing"
+      ],
+      "sports": [
+        "Football"
+      ],
+      "locations": [],
+      "roles": [
+        "Manufacturing",
+        "Plant",
+        "Production"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Manufacturing"
+    ]
+  },
+  "metrics": {
+    "id": "manufacturing",
+    "field": "Manufacturing",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 0.4,
+    "financeLeakage": 0.5,
+    "sportsShare": 0,
+    "distinctIndustries": 3,
+    "topIndustry": "Finance",
+    "topIndustryShare": 0.5,
+    "avgReasons": 2.7,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Manufacturing": 4,
+      "Finance": 5,
+      "Technology": 1
+    },
+    "top": [
+      {
+        "name": "Jenna Campagnolo",
+        "industry": "Manufacturing",
+        "score": 54,
+        "why": [
+          "Works in Manufacturing",
+          "At Ontarioonecall",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Rose Gorski",
+        "industry": "Manufacturing",
+        "score": 41,
+        "why": [
+          "Works in Manufacturing",
+          "6 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Cooper Telesco",
+        "industry": "Manufacturing",
+        "score": 41,
+        "why": [
+          "Works in Manufacturing",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Vince Formica",
+        "industry": "Manufacturing",
+        "score": 38,
+        "why": [
+          "Works in Manufacturing",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Richie Kenney",
+        "industry": "Finance",
+        "score": 37,
+        "why": [
+          "Same sport — Football",
+          "At Merrill Lynch Wealth",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Alec Rodriguez",
+        "industry": "Technology",
+        "score": 37,
+        "why": [
+          "Same sport — Football",
+          "At South Jersey Industries",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Jordan Calaguire",
+        "industry": "Finance",
+        "score": 34,
+        "why": [
+          "Same sport — Football",
+          "At Chief Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Jonathan Lucas",
+        "industry": "Finance",
+        "score": 34,
+        "why": [
+          "Same sport — Football",
+          "At Head of Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Dario Arezzo",
+        "industry": "Finance",
+        "score": 34,
+        "why": [
+          "Same sport — Football",
+          "At Chief Financial Services",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Chris Murray",
+        "industry": "Finance",
+        "score": 34,
+        "why": [
+          "Same sport — Football",
+          "At Timberlinerev",
+          "Senior alum — strong perspective on hiring"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Jenna Campagnolo",
+      "industry": "Manufacturing",
+      "company": "Ontarioonecall",
+      "role": "Strategic Operations & ...",
+      "sport": "Softball",
+      "graduation_year": 2008,
+      "prestige_score": 40,
+      "score": 54,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 10,
+        "total": 54
+      },
+      "whyThisMatch": [
+        "Works in Manufacturing",
+        "At Ontarioonecall",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Rose Gorski",
+      "industry": "Manufacturing",
+      "company": null,
+      "role": "Director of Operations & Business ...",
+      "sport": "Field Hockey",
+      "graduation_year": 2020,
+      "prestige_score": 0,
+      "score": 41,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 41
+      },
+      "whyThisMatch": [
+        "Works in Manufacturing",
+        "6 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Cooper Telesco",
+      "industry": "Manufacturing",
+      "company": null,
+      "role": "VP of Operations and Business ...",
+      "sport": "Men's Lacrosse",
+      "graduation_year": 2021,
+      "prestige_score": 0,
+      "score": 41,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 41
+      },
+      "whyThisMatch": [
+        "Works in Manufacturing",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Vince Formica",
+      "industry": "Manufacturing",
+      "company": null,
+      "role": "Business Operations and Logistics ...",
+      "sport": "Men's Track And Field",
+      "graduation_year": 2012,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Manufacturing",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Richie Kenney",
+      "industry": "Finance",
+      "company": "Merrill Lynch Wealth",
+      "role": "Merrill Lynch Wealth ...",
+      "sport": "Football",
+      "graduation_year": 2021,
+      "prestige_score": 90,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Merrill Lynch Wealth",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Alec Rodriguez",
+      "industry": "Technology",
+      "company": "South Jersey Industries",
+      "role": "IT Project Manager II @South ...",
+      "sport": "Football",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At South Jersey Industries",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Jordan Calaguire",
+      "industry": "Finance",
+      "company": "Chief Investment",
+      "role": "Chief Investment and Development ...",
+      "sport": "Football",
+      "graduation_year": 2006,
+      "prestige_score": 70,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Chief Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Jonathan Lucas",
+      "industry": "Finance",
+      "company": "Head of Investment",
+      "role": "Head of Investment Oversight ...",
+      "sport": "Football",
+      "graduation_year": 2007,
+      "prestige_score": 70,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Head of Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Dario Arezzo",
+      "industry": "Finance",
+      "company": "Chief Financial Services",
+      "role": "Chief Financial Services ...",
+      "sport": "Football",
+      "graduation_year": 2009,
+      "prestige_score": 70,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Chief Financial Services",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Chris Murray",
+      "industry": "Finance",
+      "company": "Timberlinerev",
+      "role": "Managing Director - Head Of Asset ...",
+      "sport": "Football",
+      "graduation_year": 2012,
+      "prestige_score": 70,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Football",
+        "At Timberlinerev",
+        "Senior alum — strong perspective on hiring"
+      ]
+    }
+  ]
+}

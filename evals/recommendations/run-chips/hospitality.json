@@ -1,0 +1,412 @@
+{
+  "seeker": {
+    "id": "hospitality",
+    "field": "Hospitality",
+    "note": "No hospitality option and nothing fits — user skips (empty industries).",
+    "prefs": {
+      "industries": [],
+      "sports": [
+        "Baseball"
+      ],
+      "locations": [],
+      "roles": [
+        "Hotel",
+        "Hospitality",
+        "Manager"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": []
+  },
+  "metrics": {
+    "id": "hospitality",
+    "field": "Hospitality",
+    "isFinance": false,
+    "picksWereEmpty": true,
+    "n": 10,
+    "fieldRelevance": null,
+    "financeLeakage": 0.3,
+    "sportsShare": 0.1,
+    "distinctIndustries": 7,
+    "topIndustry": "Finance",
+    "topIndustryShare": 0.3,
+    "avgReasons": 2.4,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Sports": 1,
+      "Real Estate": 2,
+      "Finance": 3,
+      "Technology": 1,
+      "(none)": 1,
+      "Consulting": 1,
+      "Healthcare": 1
+    },
+    "top": [
+      {
+        "name": "Colby Wyatt",
+        "industry": "Sports",
+        "score": 37,
+        "why": [
+          "Same sport — Baseball",
+          "At Baseball Systems",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "William Gilbert",
+        "industry": "Real Estate",
+        "score": 37,
+        "why": [
+          "Same sport — Baseball",
+          "At Bhsusa",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Matt Langseth",
+        "industry": "Finance",
+        "score": 34,
+        "why": [
+          "Same sport — Baseball",
+          "At Wealth Management",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Matt Miller",
+        "industry": "Technology",
+        "score": 34,
+        "why": [
+          "Same sport — Baseball",
+          "At Senior Financial Associate of The Ross Group",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Brandon Stoller",
+        "industry": "Real Estate",
+        "score": 34,
+        "why": [
+          "Currently a Hospitality Real Estate Investment ...",
+          "At Hospitality Real Estate Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Adam Jacobs",
+        "industry": null,
+        "score": 33,
+        "why": [
+          "Same sport — Baseball",
+          "At Xzom",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Ryan Karl",
+        "industry": "Finance",
+        "score": 31,
+        "why": [
+          "Same sport — Baseball"
+        ]
+      },
+      {
+        "name": "Jacob Weston",
+        "industry": "Finance",
+        "score": 31,
+        "why": [
+          "Same sport — Baseball",
+          "8 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Ryan Krainz",
+        "industry": "Consulting",
+        "score": 31,
+        "why": [
+          "Same sport — Baseball",
+          "7 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Chloe Pendergast",
+        "industry": "Healthcare",
+        "score": 31,
+        "why": [
+          "Currently a Hospitality Operations & Development ..."
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Colby Wyatt",
+      "industry": "Sports",
+      "company": "Baseball Systems",
+      "role": "Baseball Systems Operator with Hawk-Eye ...",
+      "sport": "Baseball",
+      "graduation_year": 2021,
+      "prestige_score": 65,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Baseball Systems",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "William Gilbert",
+      "industry": "Real Estate",
+      "company": "Bhsusa",
+      "role": "Licensed Real Estate Agent on the Jay K. ...",
+      "sport": "Baseball",
+      "graduation_year": 2023,
+      "prestige_score": 40,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Bhsusa",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Matt Langseth",
+      "industry": "Finance",
+      "company": "Wealth Management",
+      "role": "Wealth Management and Financial ...",
+      "sport": "Baseball",
+      "graduation_year": 2011,
+      "prestige_score": 70,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Wealth Management",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Matt Miller",
+      "industry": "Technology",
+      "company": "Senior Financial Associate of The Ross Group",
+      "role": "Senior Financial Associate of The Ross Group ...",
+      "sport": "Baseball",
+      "graduation_year": 2006,
+      "prestige_score": 40,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Senior Financial Associate of The Ross Group",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Brandon Stoller",
+      "industry": "Real Estate",
+      "company": "Hospitality Real Estate Investment",
+      "role": "Hospitality Real Estate Investment ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2009,
+      "prestige_score": 40,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Currently a Hospitality Real Estate Investment ...",
+        "At Hospitality Real Estate Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Adam Jacobs",
+      "industry": null,
+      "company": "Xzom",
+      "role": "Early Enough. Making Reliable ...",
+      "sport": "Baseball",
+      "graduation_year": 2009,
+      "prestige_score": 40,
+      "score": 33,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 7,
+        "prestige": 0,
+        "total": 33
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "At Xzom",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Ryan Karl",
+      "industry": "Finance",
+      "company": null,
+      "role": "Relationship Manager with Value ...",
+      "sport": "Baseball",
+      "graduation_year": 2016,
+      "prestige_score": 70,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Jacob Weston",
+      "industry": "Finance",
+      "company": null,
+      "role": "Managing Director and Portfolio ...",
+      "sport": "Baseball",
+      "graduation_year": 2018,
+      "prestige_score": 70,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "8 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Ryan Krainz",
+      "industry": "Consulting",
+      "company": null,
+      "role": "Business Analyst | Turning Data into Real- ...",
+      "sport": "Baseball",
+      "graduation_year": 2019,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Baseball",
+        "7 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Chloe Pendergast",
+      "industry": "Healthcare",
+      "company": null,
+      "role": "Hospitality Operations & Development ...",
+      "sport": "Softball",
+      "graduation_year": 2017,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Currently a Hospitality Operations & Development ..."
+      ]
+    }
+  ]
+}

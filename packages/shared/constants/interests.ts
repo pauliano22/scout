@@ -12,6 +12,7 @@
 export const INTEREST_SUGGESTIONS: string[] = [
   'Finance',
   'Technology',
+  'Engineering',
   'Consulting',
   'Healthcare',
   'Law',
@@ -21,6 +22,7 @@ export const INTEREST_SUGGESTIONS: string[] = [
   'Sports & Athletics',
   'Education',
   'Real Estate',
+  'Manufacturing',
   'Private Equity / Venture Capital',
   'Marketing',
 ];
@@ -29,6 +31,7 @@ export const INTEREST_ALIASES: Record<string, string[]> = {
   // Primary suggestions
   'Finance': ['Finance'],
   'Technology': ['Technology', 'Software'],
+  'Engineering': ['Engineering', 'Technology', 'Software', 'Manufacturing'],
   'Consulting': ['Consulting'],
   'Healthcare': ['Healthcare'],
   'Law': ['Law'],
@@ -43,6 +46,7 @@ export const INTEREST_ALIASES: Record<string, string[]> = {
   'Sports & Athletics': ['Sports', 'Athletics', 'Sports & Athletics'],
   'Education': ['Education'],
   'Real Estate': ['Real Estate'],
+  'Manufacturing': ['Manufacturing'],
   'Private Equity / Venture Capital': [
     'Finance', 'Private Equity', 'Venture Capital', 'Private Equity / Venture Capital',
   ],
@@ -59,6 +63,7 @@ export const INTEREST_ALIASES: Record<string, string[]> = {
 export const INTEREST_DB_INDUSTRIES: Record<string, string[]> = {
   'Finance': ['Finance'],
   'Technology': ['Technology', 'Software'],
+  'Engineering': ['Technology', 'Software', 'Manufacturing'],
   'Consulting': ['Consulting'],
   'Healthcare': ['Healthcare'],
   'Law': ['Law'],
@@ -68,6 +73,7 @@ export const INTEREST_DB_INDUSTRIES: Record<string, string[]> = {
   'Sports & Athletics': ['Sports'],
   'Education': ['Education'],
   'Real Estate': ['Real Estate'],
+  'Manufacturing': ['Manufacturing'],
   'Private Equity / Venture Capital': ['Finance'],
   'Marketing': ['Media'],
   // Legacy

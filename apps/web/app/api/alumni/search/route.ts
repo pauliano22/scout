@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import type { Alumni } from '@scout/shared/types/database'
+import {
+  scoreAlumnus,
+  type UserPreferences,
+} from '@scout/shared/scoring/recommendationScoring'
 
 export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 50
+// Cap the in-memory pool we score per request. Matches mobile's Pass-2 cap.
+const POOL_CAP = 500
 
 export async function GET(request: NextRequest) {
   const supabase = createClient()
@@ -55,31 +62,74 @@ export async function GET(request: NextRequest) {
     query = query.ilike('location', `%${location.trim()}%`)
   }
 
-  // Sort: profile completeness signals first, then recency. We no longer order
-  // by `prestige_score` because migration 016 inflates it for the finance/sports
-  // *industry label* alone (Tier 4 = 70 for `industry='Finance'`, no company
-  // required), which made this grid finance-first regardless of search intent.
-  // Until migration 022 lands and `prestige_score` is field-neutral, sort by
-  // the underlying completeness fields directly. See
-  // docs/recommendation-system-audit.md and docs/decisions/prestige-neutralization.md.
-  query = query
-    .order('avatar_url', { ascending: false, nullsFirst: false })
-    .order('role', { ascending: false, nullsFirst: false })
-    .order('company', { ascending: false, nullsFirst: false })
-    .order('graduation_year', { ascending: false })
-    .range(offset, offset + limit - 1)
+  // Whether the request actually expresses a ranking intent. With none of these
+  // set, the viewer is browsing the directory — fall back to the cheap SQL sort
+  // (completeness signals → recency) and skip the scorer. When any signal is
+  // present we hand off ranking to the shared scorer so the order reflects how
+  // well each alum matches the search.
+  const hasRankingIntent =
+    !!search.trim() || (industry && industry !== 'All') || !!sport || !!location.trim()
 
-  const { data: alumni, error, count } = await query
+  if (!hasRankingIntent) {
+    // Cheap path: SQL-level sort + pagination, identical to the unscored grid.
+    query = query
+      .order('avatar_url', { ascending: false, nullsFirst: false })
+      .order('role', { ascending: false, nullsFirst: false })
+      .order('company', { ascending: false, nullsFirst: false })
+      .order('graduation_year', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    const { data: alumni, error, count } = await query
+    if (error) {
+      console.error('Alumni search error:', error)
+      return NextResponse.json({ error: 'Failed to search alumni' }, { status: 500 })
+    }
+    const total = count || 0
+    return NextResponse.json({
+      alumni: alumni || [],
+      total,
+      page,
+      hasMore: offset + limit < total,
+    })
+  }
+
+  // Ranking path: pull the matching pool (capped), score every row against
+  // preferences built from the query, sort by score, then JS-paginate. Returns
+  // the same response shape — only the order changes.
+  const { data: rows, error, count } = await query.limit(POOL_CAP)
 
   if (error) {
     console.error('Alumni search error:', error)
     return NextResponse.json({ error: 'Failed to search alumni' }, { status: 500 })
   }
 
-  const total = count || 0
+  const prefs: UserPreferences = {
+    industries: industry && industry !== 'All' ? [industry] : [],
+    sports: sport ? [sport] : [],
+    locations: location.trim() ? [location.trim()] : [],
+    // Use free-text search as a role keyword — the scorer's generic-token guard
+    // already drops bare seniority words ("Director", "Manager", …) so this
+    // can't over-match across fields.
+    roles: search.trim() ? [search.trim()] : [],
+    companies: [],
+    priorities: { sameSport: true, similarIndustry: true, seniorAlumni: false },
+  }
+
+  const scored = (rows ?? []).map((r) => ({
+    row: r,
+    // scoreAlumnus reads through normalizeAlumniProfile which tolerates the
+    // fields we don't select (work_history, bio, education, …). Cast keeps the
+    // type system happy without inventing fake values.
+    score: scoreAlumnus(r as unknown as Alumni, prefs, {}).score,
+  }))
+
+  scored.sort((a, b) => b.score - a.score)
+
+  const total = count ?? scored.length
+  const pageAlumni = scored.slice(offset, offset + limit).map((s) => s.row)
 
   return NextResponse.json({
-    alumni: alumni || [],
+    alumni: pageAlumni,
     total,
     page,
     hasMore: offset + limit < total,

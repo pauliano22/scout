@@ -55,9 +55,14 @@ export async function GET(request: NextRequest) {
     query = query.ilike('location', `%${location.trim()}%`)
   }
 
-  // Sort: prestige first (big companies, finance heavy), then profile completeness
+  // Sort: profile completeness signals first, then recency. We no longer order
+  // by `prestige_score` because migration 016 inflates it for the finance/sports
+  // *industry label* alone (Tier 4 = 70 for `industry='Finance'`, no company
+  // required), which made this grid finance-first regardless of search intent.
+  // Until migration 022 lands and `prestige_score` is field-neutral, sort by
+  // the underlying completeness fields directly. See
+  // docs/recommendation-system-audit.md and docs/decisions/prestige-neutralization.md.
   query = query
-    .order('prestige_score', { ascending: false, nullsFirst: false })
     .order('avatar_url', { ascending: false, nullsFirst: false })
     .order('role', { ascending: false, nullsFirst: false })
     .order('company', { ascending: false, nullsFirst: false })

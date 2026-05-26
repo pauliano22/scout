@@ -1,51 +1,16 @@
-// Local copy of shared database types for the mobile app
-// Source of truth: packages/shared/types/database.ts
-
-export interface WorkHistoryEntry {
-  title: string | null
-  company: string | null
-  start: { year: number; month?: number } | null
-  end: { year: number; month?: number } | null
-  duration: string | null
-  location: string | null
-}
-
-export interface EducationEntry {
-  school: string
-  degree: string | null
-  field: string | null
-  start: number | null
-  end: number | null
-}
-
-export interface Alumni {
-  id: string
-  full_name: string
-  email: string | null
-  linkedin_url: string | null
-  sport: string | null
-  graduation_year: number
-  company: string | null
-  role: string | null
-  industry: string | null
-  location: string | null
-  avatar_url: string | null
-  photo_url: string | null
-  is_verified: boolean
-  is_public: boolean
-  source: 'opt_in' | 'public_record' | 'referral'
-  school_id: string | null
-  created_at: string
-  updated_at: string
-  // Rich career fields
-  work_history: WorkHistoryEntry[] | null
-  skills: string[] | null
-  education: EducationEntry[] | null
-  display_headline: string | null
-  path_summary_stub: string | null
-  current_status_type: 'current' | 'likely_current' | 'last_known' | 'conflicting' | 'unknown' | null
-  prestige_score?: number | null
-}
+// Per CLAUDE.md: "All shared DB types live in packages/shared/types/database.ts.
+// Neither app may define its own copy of Supabase row types." Alumni and related
+// row types are re-exported from the canonical shared module so the unified
+// scorer in @scout/shared/scoring works on the same shape as mobile code.
+// (Profile/UserNetwork still defined locally below — a separate cleanup; their
+// shared versions are a near-superset and should replace these next.)
+import type {
+  Alumni,
+  AlumniClaimSource,
+  EducationEntry,
+  WorkHistoryEntry,
+} from '@scout/shared/types/database';
+export type { Alumni, AlumniClaimSource, EducationEntry, WorkHistoryEntry };
 
 export interface Profile {
   id: string

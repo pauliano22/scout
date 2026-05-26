@@ -11,7 +11,7 @@ import { aggregate, evaluateSeeker, type Aggregate, type SeekerMetrics } from '.
 import {
   deriveTargetDbIndustries,
   selectRecommendations,
-} from '../../apps/mobile/src/services/recommendationScoring';
+} from '@scout/shared/scoring/recommendationScoring';
 
 const TOP_N = 10;
 

@@ -1,0 +1,2332 @@
+{
+  "aggregate": {
+    "label": "run-unified",
+    "seekerCount": 20,
+    "nonFinanceCount": 19,
+    "avgFieldRelevance_nf": 0.6823529411764706,
+    "avgFinanceLeakage_nf": 0.12631578947368424,
+    "worstFinanceLeakage_nf": 0.5,
+    "avgDistinctIndustries_nf": 2.9473684210526314,
+    "avgGenericOnly_nf": 0,
+    "financeFieldRelevance": 1,
+    "financeFinanceLeakage": 1
+  },
+  "metrics": [
+    {
+      "id": "medicine",
+      "field": "Medicine",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Healthcare",
+      "topIndustryShare": 1,
+      "avgReasons": 2.8,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Healthcare": 10
+      },
+      "top": [
+        {
+          "name": "Yelizaveta Sapozhnikov",
+          "industry": "Healthcare",
+          "score": 61,
+          "why": [
+            "Works in Healthcare",
+            "Currently a Medical Student: University of ...",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Yelizaveta  Sapozhnikov",
+          "industry": "Healthcare",
+          "score": 61,
+          "why": [
+            "Works in Healthcare",
+            "Currently a Medical Student: University of ...",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Boomer Olsen",
+          "industry": "Healthcare",
+          "score": 61,
+          "why": [
+            "Works in Healthcare",
+            "Currently a Resident Physician and Postdoctoral ..."
+          ]
+        },
+        {
+          "name": "Stephanie Brownstein",
+          "industry": "Healthcare",
+          "score": 58,
+          "why": [
+            "Works in Healthcare",
+            "Same sport — Field Hockey",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Jason Mitchell",
+          "industry": "Healthcare",
+          "score": 58,
+          "why": [
+            "Works in Healthcare",
+            "Currently a Senior Vice President, Employee Benefits ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Adabelle Wright",
+          "industry": "Healthcare",
+          "score": 58,
+          "why": [
+            "Works in Healthcare",
+            "Currently a Medical Assistant, Cornell University ..."
+          ]
+        },
+        {
+          "name": "Paul Casavant",
+          "industry": "Healthcare",
+          "score": 57,
+          "why": [
+            "Works in Healthcare",
+            "At Modernatx",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Olivia Tometich",
+          "industry": "Healthcare",
+          "score": 57,
+          "why": [
+            "Works in Healthcare",
+            "At Emergency Services",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Nikolia Kanaris",
+          "industry": "Healthcare",
+          "score": 57,
+          "why": [
+            "Works in Healthcare",
+            "At MPH, Public Health",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Robert Richard",
+          "industry": "Healthcare",
+          "score": 56,
+          "why": [
+            "Works in Healthcare",
+            "Currently a Medical Director -- The Center for ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "law",
+      "field": "Law",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Law",
+      "topIndustryShare": 1,
+      "avgReasons": 2.6,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Law": 10
+      },
+      "top": [
+        {
+          "name": "Khary Pryce",
+          "industry": "Law",
+          "score": 61,
+          "why": [
+            "Works in Law",
+            "Currently a Suffolk County District Attorney's Office ...",
+            "4 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Drew Diedrich",
+          "industry": "Law",
+          "score": 61,
+          "why": [
+            "Works in Law",
+            "Currently a Assistant Vice President, Senior Counsel ..."
+          ]
+        },
+        {
+          "name": "Kasia Preneta",
+          "industry": "Law",
+          "score": 58,
+          "why": [
+            "Works in Law",
+            "Currently a Associate Counsel, Office of General ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Jarin Jackson",
+          "industry": "Law",
+          "score": 58,
+          "why": [
+            "Works in Law",
+            "Currently a Senior Counsel & Director, Intellectual ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Glen Kendall",
+          "industry": "Law",
+          "score": 58,
+          "why": [
+            "Works in Law",
+            "Currently a Director & Managing Senior Counsel ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Erin Payne",
+          "industry": "Law",
+          "score": 58,
+          "why": [
+            "Works in Law",
+            "Currently a Senior Counsel, Canadian & Caribbean ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Joan Guilfoyle",
+          "industry": "Law",
+          "score": 56,
+          "why": [
+            "Works in Law",
+            "Currently a Senior Counsel, Capital Markets, Loeb & ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Ryan Juliano",
+          "industry": "Law",
+          "score": 54,
+          "why": [
+            "Works in Law",
+            "At Building a Fractional Law",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Hayes Nolte",
+          "industry": "Law",
+          "score": 41,
+          "why": [
+            "Works in Law",
+            "8 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Anika Sethy",
+          "industry": "Law",
+          "score": 41,
+          "why": [
+            "Works in Law"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "education",
+      "field": "Education",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Education",
+      "topIndustryShare": 1,
+      "avgReasons": 2.7,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Education": 10
+      },
+      "top": [
+        {
+          "name": "Charles Mencke",
+          "industry": "Education",
+          "score": 61,
+          "why": [
+            "Works in Education",
+            "Currently a Educator and Consultant, Urban ...",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Reid Pauly",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Currently a Dean's Assistant Professor of Nuclear Security ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kristin Sellers",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Currently a Assistant Professor, Department of ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kristen Rhinehardt",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Currently a Associate Professor and Assistant ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Anna Paisley Gray",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Same sport — Women's Rowing"
+          ]
+        },
+        {
+          "name": "Samantha Burke",
+          "industry": "Education",
+          "score": 57,
+          "why": [
+            "Works in Education",
+            "At Case Western Reserve University",
+            "4 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Eve Glasergreen",
+          "industry": "Education",
+          "score": 57,
+          "why": [
+            "Works in Education",
+            "At University of Chicago",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Tye Chirico",
+          "industry": "Education",
+          "score": 54,
+          "why": [
+            "Works in Education",
+            "At Graduated from Cornell University"
+          ]
+        },
+        {
+          "name": "Tim Randall",
+          "industry": "Education",
+          "score": 54,
+          "why": [
+            "Works in Education",
+            "At Director of Financial",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Claire Wolfe",
+          "industry": "Education",
+          "score": 53,
+          "why": [
+            "Works in Education",
+            "At Graduate from Cornell University"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "art_design",
+      "field": "Art / Design",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Media",
+      "topIndustryShare": 1,
+      "avgReasons": 2,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Media": 10
+      },
+      "top": [
+        {
+          "name": "Lauren McLemore",
+          "industry": "Media",
+          "score": 58,
+          "why": [
+            "Works in Media",
+            "Same sport — Women's Lacrosse",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Nathan Crabtree",
+          "industry": "Media",
+          "score": 54,
+          "why": [
+            "Works in Media",
+            "At Environmental Planning/Resource ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Jarrod Watson-Lewis",
+          "industry": "Media",
+          "score": 41,
+          "why": [
+            "Works in Media"
+          ]
+        },
+        {
+          "name": "Marlène Boissonnault",
+          "industry": "Media",
+          "score": 41,
+          "why": [
+            "Works in Media",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Spenser Gruenenfelder",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Victoria Imbesi",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Peter McDonough",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media"
+          ]
+        },
+        {
+          "name": "Max Martinez",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Lauren Marchese",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Emma Shalaway",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nonprofit",
+      "field": "Nonprofit",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.2,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 5,
+      "topIndustry": "Technology",
+      "topIndustryShare": 0.5,
+      "avgReasons": 2.1,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Nonprofit": 2,
+        "Technology": 5,
+        "Software": 1,
+        "Consulting": 1,
+        "Education": 1
+      },
+      "top": [
+        {
+          "name": "Kira Pritchard",
+          "industry": "Nonprofit",
+          "score": 58,
+          "why": [
+            "Works in Nonprofit",
+            "Currently a Senior Program Officer, Laurie M. Tisch ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Demian Caponi",
+          "industry": "Technology",
+          "score": 48,
+          "why": [
+            "Same sport — Rowing",
+            "Currently a Scaling high impact programs. [moving to ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kevin Rex",
+          "industry": "Nonprofit",
+          "score": 38,
+          "why": [
+            "Works in Nonprofit",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Chris Massey",
+          "industry": "Software",
+          "score": 34,
+          "why": [
+            "Same sport — Rowing",
+            "At Salesforce",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Simon Hartt",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Same sport — Rowing",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Nic Jedema",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Same sport — Rowing"
+          ]
+        },
+        {
+          "name": "Maddie Watson",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Currently a Sustainability Leadership Program ...",
+            "3 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Joel Cooper",
+          "industry": "Consulting",
+          "score": 31,
+          "why": [
+            "Same sport — Rowing"
+          ]
+        },
+        {
+          "name": "Jacob Shusko",
+          "industry": "Education",
+          "score": 31,
+          "why": [
+            "Same sport — Rowing",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Connor Young",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Currently a Technical Program Manager ...",
+            "6 years out — recent enough for practical advice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trades",
+      "field": "Skilled Trades",
+      "isFinance": false,
+      "picksWereEmpty": true,
+      "n": 10,
+      "fieldRelevance": 0,
+      "financeLeakage": 0.2,
+      "sportsShare": 0.2,
+      "distinctIndustries": 6,
+      "topIndustry": "Technology",
+      "topIndustryShare": 0.3,
+      "avgReasons": 1.9,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Finance": 2,
+        "Law": 1,
+        "Real Estate": 1,
+        "Sports": 2,
+        "Technology": 3,
+        "Education": 1
+      },
+      "top": [
+        {
+          "name": "Ian Rawn",
+          "industry": "Finance",
+          "score": 37,
+          "why": [
+            "Same sport — Sprint Football",
+            "At Strategy & Special Projects, Treville Capital",
+            "8 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Avery Hasenauer",
+          "industry": "Finance",
+          "score": 34,
+          "why": [
+            "Same sport — Sprint Football",
+            "At Senior Financial"
+          ]
+        },
+        {
+          "name": "Ryan Juliano",
+          "industry": "Law",
+          "score": 34,
+          "why": [
+            "Same sport — Sprint Football",
+            "At Building a Fractional Law",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Brandon Stoller",
+          "industry": "Real Estate",
+          "score": 34,
+          "why": [
+            "Same sport — Sprint Football",
+            "At Hospitality Real Estate Investment",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kevin Nathanson",
+          "industry": "Sports",
+          "score": 31,
+          "why": [
+            "Same sport — Sprint Football"
+          ]
+        },
+        {
+          "name": "Aidan Tierney",
+          "industry": "Sports",
+          "score": 31,
+          "why": [
+            "Same sport — Sprint Football",
+            "4 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Skylar Carfi",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Same sport — Sprint Football"
+          ]
+        },
+        {
+          "name": "Jessy Garcia",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Same sport — Sprint Football"
+          ]
+        },
+        {
+          "name": "Connor Young",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Same sport — Sprint Football",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Ailis Clyne",
+          "industry": "Education",
+          "score": 31,
+          "why": [
+            "Currently a Maple Technician, Arnot Forest, Cornell ..."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "military",
+      "field": "Military",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.5,
+      "financeLeakage": 0.2,
+      "sportsShare": 0,
+      "distinctIndustries": 4,
+      "topIndustry": "Government",
+      "topIndustryShare": 0.5,
+      "avgReasons": 2.3,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Government": 5,
+        "Finance": 2,
+        "Consulting": 1,
+        "Technology": 2
+      },
+      "top": [
+        {
+          "name": "Drew Alston",
+          "industry": "Government",
+          "score": 58,
+          "why": [
+            "Works in Government",
+            "Same sport — Football",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Connor Eaton",
+          "industry": "Government",
+          "score": 54,
+          "why": [
+            "Works in Government",
+            "At Marine Corp"
+          ]
+        },
+        {
+          "name": "Sumner Roberts",
+          "industry": "Government",
+          "score": 38,
+          "why": [
+            "Works in Government"
+          ]
+        },
+        {
+          "name": "Sloane Fleming-Hickey",
+          "industry": "Government",
+          "score": 38,
+          "why": [
+            "Works in Government"
+          ]
+        },
+        {
+          "name": "Annie Berkery",
+          "industry": "Government",
+          "score": 38,
+          "why": [
+            "Works in Government",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Richie Kenney",
+          "industry": "Finance",
+          "score": 37,
+          "why": [
+            "Same sport — Football",
+            "At Merrill Lynch Wealth",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Ashley Durik",
+          "industry": "Consulting",
+          "score": 37,
+          "why": [
+            "Currently a Acquisitions and Asset Management Analyst ...",
+            "At Acquisitions and Asset Management",
+            "3 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Alec Rodriguez",
+          "industry": "Technology",
+          "score": 37,
+          "why": [
+            "Same sport — Football",
+            "At South Jersey Industries",
+            "3 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Julianne Mangano",
+          "industry": "Technology",
+          "score": 36,
+          "why": [
+            "Currently a Revenue Management Analyst ...",
+            "At Revenue Management",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Victoria Hansen",
+          "industry": "Finance",
+          "score": 34,
+          "why": [
+            "Currently a Technology Investment Banking Analyst ...",
+            "At Technology Investment Bank"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sports",
+      "field": "Sports",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 1,
+      "distinctIndustries": 1,
+      "topIndustry": "Sports",
+      "topIndustryShare": 1,
+      "avgReasons": 3,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Sports": 10
+      },
+      "top": [
+        {
+          "name": "Malick Diomande",
+          "industry": "Sports",
+          "score": 77,
+          "why": [
+            "Works in Sports",
+            "Currently a Assistant Coach, Union College Cross ...",
+            "At Union College"
+          ]
+        },
+        {
+          "name": "Hunter Nourzad",
+          "industry": "Sports",
+          "score": 61,
+          "why": [
+            "Works in Sports",
+            "Same sport — Football",
+            "4 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Aidan Tierney",
+          "industry": "Sports",
+          "score": 61,
+          "why": [
+            "Works in Sports",
+            "Currently a Assistant Coach & Director of Football ...",
+            "4 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Nate McDonald",
+          "industry": "Sports",
+          "score": 61,
+          "why": [
+            "Works in Sports",
+            "Currently a Assistant Coach, North Bay Battalion ...",
+            "4 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Rashad Campbell",
+          "industry": "Sports",
+          "score": 58,
+          "why": [
+            "Works in Sports",
+            "Same sport — Football",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Jon Jaques",
+          "industry": "Sports",
+          "score": 58,
+          "why": [
+            "Works in Sports",
+            "Currently a Head Coach, Men's Basketball, Cornell ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Braden Birch",
+          "industry": "Sports",
+          "score": 58,
+          "why": [
+            "Works in Sports",
+            "Currently a Director of Hockey Operations & Salary Cap ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "William Boyce",
+          "industry": "Sports",
+          "score": 58,
+          "why": [
+            "Works in Sports",
+            "Currently a Head Coach - Harvard Men's Lightweight ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Bruno Hortelano-Roig",
+          "industry": "Sports",
+          "score": 58,
+          "why": [
+            "Works in Sports",
+            "Currently a Head Coach, Men's Track & Field ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Colby Wyatt",
+          "industry": "Sports",
+          "score": 57,
+          "why": [
+            "Works in Sports",
+            "At Baseball Systems",
+            "5 years out — recent enough for practical advice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entertainment",
+      "field": "Entertainment",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Media",
+      "topIndustryShare": 1,
+      "avgReasons": 2.2,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Media": 10
+      },
+      "top": [
+        {
+          "name": "Max Martinez",
+          "industry": "Media",
+          "score": 58,
+          "why": [
+            "Works in Media",
+            "Currently a Founder, Strategist, Producer, Walking ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Lauren McLemore",
+          "industry": "Media",
+          "score": 58,
+          "why": [
+            "Works in Media",
+            "Currently a Lead Producer with experience ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Jarrod Watson-Lewis",
+          "industry": "Media",
+          "score": 56,
+          "why": [
+            "Works in Media",
+            "Based in Los Angeles"
+          ]
+        },
+        {
+          "name": "Nathan Crabtree",
+          "industry": "Media",
+          "score": 54,
+          "why": [
+            "Works in Media",
+            "At Environmental Planning/Resource ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Marlène Boissonnault",
+          "industry": "Media",
+          "score": 41,
+          "why": [
+            "Works in Media",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Spenser Gruenenfelder",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Victoria Imbesi",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Peter McDonough",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media"
+          ]
+        },
+        {
+          "name": "Lauren Marchese",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Emma Shalaway",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "journalism",
+      "field": "Journalism",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.9,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 2,
+      "topIndustry": "Media",
+      "topIndustryShare": 0.9,
+      "avgReasons": 2.1,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Media": 9,
+        "Education": 1
+      },
+      "top": [
+        {
+          "name": "Victoria Imbesi",
+          "industry": "Media",
+          "score": 58,
+          "why": [
+            "Works in Media",
+            "Same sport — Women's Track And Field",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Eve Glasergreen",
+          "industry": "Education",
+          "score": 57,
+          "why": [
+            "Same sport — Women's Track And Field",
+            "Currently a Writer: Fiction, poetry. PhD student in ...",
+            "At University of Chicago"
+          ]
+        },
+        {
+          "name": "Nathan Crabtree",
+          "industry": "Media",
+          "score": 54,
+          "why": [
+            "Works in Media",
+            "At Environmental Planning/Resource ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Jarrod Watson-Lewis",
+          "industry": "Media",
+          "score": 41,
+          "why": [
+            "Works in Media"
+          ]
+        },
+        {
+          "name": "Marlène Boissonnault",
+          "industry": "Media",
+          "score": 41,
+          "why": [
+            "Works in Media",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Spenser Gruenenfelder",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Peter McDonough",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media"
+          ]
+        },
+        {
+          "name": "Max Martinez",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Lauren Marchese",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Lauren McLemore",
+          "industry": "Media",
+          "score": 38,
+          "why": [
+            "Works in Media",
+            "Senior alum — strong perspective on hiring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "field": "Engineering",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Technology",
+      "topIndustryShare": 1,
+      "avgReasons": 2.8,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Technology": 10
+      },
+      "top": [
+        {
+          "name": "Tyler Fisher",
+          "industry": "Technology",
+          "score": 77,
+          "why": [
+            "Works in Technology",
+            "Currently a Senior Systems Engineer, Product Owner & ...",
+            "At Senior Systems"
+          ]
+        },
+        {
+          "name": "Zoe Lequeux",
+          "industry": "Technology",
+          "score": 61,
+          "why": [
+            "Works in Technology",
+            "Currently a PhD- Advanced Polymer Scientist I ...",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Skylar Carfi",
+          "industry": "Technology",
+          "score": 61,
+          "why": [
+            "Works in Technology",
+            "Currently a Experienced Front End Software Engineer ..."
+          ]
+        },
+        {
+          "name": "Jack Brenneman",
+          "industry": "Technology",
+          "score": 61,
+          "why": [
+            "Works in Technology",
+            "Currently a Senior Software Engineering Manager ...",
+            "8 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Ben Francis",
+          "industry": "Technology",
+          "score": 61,
+          "why": [
+            "Works in Technology",
+            "Currently a Electrical Engineer | Passionate about ...",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Marguerite  Lorenzo",
+          "industry": "Technology",
+          "score": 61,
+          "why": [
+            "Works in Technology",
+            "Currently a CU Boulder Civil Engineering ...",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Marguerite Lorenzo",
+          "industry": "Technology",
+          "score": 61,
+          "why": [
+            "Works in Technology",
+            "Currently a CU Boulder Civil Engineering ...",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Trevin Cowman",
+          "industry": "Technology",
+          "score": 58,
+          "why": [
+            "Works in Technology",
+            "Currently a Engineer Bridging Design, Integration, ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Ross Blankenship",
+          "industry": "Technology",
+          "score": 58,
+          "why": [
+            "Works in Technology",
+            "Currently a Tech Investor, Real Estate Developer ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Phil Pozdnyakov",
+          "industry": "Technology",
+          "score": 58,
+          "why": [
+            "Works in Technology",
+            "Currently a Design Engineer – Improving reliability ..."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "academia",
+      "field": "Academia",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Education",
+      "topIndustryShare": 1,
+      "avgReasons": 2.6,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Education": 10
+      },
+      "top": [
+        {
+          "name": "Eve Glasergreen",
+          "industry": "Education",
+          "score": 77,
+          "why": [
+            "Works in Education",
+            "Currently a Writer: Fiction, poetry. PhD student in ...",
+            "At University of Chicago"
+          ]
+        },
+        {
+          "name": "Rohan Ukhade",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Currently a Materials Science and Engineering PhD ..."
+          ]
+        },
+        {
+          "name": "Reid Pauly",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Currently a Dean's Assistant Professor of Nuclear Security ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kristin Sellers",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Currently a Assistant Professor, Department of ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kristen Rhinehardt",
+          "industry": "Education",
+          "score": 58,
+          "why": [
+            "Works in Education",
+            "Currently a Associate Professor and Assistant ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Samantha Burke",
+          "industry": "Education",
+          "score": 57,
+          "why": [
+            "Works in Education",
+            "At Case Western Reserve University",
+            "4 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Tye Chirico",
+          "industry": "Education",
+          "score": 54,
+          "why": [
+            "Works in Education",
+            "At Graduated from Cornell University"
+          ]
+        },
+        {
+          "name": "Tim Randall",
+          "industry": "Education",
+          "score": 54,
+          "why": [
+            "Works in Education",
+            "At Director of Financial",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Claire Wolfe",
+          "industry": "Education",
+          "score": 53,
+          "why": [
+            "Works in Education",
+            "At Graduate from Cornell University"
+          ]
+        },
+        {
+          "name": "William Enneking",
+          "industry": "Education",
+          "score": 41,
+          "why": [
+            "Works in Education",
+            "3 years out — recent enough for practical advice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hospitality",
+      "field": "Hospitality",
+      "isFinance": false,
+      "picksWereEmpty": true,
+      "n": 10,
+      "fieldRelevance": null,
+      "financeLeakage": 0.3,
+      "sportsShare": 0.1,
+      "distinctIndustries": 7,
+      "topIndustry": "Finance",
+      "topIndustryShare": 0.3,
+      "avgReasons": 2.4,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Sports": 1,
+        "Real Estate": 2,
+        "Finance": 3,
+        "Technology": 1,
+        "(none)": 1,
+        "Consulting": 1,
+        "Healthcare": 1
+      },
+      "top": [
+        {
+          "name": "Colby Wyatt",
+          "industry": "Sports",
+          "score": 37,
+          "why": [
+            "Same sport — Baseball",
+            "At Baseball Systems",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "William Gilbert",
+          "industry": "Real Estate",
+          "score": 37,
+          "why": [
+            "Same sport — Baseball",
+            "At Bhsusa",
+            "3 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Matt Langseth",
+          "industry": "Finance",
+          "score": 34,
+          "why": [
+            "Same sport — Baseball",
+            "At Wealth Management",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Matt Miller",
+          "industry": "Technology",
+          "score": 34,
+          "why": [
+            "Same sport — Baseball",
+            "At Senior Financial Associate of The Ross Group",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Brandon Stoller",
+          "industry": "Real Estate",
+          "score": 34,
+          "why": [
+            "Currently a Hospitality Real Estate Investment ...",
+            "At Hospitality Real Estate Investment",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Adam Jacobs",
+          "industry": null,
+          "score": 33,
+          "why": [
+            "Same sport — Baseball",
+            "At Xzom",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Ryan Karl",
+          "industry": "Finance",
+          "score": 31,
+          "why": [
+            "Same sport — Baseball"
+          ]
+        },
+        {
+          "name": "Jacob Weston",
+          "industry": "Finance",
+          "score": 31,
+          "why": [
+            "Same sport — Baseball",
+            "8 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Ryan Krainz",
+          "industry": "Consulting",
+          "score": 31,
+          "why": [
+            "Same sport — Baseball",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Chloe Pendergast",
+          "industry": "Healthcare",
+          "score": 31,
+          "why": [
+            "Currently a Hospitality Operations & Development ..."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "agriculture",
+      "field": "Agriculture",
+      "isFinance": false,
+      "picksWereEmpty": true,
+      "n": 10,
+      "fieldRelevance": null,
+      "financeLeakage": 0.5,
+      "sportsShare": 0,
+      "distinctIndustries": 2,
+      "topIndustry": "Technology",
+      "topIndustryShare": 0.5,
+      "avgReasons": 2.1,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Technology": 5,
+        "Finance": 5
+      },
+      "top": [
+        {
+          "name": "Keith Dickey",
+          "industry": "Technology",
+          "score": 34,
+          "why": [
+            "Same sport — Wrestling",
+            "At TD",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Taylor Moore",
+          "industry": "Finance",
+          "score": 28,
+          "why": [
+            "Same sport — Wrestling",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Rebecca Snow",
+          "industry": "Technology",
+          "score": 28,
+          "why": [
+            "Currently a Flower Farmer/Owner of ...",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Shawn Nautel",
+          "industry": "Technology",
+          "score": 26,
+          "why": [
+            "Same sport — Wrestling",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "John Carlucci",
+          "industry": "Technology",
+          "score": 26,
+          "why": [
+            "Same sport — Wrestling",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Gary Biamonte",
+          "industry": "Technology",
+          "score": 26,
+          "why": [
+            "Same sport — Wrestling",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Richie Kenney",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Merrill Lynch Wealth",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Jake McCulloch",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Senior Underwriter - Financial",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Ian Rawn",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Strategy & Special Projects, Treville Capital",
+            "8 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Erika Tillotson",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Supply Chain Contract & Capital",
+            "5 years out — recent enough for practical advice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social_work",
+      "field": "Social Work",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.2,
+      "financeLeakage": 0,
+      "sportsShare": 0.1,
+      "distinctIndustries": 7,
+      "topIndustry": "Consulting",
+      "topIndustryShare": 0.3,
+      "avgReasons": 2,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Nonprofit": 2,
+        "Technology": 1,
+        "Consulting": 3,
+        "Education": 1,
+        "Manufacturing": 1,
+        "Sports": 1,
+        "Healthcare": 1
+      },
+      "top": [
+        {
+          "name": "Kira Pritchard",
+          "industry": "Nonprofit",
+          "score": 38,
+          "why": [
+            "Works in Nonprofit",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kevin Rex",
+          "industry": "Nonprofit",
+          "score": 38,
+          "why": [
+            "Works in Nonprofit",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Julianne Mangano",
+          "industry": "Technology",
+          "score": 36,
+          "why": [
+            "Same sport — Field Hockey",
+            "At Revenue Management",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Olivia Friedberg",
+          "industry": "Consulting",
+          "score": 33,
+          "why": [
+            "Same sport — Field Hockey",
+            "At Graduate of Cornell University"
+          ]
+        },
+        {
+          "name": "Claire Wolfe",
+          "industry": "Education",
+          "score": 33,
+          "why": [
+            "Same sport — Field Hockey",
+            "At Graduate from Cornell University"
+          ]
+        },
+        {
+          "name": "Rose Gorski",
+          "industry": "Manufacturing",
+          "score": 31,
+          "why": [
+            "Same sport — Field Hockey",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Luisa Schulte-Bockum",
+          "industry": "Consulting",
+          "score": 31,
+          "why": [
+            "Same sport — Field Hockey"
+          ]
+        },
+        {
+          "name": "Melanie Jue",
+          "industry": "Sports",
+          "score": 28,
+          "why": [
+            "Same sport — Field Hockey",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Steph Casella",
+          "industry": "Consulting",
+          "score": 28,
+          "why": [
+            "Same sport — Field Hockey",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Stephanie Brownstein",
+          "industry": "Healthcare",
+          "score": 28,
+          "why": [
+            "Same sport — Field Hockey",
+            "Senior alum — strong perspective on hiring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ministry",
+      "field": "Ministry",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.2,
+      "financeLeakage": 0.5,
+      "sportsShare": 0.2,
+      "distinctIndustries": 4,
+      "topIndustry": "Finance",
+      "topIndustryShare": 0.5,
+      "avgReasons": 2,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Nonprofit": 2,
+        "Finance": 5,
+        "Sports": 2,
+        "Real Estate": 1
+      },
+      "top": [
+        {
+          "name": "Kira Pritchard",
+          "industry": "Nonprofit",
+          "score": 38,
+          "why": [
+            "Works in Nonprofit",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Kevin Rex",
+          "industry": "Nonprofit",
+          "score": 38,
+          "why": [
+            "Works in Nonprofit",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Richie Kenney",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Merrill Lynch Wealth",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Jake McCulloch",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Senior Underwriter - Financial",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Ian Rawn",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Strategy & Special Projects, Treville Capital",
+            "8 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Erika Tillotson",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Supply Chain Contract & Capital",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Annika Bissinger",
+          "industry": "Finance",
+          "score": 17,
+          "why": [
+            "At Finance & Business Management",
+            "3 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Malick Diomande",
+          "industry": "Sports",
+          "score": 17,
+          "why": [
+            "At Union College",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Colby Wyatt",
+          "industry": "Sports",
+          "score": 17,
+          "why": [
+            "At Baseball Systems",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "William Gilbert",
+          "industry": "Real Estate",
+          "score": 17,
+          "why": [
+            "At Bhsusa",
+            "3 years out — recent enough for practical advice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "real_estate",
+      "field": "Real Estate",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.7,
+      "financeLeakage": 0,
+      "sportsShare": 0,
+      "distinctIndustries": 3,
+      "topIndustry": "Real Estate",
+      "topIndustryShare": 0.7,
+      "avgReasons": 2.2,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Real Estate": 7,
+        "Software": 1,
+        "Technology": 2
+      },
+      "top": [
+        {
+          "name": "William Gilbert",
+          "industry": "Real Estate",
+          "score": 77,
+          "why": [
+            "Works in Real Estate",
+            "Currently a Licensed Real Estate Agent on the Jay K. ...",
+            "At Bhsusa"
+          ]
+        },
+        {
+          "name": "Joe Pierik",
+          "industry": "Real Estate",
+          "score": 61,
+          "why": [
+            "Works in Real Estate",
+            "Currently a Commercial Real Estate Broker ..."
+          ]
+        },
+        {
+          "name": "Preston Puleo",
+          "industry": "Real Estate",
+          "score": 58,
+          "why": [
+            "Works in Real Estate",
+            "Same sport — Rowing",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Brandon Stoller",
+          "industry": "Real Estate",
+          "score": 54,
+          "why": [
+            "Works in Real Estate",
+            "At Hospitality Real Estate Investment",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Stephanie Menke",
+          "industry": "Real Estate",
+          "score": 38,
+          "why": [
+            "Works in Real Estate",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Max Van Bourgondien",
+          "industry": "Real Estate",
+          "score": 38,
+          "why": [
+            "Works in Real Estate",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Julian Collett",
+          "industry": "Real Estate",
+          "score": 38,
+          "why": [
+            "Works in Real Estate"
+          ]
+        },
+        {
+          "name": "Chris Massey",
+          "industry": "Software",
+          "score": 34,
+          "why": [
+            "Same sport — Rowing",
+            "At Salesforce",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Simon Hartt",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Same sport — Rowing",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Nic Jedema",
+          "industry": "Technology",
+          "score": 31,
+          "why": [
+            "Same sport — Rowing"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "manufacturing",
+      "field": "Manufacturing",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.4,
+      "financeLeakage": 0.5,
+      "sportsShare": 0,
+      "distinctIndustries": 3,
+      "topIndustry": "Finance",
+      "topIndustryShare": 0.5,
+      "avgReasons": 2.7,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Manufacturing": 4,
+        "Finance": 5,
+        "Technology": 1
+      },
+      "top": [
+        {
+          "name": "Jenna Campagnolo",
+          "industry": "Manufacturing",
+          "score": 54,
+          "why": [
+            "Works in Manufacturing",
+            "At Ontarioonecall",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Rose Gorski",
+          "industry": "Manufacturing",
+          "score": 41,
+          "why": [
+            "Works in Manufacturing",
+            "6 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Cooper Telesco",
+          "industry": "Manufacturing",
+          "score": 41,
+          "why": [
+            "Works in Manufacturing",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Vince Formica",
+          "industry": "Manufacturing",
+          "score": 38,
+          "why": [
+            "Works in Manufacturing",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Richie Kenney",
+          "industry": "Finance",
+          "score": 37,
+          "why": [
+            "Same sport — Football",
+            "At Merrill Lynch Wealth",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Alec Rodriguez",
+          "industry": "Technology",
+          "score": 37,
+          "why": [
+            "Same sport — Football",
+            "At South Jersey Industries",
+            "3 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Jordan Calaguire",
+          "industry": "Finance",
+          "score": 34,
+          "why": [
+            "Same sport — Football",
+            "At Chief Investment",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Jonathan Lucas",
+          "industry": "Finance",
+          "score": 34,
+          "why": [
+            "Same sport — Football",
+            "At Head of Investment",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Dario Arezzo",
+          "industry": "Finance",
+          "score": 34,
+          "why": [
+            "Same sport — Football",
+            "At Chief Financial Services",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Chris Murray",
+          "industry": "Finance",
+          "score": 34,
+          "why": [
+            "Same sport — Football",
+            "At Timberlinerev",
+            "Senior alum — strong perspective on hiring"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "government",
+      "field": "Government",
+      "isFinance": false,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 0.5,
+      "financeLeakage": 0.2,
+      "sportsShare": 0,
+      "distinctIndustries": 5,
+      "topIndustry": "Government",
+      "topIndustryShare": 0.5,
+      "avgReasons": 2.4,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Government": 5,
+        "Healthcare": 1,
+        "Finance": 2,
+        "Education": 1,
+        "Consulting": 1
+      },
+      "top": [
+        {
+          "name": "Sloane Fleming-Hickey",
+          "industry": "Government",
+          "score": 78,
+          "why": [
+            "Works in Government",
+            "Same sport — Women's Track And Field",
+            "Currently a B.A in Government from Cornell ..."
+          ]
+        },
+        {
+          "name": "Nikolia Kanaris",
+          "industry": "Healthcare",
+          "score": 57,
+          "why": [
+            "Same sport — Women's Track And Field",
+            "Currently a MPH, Public Health Policy and ...",
+            "At MPH, Public Health"
+          ]
+        },
+        {
+          "name": "Connor Eaton",
+          "industry": "Government",
+          "score": 54,
+          "why": [
+            "Works in Government",
+            "At Marine Corp"
+          ]
+        },
+        {
+          "name": "Gaynelle Boham",
+          "industry": "Finance",
+          "score": 51,
+          "why": [
+            "Same sport — Women's Track And Field",
+            "Currently a Analyst | Sustainable Pricing and ..."
+          ]
+        },
+        {
+          "name": "Sumner Roberts",
+          "industry": "Government",
+          "score": 38,
+          "why": [
+            "Works in Government"
+          ]
+        },
+        {
+          "name": "Drew Alston",
+          "industry": "Government",
+          "score": 38,
+          "why": [
+            "Works in Government",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Annie Berkery",
+          "industry": "Government",
+          "score": 38,
+          "why": [
+            "Works in Government",
+            "Senior alum — strong perspective on hiring"
+          ]
+        },
+        {
+          "name": "Erika Tillotson",
+          "industry": "Finance",
+          "score": 37,
+          "why": [
+            "Same sport — Women's Track And Field",
+            "At Supply Chain Contract & Capital",
+            "5 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Eve Glasergreen",
+          "industry": "Education",
+          "score": 37,
+          "why": [
+            "Same sport — Women's Track And Field",
+            "At University of Chicago",
+            "7 years out — recent enough for practical advice"
+          ]
+        },
+        {
+          "name": "Ashley Durik",
+          "industry": "Consulting",
+          "score": 37,
+          "why": [
+            "Currently a Acquisitions and Asset Management Analyst ...",
+            "At Acquisitions and Asset Management",
+            "3 years out — recent enough for practical advice"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "finance",
+      "field": "Finance (control)",
+      "isFinance": true,
+      "picksWereEmpty": false,
+      "n": 10,
+      "fieldRelevance": 1,
+      "financeLeakage": 1,
+      "sportsShare": 0,
+      "distinctIndustries": 1,
+      "topIndustry": "Finance",
+      "topIndustryShare": 1,
+      "avgReasons": 3,
+      "pctGenericOnly": 0,
+      "industryHistogram": {
+        "Finance": 10
+      },
+      "top": [
+        {
+          "name": "Jordan Calaguire",
+          "industry": "Finance",
+          "score": 94,
+          "why": [
+            "Works in Finance",
+            "Same sport — Football",
+            "Currently a Chief Investment and Development ..."
+          ]
+        },
+        {
+          "name": "Jonathan Lucas",
+          "industry": "Finance",
+          "score": 94,
+          "why": [
+            "Works in Finance",
+            "Same sport — Football",
+            "Currently a Head of Investment Oversight ..."
+          ]
+        },
+        {
+          "name": "Richie Kenney",
+          "industry": "Finance",
+          "score": 90,
+          "why": [
+            "Works in Finance",
+            "Same sport — Football",
+            "At Merrill Lynch Wealth"
+          ]
+        },
+        {
+          "name": "Victoria Hansen",
+          "industry": "Finance",
+          "score": 74,
+          "why": [
+            "Works in Finance",
+            "Currently a Technology Investment Banking Analyst ...",
+            "At Technology Investment Bank"
+          ]
+        },
+        {
+          "name": "Stephen Pawlak",
+          "industry": "Finance",
+          "score": 74,
+          "why": [
+            "Works in Finance",
+            "Currently a Investment Analyst - Harpswell Capital ...",
+            "At Investment Analyst - Harpswell Capital"
+          ]
+        },
+        {
+          "name": "Dario Arezzo",
+          "industry": "Finance",
+          "score": 74,
+          "why": [
+            "Works in Finance",
+            "Same sport — Football",
+            "At Chief Financial Services"
+          ]
+        },
+        {
+          "name": "Chris Murray",
+          "industry": "Finance",
+          "score": 74,
+          "why": [
+            "Works in Finance",
+            "Same sport — Football",
+            "At Timberlinerev"
+          ]
+        },
+        {
+          "name": "Vincenzo Marozzi",
+          "industry": "Finance",
+          "score": 74,
+          "why": [
+            "Works in Finance",
+            "Currently a Investment & Wealth ...",
+            "At Investment & Wealth"
+          ]
+        },
+        {
+          "name": "Annika Bissinger",
+          "industry": "Finance",
+          "score": 72,
+          "why": [
+            "Works in Finance",
+            "Based in New York",
+            "At Finance & Business Management"
+          ]
+        },
+        {
+          "name": "Jack Dudley",
+          "industry": "Finance",
+          "score": 69,
+          "why": [
+            "Works in Finance",
+            "Based in New York",
+            "At Principal, Debt Capital"
+          ]
+        }
+      ]
+    }
+  ]
+}

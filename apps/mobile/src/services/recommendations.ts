@@ -6,7 +6,7 @@ import {
   type ScoredAlumni,
   type SwipeWeights,
   type UserPreferences,
-} from './recommendationScoring';
+} from '@scout/shared/scoring/recommendationScoring';
 
 // Re-export the scoring types so existing imports from this module keep working.
 export type {
@@ -14,7 +14,7 @@ export type {
   ScoredAlumni,
   SwipeWeights,
   UserPreferences,
-} from './recommendationScoring';
+} from '@scout/shared/scoring/recommendationScoring';
 
 async function computeSwipeWeights(userId: string): Promise<Partial<SwipeWeights>> {
   try {

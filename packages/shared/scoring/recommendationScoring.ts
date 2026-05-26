@@ -1,17 +1,20 @@
 // Pure recommendation scoring + candidate selection.
 //
-// This module deliberately has NO Supabase / network / react-native imports so
-// it can be exercised by the offline eval harness (evals/recommendations) and
-// unit tests. All I/O (fetching alumni, swipes, networks) lives in
-// `recommendations.ts`, which composes the pure functions here.
+// Single source of truth for ranking alumni across Scout's surfaces:
+//   - mobile Discover deck (apps/mobile/src/services/recommendations.ts)
+//   - web "Scout Networking Agent" (apps/web/lib/agent/runScoutNetworkingAgent)
+//   - the offline eval harness (evals/recommendations)
+//
+// This module deliberately has NO Supabase / network / react-native / next
+// imports so it can run in any runtime. All I/O lives at the call sites.
 
 import {
   isHighQualityAlumniProfile,
   normalizeAlumniProfile,
   type NormalizedAlumni,
-} from '../lib/alumniProfile';
+} from '../profile/alumniProfile';
 import type { Alumni } from '../types/database';
-import { INTEREST_ALIASES, INTEREST_DB_INDUSTRIES } from '@scout/shared/constants/interests';
+import { INTEREST_ALIASES, INTEREST_DB_INDUSTRIES } from '../constants/interests';
 
 export interface UserPreferences {
   industries: string[];
@@ -87,9 +90,8 @@ function ciEquals(a: string | null, b: string | null): boolean {
 // Seniority/rank words that exist in every field ("Director", "Manager", …).
 // A role preference that is ONLY one of these matches across all industries —
 // e.g. a nonprofit seeker's "Director" matching a finance "Managing Director" —
-// so it must not, on its own, count as a role match. Mirrors the web scorer's
-// ROLE_TEXT_BLOCKLIST. Substantive role words (Engineer, Attorney, Producer, …)
-// are intentionally NOT here.
+// so it must not, on its own, count as a role match.  Substantive role words
+// (Engineer, Attorney, Producer, …) are intentionally NOT here.
 const GENERIC_ROLE_TOKENS = new Set([
   'director', 'managing director', 'executive director', 'manager', 'executive',
   'senior', 'junior', 'vp', 'svp', 'evp', 'vice president', 'president', 'chief',
@@ -479,7 +481,7 @@ export interface SelectionInput {
  * Pure deck selection: dedupe, exclude seen, score, apply the quality gate
  * (with the soft-floor fallback), and return the top `limit`. This is the exact
  * post-fetch logic from `fetchRecommendations`, factored out so the eval harness
- * exercises the real path.
+ * and other surfaces exercise the same real path.
  */
 export function selectRecommendations(input: SelectionInput): ScoredAlumni[] {
   const { pass1, pass2, excludeIds, prefs, swipeWeights, limit } = input;

@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light only">
+  <title>{{subject}}</title>
+
+  <!-- Web fonts: Inter (Scout's brand font). Apple Mail / Gmail web / Outlook 365 honor this; others fall back. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ----------------------------------------------------------------
+       Scout Report — editorial email
+       Brand: Inter, Cornell red #B31B1B, warm off-white #FAF7F2.
+       ---------------------------------------------------------------- */
+
+    /* Resets */
+    body, table, td, p, a, h1, h2, h3 {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    body { margin: 0; padding: 0; width: 100% !important; }
+    a { color: #B31B1B; text-decoration: none; }
+
+    /* Hide preheader */
+    .preheader {
+      display: none !important;
+      visibility: hidden;
+      opacity: 0;
+      color: transparent;
+      height: 0;
+      width: 0;
+      max-height: 0;
+      max-width: 0;
+      overflow: hidden;
+      mso-hide: all;
+    }
+
+    /* ---- Responsive ---- */
+    @media only screen and (max-width: 620px) {
+      .container       { width: 100% !important; max-width: 100% !important; }
+      .px-gutter       { padding-left: 28px !important; padding-right: 28px !important; }
+      .masthead-title  { font-size: 13px !important; }
+      .masthead-meta   { font-size: 11px !important; }
+      .display         { font-size: 38px !important; line-height: 1.08 !important; }
+      .lede            { font-size: 17px !important; }
+      .quote           { font-size: 20px !important; line-height: 1.45 !important; }
+      .section-label   { font-size: 11px !important; }
+      .story-headline  { font-size: 26px !important; line-height: 1.2 !important; }
+      .body-copy       { font-size: 16px !important; line-height: 1.7 !important; }
+      .update-card     { padding: 36px 28px !important; }
+      .update-headline { font-size: 22px !important; }
+      .cta-button a    { padding: 14px 24px !important; font-size: 15px !important; }
+      .stack-right     { text-align: left !important; padding-top: 6px !important; }
+    }
+
+    /* Dark-mode hints: most email clients ignore these for editorial layouts;
+       lock to light to keep our intended palette consistent. */
+    @media (prefers-color-scheme: dark) {
+      body, .bg-paper { background: #FAF7F2 !important; }
+      .text-dark { color: #09090b !important; }
+    }
+  </style>
+</head>
+
+<body class="bg-paper" style="margin:0;padding:0;background:#FAF7F2;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+
+  <!-- Preheader (inbox preview) -->
+  <div class="preheader">{{preheader}}</div>
+
+  <!-- Outer wrapper -->
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="background:#FAF7F2;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <!-- 600px container -->
+        <table role="presentation" class="container" width="600" border="0" cellspacing="0" cellpadding="0"
+               style="width:600px;max-width:600px;background:#FFFFFF;border:1px solid #ECE7DE;">
+
+          <!-- Top red rule -->
+          <tr>
+            <td style="background:#B31B1B;height:4px;line-height:4px;font-size:0;">&nbsp;</td>
+          </tr>
+
+          <!-- Masthead -->
+          <tr>
+            <td class="px-gutter" style="padding:32px 48px 24px 48px;">
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="left" valign="middle" style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+                    <!-- Scout logo (inline) + wordmark -->
+                    <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="display:inline-block;">
+                      <tr>
+                        <td valign="middle" style="padding-right:10px;">
+                          <img src="{{logo_data_uri}}" width="28" height="28" alt="Scout"
+                               style="display:block;width:28px;height:28px;border:0;">
+                        </td>
+                        <td valign="middle" class="text-dark masthead-title"
+                            style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                                   font-size:14px;font-weight:700;letter-spacing:-0.02em;color:#09090b;">
+                          The Scout Report
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td align="right" valign="middle" class="stack-right masthead-meta"
+                      style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                             font-size:11px;font-weight:500;color:#71717a;
+                             letter-spacing:0.18em;text-transform:uppercase;">
+                    Issue {{issue_number}} &middot; {{issue_date}}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Display headline -->
+          <tr>
+            <td class="px-gutter" style="padding:24px 48px 8px 48px;">
+              <h1 class="display text-dark"
+                  style="margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                         font-size:48px;line-height:1.05;font-weight:700;letter-spacing:-0.035em;color:#09090b;">
+                {{headline}}
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Welcome / lede -->
+          <tr>
+            <td class="px-gutter" style="padding:20px 48px 24px 48px;">
+              <div class="lede"
+                   style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                          font-size:18px;line-height:1.65;color:#3f3f46;font-weight:400;">
+                {{welcome_html}}
+              </div>
+            </td>
+          </tr>
+
+          <!-- Pull quote -->
+          <tr>
+            <td class="px-gutter" style="padding:16px 48px 32px 48px;">
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="border-left:3px solid #B31B1B;padding:6px 0 6px 20px;">
+                    <p class="quote"
+                       style="margin:0 0 12px 0;
+                              font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                              font-size:22px;line-height:1.45;font-weight:500;font-style:italic;
+                              letter-spacing:-0.012em;color:#18181b;">
+                      &ldquo;{{pull_quote}}&rdquo;
+                    </p>
+                    <p style="margin:0;
+                              font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                              font-size:12px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:#71717a;">
+                      &mdash; {{pull_quote_attribution}}
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td class="px-gutter" style="padding:0 48px;">
+              <div style="height:1px;background:#E4E4E7;line-height:1px;font-size:0;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <!-- THE STORY -->
+          <tr>
+            <td class="px-gutter" style="padding:36px 48px 0 48px;">
+              <p class="section-label"
+                 style="margin:0 0 14px 0;
+                        font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                        font-size:12px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#B31B1B;">
+                The Story
+              </p>
+              <h2 class="story-headline text-dark"
+                  style="margin:0 0 18px 0;
+                         font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                         font-size:30px;line-height:1.18;font-weight:700;letter-spacing:-0.025em;color:#09090b;">
+                {{story_headline}}
+              </h2>
+            </td>
+          </tr>
+          <tr>
+            <td class="px-gutter" style="padding:0 48px 36px 48px;">
+              <div class="body-copy"
+                   style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                          font-size:17px;line-height:1.75;color:#27272a;font-weight:400;letter-spacing:-0.005em;">
+                {{story_html}}
+              </div>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td class="px-gutter" style="padding:0 48px;">
+              <div style="height:1px;background:#E4E4E7;line-height:1px;font-size:0;">&nbsp;</div>
+            </td>
+          </tr>
+
+          <!-- THE IDEA -->
+          <tr>
+            <td class="px-gutter" style="padding:36px 48px 36px 48px;">
+              <p class="section-label"
+                 style="margin:0 0 14px 0;
+                        font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                        font-size:12px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#B31B1B;">
+                The Idea
+              </p>
+              <div class="body-copy"
+                   style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                          font-size:17px;line-height:1.75;color:#27272a;font-weight:400;letter-spacing:-0.005em;">
+                {{idea_html}}
+              </div>
+            </td>
+          </tr>
+
+          <!-- SCOUT UPDATE — dark card -->
+          <tr>
+            <td class="px-gutter" style="padding:8px 48px 40px 48px;">
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"
+                     style="background:#0a0a0b;border-radius:12px;overflow:hidden;">
+                <tr>
+                  <td class="update-card" style="padding:40px 36px;">
+                    <p class="section-label"
+                       style="margin:0 0 14px 0;
+                              font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                              font-size:12px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#B31B1B;">
+                      Scout Update
+                    </p>
+                    <h2 class="update-headline"
+                        style="margin:0 0 22px 0;
+                               font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                               font-size:26px;line-height:1.22;font-weight:700;letter-spacing:-0.025em;color:#fafafa;">
+                      {{update_headline}}
+                    </h2>
+                    <div style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                                font-size:16px;line-height:1.7;color:#a1a1aa;">
+                      {{update_bullets_html}}
+                    </div>
+
+                    <!-- Bulletproof button -->
+                    <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="margin-top:28px;">
+                      <tr>
+                        <td class="cta-button" align="center"
+                            style="background:#B31B1B;border-radius:8px;">
+                          <a href="{{update_cta_url}}" target="_blank" rel="noopener"
+                             style="display:inline-block;
+                                    padding:14px 28px;
+                                    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                                    font-size:15px;font-weight:600;letter-spacing:-0.005em;
+                                    color:#ffffff;text-decoration:none;
+                                    border-radius:8px;">
+                            {{update_cta_text}}
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ONE ASK -->
+          <tr>
+            <td class="px-gutter" style="padding:0 48px 44px 48px;">
+              <p class="section-label"
+                 style="margin:0 0 14px 0;
+                        font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                        font-size:12px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#B31B1B;">
+                One Ask
+              </p>
+              <div class="body-copy"
+                   style="font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                          font-size:17px;line-height:1.75;color:#27272a;font-weight:400;letter-spacing:-0.005em;">
+                {{closing_ask_html}}
+              </div>
+            </td>
+          </tr>
+
+          <!-- Bottom red rule -->
+          <tr>
+            <td style="background:#B31B1B;height:4px;line-height:4px;font-size:0;">&nbsp;</td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td class="px-gutter" style="padding:28px 48px 36px 48px;background:#FAF7F2;">
+              <p style="margin:0 0 10px 0;
+                        font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                        font-size:13px;font-weight:600;color:#27272a;letter-spacing:-0.005em;">
+                The Scout Report &middot; sent every other Sunday by {{from_name}}.
+              </p>
+              <p style="margin:0 0 14px 0;
+                        font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                        font-size:12px;line-height:1.6;color:#71717a;">
+                Scout connects Cornell student-athletes with alumni mentors.
+                <a href="https://www.scoutcornell.com" style="color:#B31B1B;text-decoration:none;font-weight:500;">scoutcornell.com</a>
+              </p>
+              <p style="margin:0;
+                        font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                        font-size:11px;letter-spacing:0.06em;color:#a1a1aa;">
+                <a href="*|UNSUB|*" style="color:#71717a;text-decoration:underline;">Unsubscribe</a>
+                &nbsp;&middot;&nbsp;
+                <a href="*|UPDATE_PROFILE|*" style="color:#71717a;text-decoration:underline;">Update preferences</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+        <!-- /container -->
+
+        <!-- Spacer -->
+        <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" class="container" style="width:600px;max-width:600px;">
+          <tr>
+            <td align="center" style="padding:16px 16px 24px 16px;
+                                      font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+                                      font-size:11px;color:#a1a1aa;letter-spacing:0.04em;">
+              &copy; {{year}} Scout. Built for Cornell athletes.
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

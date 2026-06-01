@@ -71,8 +71,13 @@ export async function GET(request: NextRequest) {
     !!search.trim() || (industry && industry !== 'All') || !!sport || !!location.trim()
 
   if (!hasRankingIntent) {
-    // Cheap path: SQL-level sort + pagination, identical to the unscored grid.
+    // Cheap path: SQL-level sort + pagination, identical to the unscored grid
+    // in app/discover/page.tsx. prestige_score MUST lead so the directory
+    // shows top-tier (finance, big-name) alumni first — without it, page 2+
+    // and filter-clears silently lost the finance-first ordering the SSR
+    // first page establishes.
     query = query
+      .order('prestige_score', { ascending: false, nullsFirst: false })
       .order('avatar_url', { ascending: false, nullsFirst: false })
       .order('role', { ascending: false, nullsFirst: false })
       .order('company', { ascending: false, nullsFirst: false })

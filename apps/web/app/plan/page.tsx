@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import PlanClient from './PlanClient'
+import SearchClient from './SearchClient'
 import MascotFeedback from '@/components/MascotFeedback'
+import { isInAlumniSearchTreatment } from '@scout/shared/featureFlags/alumniSearch'
 
 export default async function PlanPage() {
   const supabase = createClient()
@@ -23,21 +25,28 @@ export default async function PlanPage() {
     redirect('/onboarding')
   }
 
-  // Fetch active plan with plan_alumni joined with alumni data
-  const { data: activePlan } = await supabase
-    .from('networking_plans')
-    .select(`
-      *,
-      plan_alumni (
-        *,
-        alumni (*)
-      )
-    `)
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+  // Conversational search replaces the structured Plan for users in the
+  // rollout (ALUMNI_SEARCH_ROLLOUT_PERCENT, env-overridable). Control arm keeps
+  // the old Plan UI as a fallback.
+  const inSearchTreatment = isInAlumniSearchTreatment(user.id)
+
+  // Fetch the active plan only for the control arm (search doesn't use it).
+  const { data: activePlan } = inSearchTreatment
+    ? { data: null }
+    : await supabase
+        .from('networking_plans')
+        .select(`
+          *,
+          plan_alumni (
+            *,
+            alumni (*)
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
 
   // Fetch stats
   const { count: networkCount } = await supabase
@@ -75,17 +84,25 @@ export default async function PlanPage() {
         user={{ email: user.email!, full_name: profile?.full_name }}
         networkCount={networkCount || 0}
       />
-      <PlanClient
-        userId={user.id}
-        profile={profile}
-        plan={activePlan}
-        stats={{
-          networkCount: networkCount || 0,
-          messagesCount: messagesCount || 0,
-          meetingsCount: meetingsCount || 0,
-        }}
-        networkAlumniIds={networkAlumniIds}
-      />
+      {inSearchTreatment ? (
+        <SearchClient
+          userId={user.id}
+          profile={profile}
+          networkAlumniIds={networkAlumniIds}
+        />
+      ) : (
+        <PlanClient
+          userId={user.id}
+          profile={profile}
+          plan={activePlan}
+          stats={{
+            networkCount: networkCount || 0,
+            messagesCount: messagesCount || 0,
+            meetingsCount: meetingsCount || 0,
+          }}
+          networkAlumniIds={networkAlumniIds}
+        />
+      )}
       <MascotFeedback />
     </>
   )

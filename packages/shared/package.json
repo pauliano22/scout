@@ -9,6 +9,7 @@
     "./types/*": "./types/*.ts",
     "./constants/*": "./constants/*.ts",
     "./profile/*": "./profile/*.ts",
-    "./scoring/*": "./scoring/*.ts"
+    "./scoring/*": "./scoring/*.ts",
+    "./featureFlags/*": "./featureFlags/*.ts"
   }
 }

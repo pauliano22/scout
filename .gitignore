@@ -35,5 +35,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Scripts
+# Scripts — broad ignore for ad-hoc operational tooling. The `apps/web/scripts/`
+# directory is reachable so individual feature scripts can be un-ignored below;
+# everything inside it is still ignored by default.
 scripts/
+!apps/web/scripts/
+apps/web/scripts/*
+# Exception: feature-code scripts that the repo needs to ship.
+!apps/web/scripts/index-alumni-embeddings.ts

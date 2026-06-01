@@ -34,12 +34,18 @@ interface Turn {
   errorText?: string
 }
 
+// Local fallback if no dynamic suggestions are passed (keeps this component
+// self-sufficient and the landing cards never empty).
 const EXAMPLES = [
   'Alumni who pivoted from consulting into climate tech',
   'M&A or corporate law attorneys at top firms',
   'Football alumni working in sports marketing or media',
   'Biotech research scientists',
 ]
+
+// Where a search originated — logged so trending counts only genuine typed
+// queries, not example/suggestion chip clicks.
+type SearchSource = 'typed' | 'example' | 'suggestion'
 
 let idSeq = 0
 const nextId = () => `t${idSeq++}_${Date.now().toString(36)}`
@@ -48,9 +54,10 @@ interface SearchClientProps {
   userId: string
   profile: Profile
   networkAlumniIds: string[]
+  suggestions?: string[]
 }
 
-export default function SearchClient({ userId, profile, networkAlumniIds }: SearchClientProps) {
+export default function SearchClient({ userId, profile, networkAlumniIds, suggestions }: SearchClientProps) {
   const supabase = createClient()
   const [turns, setTurns] = useState<Turn[]>([])
   const [input, setInput] = useState('')
@@ -68,7 +75,7 @@ export default function SearchClient({ userId, profile, networkAlumniIds }: Sear
     if (active) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [turns, active])
 
-  async function send(text: string) {
+  async function send(text: string, source: SearchSource = 'typed') {
     const q = text.trim()
     if (!q || busy) return
     const id = nextId()
@@ -76,13 +83,13 @@ export default function SearchClient({ userId, profile, networkAlumniIds }: Sear
     setTurns((prev) => [...prev, { id, query: q, status: 'pending' }])
     setInput('')
     setBusy(true)
-    trackEvent('alumni_search_query', { length: q.length })
+    trackEvent('alumni_search_query', { length: q.length, source })
 
     try {
       const res = await fetch('/api/alumni-search', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ query: q, history }),
+        body: JSON.stringify({ query: q, history, source }),
       })
       if (res.status === 503) throw new Error('rolling-out')
       if (!res.ok) throw new Error('failed')
@@ -157,7 +164,7 @@ export default function SearchClient({ userId, profile, networkAlumniIds }: Sear
                 addingId={addingId}
                 onAdd={handleAddToNetwork}
                 onView={(a) => setDetail(a)}
-                onSuggestion={send}
+                onSuggestion={(text) => send(text, 'suggestion')}
               />
             ))}
             <div ref={bottomRef} />
@@ -179,10 +186,10 @@ export default function SearchClient({ userId, profile, networkAlumniIds }: Sear
             <div className="mt-8">{inputBar}</div>
 
             <div className="mt-4 grid sm:grid-cols-2 gap-2.5 text-left">
-              {EXAMPLES.map((ex) => (
+              {(suggestions?.length ? suggestions : EXAMPLES).map((ex) => (
                 <button
                   key={ex}
-                  onClick={() => send(ex)}
+                  onClick={() => send(ex, 'example')}
                   className="text-sm leading-relaxed px-4 py-3 rounded-2xl bg-[--bg-secondary] border border-[--border-primary] text-[--text-secondary] hover:border-[--border-secondary] hover:text-[--text-primary] transition-colors"
                 >
                   {ex}

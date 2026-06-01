@@ -38,9 +38,12 @@ const SCORE_FLOOR = 25
 // fits), so this floor only needs to trim obvious noise, not judge relevance.
 const SIM_FLOOR = 0.30
 
+type SearchSource = 'typed' | 'example' | 'suggestion'
+
 interface RequestBody {
   query: string
   history?: string[]   // prior user turns in this session (for follow-ups)
+  source?: SearchSource // where the query came from — gates trending counting
 }
 
 export interface AlumniSearchMatch {
@@ -83,13 +86,18 @@ export async function POST(request: NextRequest) {
   const history = Array.isArray(body.history)
     ? body.history.filter((s): s is string => typeof s === 'string').slice(-5)
     : []
+  // Only genuine typed queries feed trending; example/suggestion clicks are
+  // tagged so the aggregation can exclude them. Unknown values fall back to
+  // 'typed' to match the historical (untagged) default.
+  const source: SearchSource =
+    body.source === 'example' || body.source === 'suggestion' ? body.source : 'typed'
 
   // ── 1. Parse ──────────────────────────────────────────────────────────────
   const intent = await parseQuery(rawQuery, history)
 
   // Genuine ambiguity short-circuits before we burn embedding + rerank budget.
   if (intent.clarifyingQuestion) {
-    await logSearch(supabase, user.id, rawQuery, [], 'clarify')
+    await logSearch(supabase, user.id, rawQuery, [], 'clarify', source, intent.soft)
     return NextResponse.json<AlumniSearchResponse>({
       intent,
       matches: [],
@@ -116,7 +124,7 @@ export async function POST(request: NextRequest) {
   // honest answer is "we couldn't find a strong match" — surfaced below.
 
   if (candidates.rows.length === 0) {
-    await logSearch(supabase, user.id, rawQuery, [], 'no_candidates')
+    await logSearch(supabase, user.id, rawQuery, [], 'no_candidates', source, intent.soft)
     return NextResponse.json<AlumniSearchResponse>({
       intent,
       matches: [],
@@ -145,7 +153,7 @@ export async function POST(request: NextRequest) {
     .slice(0, 12) // rerank pool — small enough to fit in one prompt
 
   if (preScored.length === 0) {
-    await logSearch(supabase, user.id, rawQuery, [], 'below_floor')
+    await logSearch(supabase, user.id, rawQuery, [], 'below_floor', source, intent.soft)
     return NextResponse.json<AlumniSearchResponse>({
       intent,
       matches: [],
@@ -192,7 +200,7 @@ export async function POST(request: NextRequest) {
   }
 
   // ── 6. Log ────────────────────────────────────────────────────────────────
-  await logSearch(supabase, user.id, rawQuery, matches.map((m) => m.alumnus.id), matches.length ? 'matches' : 'no_matches')
+  await logSearch(supabase, user.id, rawQuery, matches.map((m) => m.alumnus.id), matches.length ? 'matches' : 'no_matches', source, intent.soft)
 
   return NextResponse.json<AlumniSearchResponse>({
     intent,
@@ -292,11 +300,17 @@ async function logSearch(
   rawQuery: string,
   resultIds: string[],
   outcome: 'matches' | 'no_matches' | 'no_candidates' | 'below_floor' | 'clarify',
+  source: SearchSource,
+  facets: { roles: string[]; industries: string[]; themes: string[] },
 ) {
   // We log the raw query text against the user ID into user_events. Per spec
   // the *iteration* signal is anonymized — the analytics layer (PostHog,
   // route /api/track) is where the query is sent without user PII. The
   // user_events row stays internal and is governed by RLS.
+  //
+  // `source` distinguishes typed queries from example/suggestion clicks, and
+  // `facets` carries the normalized intent tags — both consumed by the
+  // suggestions aggregation to build privacy-gated trending searches.
   try {
     await supabase.from('user_events').insert({
       user_id: userId,
@@ -306,6 +320,8 @@ async function logSearch(
         outcome,
         result_count: resultIds.length,
         result_ids: resultIds,
+        source,
+        facets,
       },
     })
   } catch {

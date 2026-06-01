@@ -5,6 +5,7 @@ import PlanClient from './PlanClient'
 import SearchClient from './SearchClient'
 import MascotFeedback from '@/components/MascotFeedback'
 import { isInAlumniSearchTreatment } from '@scout/shared/featureFlags/alumniSearch'
+import { getSearchSuggestions } from '@/lib/search/suggestions'
 
 export default async function PlanPage() {
   const supabase = createClient()
@@ -73,6 +74,12 @@ export default async function PlanPage() {
 
   const networkAlumniIds = networkAlumni?.map(n => n.alumni_id) || []
 
+  // Dynamic suggestion cards for the search landing (treatment arm only).
+  // Always resolves to exactly four strings, falling back to static examples.
+  const searchSuggestions = inSearchTreatment
+    ? await getSearchSuggestions({ userId: user.id, profile, supabase })
+    : []
+
   // Sort plan alumni by sort_order
   if (activePlan?.plan_alumni) {
     activePlan.plan_alumni.sort((a: any, b: any) => a.sort_order - b.sort_order)
@@ -89,6 +96,7 @@ export default async function PlanPage() {
           userId={user.id}
           profile={profile}
           networkAlumniIds={networkAlumniIds}
+          suggestions={searchSuggestions}
         />
       ) : (
         <PlanClient

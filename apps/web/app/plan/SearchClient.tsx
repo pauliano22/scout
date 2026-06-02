@@ -13,6 +13,7 @@ interface SearchIntent {
   searchPhrase: string
   soft: { industries: string[]; roles: string[]; locations: string[]; themes: string[] }
   hard: { location?: string; graduationYearMin?: number; graduationYearMax?: number }
+  exclude: string[]
   clarifyingQuestion: string | null
 }
 interface SearchMatch { alumnus: Alumni; reasoning: string }
@@ -37,10 +38,10 @@ interface Turn {
 // Local fallback if no dynamic suggestions are passed (keeps this component
 // self-sufficient and the landing cards never empty).
 const EXAMPLES = [
-  'Alumni who pivoted from consulting into climate tech',
-  'M&A or corporate law attorneys at top firms',
-  'Football alumni working in sports marketing or media',
-  'Biotech research scientists',
+  'Alumni in finance in New York',
+  'People who work at Google or Amazon',
+  'Alumni who went into consulting',
+  'Recent grads working in marketing',
 ]
 
 // Where a search originated — logged so trending counts only genuine typed
@@ -75,7 +76,11 @@ export default function SearchClient({ userId, profile, networkAlumniIds, sugges
     if (active) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [turns, active])
 
-  async function send(text: string, source: SearchSource = 'typed') {
+  async function send(
+    text: string,
+    source: SearchSource = 'typed',
+    overrides?: { dropLocation?: boolean; broadenRole?: boolean },
+  ) {
     const q = text.trim()
     if (!q || busy) return
     const id = nextId()
@@ -89,7 +94,7 @@ export default function SearchClient({ userId, profile, networkAlumniIds, sugges
       const res = await fetch('/api/alumni-search', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ query: q, history, source }),
+        body: JSON.stringify({ query: q, history, source, overrides }),
       })
       if (res.status === 503) throw new Error('rolling-out')
       if (!res.ok) throw new Error('failed')
@@ -135,7 +140,20 @@ export default function SearchClient({ userId, profile, networkAlumniIds, sugges
   }
 
   const inputBar = (
-    <InputBar value={input} onChange={setInput} onSubmit={() => send(input)} busy={busy} autoFocus />
+    // Ghost-text refinements are a NARROWING aid — only offered on follow-up
+    // turns, not the first/landing search (which has the example cards).
+    // lastQuery lets the follow-up placeholder propose a refinement of the
+    // previous search instead of a generic example.
+    <InputBar
+      value={input}
+      onChange={setInput}
+      onSubmit={() => send(input)}
+      busy={busy}
+      profile={profile}
+      allowSuggestions={active}
+      lastQuery={turns.length ? turns[turns.length - 1].query : ''}
+      autoFocus
+    />
   )
 
   return (
@@ -164,7 +182,8 @@ export default function SearchClient({ userId, profile, networkAlumniIds, sugges
                 addingId={addingId}
                 onAdd={handleAddToNetwork}
                 onView={(a) => setDetail(a)}
-                onSuggestion={(text) => send(text, 'suggestion')}
+                onRefine={(query, overrides) => send(query, 'suggestion', overrides)}
+                onRetry={(query) => send(query, 'typed')}
               />
             ))}
             <div ref={bottomRef} />
@@ -213,18 +232,59 @@ export default function SearchClient({ userId, profile, networkAlumniIds, sugges
   )
 }
 
+// Instant, profile-based refinement phrase used to build the follow-up
+// placeholder. Given the PREVIOUS query, returns the next best refinement (or
+// null). Priority: their preferred location → their sport → recent grads → top
+// firms; each is skipped if the query already covers that dimension, so the
+// hint is always something new to add.
+function suggestRefinement(text: string, profile: Profile): string | null {
+  const t = text.trim()
+  if (t.length < 2) return null
+  const lower = t.toLowerCase()
+  const has = (s: string) => lower.includes(s.toLowerCase())
+
+  const loc = profile.preferred_locations?.[0]
+  if (loc && !has(' in ') && !has(loc)) return `in ${loc}`
+
+  if (profile.sport && !has(profile.sport) && !has('played') && !has('sport')) {
+    return `who played ${profile.sport}`
+  }
+
+  if (!has('recent') && !has('grad') && !has('junior') && !has('senior') && !has('class of')) {
+    return 'who are recent grads'
+  }
+
+  if (!has('firm') && !has('top ')) return 'at top firms'
+
+  return null
+}
+
 // ── Input box — same component whether centered (landing) or pinned (chat) ──
 function InputBar({
-  value, onChange, onSubmit, busy, autoFocus,
+  value, onChange, onSubmit, busy, profile, allowSuggestions, lastQuery, autoFocus,
 }: {
   value: string
   onChange: (v: string) => void
   onSubmit: () => void
   busy: boolean
+  profile: Profile
+  allowSuggestions: boolean
+  lastQuery: string
   autoFocus?: boolean
 }) {
   const ref = useRef<HTMLTextAreaElement>(null)
   useEffect(() => { if (autoFocus) ref.current?.focus() }, [autoFocus])
+
+  // The faded "ghost" suggestion is just the native placeholder — it shows
+  // while the box is empty and disappears the instant the user types. No
+  // inline autocomplete (that drifted out of alignment and produced broken
+  // phrases like "who played in New York"). On a follow-up the placeholder
+  // proposes a refinement of the PREVIOUS query; on the first search it's a
+  // simple opener.
+  const refineHint = allowSuggestions && lastQuery ? suggestRefinement(lastQuery, profile) : null
+  const placeholder = allowSuggestions
+    ? (refineHint ? `e.g. ${refineHint}` : 'Refine your results — add a city, company, or seniority')
+    : 'e.g. someone who works in tech'
 
   return (
     <div className="relative">
@@ -234,7 +294,7 @@ function InputBar({
         onChange={(e) => onChange(e.target.value)}
         onInput={(e) => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = `${Math.min(el.scrollHeight, 160)}px` }}
         onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSubmit() } }}
-        placeholder="e.g. alumni who moved from finance into climate tech"
+        placeholder={placeholder}
         rows={1}
         disabled={busy}
         className="w-full resize-none rounded-2xl border border-[--border-primary] bg-[--bg-secondary] py-4 pl-5 pr-14 text-[15px] leading-relaxed text-[--text-primary] placeholder:text-[--text-quaternary] shadow-sm transition focus:outline-none focus:border-[--school-primary] focus:ring-4 focus:ring-[--school-primary]/15"
@@ -253,14 +313,15 @@ function InputBar({
 
 // ── One turn: the query, then its result below ─────────────────────────────
 function TurnView({
-  turn, networkIds, addingId, onAdd, onView, onSuggestion,
+  turn, networkIds, addingId, onAdd, onView, onRefine, onRetry,
 }: {
   turn: Turn
   networkIds: Set<string>
   addingId: string | null
   onAdd: (id: string) => void
   onView: (a: AlumniBase) => void
-  onSuggestion: (text: string) => void
+  onRefine: (query: string, overrides: { dropLocation?: boolean; broadenRole?: boolean }) => void
+  onRetry: (query: string) => void
 }) {
   return (
     <div className="space-y-3">
@@ -275,7 +336,15 @@ function TurnView({
         <div className="space-y-3"><SkeletonCard /><SkeletonCard /></div>
       )}
       {turn.status === 'error' && (
-        <p className="text-sm text-[--text-quaternary] italic">{turn.errorText}</p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-[--text-quaternary] italic">{turn.errorText}</p>
+          <button
+            onClick={() => onRetry(turn.query)}
+            className="text-xs px-3 py-1.5 rounded-full border border-[--border-primary] text-[--text-secondary] hover:border-[--border-secondary] shrink-0"
+          >
+            Try again
+          </button>
+        </div>
       )}
 
       {turn.status === 'done' && (
@@ -329,8 +398,8 @@ function TurnView({
             <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-2xl p-4">
               <p className="text-sm text-[--text-secondary]">{turn.noMatchesReason}</p>
               <div className="flex gap-2 mt-3">
-                <button onClick={() => onSuggestion('Broaden the role — what else is similar?')} className="text-xs px-3 py-1.5 rounded-full border border-[--border-primary] text-[--text-secondary] hover:border-[--border-secondary]">Broaden role</button>
-                <button onClick={() => onSuggestion('Drop the location constraint and try again.')} className="text-xs px-3 py-1.5 rounded-full border border-[--border-primary] text-[--text-secondary] hover:border-[--border-secondary]">Drop location</button>
+                <button onClick={() => onRefine(turn.query, { broadenRole: true })} className="text-xs px-3 py-1.5 rounded-full border border-[--border-primary] text-[--text-secondary] hover:border-[--border-secondary]">Broaden role</button>
+                <button onClick={() => onRefine(turn.query, { dropLocation: true })} className="text-xs px-3 py-1.5 rounded-full border border-[--border-primary] text-[--text-secondary] hover:border-[--border-secondary]">Drop location</button>
               </div>
             </div>
           )}
@@ -362,5 +431,6 @@ function buildIntentSummary(r: SearchResponse): string | null {
   if (r.intent.hard.location) parts.push(`(${r.intent.hard.location})`)
   else if (r.intent.soft.locations.length) parts.push(`(${r.intent.soft.locations.join(', ')})`)
   if (r.intent.soft.themes.length) parts.push(`— ${r.intent.soft.themes[0]}`)
+  if (r.intent.exclude?.length) parts.push(`· excluding ${r.intent.exclude.join(', ')}`)
   return parts.length ? `Looking for ${parts.join(' ')}` : null
 }

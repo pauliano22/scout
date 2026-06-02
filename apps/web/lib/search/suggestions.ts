@@ -26,14 +26,14 @@ const TRENDING_LOOKBACK_DAYS = 30
 const TRENDING_TTL_SECONDS = 3600
 const TRENDING_MAX = 5
 
-// The original four examples — evergreen source AND the universal fallback.
-// Must stay in sync with the previous hardcoded list so behavior is unchanged
-// when no dynamic data exists.
+// Evergreen source AND the universal fallback — realistic, student-facing
+// searches. Keep in sync with EXAMPLES in app/plan/SearchClient.tsx (the
+// client-side fallback used when no dynamic suggestions are passed).
 export const STATIC_FALLBACK: readonly string[] = [
-  'Alumni who pivoted from consulting into climate tech',
-  'M&A or corporate law attorneys at top firms',
-  'Football alumni working in sports marketing or media',
-  'Biotech research scientists',
+  'Alumni in finance in New York',
+  'People who work at Google or Amazon',
+  'Alumni who went into consulting',
+  'Recent grads working in marketing',
 ]
 
 // ── Public API ────────────────────────────────────────────────────────────--

@@ -47,8 +47,11 @@ NON-NEGOTIABLE RULES:
 1. Only return alumni from the candidate list, identified by their bracket number [N]. Emit that integer N in "index". Never emit a name or any number not in the list — anything out of range is discarded.
 2. Never invent fields. If a candidate has no listed role/company/year, do not write a reasoning that asserts one. Stick to what's shown.
 3. Tie your reasoning to the user's actual query language. Don't praise generically ("strong career", "great person"). Say WHY this person fits THIS query.
-4. Quality over quantity. Return 3–5 matches at most. If fewer than 3 candidates are a genuine fit, return fewer. If NONE fit, return an empty matches array and write no_matches_reason as one short sentence that names the SPECIFIC thing THIS query asked for that the candidates lacked, and suggests one way to broaden. It must reference the user's actual query — never reuse a generic or templated reason.
-5. Ask one clarifying question ONLY when the query is genuinely uninterpretable. Don't ask to "narrow it down" — narrow it yourself.
+4. NO STRETCHED JUSTIFICATIONS. A candidate qualifies only if their listed fields DIRECTLY satisfy the query. Do not include someone by inventing a connection their fields don't support — e.g. do NOT call a process engineer a "consulting" match, or a safety-training company "media". If the link requires a leap, exclude them. A smaller honest result set beats a padded one.
+5. UNPROVABLE HISTORY ≠ DISQUALIFYING. When the query asks for a career history you cannot verify from the fields (a pivot "from X to Y", a "gap year", "founded and failed"), you may still surface a candidate whose CURRENT state clearly fits the destination (e.g. a climate-tech founder for "pivoted into climate tech"), but say plainly in the reasoning that the prior history isn't documented in their profile — do not assert the pivot/gap/failure as fact.
+6. Quality over quantity. Return 3–5 matches at most. If fewer than 3 candidates are a genuine fit, return fewer. If NONE fit, return an empty matches array and write no_matches_reason as one short sentence that names the SPECIFIC thing THIS query asked for that the candidates lacked, and suggests one way to broaden. It must reference the user's actual query — never reuse a generic or templated reason.
+7. EXCLUSIONS are absolute. If an "Exclude" line is present, never return a candidate matching any excluded term, no matter how strong they otherwise are.
+8. Ask one clarifying question ONLY when the query is genuinely uninterpretable. Don't ask to "narrow it down" — narrow it yourself.
 
 Return STRICT JSON. No prose, no markdown:
 {
@@ -63,26 +66,30 @@ export async function rerankCandidates(args: {
   userQuery: string
   searchPhrase: string
   themes: string[]
+  exclude?: string[]
   candidates: CandidateRow[]
 }): Promise<RerankResult> {
   const { userQuery, searchPhrase, themes, candidates } = args
+  const exclude = args.exclude ?? []
 
   if (candidates.length === 0) {
     return { matches: [], clarifying_question: null, no_matches_reason: 'No alumni in our index match this query yet.' }
   }
 
+  // `bio` is intentionally omitted — it is unpopulated across the corpus, so a
+  // constant "—" only adds noise. Re-add it here if/when bios are backfilled.
   const candidateBlock = candidates
     .map((c, i) => `[${i + 1}] name=${c.full_name}
    role=${c.role ?? '—'} | company=${c.company ?? '—'} | industry=${c.industry ?? '—'}
    sport=${c.sport ?? '—'} | class_of=${c.graduation_year ?? '—'} | location=${c.location ?? '—'}
-   headline=${c.display_headline ?? '—'}
-   bio=${c.bio ? c.bio.slice(0, 300) : '—'}`)
+   headline=${c.display_headline ?? '—'}`)
     .join('\n\n')
 
   const userBlock = [
     `User query: "${userQuery}"`,
     `Interpreted as: ${searchPhrase}`,
     themes.length ? `Key themes: ${themes.join('; ')}` : '',
+    exclude.length ? `Exclude (never return anyone matching): ${exclude.join('; ')}` : '',
     '',
     `Candidates (${candidates.length}):`,
     candidateBlock,

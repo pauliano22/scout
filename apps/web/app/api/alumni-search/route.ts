@@ -31,9 +31,11 @@ export const dynamic = 'force-dynamic'
 const VECTOR_TOP_K = 30
 const SCORE_FLOOR = 25
 // Similarity floor for the OR-branch. Calibrated against real text-embedding-3-small
-// scores on this corpus (May 2026): genuine matches land ~0.36–0.44, noise below
-// ~0.30. Critically, only ~24% of alumni have a DB `industry`, so for the other
-// 76% similarity is the ONLY signal — a high floor here silently drops them. The
+// scores on this corpus. With the HNSW index (migration 024, June 2026) recall
+// returns genuinely-nearest neighbours, so strong matches now land ~0.45–0.53 and
+// weak-but-plausible ones ~0.30–0.42 — leaving 0.30 comfortably in the noise gap.
+// Critically, only ~24% of alumni have a DB `industry`, so for the other 76%
+// similarity is the ONLY signal — a high floor here silently drops them. The
 // rerank LLM is the precision gate (it reliably returns no-match when nothing
 // fits), so this floor only needs to trim obvious noise, not judge relevance.
 const SIM_FLOOR = 0.30
@@ -44,6 +46,10 @@ interface RequestBody {
   query: string
   history?: string[]   // prior user turns in this session (for follow-ups)
   source?: SearchSource // where the query came from — gates trending counting
+  // Deterministic refinements from the no-match chips — applied to the parsed
+  // intent before retrieval, so "Drop location" actually drops it (vs. relying
+  // on the parser to re-interpret a prose instruction).
+  overrides?: { dropLocation?: boolean; broadenRole?: boolean }
 }
 
 export interface AlumniSearchMatch {
@@ -91,9 +97,27 @@ export async function POST(request: NextRequest) {
   // 'typed' to match the historical (untagged) default.
   const source: SearchSource =
     body.source === 'example' || body.source === 'suggestion' ? body.source : 'typed'
+  const overrides = body.overrides ?? {}
 
-  // ── 1. Parse ──────────────────────────────────────────────────────────────
-  const intent = await parseQuery(rawQuery, history)
+  // ── 1. Parse (+ fetch the exclusion set concurrently) ───────────────────────
+  // The already-networked lookup is independent of parsing, so it rides along
+  // with the parse LLM call instead of waiting behind it. (On a clarify
+  // short-circuit the lookup is harmlessly discarded — it's a cheap indexed
+  // read, and overlapping it is still a net win on the common path.)
+  const [intent, networkRows] = await Promise.all([
+    parseQuery(rawQuery, history),
+    supabase.from('user_networks').select('alumni_id').eq('user_id', user.id),
+  ])
+
+  // Deterministic refinements from the no-match chips. Applied here, not in the
+  // parser, so the behavior is exact rather than a re-interpretation.
+  if (overrides.dropLocation) {
+    intent.hard.location = undefined
+    intent.soft.locations = []
+  }
+  if (overrides.broadenRole) {
+    intent.soft.roles = []
+  }
 
   // Genuine ambiguity short-circuits before we burn embedding + rerank budget.
   if (intent.clarifyingQuestion) {
@@ -109,11 +133,7 @@ export async function POST(request: NextRequest) {
   // ── 2. Retrieve ───────────────────────────────────────────────────────────
   // Already-networked alumni are filtered at the SQL level — privacy as
   // pre-filter, not post.
-  const { data: networkRows } = await supabase
-    .from('user_networks')
-    .select('alumni_id')
-    .eq('user_id', user.id)
-  const excludeIds = (networkRows ?? []).map((n) => n.alumni_id as string)
+  const excludeIds = (networkRows.data ?? []).map((n) => n.alumni_id as string)
 
   const candidates: CandidatePool = await semanticRetrieve(supabase, intent, excludeIds)
 
@@ -182,6 +202,7 @@ export async function POST(request: NextRequest) {
     userQuery: rawQuery,
     searchPhrase: intent.searchPhrase,
     themes: intent.soft.themes,
+    exclude: intent.exclude,
     candidates: rerankInput,
   })
 
@@ -252,14 +273,15 @@ async function semanticRetrieve(
     return { rows: [], embeddingFailed: true }
   }
 
-  // Location is intentionally NOT passed as a hard filter: ~3/4 of alumni have
-  // a NULL location, and `location ILIKE '%NYC%'` drops every NULL row — so a
-  // hard location filter silently discards most of the corpus, even rows that
-  // are a great match on every other axis. Location stays a SOFT signal: it
-  // flows into the scorer (location weight) via intentToPrefs and the rerank
-  // LLM sees each candidate's location to honor "in NYC" when the data exists.
-  // Graduation year is kept hard — it's a required, non-null column, so exact
-  // filtering there can't over-exclude.
+  // Location is intentionally NOT passed as a hard filter. ~97% of alumni DO
+  // have a location, but the values are highly fragmented — "New York", "New
+  // York, New York", "New York, N.Y.", "New York City Metropolitan Area",
+  // "NYC" are all distinct strings — so a single `location ILIKE '%NYC%'` would
+  // silently drop most genuine matches in that metro. Location stays a SOFT
+  // signal: it flows into the scorer (location weight) via intentToPrefs and
+  // the rerank LLM sees each candidate's location to honor "in NYC" when the
+  // data exists. Graduation year is kept hard — it's a required, non-null
+  // column, so exact filtering there can't over-exclude.
   const { data, error } = await supabase.rpc('match_alumni_semantic', {
     query_embedding: vec,
     exclude_ids:     excludeIds,

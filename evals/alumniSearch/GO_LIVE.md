@@ -63,23 +63,36 @@ SELECT COUNT(*) FROM alumni WHERE embedding IS NOT NULL AND is_public = true;
 -- expect ≈ 16,970 (a few may skip if they have no embeddable text at all)
 ```
 
-## Step 5 — Reindex the IVFFlat index against real vectors
+## Step 5 — Apply migration 024 (IVFFlat → HNSW)
 
-The migration creates `idx_alumni_embedding` on an empty column, so its 100
-cluster centroids are not optimized for the real corpus. After backfill,
-rebuild it so partitioning reflects actual vector distribution.
+**Supersedes the old IVFFlat REINDEX.** The 2026-06-01 audit found the IVFFlat
+index from migration 023 (lists=100, default `ivfflat.probes=1`) scanned only
+~1 cluster (~170 rows) per query: many valid queries returned ZERO candidates,
+and a 30-phrase sweep reached only ~389 of 16,965 alumni.
 
-Run in Supabase SQL Editor:
+In-place IVFFlat tuning was impossible here: `SET ivfflat.probes` /
+`SET hnsw.ef_search` are denied to the Supabase role (ERROR 42501), and
+production (PostgREST as `authenticated`) can't set session GUCs per request
+anyway. Exact search gave perfect recall but ran 6–10s (statement-timeout
+risk). HNSW is the answer: near-exact recall, sub-second, and good at its
+DEFAULT ef_search (no parameter to set).
 
-```sql
-REINDEX INDEX idx_alumni_embedding;
+**Migration 024 must be run over a DIRECT connection, NOT the SQL Editor.** The
+dashboard hit an HTTP-gateway timeout, and a parallel build hit ERROR 53100
+(shared-memory exhaustion) on this small instance. Run `024_alumni_embedding_
+hnsw.sql` via the **session pooler** connection string (Settings → Database →
+Connect → Session pooler) with a `pg`/`psql` client. The migration sets
+`max_parallel_maintenance_workers = 0` (avoids 53100), modest `maintenance_
+work_mem`, and a long `statement_timeout`. Build took ~76s for ~17k rows.
+
+Verify recall recovered:
+
+```
+npx tsx evals/alumniSearch/runEvals.ts
 ```
 
-Expected: completes in under a minute for ~17k rows. No output on success.
-
-Skipping this step degrades recall — queries may return `no_matches` for
-queries that have real matches in the corpus, because the right candidates sit
-in unsearched clusters.
+Pass condition: the "Recall health" section reports **0** match-expecting
+queries with 0 recall (verdict PASS).
 
 ## Step 6 — Run the evals
 

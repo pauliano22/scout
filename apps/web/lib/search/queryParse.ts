@@ -28,6 +28,10 @@ export interface ParsedIntent {
     graduationYearMin?: number
     graduationYearMax?: number
   }
+  /** Negative constraints — things the user explicitly does NOT want
+   *  ("exclude consultants", "no one in finance"). Free-text terms; the
+   *  rerank drops candidates matching any of them. Empty when not specified. */
+  exclude: string[]
   /** Set ONLY when the model thinks the query is genuinely ambiguous. */
   clarifyingQuestion: string | null
 }
@@ -48,12 +52,14 @@ Return STRICT JSON with this exact shape:
     "graduationYearMin": number | null,         // ONLY if user said "recent grads" or gave a year range
     "graduationYearMax": number | null
   },
+  "exclude":            string[],                // things to EXCLUDE — see rule below
   "clarifyingQuestion": string | null
 }
 
 RULES:
 - For "industries", map to this EXACT set (the values our database uses): Technology, Finance, Education, Healthcare, Consulting, Law, Media, Sports, Real Estate, Government, Nonprofit, Manufacturing. Translate the user's words into these (e.g. "fintech"/"private equity"/"VC"/"banking" → Finance; "biotech"/"pharma"/"med" → Healthcare; "climate tech"/"startup" → Technology; "PR"/"journalism" → Media). If nothing fits, use []. Put the user's own finer-grained wording in "themes" instead.
 - A filter is HARD only when the user explicitly anchors it ("in NYC", "graduated after 2020"). Everything else is soft.
+- "exclude" captures NEGATIVE intent — only when the user explicitly rules something out ("exclude consultants", "not in finance", "no recruiters"). Put the excluded role/industry/concept as short terms (e.g. ["consultants", "Consulting"]). Default to [] — never infer an exclusion the user did not state.
 - Themes capture intent the structured fields can't ("pivoted from X to Y", "took a gap year", "founded a company that failed", "fintech", "private equity"). Keep them short and specific.
 - Set clarifyingQuestion ONLY when the query is so vague NO retrieval would be meaningful. "I want to network" → ask. "I'm in PM" → don't ask, search PM. When in doubt, do NOT ask.
 - Never invent a clarifying question to gather more filters. The retrieval handles fuzziness.
@@ -116,6 +122,7 @@ function normalize(json: any, original: string): ParsedIntent {
       graduationYearMin: Number.isFinite(hard.graduationYearMin) ? hard.graduationYearMin : undefined,
       graduationYearMax: Number.isFinite(hard.graduationYearMax) ? hard.graduationYearMax : undefined,
     },
+    exclude: asStringArray(json?.exclude),
     clarifyingQuestion: typeof json?.clarifyingQuestion === 'string' && json.clarifyingQuestion.trim()
       ? json.clarifyingQuestion.trim()
       : null,
@@ -136,6 +143,7 @@ function safeFallback(original: string): ParsedIntent {
     searchPhrase: original,
     soft: { industries: [], roles: [], locations: [], themes: [] },
     hard: {},
+    exclude: [],
     clarifyingQuestion: null,
   }
 }

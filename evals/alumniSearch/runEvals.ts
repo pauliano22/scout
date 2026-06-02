@@ -101,12 +101,12 @@ async function fullPipeline(query: string, history: string[]) {
 
   if (pre.length === 0) {
     t.totalMs = t.parseMs + t.embedMs + t.rpcMs + t.scoreMs
-    return { intent, matches: [] as any[], clarifying: null, noMatch: `below floor — no candidate cleared score≥${SCORE_FLOOR} / sim≥${SIM_FLOOR}`, t }
+    return { intent, recallRows: rows, preRows: pre, matches: [] as any[], clarifying: null, noMatch: `below floor — no candidate cleared score≥${SCORE_FLOOR} / sim≥${SIM_FLOOR}`, t }
   }
 
   s = performance.now()
   const rr = await rerankCandidates({
-    userQuery: query, searchPhrase: intent.searchPhrase, themes: intent.soft.themes,
+    userQuery: query, searchPhrase: intent.searchPhrase, themes: intent.soft.themes, exclude: intent.exclude,
     candidates: pre.map((c) => ({
       id: c.row.id, full_name: c.row.full_name, sport: c.row.sport, graduation_year: c.row.graduation_year,
       company: c.row.company, role: c.row.role, industry: c.row.industry, location: c.row.location,
@@ -120,7 +120,7 @@ async function fullPipeline(query: string, history: string[]) {
   const matches = rr.matches
     .map((m: any) => ({ id: m.alumnus_id, name: byId.get(m.alumnus_id)?.full_name, role: byId.get(m.alumnus_id)?.role, company: byId.get(m.alumnus_id)?.company, reasoning: m.reasoning }))
     .filter((m: any) => m.name)
-  return { intent, matches, clarifying: rr.clarifying_question, noMatch: matches.length ? null : (rr.no_matches_reason ?? 'no matches'), t }
+  return { intent, recallRows: rows, preRows: pre, matches, clarifying: rr.clarifying_question, noMatch: matches.length ? null : (rr.no_matches_reason ?? 'no matches'), t }
 }
 
 // ─── privacy exclusion test (OpenAI only, robust to index recall) ───────────
@@ -196,6 +196,9 @@ async function main() {
 
   const rerankMsAll: number[] = []
   const totalMsAll: number[] = []
+  // Recall-health tripwire: queries that expect matches but the vector recall
+  // returned 0 rows point at the INDEX, not the data (see migration 024).
+  const recallHealth: Array<{ id: string; expected: string; recall: number }> = []
 
   // Follow-up cases need prior history; provide a sensible seed turn.
   const HISTORY: Record<string, string[]> = {
@@ -209,6 +212,21 @@ async function main() {
     const res: any = await fullPipeline(tc.query, history)
     console.log(`── [${tc.expected}] ${tc.id}: "${tc.query}"`)
     if (res.error) { console.log(`   ERROR: ${res.error}`); continue }
+
+    // Parsed intent — what the query was understood as.
+    if (res.intent) {
+      const i = res.intent
+      console.log(`   intent: phrase="${i.searchPhrase}"`)
+      console.log(`           soft.industries=${JSON.stringify(i.soft.industries)} roles=${JSON.stringify(i.soft.roles)} locations=${JSON.stringify(i.soft.locations)}`)
+      console.log(`           themes=${JSON.stringify(i.soft.themes)} exclude=${JSON.stringify(i.exclude ?? [])} hard=${JSON.stringify(i.hard)}`)
+    }
+    // Per-stage candidate funnel: recall (top 5 shown) → after floor → final.
+    if (res.recallRows) {
+      recallHealth.push({ id: tc.id, expected: tc.expected, recall: res.recallRows.length })
+      console.log(`   recall: ${res.recallRows.length} rows | after floor: ${res.preRows?.length ?? 0}`)
+      res.recallRows.slice(0, 5).forEach((r: any) =>
+        console.log(`     ${Number(r.similarity ?? 0).toFixed(3)}  ${r.full_name} — ${r.role ?? '—'} @ ${r.company ?? '—'} (${r.industry ?? '—'})`))
+    }
     if (res.clarifying) console.log(`   CLARIFY: ${res.clarifying}`)
     if (res.noMatch) console.log(`   NO_MATCH: ${res.noMatch}`)
     if (res.matches?.length) {
@@ -221,6 +239,15 @@ async function main() {
     }
     console.log()
   }
+
+  console.log('═══ Recall health (index tripwire) ═══')
+  // A query that asks for matches but gets 0 recall rows is almost always the
+  // index under-returning, not the corpus lacking matches (see migration 024).
+  const starved = recallHealth.filter((r) => r.expected === 'matches' && r.recall === 0)
+  const thin = recallHealth.filter((r) => r.expected === 'matches' && r.recall > 0 && r.recall < VECTOR_TOP_K)
+  console.log(`  match-expecting queries with 0 recall: ${starved.length}${starved.length ? ' — ' + starved.map((r) => r.id).join(', ') : ''}`)
+  console.log(`  match-expecting queries with < ${VECTOR_TOP_K} recall: ${thin.length}${thin.length ? ' — ' + thin.map((r) => `${r.id}(${r.recall})`).join(', ') : ''}`)
+  console.log(`  verdict: ${starved.length === 0 ? 'PASS — every match query had candidates to rank' : 'FAIL — recall starved some queries; check the vector index'}\n`)
 
   console.log('═══ Latency ═══')
   console.log(`  rerank   P50=${percentile(rerankMsAll, 50).toFixed(0)}ms  P95=${percentile(rerankMsAll, 95).toFixed(0)}ms  (n=${rerankMsAll.length})`)

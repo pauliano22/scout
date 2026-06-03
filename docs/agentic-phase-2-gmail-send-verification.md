@@ -66,3 +66,22 @@ send-as-self design we chose.
 - https://developers.google.com/workspace/gmail/api/auth/scopes (gmail.send = sensitive)
 - https://developers.google.com/identity/protocols/oauth2/production-readiness/sensitive-scope-verification (requirements + 3–5 business day timeline)
 - https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification (restricted scopes → CASA, for contrast)
+
+## Sequencing lesson — migrate AFTER deploy (carry into Phase 2)
+
+In Phase 0, migration 025 (which added the canonical `status` CHECK) was applied
+to **prod before** the code that depends on it (the PATCH normalization) was
+deployed. For the window in between, the live mobile PATCH wrote legacy values
+that the new CHECK rejected — i.e. mobile status updates **silently failed**.
+
+It cost nothing this time only because there were **no mobile users yet** (the
+table was effectively empty). That cushion will NOT exist in Phase 2, where the
+equivalent ordering mistake would land on **real Gmail sends**.
+
+**Rule for Phase 2 (and any schema-gated feature):**
+> Deploy the *tolerant* code first, **then** migrate — or gate both behind one
+> release. Never tighten a DB constraint (or add a required column / table the
+> code reads) ahead of the code that satisfies it. If a migration and the code
+> that depends on it must both ship, treat them as one atomic release, and write
+> migrations to tolerate the *old* code path until the new code is fully rolled
+> out (expand-then-contract).

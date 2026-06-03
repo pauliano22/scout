@@ -5,16 +5,17 @@
 // apps/web/lib/search/featureFlag.ts and apps/mobile/src/lib/featureFlag.ts —
 // drift was a footgun. One copy, both apps import it.
 
-// Default rollout is 10%. Overridable via env for local testing without
-// touching the committed default — set ALUMNI_SEARCH_ROLLOUT_PERCENT=100 (web,
-// Node) or EXPO_PUBLIC_ALUMNI_SEARCH_ROLLOUT_PERCENT=100 (mobile, inlined by
-// Metro). Unset in prod → 10. The env read works in both runtimes because it's
-// plain process.env, not a Next/Expo-specific import.
+// Default rollout is 100% — alumni search is fully launched. Still overridable
+// via env without touching the committed default — e.g. set
+// ALUMNI_SEARCH_ROLLOUT_PERCENT=0 (web, Node) or
+// EXPO_PUBLIC_ALUMNI_SEARCH_ROLLOUT_PERCENT=0 (mobile, inlined by Metro) to
+// dial it down locally. Unset in prod → 100. The env read works in both
+// runtimes because it's plain process.env, not a Next/Expo-specific import.
 const envPct = Number(
   process.env.ALUMNI_SEARCH_ROLLOUT_PERCENT ??
   process.env.EXPO_PUBLIC_ALUMNI_SEARCH_ROLLOUT_PERCENT,
 );
-export const ALUMNI_SEARCH_ROLLOUT_PERCENT = Number.isFinite(envPct) ? envPct : 10;
+export const ALUMNI_SEARCH_ROLLOUT_PERCENT = Number.isFinite(envPct) ? envPct : 100;
 
 // 32-bit FNV-1a — fast, no deps, stable across runtimes.
 function fnv1a(input: string): number {

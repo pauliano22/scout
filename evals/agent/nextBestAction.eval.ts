@@ -44,19 +44,20 @@ function conn(p: Partial<ConnectionSignals>): ConnectionSignals {
 console.log('═══ action selection ═══');
 const cases: Array<{ name: string; signals: ConnectionSignals; type: ActionType; compose?: string | null; reason?: string }> = [
   { name: 'uncontacted, no status → DRAFT_INTRO', signals: conn({}), type: 'DRAFT_INTRO', compose: 'introduction' },
-  { name: "uncontacted, status 'saved' → DRAFT_INTRO", signals: conn({ status: 'saved' }), type: 'DRAFT_INTRO' },
+  { name: "uncontacted, status 'interested' → DRAFT_INTRO", signals: conn({ status: 'interested' }), type: 'DRAFT_INTRO' },
   { name: 'contacted 2d ago, no reply → AWAIT', signals: conn({ contacted: true, lastMessageAt: daysAgo(2) }), type: 'AWAIT' },
   { name: `contacted ${FOLLOWUP_STALE_DAYS}d ago (boundary) → SEND_FOLLOWUP`, signals: conn({ contacted: true, lastMessageAt: daysAgo(FOLLOWUP_STALE_DAYS) }), type: 'SEND_FOLLOWUP', compose: 'follow_up' },
   { name: `contacted ${FOLLOWUP_STALE_DAYS - 1}d ago (just under) → AWAIT`, signals: conn({ contacted: true, lastMessageAt: daysAgo(FOLLOWUP_STALE_DAYS - 1) }), type: 'AWAIT' },
   { name: 'contacted 30d ago → SEND_FOLLOWUP', signals: conn({ contacted: true, lastMessageAt: daysAgo(30) }), type: 'SEND_FOLLOWUP' },
-  { name: "status 'replied' → RESPOND", signals: conn({ status: 'replied', contacted: true, lastMessageAt: daysAgo(1) }), type: 'RESPOND', compose: 'follow_up' },
+  { name: "status 'response_needed' → RESPOND", signals: conn({ status: 'response_needed', contacted: true, lastMessageAt: daysAgo(1) }), type: 'RESPOND', compose: 'follow_up' },
+  { name: 'status awaiting_reply but no logged message, stale via implied-contact → SEND_FOLLOWUP', signals: conn({ status: 'awaiting_reply', contactedAt: daysAgo(9) }), type: 'SEND_FOLLOWUP' },
   { name: "meeting_scheduled + date → PREP_MEETING (timed)", signals: conn({ status: 'meeting_scheduled', meetingAt: daysAhead(2) }), type: 'PREP_MEETING', compose: null, reason: 'in 2 days' },
   { name: 'meeting_scheduled, no date → PREP_MEETING (untimed)', signals: conn({ status: 'meeting_scheduled' }), type: 'PREP_MEETING', reason: 'when you can' },
   { name: "status 'met' → SEND_THANKYOU", signals: conn({ status: 'met' }), type: 'SEND_THANKYOU', compose: 'thank_you' },
   { name: "status 'not_interested' → AWAIT (muted)", signals: conn({ status: 'not_interested', contacted: true }), type: 'AWAIT' },
   // Graceful degradation — engine works on reliable signals when status is missing/wrong:
   { name: 'null status but contacted+stale → SEND_FOLLOWUP (no status needed)', signals: conn({ status: null, contacted: true, lastMessageAt: daysAgo(10) }), type: 'SEND_FOLLOWUP' },
-  { name: "inconsistent status 'saved' but contacted+stale → SEND_FOLLOWUP (reliable wins)", signals: conn({ status: 'saved', contacted: true, lastMessageAt: daysAgo(10) }), type: 'SEND_FOLLOWUP' },
+  { name: "inconsistent status 'interested' but contacted+stale → SEND_FOLLOWUP (reliable wins)", signals: conn({ status: 'interested', contacted: true, lastMessageAt: daysAgo(10) }), type: 'SEND_FOLLOWUP' },
   { name: 'contacted via contactedAt only (no messages), stale → SEND_FOLLOWUP', signals: conn({ contacted: true, contactedAt: daysAgo(9) }), type: 'SEND_FOLLOWUP' },
 ];
 for (const tc of cases) {
@@ -72,7 +73,7 @@ console.log('\n═══ ranking order ═══');
 const mixed: ConnectionSignals[] = [
   conn({ alumniId: 'followup', contacted: true, lastMessageAt: daysAgo(10) }), // SEND_FOLLOWUP (50)
   conn({ alumniId: 'intro', fitScore: 50 }),                                    // DRAFT_INTRO (60)
-  conn({ alumniId: 'respond', status: 'replied', contacted: true }),            // RESPOND (100)
+  conn({ alumniId: 'respond', status: 'response_needed', contacted: true }),            // RESPOND (100)
   conn({ alumniId: 'meeting', status: 'meeting_scheduled', meetingAt: daysAhead(1) }), // PREP_MEETING (90)
   conn({ alumniId: 'thanks', status: 'met' }),                                  // SEND_THANKYOU (80)
 ];
@@ -101,8 +102,8 @@ check('capped "today" are the highest-fit', capped.today.every((a) => Number(a.a
 // Reactions are NOT capped, even past the outreach ceiling.
 const reactionsPlusOutreach: ConnectionSignals[] = [
   ...Array.from({ length: 6 }, (_, i) => conn({ alumniId: `intro${i}`, fitScore: i })), // 6 DRAFT_INTRO
-  conn({ alumniId: 'r1', status: 'replied', contacted: true }),
-  conn({ alumniId: 'r2', status: 'replied', contacted: true }),
+  conn({ alumniId: 'r1', status: 'response_needed', contacted: true }),
+  conn({ alumniId: 'r2', status: 'response_needed', contacted: true }),
 ];
 const mix2 = rankActions(reactionsPlusOutreach, NOW);
 check('reactions never capped: 2 RESPOND + 5 capped outreach = 7 today',

@@ -100,11 +100,14 @@ export interface UserNetwork {
   alumni_id: string
   contacted: boolean
   contacted_at: string | null
+  meeting_at: string | null
   notes: string | null
   created_at: string
+  // status is a real column (unified in migration 025); kept optional so
+  // existing constructors that omit it still typecheck.
+  status?: 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met'
   // Joined data
   alumni?: Alumni
-  status?: 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met'
   interactions?: string | null
 }
 

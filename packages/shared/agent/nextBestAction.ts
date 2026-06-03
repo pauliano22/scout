@@ -25,11 +25,15 @@ export const FOLLOWUP_STALE_DAYS = 7;
 
 const MS_PER_DAY = 86_400_000;
 
-// ─── Canonical relationship status (unified vocabulary — see migration) ─────
+// ─── Canonical relationship status (unified vocabulary — see migration 025) ──
+// This is the existing web/TS-type vocabulary that the live control-arm UI
+// already uses; migration 025 normalizes every historical value (incl. the
+// old mobile/PATCH set) into it. Lifecycle: interested → awaiting_reply →
+// response_needed → meeting_scheduled → met (+ not_interested = closed).
 export type ConnectionStatus =
-  | 'saved'
-  | 'contacted'
-  | 'replied'
+  | 'interested'
+  | 'awaiting_reply'
+  | 'response_needed'
   | 'meeting_scheduled'
   | 'met'
   | 'not_interested';
@@ -131,12 +135,19 @@ export function nextBestAction(c: ConnectionSignals, now: Date): SuggestedAction
       : 'Meeting set — prep when you can';
     return base('PREP_MEETING', reason, null);
   }
-  if (c.status === 'replied') {
+  if (c.status === 'response_needed') {
     return base('RESPOND', 'They replied — keep the conversation going', 'follow_up');
   }
 
-  // Reliable-signal branches — work regardless of status (which is often null).
-  const isContacted = c.contacted || c.lastMessageAt != null;
+  // Reliable-signal branches — work regardless of status (often null/'interested').
+  // A status that implies prior contact also counts, so a row with status but
+  // no logged message still routes correctly.
+  const statusImpliesContacted =
+    c.status === 'awaiting_reply' ||
+    c.status === 'response_needed' ||
+    c.status === 'meeting_scheduled' ||
+    c.status === 'met';
+  const isContacted = c.contacted || c.lastMessageAt != null || statusImpliesContacted;
   if (!isContacted) {
     return base('DRAFT_INTRO', 'Not contacted yet — send an intro', 'introduction');
   }

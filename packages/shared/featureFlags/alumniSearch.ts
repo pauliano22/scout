@@ -5,17 +5,17 @@
 // apps/web/lib/search/featureFlag.ts and apps/mobile/src/lib/featureFlag.ts —
 // drift was a footgun. One copy, both apps import it.
 
-// Default rollout is 100% — alumni search is fully launched. Still overridable
-// via env without touching the committed default — e.g. set
-// ALUMNI_SEARCH_ROLLOUT_PERCENT=0 (web, Node) or
-// EXPO_PUBLIC_ALUMNI_SEARCH_ROLLOUT_PERCENT=0 (mobile, inlined by Metro) to
-// dial it down locally. Unset in prod → 100. The env read works in both
-// runtimes because it's plain process.env, not a Next/Expo-specific import.
+// Rollout TEMPORARILY OFF (0%). Prod is missing OPENAI_API_KEY, so the search
+// pipeline (embeddings/parse/rerank) errors there — at 0% everyone gets the
+// control /plan (PlanClient) instead of the broken search. Re-enable by
+// setting this back to 100 (or set ALUMNI_SEARCH_ROLLOUT_PERCENT=100 in the
+// prod env) once the OpenAI key is configured in Vercel. The env override
+// works in both runtimes because it's plain process.env.
 const envPct = Number(
   process.env.ALUMNI_SEARCH_ROLLOUT_PERCENT ??
   process.env.EXPO_PUBLIC_ALUMNI_SEARCH_ROLLOUT_PERCENT,
 );
-export const ALUMNI_SEARCH_ROLLOUT_PERCENT = Number.isFinite(envPct) ? envPct : 100;
+export const ALUMNI_SEARCH_ROLLOUT_PERCENT = Number.isFinite(envPct) ? envPct : 0;
 
 // 32-bit FNV-1a — fast, no deps, stable across runtimes.
 function fnv1a(input: string): number {

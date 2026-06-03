@@ -22,6 +22,20 @@
 export const OUTREACH_PER_DAY_CAP = 5;
 /** Days since the last outbound message before a contacted connection earns a nudge. */
 export const FOLLOWUP_STALE_DAYS = 7;
+/** Cold-outreach follow-up cap: ONE gentle nudge to a favor-doer, then quiet-close. */
+export const MAX_COLD_FOLLOWUPS = 1;
+
+// ── Cross-user corpus protection (enforced by the sourcing gate, not the engine) ──
+/** Max DISTINCT students who may be auto-sourced onto one alum within the window.
+ *  Protective default (≈ an alum hears from ≤1 Scout student every ~45 days);
+ *  loosen with data. The corpus's life insurance — err protective. */
+export const ALUMNI_OUTREACH_MAX_STUDENTS = 2;
+export const ALUMNI_OUTREACH_WINDOW_DAYS = 90;
+/** Re-source only when the approved-but-uncontacted list has < this much pacing left
+ *  (also caps the OpenAI embed+rerank sourcing spend to ~weekly per user). */
+export const SOURCING_REFILL_DAYS = 7;
+/** Campaign target-count default by the student's networking_intensity. */
+export const CAMPAIGN_COUNT_BY_INTENSITY: Record<string, number> = { '20': 5, '10': 3, '5': 2, own_pace: 3 };
 
 const MS_PER_DAY = 86_400_000;
 
@@ -31,6 +45,7 @@ const MS_PER_DAY = 86_400_000;
 // old mobile/PATCH set) into it. Lifecycle: interested → awaiting_reply →
 // response_needed → meeting_scheduled → met (+ not_interested = closed).
 export type ConnectionStatus =
+  | 'proposed'        // cron-sourced, NOT yet approved by the student — never live outreach
   | 'interested'
   | 'awaiting_reply'
   | 'response_needed'
@@ -118,6 +133,14 @@ export function nextBestAction(c: ConnectionSignals, now: Date): SuggestedAction
     compose,
     ...extra,
   });
+
+  // GATE (defense-in-depth): a cron-sourced alum awaiting the student's
+  // who-to-contact approval is NEVER actionable outreach. The assembly also
+  // routes 'proposed' rows to a separate approval shelf and doesn't feed them
+  // here — but if one leaks in, it can never become DRAFT_INTRO.
+  if (c.status === 'proposed') {
+    return base('AWAIT', 'Awaiting your approval', null);
+  }
 
   // Explicitly closed — never surface.
   if (c.status === 'not_interested') {

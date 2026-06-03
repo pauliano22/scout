@@ -55,6 +55,8 @@ const cases: Array<{ name: string; signals: ConnectionSignals; type: ActionType;
   { name: 'meeting_scheduled, no date → PREP_MEETING (untimed)', signals: conn({ status: 'meeting_scheduled' }), type: 'PREP_MEETING', reason: 'when you can' },
   { name: "status 'met' → SEND_THANKYOU", signals: conn({ status: 'met' }), type: 'SEND_THANKYOU', compose: 'thank_you' },
   { name: "status 'not_interested' → AWAIT (muted)", signals: conn({ status: 'not_interested', contacted: true }), type: 'AWAIT' },
+  // GATE: a cron-sourced 'proposed' alum (uncontacted) must be AWAIT, NEVER DRAFT_INTRO:
+  { name: "GATE: 'proposed' uncontacted → AWAIT, not DRAFT_INTRO", signals: conn({ status: 'proposed' }), type: 'AWAIT' },
   // Graceful degradation — engine works on reliable signals when status is missing/wrong:
   { name: 'null status but contacted+stale → SEND_FOLLOWUP (no status needed)', signals: conn({ status: null, contacted: true, lastMessageAt: daysAgo(10) }), type: 'SEND_FOLLOWUP' },
   { name: "inconsistent status 'interested' but contacted+stale → SEND_FOLLOWUP (reliable wins)", signals: conn({ status: 'interested', contacted: true, lastMessageAt: daysAgo(10) }), type: 'SEND_FOLLOWUP' },
@@ -122,6 +124,16 @@ check('not_interested in waiting, not today/later',
   !withClosed.today.some((a) => a.alumniId === 'closed') &&
   !withClosed.later.some((a) => a.alumniId === 'closed'),
   `today=${withClosed.today.map((a) => a.alumniId)} waiting=${withClosed.waiting.map((a) => a.alumniId)}`);
+
+// GATE: a 'proposed' (cron-sourced, unapproved) alum must NEVER reach today/later.
+const withProposed = rankActions([
+  conn({ alumniId: 'live', status: 'interested' }),        // DRAFT_INTRO → today
+  conn({ alumniId: 'sourced', status: 'proposed' }),       // gated → must NOT be outreach
+], NOW);
+check('proposed alum never in today/later (who-to-contact gate holds)',
+  !withProposed.today.some((a) => a.alumniId === 'sourced') &&
+  !withProposed.later.some((a) => a.alumniId === 'sourced'),
+  `today=${withProposed.today.map((a) => a.alumniId)} later=${withProposed.later.map((a) => a.alumniId)}`);
 
 // ─── 5. dismiss / snooze overrides (Checkpoint A behavior, DB-free) ─────────
 console.log('\n═══ overrides (dismiss / snooze) ═══');

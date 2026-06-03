@@ -53,15 +53,23 @@ function authorized(req: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // PILOT ALLOWLIST (safe-by-default). The loop processes ONLY the user ids in
+  // AGENT_PILOT_USER_IDS (comma-separated). Unset/empty → process NOBODY, so the
+  // cron is inert in prod until you explicitly opt the curated pilot cohort in.
+  // Widening past the pilot is a deliberate env change gated on reply/complaint metrics.
+  const pilot = (process.env.AGENT_PILOT_USER_IDS ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+  if (pilot.length === 0) return NextResponse.json({ ticked: 0, note: 'no pilot users configured' })
+
   const sb = createServiceClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
   const now = new Date()
 
-  // Active campaigns, oldest-ticked first (hand-rolled cursor; no job queue).
+  // Active campaigns for pilot users only, oldest-ticked first (cursor; no job queue).
   const { data: campaigns, error } = await sb
     .from('networking_plans')
     .select('id, user_id, goal_metric, goal_count, current_count, last_sourced_at, sourcing_enabled')
     .eq('is_active', true)
     .eq('campaign_status', 'active')
+    .in('user_id', pilot)
     .order('last_tick_at', { ascending: true, nullsFirst: true })
     .limit(CAMPAIGN_BATCH)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

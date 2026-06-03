@@ -10,6 +10,7 @@
     "./constants/*": "./constants/*.ts",
     "./profile/*": "./profile/*.ts",
     "./scoring/*": "./scoring/*.ts",
-    "./featureFlags/*": "./featureFlags/*.ts"
+    "./featureFlags/*": "./featureFlags/*.ts",
+    "./agent/*": "./agent/*.ts"
   }
 }

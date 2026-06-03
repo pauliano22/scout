@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../theme/scoutTheme';
+import TodayScreen from '../screens/TodayScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
 import NetworkScreen from '../screens/NetworkScreen';
 import YouScreen from '../screens/YouScreen';
@@ -59,6 +60,20 @@ export default function TabNavigator() {
         ),
       }}
     >
+      <Tab.Screen
+        name="Today"
+        component={TodayScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              iconActive="sunny"
+              iconInactive="sunny-outline"
+              label="Today"
+              focused={focused}
+            />
+          ),
+        }}
+      />
       <Tab.Screen
         name="Discover"
         component={DiscoverScreen}

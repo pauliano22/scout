@@ -123,6 +123,31 @@ check('not_interested in waiting, not today/later',
   !withClosed.later.some((a) => a.alumniId === 'closed'),
   `today=${withClosed.today.map((a) => a.alumniId)} waiting=${withClosed.waiting.map((a) => a.alumniId)}`);
 
+// ─── 5. dismiss / snooze overrides (Checkpoint A behavior, DB-free) ─────────
+console.log('\n═══ overrides (dismiss / snooze) ═══');
+const intro = conn({ alumniId: 'x' }); // → DRAFT_INTRO
+const dismissed = rankActions([intro], NOW, [
+  { alumniId: 'x', actionType: 'DRAFT_INTRO', state: 'dismissed', snoozeUntil: null },
+]);
+check('dismissed override removes the action entirely',
+  dismissed.today.length === 0 && dismissed.later.length === 0 && dismissed.waiting.length === 0,
+  `today=${dismissed.today.length} waiting=${dismissed.waiting.length}`);
+
+const snoozedActive = rankActions([intro], NOW, [
+  { alumniId: 'x', actionType: 'DRAFT_INTRO', state: 'snoozed', snoozeUntil: daysAhead(2) },
+]);
+check('snooze with future snoozeUntil hides the action', snoozedActive.today.length === 0, `today=${snoozedActive.today.length}`);
+
+const snoozeExpired = rankActions([intro], NOW, [
+  { alumniId: 'x', actionType: 'DRAFT_INTRO', state: 'snoozed', snoozeUntil: daysAgo(1) },
+]);
+check('snooze past snoozeUntil → action reappears', snoozeExpired.today.length === 1, `today=${snoozeExpired.today.length}`);
+
+const wrongType = rankActions([intro], NOW, [
+  { alumniId: 'x', actionType: 'SEND_FOLLOWUP', state: 'dismissed', snoozeUntil: null },
+]);
+check('override only matches its own action_type', wrongType.today.length === 1, `today=${wrongType.today.length}`);
+
 // ─── summary ─────────────────────────────────────────────────────────────────
 console.log(`\n═══ Checkpoint B: ${pass} passed, ${fail} failed ═══`);
 if (fail > 0) process.exit(1);

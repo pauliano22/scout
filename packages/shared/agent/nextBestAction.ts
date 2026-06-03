@@ -140,14 +140,10 @@ export function nextBestAction(c: ConnectionSignals, now: Date): SuggestedAction
   }
 
   // Reliable-signal branches — work regardless of status (often null/'interested').
-  // A status that implies prior contact also counts, so a row with status but
-  // no logged message still routes correctly.
-  const statusImpliesContacted =
-    c.status === 'awaiting_reply' ||
-    c.status === 'response_needed' ||
-    c.status === 'meeting_scheduled' ||
-    c.status === 'met';
-  const isContacted = c.contacted || c.lastMessageAt != null || statusImpliesContacted;
+  // 'met'/'meeting_scheduled'/'response_needed'/'not_interested' already
+  // returned above, so among the remaining statuses only 'awaiting_reply'
+  // implies prior contact (covers a row with status set but no logged message).
+  const isContacted = c.contacted || c.lastMessageAt != null || c.status === 'awaiting_reply';
   if (!isContacted) {
     return base('DRAFT_INTRO', 'Not contacted yet — send an intro', 'introduction');
   }
@@ -164,6 +160,23 @@ export function nextBestAction(c: ConnectionSignals, now: Date): SuggestedAction
     null,
     waited != null ? { daysWaiting: waited } : undefined,
   );
+}
+
+/** A user's dismiss/snooze override on a derived action (connection_action_state row). */
+export interface ActionOverride {
+  alumniId: string;
+  actionType: ActionType;
+  state: 'dismissed' | 'snoozed';
+  snoozeUntil: string | null; // ISO; only meaningful when state = 'snoozed'
+}
+
+/** True if this action is currently suppressed by a dismiss or an unexpired snooze. */
+function isSuppressed(a: SuggestedAction, overrides: ActionOverride[], now: Date): boolean {
+  const o = overrides.find((x) => x.alumniId === a.alumniId && x.actionType === a.type);
+  if (!o) return false;
+  if (o.state === 'dismissed') return true;
+  // snoozed: suppressed only while snoozeUntil is still in the future.
+  return o.snoozeUntil != null && new Date(o.snoozeUntil).getTime() > now.getTime();
 }
 
 export interface RankedQueue {
@@ -183,10 +196,14 @@ export interface RankedQueue {
 export function rankActions(
   connections: ConnectionSignals[],
   now: Date,
+  overrides: ActionOverride[] = [],
   cap: number = OUTREACH_PER_DAY_CAP,
 ): RankedQueue {
   const byFit = new Map(connections.map((c) => [c.alumniId, c.fitScore]));
-  const actions = connections.map((c) => nextBestAction(c, now));
+  // Dismiss/snooze remove an action entirely (not into any bucket).
+  const actions = connections
+    .map((c) => nextBestAction(c, now))
+    .filter((a) => !isSuppressed(a, overrides, now));
 
   const waiting = actions.filter((a) => a.type === 'AWAIT');
   const actionable = actions

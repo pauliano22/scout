@@ -344,9 +344,9 @@ function StatusStrip({
   approvedCount: number
 }) {
   const waitingText = approvedCount === result.drafts.length
-    ? 'All outreach queued'
+    ? 'All drafts ready for you to send'
     : approvedCount > 0
-      ? `${approvedCount} of ${result.drafts.length} approved`
+      ? `${approvedCount} of ${result.drafts.length} ready to send`
       : result.status.waiting
 
   return (
@@ -406,7 +406,8 @@ function RunningView() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Complete view — all drafts queued
+// Complete view — drafts prepared, student sends (honest: nothing is auto-sent,
+// and Scout cannot detect replies without the CASA-gated Gmail read scope)
 // ─────────────────────────────────────────────────────────────────────────────
 
 function CompleteView({ result, onReset }: { result: AgentResult; onReset: () => void }) {
@@ -416,9 +417,8 @@ function CompleteView({ result, onReset }: { result: AgentResult; onReset: () =>
         <Check size={18} className="text-emerald-400" />
       </div>
       <div className="space-y-1">
-        <p className="text-lg font-semibold text-[--text-primary]">All {result.drafts.length} messages queued.</p>
-        <p className="text-sm text-[--text-secondary]">Follow-ups scheduled for Friday.</p>
-        <p className="text-xs text-[--text-quaternary] mt-1">Scout will notify you when someone replies.</p>
+        <p className="text-lg font-semibold text-[--text-primary]">{result.drafts.length} drafts ready for you to review and send.</p>
+        <p className="text-sm text-[--text-secondary]">Send the ones you like, then mark anyone who replies so I can line up your next move.</p>
       </div>
       <button onClick={onReset} className="btn-ghost text-sm text-[--text-quaternary] mt-2">
         ← Start over

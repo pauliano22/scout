@@ -68,3 +68,9 @@ CREATE POLICY "own action state - update" ON public.connection_action_state
   FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "own action state - delete" ON public.connection_action_state
   FOR DELETE USING (auth.uid() = user_id);
+
+-- Table-level grants. Supabase usually auto-grants new public tables to these
+-- roles via default privileges, but make it explicit/reproducible. RLS still
+-- restricts rows to the owning user; service_role bypasses RLS (override write).
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.connection_action_state TO authenticated;
+GRANT ALL ON public.connection_action_state TO service_role;

@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from '@/components/Link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Users, LogOut, User, ClipboardList } from 'lucide-react'
+import { Search, Users, LogOut, User, ClipboardList, Home } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@scout/shared/types/database'
+import { isInCampaignHome } from '@scout/shared/featureFlags/campaignHome'
 import ThemeToggle from './ThemeToggle'
 
 interface NavbarProps {
@@ -20,23 +21,24 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
   const router = useRouter()
   const supabase = createClient()
   const [role, setRole] = useState<UserRole | null>(roleProp ?? null)
+  const [campaignHome, setCampaignHome] = useState(false)
 
   useEffect(() => {
-    if (roleProp !== undefined) {
-      setRole(roleProp)
-      return
-    }
+    if (roleProp !== undefined) setRole(roleProp)
     if (!user) return
     let cancelled = false
     ;(async () => {
       const { data: { user: u } } = await supabase.auth.getUser()
-      if (!u) return
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('account_role')
-        .eq('id', u.id)
-        .single()
-      if (!cancelled) setRole((profile?.account_role as UserRole | null) ?? 'student')
+      if (!u || cancelled) return
+      setCampaignHome(isInCampaignHome(u.id))
+      if (roleProp === undefined) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('account_role')
+          .eq('id', u.id)
+          .single()
+        if (!cancelled) setRole((profile?.account_role as UserRole | null) ?? 'student')
+      }
     })()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +70,9 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
   )
 
   const isAlumni = role === 'alumni'
-  const homeHref = !user ? '/' : isAlumni ? '/profile' : '/plan'
+  const showCampaignHome = campaignHome && role === 'student'
+  const studentHome = showCampaignHome ? '/campaign' : '/plan'
+  const homeHref = !user ? '/' : isAlumni ? '/profile' : studentHome
 
   return (
     <nav className="flex justify-between items-center px-4 md:px-6 py-3 border-b border-[--border-primary] sticky top-0 z-50 bg-[--bg-primary]/95 backdrop-blur-sm">
@@ -108,15 +112,15 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
             ) : (
               <>
                 <Link
-                  href="/plan"
+                  href={studentHome}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    isActive('/plan')
+                    isActive(studentHome)
                       ? 'bg-[--school-primary] text-white'
                       : 'text-[--school-primary] hover:bg-[--school-primary]/8'
                   }`}
                 >
-                  <ClipboardList size={14} />
-                  <span className="hidden sm:inline">Plan</span>
+                  {showCampaignHome ? <Home size={14} /> : <ClipboardList size={14} />}
+                  <span className="hidden sm:inline">{showCampaignHome ? 'Home' : 'Plan'}</span>
                 </Link>
 
                 {navLink('/discover', <Search size={14} />, 'Discover')}

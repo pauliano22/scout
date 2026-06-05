@@ -9,12 +9,17 @@ import {
   MapPin,
   GraduationCap,
   Users,
-  Loader2
+  Loader2,
+  Briefcase,
+  Mail,
 } from 'lucide-react'
 import Avatar from '@/components/Avatar'
 import { cleanField } from '@/lib/cleanField'
+import type { WorkHistoryEntry } from '@scout/shared/types/database'
 
-// Base alumni type with only fields used by this modal
+// Base alumni type with only fields used by this modal. The richer career
+// fields are optional so search callers passing a lightweight object still work;
+// the campaign home passes the fully-hydrated alum so they render.
 export interface AlumniBase {
   id: string
   full_name: string
@@ -27,6 +32,10 @@ export interface AlumniBase {
   location: string | null
   photo_url?: string | null
   avatar_url?: string | null
+  email?: string | null
+  display_headline?: string | null
+  bio?: string | null
+  work_history?: WorkHistoryEntry[] | null
 }
 
 interface AlumniDetailModalProps {
@@ -170,7 +179,56 @@ export default function AlumniDetailModal({
                 <span className="hidden sm:inline">LinkedIn</span>
               </a>
             )}
+
+            {alumni.email && (
+              <a
+                href={`mailto:${alumni.email}`}
+                className="btn-secondary flex items-center justify-center gap-2 px-4"
+              >
+                <Mail size={15} />
+                <span className="hidden sm:inline">Email</span>
+              </a>
+            )}
           </div>
+
+          {/* Career: headline, bio, work history (the full-profile expand) */}
+          {(alumni.display_headline || alumni.bio || (alumni.work_history && alumni.work_history.length > 0)) && (
+            <div className="border-t border-[--border-primary] px-6 py-5 space-y-4">
+              {alumni.display_headline && (
+                <p className="text-sm text-[--text-secondary] leading-snug">{alumni.display_headline}</p>
+              )}
+
+              {alumni.bio && (
+                <div>
+                  <h3 className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-2">About</h3>
+                  <p className="text-sm text-[--text-secondary] leading-relaxed whitespace-pre-line">{alumni.bio}</p>
+                </div>
+              )}
+
+              {alumni.work_history && alumni.work_history.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-2.5">Experience</h3>
+                  <div className="space-y-3">
+                    {alumni.work_history.map((w, i) => (
+                      <div key={i} className="flex gap-3">
+                        <Briefcase size={13} className="text-[--text-quaternary] mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-[--text-primary] leading-snug">
+                            {w.title || '—'}{w.title && w.company && ' · '}{w.company || ''}
+                          </p>
+                          {(w.duration || w.location) && (
+                            <p className="text-xs text-[--text-quaternary] mt-0.5">
+                              {[w.duration, w.location].filter(Boolean).join(' · ')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Similar Alumni */}
           {similarAlumni.length > 0 && (

@@ -49,10 +49,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, approved: data.id })
   }
 
+  // ── Decline a proposed alum: 'proposed' → 'not_interested' (won't be re-sourced) ──
+  if (body.action === 'dismiss_target') {
+    const networkId = typeof body.networkId === 'string' ? body.networkId : null
+    if (!networkId) return NextResponse.json({ error: 'Missing networkId' }, { status: 400 })
+    const { data, error } = await sb
+      .from('user_networks')
+      .update({ status: 'not_interested' })
+      .eq('id', networkId)
+      .eq('user_id', user.id)
+      .eq('status', 'proposed')
+      .select('id')
+      .maybeSingle()
+    if (error) return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+    if (!data) return NextResponse.json({ error: 'Not found or already actioned' }, { status: 404 })
+    return NextResponse.json({ ok: true, declined: data.id })
+  }
+
   // ── Log a send the student just made (copy/mailto client-side) ─────────────
   if (body.action === 'send') {
     const queueId = typeof body.queueId === 'string' ? body.queueId : null
     if (!queueId) return NextResponse.json({ error: 'Missing queueId' }, { status: 400 })
+    // The student may have edited the draft in the compose modal — log what they
+    // actually sent, not the original. Falls back to the queued draft.
+    const editedBody = typeof body.editedBody === 'string' && body.editedBody.trim() ? body.editedBody : null
+    const SENT_VIA = ['linkedin', 'email', 'copied', 'marked']
+    const sentVia = typeof body.sentVia === 'string' && SENT_VIA.includes(body.sentVia) ? body.sentVia : null
 
     const { data: q, error: qErr } = await sb
       .from('outreach_queue')
@@ -70,8 +92,8 @@ export async function POST(request: NextRequest) {
     await sb.from('messages').insert({
       user_id: user.id,
       alumni_id: q.alumni_id,
-      message_content: q.draft_body,
-      sent_via: q.channel === 'email' ? 'email' : 'linkedin',
+      message_content: editedBody ?? q.draft_body,
+      sent_via: sentVia ?? (q.channel === 'email' ? 'email' : 'linkedin'),
     })
     // 3. advance the connection
     await sb.from('user_networks')
@@ -84,6 +106,23 @@ export async function POST(request: NextRequest) {
       { onConflict: 'alumni_id,user_id', ignoreDuplicates: true },
     )
     return NextResponse.json({ ok: true, sent: queueId })
+  }
+
+  // ── Dismiss a queued draft (student chose not to send it) ──────────────────
+  if (body.action === 'dismiss_draft') {
+    const queueId = typeof body.queueId === 'string' ? body.queueId : null
+    if (!queueId) return NextResponse.json({ error: 'Missing queueId' }, { status: 400 })
+    const { data, error } = await sb
+      .from('outreach_queue')
+      .update({ status: 'dismissed' })
+      .eq('id', queueId)
+      .eq('user_id', user.id)
+      .eq('status', 'queued_for_approval') // only dismiss a still-pending draft
+      .select('id')
+      .maybeSingle()
+    if (error) return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+    if (!data) return NextResponse.json({ error: 'Not found or already actioned' }, { status: 404 })
+    return NextResponse.json({ ok: true, dismissed: data.id })
   }
 
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 })

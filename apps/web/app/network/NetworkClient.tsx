@@ -79,7 +79,11 @@ export default function NetworkClient({
     setTimeout(() => setHighlightedId(null), 3000)
   }, [highlightId, network])
 
-  const getStatus = (conn: UserNetwork): CRMStatus => conn.status || 'interested'
+  // 'proposed'/'not_interested' (mig 026) aren't CRM columns — they live in the
+  // campaign home, not this board — so they fall back to 'interested' here.
+  const CRM_STATUSES: readonly string[] = ['interested', 'awaiting_reply', 'response_needed', 'meeting_scheduled', 'met']
+  const getStatus = (conn: UserNetwork): CRMStatus =>
+    conn.status && CRM_STATUSES.includes(conn.status) ? (conn.status as CRMStatus) : 'interested'
 
   const statusCounts = useMemo(() => {
     const counts: Record<CRMStatus, number> = {

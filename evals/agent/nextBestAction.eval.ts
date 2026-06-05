@@ -10,6 +10,7 @@
 import {
   nextBestAction,
   rankActions,
+  cappedAlumniIds,
   OUTREACH_PER_DAY_CAP,
   FOLLOWUP_STALE_DAYS,
   type ConnectionSignals,
@@ -159,6 +160,19 @@ const wrongType = rankActions([intro], NOW, [
   { alumniId: 'x', actionType: 'SEND_FOLLOWUP', state: 'dismissed', snoozeUntil: null },
 ]);
 check('override only matches its own action_type', wrongType.today.length === 1, `today=${wrongType.today.length}`);
+
+// ─── 6. cross-user ledger cap (the FATAL over-fishing invariant) ────────────
+console.log('\n═══ cross-user ledger cap ═══');
+check('alum contacted by 2 distinct users → capped (max 2)',
+  cappedAlumniIds([{ alumni_id: 'a', user_id: 'u1' }, { alumni_id: 'a', user_id: 'u2' }], 2).includes('a'));
+check('alum contacted by 1 user → NOT capped',
+  cappedAlumniIds([{ alumni_id: 'a', user_id: 'u1' }], 2).length === 0);
+check('same user contacting twice counts once → NOT capped',
+  cappedAlumniIds([{ alumni_id: 'a', user_id: 'u1' }, { alumni_id: 'a', user_id: 'u1' }], 2).length === 0);
+check('cap excludes ONLY the over-fished alum',
+  JSON.stringify(cappedAlumniIds([{ alumni_id: 'a', user_id: 'u1' }, { alumni_id: 'a', user_id: 'u2' }, { alumni_id: 'b', user_id: 'u1' }], 2)) === JSON.stringify(['a']));
+check('cap=3 not tripped by only 2 users (window/threshold respected)',
+  cappedAlumniIds([{ alumni_id: 'a', user_id: 'u1' }, { alumni_id: 'a', user_id: 'u2' }], 3).length === 0);
 
 // ─── summary ─────────────────────────────────────────────────────────────────
 console.log(`\n═══ Checkpoint B: ${pass} passed, ${fail} failed ═══`);

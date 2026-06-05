@@ -29,8 +29,14 @@ export const MAX_COLD_FOLLOWUPS = 1;
 /** Max DISTINCT students who may be auto-sourced onto one alum within the window.
  *  Protective default (≈ an alum hears from ≤1 Scout student every ~45 days);
  *  loosen with data. The corpus's life insurance — err protective. */
-export const ALUMNI_OUTREACH_MAX_STUDENTS = 2;
-export const ALUMNI_OUTREACH_WINDOW_DAYS = 90;
+// Cross-user cap: max DISTINCT students who may contact one alum within the
+// window. Counted at the CONTACT EVENT (added-to-outreach / approved-to-contact —
+// the send proxy, since there are no automated sends until Phase 5). Founder
+// decision (2026-06-05): 10 per alum per 30 days — loose enough not to throttle
+// real students, a hard floor against the pathological case (one alum hit dozens
+// of times). One-line tunable; do NOT remove — a backstop must exist before any ramp.
+export const ALUMNI_OUTREACH_MAX_STUDENTS = 10;
+export const ALUMNI_OUTREACH_WINDOW_DAYS = 30;
 
 /**
  * Cross-user over-fishing guard (pure, testable). Given alumni_outreach_ledger

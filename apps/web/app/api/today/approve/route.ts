@@ -42,10 +42,16 @@ export async function POST(request: NextRequest) {
       .eq('id', networkId)
       .eq('user_id', user.id)
       .eq('status', 'proposed') // only promote a still-proposed row
-      .select('id')
+      .select('id, alumni_id')
       .maybeSingle()
     if (error) return NextResponse.json({ error: 'Update failed' }, { status: 500 })
     if (!data) return NextResponse.json({ error: 'Not found or already approved' }, { status: 404 })
+    // Record the cross-user cap contact event at ADD-TO-OUTREACH (the send proxy):
+    // the alum now counts toward the per-alum ceiling. Idempotent per (alum, user).
+    await sb.from('alumni_outreach_ledger').upsert(
+      { alumni_id: data.alumni_id, user_id: user.id },
+      { onConflict: 'alumni_id,user_id', ignoreDuplicates: true },
+    )
     return NextResponse.json({ ok: true, approved: data.id })
   }
 

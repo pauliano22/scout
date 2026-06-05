@@ -31,6 +31,29 @@ export const MAX_COLD_FOLLOWUPS = 1;
  *  loosen with data. The corpus's life insurance — err protective. */
 export const ALUMNI_OUTREACH_MAX_STUDENTS = 2;
 export const ALUMNI_OUTREACH_WINDOW_DAYS = 90;
+
+/**
+ * Cross-user over-fishing guard (pure, testable). Given alumni_outreach_ledger
+ * rows ALREADY filtered to the window, returns the alumni_ids contacted by
+ * >= maxStudents DISTINCT users — which the cron excludes from EVERY student's
+ * sourcing. This is the FATAL cross-user invariant: a single alum can never be
+ * fished by more than the cap of distinct students in the window. Multiple
+ * contacts by the SAME user count once.
+ */
+export function cappedAlumniIds(
+  ledger: Array<{ alumni_id: string; user_id: string }>,
+  maxStudents: number = ALUMNI_OUTREACH_MAX_STUDENTS,
+): string[] {
+  const byAlum = new Map<string, Set<string>>();
+  for (const r of ledger) {
+    if (!r?.alumni_id || !r?.user_id) continue;
+    if (!byAlum.has(r.alumni_id)) byAlum.set(r.alumni_id, new Set());
+    byAlum.get(r.alumni_id)!.add(r.user_id);
+  }
+  const capped: string[] = [];
+  for (const [id, users] of byAlum) if (users.size >= maxStudents) capped.push(id);
+  return capped;
+}
 /** Re-source only when the approved-but-uncontacted list has < this much pacing left
  *  (also caps the OpenAI embed+rerank sourcing spend to ~weekly per user). */
 export const SOURCING_REFILL_DAYS = 7;

@@ -103,9 +103,9 @@ export interface UserNetwork {
   meeting_at: string | null
   notes: string | null
   created_at: string
-  // status is a real column (unified in migration 025); kept optional so
-  // existing constructors that omit it still typecheck.
-  status?: 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met'
+  // status is a real column (unified in migration 025; 'proposed' added in 026);
+  // kept optional so existing constructors that omit it still typecheck.
+  status?: 'proposed' | 'interested' | 'awaiting_reply' | 'response_needed' | 'meeting_scheduled' | 'met' | 'not_interested'
   // Joined data
   alumni?: Alumni
   interactions?: string | null
@@ -116,7 +116,7 @@ export interface Message {
   user_id: string
   alumni_id: string
   message_content: string
-  sent_via: 'linkedin' | 'email' | 'copied'
+  sent_via: 'linkedin' | 'email' | 'copied' | 'marked'
   created_at: string
 }
 
@@ -140,6 +140,14 @@ export interface NetworkingPlan {
   is_active: boolean
   created_at: string
   updated_at: string
+  // Campaign columns (migration 026 — the agentic between-login loop)
+  goal_metric: 'informational_interview' | 'referral' | 'mentor_relationship'
+  deadline: string | null // ISO date
+  campaign_status: 'active' | 'completed' | 'paused'
+  current_count: number
+  last_tick_at: string | null
+  last_sourced_at: string | null
+  sourcing_enabled: boolean
   // Joined data
   plan_alumni?: PlanAlumni[]
   custom_contacts?: PlanCustomContact[]

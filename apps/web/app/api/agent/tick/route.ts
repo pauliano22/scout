@@ -28,8 +28,8 @@ import {
   rankActions,
   OUTREACH_PER_DAY_CAP,
   SOURCING_REFILL_DAYS,
-  ALUMNI_OUTREACH_MAX_STUDENTS,
   ALUMNI_OUTREACH_WINDOW_DAYS,
+  cappedAlumniIds,
 } from '@scout/shared/agent/nextBestAction'
 import type { Profile, Alumni } from '@scout/shared/types/database'
 import { assembleConnections, profileToPrefs } from '@/lib/agent/assembleQueue'
@@ -80,14 +80,7 @@ export async function POST(request: NextRequest) {
     .from('alumni_outreach_ledger')
     .select('alumni_id, user_id')
     .gte('created_at', cutoff)
-  const studentsPerAlum = new Map<string, Set<string>>()
-  for (const r of (ledger ?? []) as any[]) {
-    if (!studentsPerAlum.has(r.alumni_id)) studentsPerAlum.set(r.alumni_id, new Set())
-    studentsPerAlum.get(r.alumni_id)!.add(r.user_id)
-  }
-  const cappedAlumni = [...studentsPerAlum.entries()]
-    .filter(([, set]) => set.size >= ALUMNI_OUTREACH_MAX_STUDENTS)
-    .map(([id]) => id)
+  const cappedAlumni = cappedAlumniIds((ledger ?? []) as Array<{ alumni_id: string; user_id: string }>)
 
   const summary: any[] = []
 
@@ -123,14 +116,24 @@ export async function POST(request: NextRequest) {
         (!c.last_sourced_at || now.getTime() - new Date(c.last_sourced_at).getTime() > SOURCING_REFILL_DAYS * MS_PER_DAY)
 
       if (dueToSource) {
-        const slice = [prefs.industries.join(' / '), prefs.roles.length ? `in ${prefs.roles.join(' / ')} roles` : '']
-          .filter(Boolean).join(' ')
+        // The optional free-text focus (profile.interests, e.g. "fintech") sharpens
+        // the SEMANTIC phrase within the validated industry — "fintech" searches
+        // Finance alumni flavored toward fintech, not a junk "Startups" slice.
+        const focus = (profile as Profile | null)?.interests?.trim()
+        const slice = [
+          prefs.industries.join(' / '),
+          focus ? `focused on ${focus}` : '',
+          prefs.roles.length ? `in ${prefs.roles.join(' / ')} roles` : '',
+        ].filter(Boolean).join(' ')
         const searchPhrase = `${slice || 'Cornell'} alumni for informational interviews`.trim()
         const sourced = await sourceAlumni(sb, {
           searchPhrase,
           prefs,
           excludeIds: [...new Set([...networkedIds, ...cappedAlumni])],
           studentSport,
+          studentName: (profile as Profile | null)?.full_name ?? undefined,
+          goalMetric: String(c.goal_metric ?? 'informational_interview'),
+          graduationYear: (profile as Profile | null)?.graduation_year ?? null,
           limit: 5,
         })
         for (const s of sourced) {

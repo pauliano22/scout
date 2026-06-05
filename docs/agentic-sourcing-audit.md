@@ -56,5 +56,18 @@ This PR ships **prep only**: Scout sources + drafts; the student reviews/edits a
 **Merge-ready (to the branch, for your review):** campaign home, sourcing gate + reasoner + integrity lint, taxonomy validation + coverage probe, role downgrade, honest copy, **96 eval cases (62 gate + 34 engine) green, typecheck clean, all new routes auth-guarded**.
 **Gated on your decisions:** enabling all-users sourcing (needs cap confirmation); real send (Phase 5, out of scope). The campaign-home flag is **OFF** in deployed prod and the cron allowlist is the pilot only — nothing reaches everyone until you flip those.
 
+## Round 2 (2026-06-05, after first review)
+- **Cap — DECIDED & implemented:** **10 distinct students per alum / 30-day window**, counted at the **add-to-outreach** contact event — `approve_target` now writes the ledger (the send proxy), not only `send`. One-line tunable (`ALUMNI_OUTREACH_MAX_STUDENTS` / `_WINDOW_DAYS`); never removed. **Still allowlist-gated — not to be widened past the pilot until the cap is observed working live, not just unit-tested.**
+- **Prod-data cleanup — DONE:** Smith's demo mutations reverted (5 proposed rows + 1 demo plan deleted; profile restored to `primary_industry='Startups'`, `interests=null`). **Recommendation: stand up an off-prod staging DB (separate Supabase project or local Supabase seeded from a corpus snapshot) before any real-user testing — stop running test work against prod.**
+- **Draft prompt — HARDENED:** the "lead with the shared sport" instruction (which invited a fabricated shared-sport bond in the outgoing message) is replaced with a sport-match-aware rule (fellow-Cornell-athlete is fine; a shared sport only when it genuinely matches), plus a non-literal-title sidestep and a no-canned-spam rule. A draft-audit harness is built and ready.
+- **Drafts — STILL GATED (the blocker):** real drafts cannot be generated/audited until `ANTHROPIC_API_KEY` is in `.env.local` (only OpenAI is local). The moment it's there: generate across slices, adversarially audit (pad / manufactured bond / non-literal title / unverified fact / canned spam), fix + re-audit, then surface 8–10 real drafts for review. **Nothing ships until real drafts are read.**
+
+## Eyes-on calls — my recommendations
+1. **Metro radius:** keep the shipped asymmetry — NYC = boroughs + immediate NJ (no Westchester/CT); SF = full Bay incl. peninsula. NYC finance is hyper-local; SF tech is one integrated commuter metro. Per-metro tunable in `sourceAlumniGate.ts`. Rec: ship as-is, revisit with pilot feedback.
+2. **Role-downgrade vs precision:** keep it SOFT for launch — the deterministic floor blocks garbage and an occasional wrong-role-but-real-company-and-city HIGH (e.g. a Google "Building Producer") is rare and low-harm. Add a dedicated role-relevance pass (~1 focused LLM call) only if pilot feedback shows it matters.
+3. **Cap:** decided (above).
+4. **Goal-set writes the profile slice:** keep for v1 — the campaign *is* the student's current targeting, the profile fields *are* the sourcing inputs, and it needs no migration. Move the slice onto its own `networking_plans` columns (migration 027) only when you want multi-campaign or an independent persistent profile.
+5. **Smith data:** reverted (above), plus the staging-DB recommendation.
+
 ## Guardrails honored
 Dev/staging only · nothing merged (PR open for review) · sends approval-gated + human-only · no LinkedIn automation · engine + alumni-search untouched · migration 026 additive, on the dev DB (= prod) only.

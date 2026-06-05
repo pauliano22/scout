@@ -49,8 +49,16 @@ export async function draftMessage(opts: {
     ? `PLATFORM: LinkedIn note — HARD LIMIT 300 characters, NO greeting, NO sign-off, get to the point in sentence one, one clear ask at the end.`
     : `PLATFORM: Email — include a proper greeting and a sign-off using the sender's first name; 120–200 words.`
 
+  // Integrity: a shared SPORT is only real when the sports actually match. Both
+  // being Cornell athletes is always true; claiming the same sport when it differs
+  // is a fabricated bond going out under the student's name.
+  const sportMatched = Boolean(profile.sport && alumni.sport && profile.sport.toLowerCase() === alumni.sport.toLowerCase())
+  const connectionRule = sportMatched
+    ? `CONNECTION: you BOTH played ${alumni.sport} at Cornell — you may lead with that genuine shared-sport tie.`
+    : `CONNECTION: you are both Cornell athletes but played DIFFERENT sports (you: ${profile.sport ?? 'your sport'}; them: ${alumni.sport ?? 'unknown'}). You MAY note being fellow Cornell athletes (true), but you must NOT claim a shared sport or imply you played the same one.`
+
   const factRule = hasRoleCompany
-    ? 'Reference their actual role/company specifically and accurately.'
+    ? 'Reference their actual role/company specifically and accurately — UNLESS the title reads as a non-literal headline or joke fragment (e.g. "People Whisperer", a cut-off phrase). In that case refer to them by company/industry, never quoting the junk title.'
     : "CRITICAL: their company and role are NOT on file. Do NOT invent or assert any employer, title, or specific fact about them. Hedge naturally — e.g. \"your path since Cornell\", \"what you've been working on\" — a vague-but-true line is required over any invented specific."
 
   const prompt = `Write a networking message from a current Cornell student-athlete to a Cornell alum. Output ONLY the message, no commentary.
@@ -66,8 +74,9 @@ RECIPIENT:
 ${recipient}
 
 TONE: ${tone}.
+${connectionRule}
 FACTUAL RULE: ${factRule}
-GENERAL: authentic not generic; lead with the shared Cornell/sport connection naturally; never use placeholder brackets; vary the opening so it does not read as a template.`
+GENERAL: authentic, specific, human — NOT generic. No canned-spam openers ("I hope this finds you well", "I came across your profile"). Never use placeholder brackets. Vary the opening so it never reads as a template.`
 
   // Sonnet for the first impression to a real person; Haiku for the rest.
   const model = messageType === 'introduction' ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001'

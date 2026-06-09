@@ -416,9 +416,9 @@ function CompleteView({ result, onReset }: { result: AgentResult; onReset: () =>
         <Check size={18} className="text-emerald-400" />
       </div>
       <div className="space-y-1">
-        <p className="text-lg font-semibold text-[--text-primary]">All {result.drafts.length} messages queued.</p>
-        <p className="text-sm text-[--text-secondary]">Follow-ups scheduled for Friday.</p>
-        <p className="text-xs text-[--text-quaternary] mt-1">Scout will notify you when someone replies.</p>
+        <p className="text-lg font-semibold text-[--text-primary]">{result.drafts.length} drafts ready for you to review and send.</p>
+        <p className="text-sm text-[--text-secondary]">Nothing is sent automatically — you send each one.</p>
+        <p className="text-xs text-[--text-quaternary] mt-1">Mark replies yourself as they come in; Scout doesn’t read your inbox.</p>
       </div>
       <button onClick={onReset} className="btn-ghost text-sm text-[--text-quaternary] mt-2">
         ← Start over

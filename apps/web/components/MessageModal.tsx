@@ -9,6 +9,11 @@ interface MessageModalProps {
   userSport: string
   onClose: () => void
   onSend: (connectionId: string, message: string, sentVia: 'linkedin' | 'email' | 'copied' | 'marked') => Promise<void>
+  /** Seed with a pre-written draft (e.g. the campaign cron's draft) — shown
+   *  as-is instead of auto-generating. The student can still edit/regenerate. */
+  initialMessage?: string
+  initialPlatform?: 'linkedin' | 'email'
+  initialType?: 'introduction' | 'follow_up' | 'thank_you'
 }
 
 type Tone        = 'friendly' | 'neutral' | 'formal'
@@ -29,14 +34,18 @@ const TYPES: { key: MessageType; label: string }[] = [
   { key: 'thank_you',    label: 'Thank You' },
 ]
 
-export default function MessageModal({ connection, userSport, onClose, onSend }: MessageModalProps) {
+export default function MessageModal({ connection, userSport, onClose, onSend, initialMessage, initialPlatform, initialType }: MessageModalProps) {
   const alumni = connection.alumni
   const hasLinkedIn = !!alumni?.linkedin_url
 
-  const [platform, setPlatform]         = useState<Platform>(hasLinkedIn ? 'linkedin' : 'email')
+  const defaultPlatform: Platform = initialPlatform ?? (hasLinkedIn ? 'linkedin' : 'email')
+  const defaultType: MessageType = initialType ?? 'introduction'
+  const seedKey = `${defaultPlatform}_${defaultType}_neutral`
+
+  const [platform, setPlatform]         = useState<Platform>(defaultPlatform)
   const [selectedTone, setSelectedTone] = useState<Tone>('neutral')
-  const [selectedType, setSelectedType] = useState<MessageType>('introduction')
-  const [messages, setMessages]         = useState<Record<string, string>>({})
+  const [selectedType, setSelectedType] = useState<MessageType>(defaultType)
+  const [messages, setMessages]         = useState<Record<string, string>>(initialMessage ? { [seedKey]: initialMessage } : {})
   const [isGenerating, setIsGenerating] = useState<Record<string, boolean>>({})
   const [isSending, setIsSending]       = useState(false)
   const [isCopied, setIsCopied]         = useState(false)
@@ -79,7 +88,10 @@ export default function MessageModal({ connection, userSport, onClose, onSend }:
   }, [platform, selectedTone, selectedType])
 
   useEffect(() => {
-    generateMessage(platform, selectedTone, selectedType)
+    // When seeded with a pre-written draft (campaign home), show it as-is rather
+    // than auto-generating a fresh one on open.
+    if (!initialMessage) generateMessage(platform, selectedTone, selectedType)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleCopyAndOpenLinkedIn = async () => {

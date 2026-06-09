@@ -5,6 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, typography } from '../theme/scoutTheme';
+import TodayScreen from '../screens/TodayScreen';
+import CampaignScreen from '../screens/CampaignScreen';
+import GoalSetupScreen from '../screens/GoalSetupScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
 import NetworkScreen from '../screens/NetworkScreen';
 import YouScreen from '../screens/YouScreen';
@@ -40,25 +43,67 @@ export default function TabNavigator() {
   const insets = useSafeAreaInsets();
   const bottomPadding = Math.max(insets.bottom, 8);
 
+  const HIDE_TAB_BAR_SCREENS = new Set(['GoalSetup']);
+
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: false,
         tabBarActiveTintColor: colors.tabActive,
-        tabBarStyle: [
-          styles.tabBar,
-          {
-            height: 56 + bottomPadding,
-            paddingBottom: bottomPadding,
-            paddingTop: 8,
-          },
-        ],
+        tabBarStyle: (() => {
+          if (HIDE_TAB_BAR_SCREENS.has(route.name)) {
+            return { display: 'none' };
+          }
+          return [
+            styles.tabBar,
+            {
+              height: 56 + bottomPadding,
+              paddingBottom: bottomPadding,
+              paddingTop: 8,
+            },
+          ];
+        })(),
         tabBarBackground: () => (
           <BlurView intensity={80} tint="light" style={StyleSheet.absoluteFill} />
         ),
-      }}
+      })}
     >
+      <Tab.Screen
+        name="Today"
+        component={TodayScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              iconActive="sunny"
+              iconInactive="sunny-outline"
+              label="Today"
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Campaign"
+        component={CampaignScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              iconActive="rocket"
+              iconInactive="rocket-outline"
+              label="Campaign"
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="GoalSetup"
+        component={GoalSetupScreen}
+        options={{
+          tabBarButton: () => null, // hidden from tab bar
+        }}
+      />
       <Tab.Screen
         name="Discover"
         component={DiscoverScreen}

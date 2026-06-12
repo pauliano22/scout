@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -74,7 +72,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -189,12 +187,12 @@ textarea:focus {
   color: white;
   border: none;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
   display: inline-flex;
   align-items: center;
 }
 .btn-primary:hover    { background: var(--school-primary-hover); }
-.btn-primary:active   { opacity: 0.88; }
+.btn-primary:active   { transform: scale(0.97); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Secondary — background tile, single border */
@@ -212,7 +210,7 @@ textarea:focus {
   align-items: center;
 }
 .btn-secondary:hover    { background: var(--bg-hover); border-color: var(--border-secondary); }
-.btn-secondary:active   { opacity: 0.88; }
+.btn-secondary:active   { transform: scale(0.97); }
 .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* Ghost — transparent, no border */
@@ -247,42 +245,54 @@ textarea:focus {
 }
 
 /* ============================================
-   CARDS — background + border only, no shadow
+   CARDS — soft shadow in light, hairline in dark
    ============================================ */
+:root {
+  --card-radius: 16px;
+  --card-shadow: 0 2px 16px rgba(10, 10, 20, 0.06);
+  --card-border: transparent;
+}
+[data-theme='dark'] {
+  --card-shadow: none;
+  --card-border: var(--border-primary);
+}
+[data-theme='light'] {
+  --card-shadow: 0 2px 16px rgba(10, 10, 20, 0.06);
+  --card-border: transparent;
+}
+
 .card {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
 }
 
 .card-interactive {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
-.card-interactive:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-secondary);
-}
+.card-interactive:hover  { background: var(--bg-tertiary); }
+.card-interactive:active { transform: scale(0.985); }
 
 .alumni-card {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  transition: background 0.2s ease;
 }
-.alumni-card:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-secondary);
-}
+.alumni-card:hover { background: var(--bg-tertiary); }
 
-/* Stat card — no decorative top bar */
 .stat-card {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
   padding: 1.25rem;
 }
 
@@ -348,13 +358,6 @@ textarea:focus {
 /* ============================================
    AVATAR GRADIENTS
    ============================================ */
-.avatar-gradient-1 { background: linear-gradient(135deg, #ef4444 0%, #f97316 100%); }
-.avatar-gradient-2 { background: linear-gradient(135deg, #f97316 0%, #eab308 100%); }
-.avatar-gradient-3 { background: linear-gradient(135deg, #22c55e 0%, #14b8a6 100%); }
-.avatar-gradient-4 { background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); }
-.avatar-gradient-5 { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); }
-.avatar-gradient-6 { background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); }
-.avatar-gradient-7 { background: linear-gradient(135deg, #ec4899 0%, #ef4444 100%); }
 
 /* ============================================
    LOADING

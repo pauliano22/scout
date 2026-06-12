@@ -163,6 +163,29 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
     }
   }
 
+  // Pre-select the likely field from their major — one tap to confirm.
+  const suggestedIndustry = (() => {
+    const m = (major || '').toLowerCase()
+    if (!m) return null
+    if (/(econ|financ|business|account)/.test(m)) return 'Finance'
+    if (/(computer|software|info|engineer|math|data)/.test(m)) return 'Technology'
+    if (/(bio|health|pre.?med|nutrition|kine)/.test(m)) return 'Healthcare'
+    if (/(gov|policy|polit|law|legal)/.test(m)) return 'Law'
+    if (/(comm|media|journal|film|market)/.test(m)) return 'Media'
+    return null
+  })()
+
+  // The moment a field is chosen, start matching in the background — picks are
+  // computed and cached BEFORE the student finishes the remaining steps.
+  const selectPrimaryIndustry = (industry: string) => {
+    setPrimaryIndustry(industry)
+    fetch('/api/picks/warm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field: industry }),
+    }).catch(() => {})
+  }
+
   const toggleSecondaryIndustry = (industry: string) => {
     setSecondaryIndustries(prev =>
       prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry]
@@ -327,16 +350,19 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
                   <label className="text-sm font-medium text-[--text-secondary] mb-1.5 block">
                     Primary Industry
                   </label>
-                  <select
-                    value={primaryIndustry}
-                    onChange={(e) => setPrimaryIndustry(e.target.value)}
-                    className="input-field"
-                  >
-                    <option value="">Select an industry</option>
+                  <div className="flex flex-wrap gap-2">
                     {INDUSTRIES.map(ind => (
-                      <option key={ind} value={ind}>{ind}</option>
+                      <button
+                        key={ind}
+                        type="button"
+                        onClick={() => selectPrimaryIndustry(ind)}
+                        className={primaryIndustry === ind ? 'btn-primary text-sm' : 'btn-secondary text-sm'}
+                      >
+                        {ind}
+                        {primaryIndustry !== ind && suggestedIndustry === ind ? ' · suggested' : ''}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div>

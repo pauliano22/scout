@@ -7,7 +7,7 @@
 // Degrades soft before migration 026 is applied (campaign=null, ready=[]).
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { resolveRequestUser } from '@/lib/requestAuth'
 import { rankActions, type SuggestedAction } from '@scout/shared/agent/nextBestAction'
 import { assembleConnections } from '@/lib/agent/assembleQueue'
 import type { Alumni } from '@scout/shared/types/database'
@@ -16,10 +16,11 @@ export const dynamic = 'force-dynamic'
 
 const MS_PER_WEEK = 7 * 86_400_000
 
-export async function GET() {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(request: Request) {
+  const auth = await resolveRequestUser(request)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId, db: supabase } = auth
+  const user = { id: userId }
 
   // ── Proposed shelf + waiting, via the shared assembly (the gate lives here) ─
   let assembled

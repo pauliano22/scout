@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
+import { autostartCampaign } from '../lib/api';
 import { saveUserPreferences } from '../services/recommendations';
 import { useAuth } from '../contexts/AuthContext';
 import { colors, radius, shadows, spacing, typography } from '../theme/scoutTheme';
@@ -414,6 +415,11 @@ export default function OnboardingScreen({ onComplete }: Props) {
         companies: [],
         priorities: { sameSport: true, similarIndustry: true, seniorAlumni: false },
       });
+
+      // Preferences are saved — start the agentic campaign from them so the
+      // student never fills a second goal form. Best-effort: a miss here just
+      // means CampaignScreen retries on first open.
+      await autostartCampaign();
 
       await refreshProfile();
       onComplete();

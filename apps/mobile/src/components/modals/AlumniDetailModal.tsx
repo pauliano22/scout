@@ -26,6 +26,7 @@ import {
 } from '../../lib/alumniProfile';
 import type { ScoredAlumni } from '../../services/recommendations';
 import AlumniAvatar from '../common/AlumniAvatar';
+import CornellCircleSection from '../CornellCircleSection';
 
 const HERO_HEIGHT = 260;
 
@@ -338,6 +339,9 @@ export default function AlumniDetailModal({
               </View>
             </Section>
           ) : null}
+
+          {/* Cornell Circle — teammates + warm paths through the student's network */}
+          <CornellCircleSection alumniId={alumni?.id ?? null} visible={visible} />
 
           {/* Contact */}
           {(profile.linkedinUrl || profile.email) ? (

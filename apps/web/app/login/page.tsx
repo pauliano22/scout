@@ -41,6 +41,7 @@ export default function LoginPage() {
         dest = postLoginPath(
           (profile?.account_role as UserRole | undefined) ?? 'student',
           Boolean(profile?.onboarding_completed),
+          userId,
         )
       }
 

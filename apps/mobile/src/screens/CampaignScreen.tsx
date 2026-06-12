@@ -18,7 +18,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { colors, radius, spacing, typography } from '../theme/scoutTheme';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { WEB_API_BASE_URL } from '../lib/api';
+import { WEB_API_BASE_URL, autostartCampaign } from '../lib/api';
 import AlumniAvatar from '../components/common/AlumniAvatar';
 import type { Alumni } from '../types/database';
 
@@ -55,6 +55,8 @@ interface Campaign {
   meetingsSet: number;
   weeksLeft: number;
 }
+
+interface WarmPath { count: number; topName: string; topRelation: 'teammate' | 'same_era' }
 
 interface CampaignPayload {
   campaign: Campaign | null;
@@ -118,18 +120,50 @@ export default function CampaignScreen() {
     });
   }, []);
 
+  const autostartTried = useRef(false);
+  const [warm, setWarm] = useState<Record<string, WarmPath>>({});
+
+  // Warm paths for the approval shelf — best-effort, shelf renders without it.
+  const loadWarm = useCallback(async (payload: CampaignPayload) => {
+    const ids = payload.proposed.map((p) => p.alumnus.id);
+    if (!ids.length) return;
+    try {
+      const res = await authedFetch('/api/alumni/warm-paths', {
+        method: 'POST',
+        body: JSON.stringify({ alumniIds: ids }),
+      });
+      if (res.ok) setWarm((await res.json()).paths ?? {});
+    } catch {
+      // fail silently
+    }
+  }, [authedFetch]);
+
   const load = useCallback(async () => {
     try {
       setError(null);
       const res = await authedFetch('/api/campaign');
       if (!res.ok) throw new Error(String(res.status));
-      setData((await res.json()) as CampaignPayload);
+      let payload = (await res.json()) as CampaignPayload;
+
+      // No campaign yet → start one from onboarding preferences before ever
+      // showing the manual goal form. Tried once per mount; a skip (thin
+      // profile) falls through to the set-up CTA.
+      if (!payload.campaign && !autostartTried.current) {
+        autostartTried.current = true;
+        if (await autostartCampaign()) {
+          const retry = await authedFetch('/api/campaign');
+          if (retry.ok) payload = (await retry.json()) as CampaignPayload;
+        }
+      }
+
+      setData(payload);
+      loadWarm(payload);
     } catch {
       setError('Could not load your campaign. Pull to refresh.');
     } finally {
       setLoading(false);
     }
-  }, [authedFetch]);
+  }, [authedFetch, loadWarm]);
 
   useFocusEffect(useCallback(() => { setLoading(true); load(); }, [load]));
 
@@ -388,6 +422,13 @@ export default function CampaignScreen() {
                   <View style={styles.alumniInfo}>
                     <Text style={styles.name} numberOfLines={1}>{p.alumnus.full_name}</Text>
                     <Text style={styles.role} numberOfLines={1}>{subtitle(p.alumnus)}</Text>
+                    {warm[p.alumnus.id] ? (
+                      <Text style={styles.warmText} numberOfLines={2}>
+                        {warm[p.alumnus.id].count > 1
+                          ? `${warm[p.alumnus.id].topName} +${warm[p.alumnus.id].count - 1} more in your network can introduce you`
+                          : `${warm[p.alumnus.id].topName} in your network ${warm[p.alumnus.id].topRelation === 'teammate' ? 'played with them' : 'was on campus with them'}`}
+                      </Text>
+                    ) : null}
                     {p.why && (
                       <Text style={styles.whyText}>{p.why}</Text>
                     )}
@@ -765,6 +806,13 @@ const styles = StyleSheet.create({
   whyText: {
     fontSize: 13,
     color: colors.textSecondary,
+    marginTop: 6,
+    lineHeight: 18,
+  },
+  warmText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.statusMeeting,
     marginTop: 6,
     lineHeight: 18,
   },

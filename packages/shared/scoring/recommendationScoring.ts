@@ -41,6 +41,7 @@ export interface SwipeWeights {
 export interface ScoreBreakdown {
   industry: number;
   role: number;
+  warmIntro: number;
   sport: number;
   location: number;
   company: number;
@@ -61,6 +62,17 @@ export interface ScoredAlumni extends Alumni {
   whyThisMatch: string[];
 }
 
+/**
+ * A warm path into one alum: someone already in the student's saved network
+ * who was on campus with them. Computed server-side (POST /api/alumni/warm-paths)
+ * against the baked overlap dataset and passed in — this module stays pure.
+ */
+export interface WarmPathSummary {
+  count: number;
+  topName: string;
+  topRelation: 'teammate' | 'same_era';
+}
+
 export const BASE_WEIGHTS = {
   industry: 30,
   role: 20,
@@ -72,6 +84,9 @@ export const BASE_WEIGHTS = {
   // Prestige is high enough to dominate ties when no preference matches,
   // but below a real industry+sport match (50pt) so explicit prefs still win.
   prestige: 25,
+  // A reachable alum beats a marginally better-matched stranger: a teammate
+  // of someone the student already saved is a door that actually opens.
+  warmIntro: 18,
 };
 
 export const QUALITY_THRESHOLD = 50;
@@ -108,9 +123,21 @@ function computeWhyThisMatch(
   profile: NormalizedAlumni,
   prefs: UserPreferences,
   breakdown: ScoreBreakdown,
+  warmPath?: WarmPathSummary,
 ): string[] {
   const reasons: string[] = [];
   const history = profile.pastExperiences;
+
+  // A warm path always leads: it's the one reason that changes what the
+  // student should DO (ask for an intro instead of cold-outreach).
+  if (warmPath) {
+    const verb = warmPath.topRelation === 'teammate' ? 'played with them' : 'was on campus with them';
+    reasons.push(
+      warmPath.count > 1
+        ? `${warmPath.topName} +${warmPath.count - 1} more in your network can introduce you`
+        : `${warmPath.topName} in your network ${verb}`,
+    );
+  }
 
   // Past-company overlap with the user's target companies. Strong signal
   // because it means this alum has already done the thing the student wants.
@@ -323,11 +350,13 @@ export function scoreAlumnus(
   alumni: Alumni,
   prefs: UserPreferences,
   swipeWeights: Partial<SwipeWeights>,
+  warmPath?: WarmPathSummary,
 ): ScoredAlumni {
   const profile = normalizeAlumniProfile(alumni);
   const breakdown: ScoreBreakdown = {
     industry: 0,
     role: 0,
+    warmIntro: 0,
     sport: 0,
     location: 0,
     company: 0,
@@ -435,7 +464,17 @@ export function scoreAlumnus(
     breakdown.prestige = 0;
   }
 
+  // Warm intro — full weight for a teammate-of-a-contact, partial for a
+  // same-era overlap. Unlike prestige this is NOT gated on industry match:
+  // reachability is valuable on its own.
+  if (warmPath) {
+    breakdown.warmIntro = warmPath.topRelation === 'teammate'
+      ? BASE_WEIGHTS.warmIntro
+      : Math.round(BASE_WEIGHTS.warmIntro * 0.5);
+  }
+
   breakdown.total =
+    breakdown.warmIntro +
     breakdown.industry +
     breakdown.role +
     breakdown.sport +
@@ -445,7 +484,7 @@ export function scoreAlumnus(
     breakdown.completeness +
     breakdown.prestige;
 
-  const whyThisMatch = computeWhyThisMatch(profile, prefs, breakdown);
+  const whyThisMatch = computeWhyThisMatch(profile, prefs, breakdown, warmPath);
 
   return {
     ...alumni,
@@ -475,6 +514,8 @@ export interface SelectionInput {
   prefs: UserPreferences;
   swipeWeights: Partial<SwipeWeights>;
   limit: number;
+  /** alumniId -> warm path through the student's saved network (optional). */
+  warmPaths?: Record<string, WarmPathSummary>;
 }
 
 /**
@@ -484,14 +525,14 @@ export interface SelectionInput {
  * and other surfaces exercise the same real path.
  */
 export function selectRecommendations(input: SelectionInput): ScoredAlumni[] {
-  const { pass1, pass2, excludeIds, prefs, swipeWeights, limit } = input;
+  const { pass1, pass2, excludeIds, prefs, swipeWeights, limit, warmPaths } = input;
 
   const pass1Ids = new Set(pass1.map((a) => a.id));
   const dedupedPass2 = pass2.filter((a) => !pass1Ids.has(a.id));
   const alumniData = [...pass1, ...dedupedPass2];
 
   const unseen = alumniData.filter((a) => !excludeIds.has(a.id));
-  const allScored = unseen.map((a) => scoreAlumnus(a, prefs, swipeWeights));
+  const allScored = unseen.map((a) => scoreAlumnus(a, prefs, swipeWeights, warmPaths?.[a.id]));
 
   const highQuality = allScored
     .filter((s) => isHighQualityAlumniProfile(s.profile, QUALITY_THRESHOLD))

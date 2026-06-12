@@ -15,6 +15,14 @@ const nextConfig = {
   reactStrictMode: true,
   ignoreDuringBuilds: true,
   transpilePackages: ['@scout/shared'],
+  experimental: {
+    // Ship the pre-baked alumni map dataset with the serverless bundle
+    outputFileTracingIncludes: {
+      '/api/map/data': ['./data/alumni-map.json'],
+      '/api/alumni/[id]/circle': ['./data/alumni-map.json'],
+      '/api/alumni/warm-paths': ['./data/alumni-map.json'],
+    },
+  },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },

@@ -64,6 +64,7 @@ export default function DiscoverClient({
 
   // Network & modal state
   const [networkIds, setNetworkIds] = useState<Set<string>>(new Set(initialNetworkIds))
+  const [warmPaths, setWarmPaths] = useState<Record<string, { count: number; topName: string; topRelation: string }>>({})
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [selectedAlumni, setSelectedAlumni] = useState<DiscoverAlumni | null>(null)
   const [similarAlumni, setSimilarAlumni] = useState<DiscoverAlumni[]>([])
@@ -150,6 +151,21 @@ export default function DiscoverClient({
     }
   }
 
+  // Warm paths for visible results — "who in my network can introduce me"
+  useEffect(() => {
+    const ids = alumni.map((a) => a.id).filter((id) => !(id in warmPaths)).slice(0, 200)
+    if (!ids.length) return
+    fetch('/api/alumni/warm-paths', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alumniIds: ids }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body) => { if (body?.paths) setWarmPaths((w) => ({ ...w, ...body.paths })) })
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alumni])
+
   // Add to network
   const handleAddToNetwork = async (alumniId: string) => {
     setLoadingId(alumniId)
@@ -228,7 +244,7 @@ export default function DiscoverClient({
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
           <input
             type="text"
-            placeholder={`Search ${totalAlumniCount.toLocaleString()} alumni by name, company, or role…`}
+            placeholder="Search alumni"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full py-3.5 pl-11 pr-10 text-sm bg-[--bg-secondary] border border-[--border-primary] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
@@ -373,6 +389,9 @@ export default function DiscoverClient({
                 onAddToNetwork={handleAddToNetwork}
                 onClick={() => handleSelectAlumni(alumniItem)}
                 isLoading={loadingId === alumniItem.id}
+                warmNote={warmPaths[alumniItem.id]
+                  ? `${warmPaths[alumniItem.id].topName}${warmPaths[alumniItem.id].count > 1 ? ` +${warmPaths[alumniItem.id].count - 1}` : ''} can introduce you`
+                  : null}
               />
             ))}
           </div>

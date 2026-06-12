@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { authedFetch } from '../lib/api';
 import type { Alumni } from '../types/database';
 import {
   deriveTargetDbIndustries,
@@ -6,7 +7,26 @@ import {
   type ScoredAlumni,
   type SwipeWeights,
   type UserPreferences,
+  type WarmPathSummary,
 } from '@scout/shared/scoring/recommendationScoring';
+
+// Warm paths for a candidate shortlist: who in the student's saved network was
+// on campus with each candidate. Server-computed; empty map on any failure so
+// the deck never depends on it.
+async function fetchWarmPaths(alumniIds: string[]): Promise<Record<string, WarmPathSummary>> {
+  if (alumniIds.length === 0) return {};
+  try {
+    const res = await authedFetch('/api/alumni/warm-paths', {
+      method: 'POST',
+      body: JSON.stringify({ alumniIds }),
+    });
+    if (!res.ok) return {};
+    const body = (await res.json()) as { paths?: Record<string, WarmPathSummary> };
+    return body.paths ?? {};
+  } catch {
+    return {};
+  }
+}
 
 // Re-export the scoring types so existing imports from this module keep working.
 export type {
@@ -127,14 +147,22 @@ export async function fetchRecommendations(
 
     const swipeWeights = await computeSwipeWeights(userId);
 
-    return selectRecommendations({
+    const base = {
       pass1,
       pass2: (pass2Data ?? []) as Alumni[],
       excludeIds,
       prefs,
       swipeWeights,
-      limit,
-    });
+    };
+
+    // Two-stage: shortlist on fit, check the shortlist for warm paths through
+    // the saved network, then rescore so reachable alumni rank (and explain)
+    // accordingly. The 200-id shortlist gives the +18 boost room to promote.
+    const shortlist = selectRecommendations({ ...base, limit: 200 });
+    const warmPaths = await fetchWarmPaths(shortlist.map((s) => s.id));
+    if (Object.keys(warmPaths).length === 0) return shortlist.slice(0, limit);
+
+    return selectRecommendations({ ...base, warmPaths, limit });
   } catch {
     return [];
   }

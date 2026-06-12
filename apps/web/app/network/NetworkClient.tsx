@@ -182,7 +182,7 @@ export default function NetworkClient({
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[--text-primary]">My Network</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-[--text-primary]">Network</h1>
           <p className="text-sm text-[--text-quaternary] mt-0.5">
             {network.length} {network.length === 1 ? 'connection' : 'connections'}
             {urgentCount > 0 && (
@@ -236,7 +236,7 @@ export default function NetworkClient({
         <div className="text-center py-20">
           {network.length === 0 ? (
             <>
-              <p className="text-[--text-secondary] mb-1">Your network is empty</p>
+              <p className="text-[--text-secondary] mb-1">No one saved yet.</p>
               <p className="text-xs text-[--text-quaternary] mb-5">Discover alumni to start building your network</p>
               <a href="/discover" className="btn-primary inline-flex items-center gap-2 text-sm">
                 Browse Alumni <ChevronRight size={14} />
@@ -302,6 +302,16 @@ export default function NetworkClient({
                     ].filter(Boolean).join(' ')}
                   </p>
                 </div>
+
+                {/* Circle cross-link — appears on hover, quiet */}
+                <a
+                  href={`/map?sel=${connection.alumni_id}`}
+                  onClick={e => e.stopPropagation()}
+                  className="flex-shrink-0 text-xs text-[--text-quaternary] hover:text-[--school-primary] opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Their circle"
+                >
+                  Circle →
+                </a>
 
                 {/* CTA */}
                 <button
@@ -379,7 +389,7 @@ export default function NetworkClient({
             ))}
           </div>
         ) : !showAddContact && (
-          <p className="text-xs text-[--text-quaternary] py-4">No custom contacts yet.</p>
+          <p className="text-xs text-[--text-quaternary] py-4">None yet.</p>
         )}
       </div>
 

@@ -24,6 +24,8 @@ interface AlumniCardProps {
   onAddToNetwork?: (id: string) => void
   onClick?: () => void
   isLoading?: boolean
+  /** e.g. "Jeff Bassell can introduce you" */
+  warmNote?: string | null
 }
 
 export default function AlumniCard({
@@ -32,15 +34,12 @@ export default function AlumniCard({
   onAddToNetwork,
   onClick,
   isLoading = false,
+  warmNote = null,
 }: AlumniCardProps) {
   return (
     <div
       onClick={onClick}
-      className={`bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 flex flex-col items-center text-center gap-2.5 transition-colors ${
-        onClick
-          ? 'cursor-pointer hover:border-[--border-secondary] hover:bg-[--bg-tertiary]'
-          : 'hover:border-[--border-secondary] hover:bg-[--bg-tertiary]'
-      }`}
+      className={`card p-5 flex flex-col items-center text-center gap-2.5 transition-colors hover:bg-[--bg-tertiary] ${onClick ? 'cursor-pointer' : ''}`}
     >
       {/* Avatar */}
       <Avatar
@@ -75,6 +74,12 @@ export default function AlumniCard({
           )
         })()}
       </div>
+
+      {warmNote && (
+        <p className="text-[11px] font-semibold text-green-700 dark:text-green-500 leading-snug">
+          {warmNote}
+        </p>
+      )}
 
       {/* Location */}
       {alumni.location && (

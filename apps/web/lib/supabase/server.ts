@@ -8,6 +8,8 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // Opt out of Next's fetch cache — stale PostgREST reads otherwise
+      global: { fetch: (url: any, init: any) => fetch(url, { ...init, cache: 'no-store' }) },
       cookies: {
         get(name: string) {
           return cookieStore.get(name)?.value

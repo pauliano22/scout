@@ -1,143 +1,69 @@
+// POST /api/generate-message — live draft generation for the message modal
+// (web) and the mobile generate flow. Built on the SAME prompt core as the
+// agent's pick drafts (lib/agent/outreach.ts): one voice, one set of integrity
+// rules (no fabricated shared sports, no invented employers, no canned spam),
+// one lint. Intros use Sonnet — the first impression to a real alum is worth
+// the token delta; follow-ups and thank-yous use Haiku.
+
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { buildUserContext } from '@/lib/ai/user-context'
+import {
+  buildOutreachUser, buildOutreachSystem, connectionNote, factNote, generateOutreach,
+  type OutreachChannel, type OutreachTone, type OutreachType,
+} from '@/lib/agent/outreach'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+const TYPES: OutreachType[] = ['introduction', 'follow_up', 'thank_you']
+const TONES: OutreachTone[] = ['friendly', 'neutral', 'formal']
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-    const { alumni, tone, messageType = 'introduction', platform = 'linkedin' } = body
+    const { alumni, tone, messageType = 'introduction', platform = 'linkedin', context } = body
+    if (!alumni) return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
 
-    if (!alumni || !tone) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
+    const type: OutreachType = TYPES.includes(messageType) ? messageType : 'introduction'
+    const channel: OutreachChannel = platform === 'email' ? 'email' : 'linkedin'
+    const safeTone: OutreachTone = TONES.includes(tone) ? tone : 'friendly'
 
-    // Fetch full profile so Claude has complete context
     const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+      .from('profiles').select('*').eq('id', user.id).single()
+    if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
-    }
+    const hasRoleCompany = Boolean(alumni.role && alumni.company)
+    const recipientLines = [
+      `- Name: ${alumni.full_name}`,
+      hasRoleCompany ? `- Current role: ${alumni.role} at ${alumni.company}` : null,
+      alumni.industry ? `- Industry: ${alumni.industry}` : null,
+      alumni.sport ? `- Played ${alumni.sport} at Cornell` : '- Cornell Athletics alum',
+      alumni.graduation_year ? `- Class of ${alumni.graduation_year}` : null,
+    ].filter(Boolean).join('\n')
 
-    const toneInstructions = {
-      friendly: 'Write in a warm, casual, and enthusiastic tone. Use conversational language and show genuine excitement. Feel free to use exclamation points sparingly.',
-      neutral: 'Write in a professional but approachable tone. Balance warmth with professionalism. Be respectful and clear.',
-      formal: 'Write in a formal, professional tone. Be polished and business-like. Use proper salutations and maintain a respectful distance.',
-    }
-
-    const messageTypeInstructions = {
-      introduction: {
-        purpose: 'This is a FIRST OUTREACH message to introduce yourself and request to connect.',
-        requirements: `- Mention the shared Cornell Athletics connection
-- Reference their specific company/role
-- Ask for a brief call or coffee chat
-- Express genuine interest in learning from their experience`,
+    const generatedMessage = await generateOutreach(anthropic, {
+      model: type === 'introduction' ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
+      channel,
+      type,
+      tone: safeTone,
+      facts: {
+        senderContext: buildUserContext(profile),
+        recipientLines,
+        connectionNote: connectionNote(profile.sport, alumni.sport),
+        factNote: factNote(hasRoleCompany),
+        // Thank-yous reference what was actually discussed, when the client sends it
+        extraContext: typeof context === 'string' && context.trim() ? context.trim().slice(0, 600) : null,
       },
-      follow_up: {
-        purpose: 'This is a FOLLOW-UP message after initial contact (they may not have responded yet, or you want to continue the conversation).',
-        requirements: `- Reference your previous outreach briefly
-- Don't be pushy - be understanding of their busy schedule
-- Offer flexible timing for a call
-- Keep it shorter than an intro message (100-150 words)`,
-      },
-      thank_you: {
-        purpose: 'This is a THANK YOU message after having a call or meeting with them.',
-        requirements: `- Express genuine gratitude for their time
-- Reference 1-2 specific insights or advice they shared
-- Mention any next steps you discussed
-- Offer to stay in touch or provide updates on your progress
-- Keep it concise (100-150 words)`,
-      },
-    }
-
-    const typeConfig = messageTypeInstructions[messageType as keyof typeof messageTypeInstructions] || messageTypeInstructions.introduction
-
-    const linkedInInstructions = platform === 'linkedin' ? `
-PLATFORM: LinkedIn Connection Request
-- HARD LIMIT: 300 characters maximum (LinkedIn enforces this strictly)
-- Do NOT include a greeting like "Hi [Name]," — LinkedIn already shows who is sending
-- Do NOT include a sign-off — your name and photo are shown automatically
-- Get to the point in the first sentence — no preamble
-- One clear ask at the end (e.g. "Would love to connect." or "Happy to chat if you're open to it.")
-- Sound like a real person, not a template
-- Every character counts — be specific but tight` : `
-PLATFORM: Email
-- Include a proper greeting and sign-off using the sender's first name
-- Can be 150-250 words`
-
-    const prompt = `Generate a networking message from a current Cornell student-athlete to a Cornell alumni.
-
-MESSAGE TYPE: ${messageType.toUpperCase().replace('_', ' ')}
-${typeConfig.purpose}
-${linkedInInstructions}
-
-SENDER (STUDENT) PROFILE:
-${buildUserContext(profile)}
-
-RECIPIENT INFO:
-- Name: ${alumni.full_name}
-- Company: ${alumni.company || 'their company'}
-- Role: ${alumni.role || 'their role'}
-- Industry: ${alumni.industry || 'their industry'}
-- Sport at Cornell: ${alumni.sport || 'Cornell Athletics'}
-- Graduation Year: ${alumni.graduation_year || 'Cornell alum'}
-
-TONE: ${tone}
-${toneInstructions[tone as keyof typeof toneInstructions]}
-
-SPECIFIC REQUIREMENTS FOR THIS MESSAGE TYPE:
-${typeConfig.requirements}
-
-GENERAL REQUIREMENTS:
-- Be authentic, not generic — use the student's specific background, experience, and goals to make the message feel personal
-- If the student is exploring careers, the message should reflect curiosity; if they're actively recruiting, it should be more direct about what they're looking for
-- Reference specific shared connections (same sport, same industry interest, same location) naturally
-- Do NOT use placeholder brackets like [Your Name] - use the actual info provided or omit
-- Make each message unique - vary the opening, structure, and specific details
-
-Write only the message, no additional commentary.`
-
-    const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
     })
 
-    const generatedMessage = message.content[0].type === 'text'
-      ? message.content[0].text
-      : ''
-
-    return NextResponse.json({
-      message: generatedMessage,
-    })
+    return NextResponse.json({ message: generatedMessage })
   } catch (error) {
     console.error('Error generating message:', error)
-    return NextResponse.json(
-      { error: 'Failed to generate message' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to generate message' }, { status: 500 })
   }
 }

@@ -57,7 +57,7 @@ export default function MascotFeedback() {
         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'block' }}
       >
         <img
-          src="/mascot.png"
+          src="/mascot.png?v=2"
           alt=""
           aria-hidden="true"
           style={{ width: '64px', display: 'block', userSelect: 'none', transition: 'transform 0.15s ease' }}

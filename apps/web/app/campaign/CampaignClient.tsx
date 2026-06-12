@@ -38,6 +38,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
   const [busy, setBusy] = useState<string | null>(null)
   const [sendPick, setSendPick] = useState<{ pick: Pick; draft: string; channel: 'linkedin' | 'email' } | null>(null)
   const [detailAlum, setDetailAlum] = useState<Alumni | null>(null)
+  const [saved, setSaved] = useState<Set<string>>(new Set())
   const [prefsOpen, setPrefsOpen] = useState(false)
   const [cityDraft, setCityDraft] = useState('')
   const cityInit = useRef(false)
@@ -88,6 +89,17 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     if (res.ok) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== sendPick.pick.queueId) } : d))
     }
+  }
+
+  async function save(pick: Pick) {
+    setBusy(pick.queueId)
+    const res = await fetch('/api/picks/action', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ queueId: pick.queueId, action: 'save' }),
+    })
+    if (res.ok) setSaved(s => new Set(s).add(pick.queueId))
+    setBusy(null)
   }
 
   async function skip(pick: Pick) {
@@ -143,11 +155,12 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
           Preferences
         </button>
       </div>
-      {data.coverage != null && data.field && (
-        <p className="text-sm text-[--text-tertiary] mt-1">
-          From {data.coverage.toLocaleString()} {data.field} alumni.
-        </p>
-      )}
+      <p className="text-sm text-[--text-tertiary] mt-1">
+        Alumni your agent picked for you — a new pick lands every day.
+        {data.coverage != null && data.field
+          ? ` From ${data.coverage.toLocaleString()} ${data.field} alumni.`
+          : ''}
+      </p>
 
       {/* Inline field capture — one tap, only when we have nothing to target on */}
       {data.needsField && (
@@ -205,7 +218,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       {/* The picks */}
       <div className="mt-6 space-y-3">
         {data.picks.map(pick => (
-          <div key={pick.queueId} className="card p-4">
+          <div key={pick.queueId} className="card pick-card p-4">
             <button onClick={() => setDetailAlum(pick.alumnus)} className="w-full flex items-center gap-3.5 text-left">
               <Avatar
                 name={pick.alumnus.full_name}
@@ -229,6 +242,13 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                 className="text-sm font-medium px-4 py-2 rounded-xl border border-[--school-primary] text-[--school-primary] transition hover:bg-[--school-primary]/5"
               >
                 {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
+              </button>
+              <button
+                onClick={() => save(pick)}
+                disabled={busy === pick.queueId || saved.has(pick.queueId)}
+                className="btn-ghost text-sm"
+              >
+                {saved.has(pick.queueId) ? 'Saved ✓' : 'Save'}
               </button>
               <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="btn-ghost text-sm ml-auto">
                 Skip

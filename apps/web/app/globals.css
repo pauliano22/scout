@@ -268,6 +268,13 @@ textarea:focus {
   box-shadow: var(--card-shadow);
 }
 
+/* Today's-picks card: the school-red outline that makes picks read as the
+   main event on Home without shouting (softened red + faint tinted shadow). */
+.pick-card {
+  border: 1px solid color-mix(in srgb, var(--school-primary) 55%, transparent);
+  box-shadow: 0 2px 16px color-mix(in srgb, var(--school-primary) 7%, rgba(10, 10, 20, 0.05));
+}
+
 .card-interactive {
   background: var(--bg-secondary);
   border: 1px solid var(--card-border);

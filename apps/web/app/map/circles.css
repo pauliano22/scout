@@ -39,12 +39,16 @@
 .search-hero { position: relative; margin-top: 20px; }
 .search-hero input {
   width: 100%; padding: 14px 18px; font-size: 16px;
-  border: 1px solid var(--card-line); border-radius: 14px;
-  box-shadow: var(--card-shadow, none);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px color-mix(in srgb, var(--accent) 7%, rgba(10, 10, 20, 0.05));
   background: var(--panel); color: var(--ink);
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.search-hero input:focus { border-color: var(--accent); outline: none; }
+.search-hero input:focus {
+  border-color: var(--accent); outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 10%, transparent);
+}
 .search-hero-list {
   position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 50;
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px;

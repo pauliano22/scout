@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   X,
   Linkedin,
@@ -60,6 +60,22 @@ export default function AlumniDetailModal({
 }: AlumniDetailModalProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [addedToNetwork, setAddedToNetwork] = useState(isInNetwork)
+  const [warm, setWarm] = useState<{ count: number; topName: string; topRelation: string } | null>(null)
+
+  // Warm path through the viewer's saved network — best-effort enrichment.
+  useEffect(() => {
+    let cancelled = false
+    setWarm(null)
+    fetch('/api/alumni/warm-paths', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alumniIds: [alumni.id] }),
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(body => { if (!cancelled && body?.paths?.[alumni.id]) setWarm(body.paths[alumni.id]) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [alumni.id])
 
   const role = cleanField(alumni.role)
   const company = cleanField(alumni.company)
@@ -145,6 +161,20 @@ export default function AlumniDetailModal({
               </div>
             </div>
           </div>
+
+          {warm && (
+            <div className="mx-6 mb-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-600/25 text-[13px]">
+              <span className="font-semibold text-green-700 dark:text-green-500">Your way in: </span>
+              <span className="text-[--text-secondary]">
+                {warm.count > 1
+                  ? `${warm.topName} +${warm.count - 1} more in your network can introduce you.`
+                  : `${warm.topName} in your network ${warm.topRelation === 'teammate' ? 'played with them at Cornell' : 'was on campus with them'} — ask for an intro.`}
+              </span>{' '}
+              <a href={`/map?sel=${alumni.id}`} className="font-medium text-[--school-primary] hover:underline whitespace-nowrap">
+                Their circle →
+              </a>
+            </div>
+          )}
 
           {/* CTAs */}
           <div className="px-6 pb-5 flex gap-2.5">

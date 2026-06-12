@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from '@/components/Link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Users, LogOut, User, ClipboardList, Home } from 'lucide-react'
+import { Search, Users, LogOut, User, ClipboardList, Home, Waypoints } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@scout/shared/types/database'
 import { isInCampaignHome } from '@scout/shared/featureFlags/campaignHome'
@@ -108,6 +108,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
                 </Link>
                 {navLink('/discover', <Search size={14} />, 'Discover')}
                 {navLink('/network', <Users size={14} />, 'Network', networkCount > 0 ? networkCount : undefined)}
+                {navLink('/map', <Waypoints size={14} />, 'Circles')}
               </>
             ) : (
               <>
@@ -125,6 +126,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
 
                 {navLink('/discover', <Search size={14} />, 'Discover')}
                 {navLink('/network',  <Users  size={14} />, 'Network', networkCount > 0 ? networkCount : undefined)}
+                {navLink('/map', <Waypoints size={14} />, 'Circles')}
               </>
             )}
 

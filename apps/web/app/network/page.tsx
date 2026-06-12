@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import NetworkClient from './NetworkClient'
-import MascotFeedback from '@/components/MascotFeedback'
 import { UserNetwork } from '@scout/shared/types/database'
 
 export default async function NetworkPage() {
@@ -57,7 +56,6 @@ export default async function NetworkPage() {
         }}
         initialCustomContacts={customContacts || []}
       />
-      <MascotFeedback />
     </>
   )
 }

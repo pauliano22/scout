@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import MascotFeedback from '@/components/MascotFeedback'
 import CampaignClient from './CampaignClient'
 import { isInCampaignHome } from '@scout/shared/featureFlags/campaignHome'
 import type { UserRole } from '@scout/shared/types/database'
@@ -40,6 +41,7 @@ export default async function CampaignPage() {
         role={role}
       />
       <CampaignClient profile={profile} />
+      <MascotFeedback />
     </>
   )
 }

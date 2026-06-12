@@ -1,44 +1,35 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 
 export default function MascotFeedback() {
   const [open, setOpen] = useState(false)
-  const popupRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    function onPointerDown(e: PointerEvent) {
-      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [open])
 
   return (
-    <div style={{ position: 'fixed', bottom: 0, right: '24px', zIndex: 50 }}>
+    <div
+      style={{ position: 'fixed', bottom: 0, right: '24px', zIndex: 80 }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       {open && (
         <div
-          ref={popupRef}
           style={{
             position: 'absolute',
             bottom: '76px',
             right: 0,
             width: '240px',
-            background: 'var(--card)',
-            border: '1px solid var(--border)',
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-primary)',
             borderRadius: '12px',
             padding: '16px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.22)',
             textAlign: 'center',
           }}
         >
           <p style={{ fontSize: '14px', color: 'var(--text-primary)', margin: '0 0 8px', fontWeight: 600 }}>
             Hey! 👋
           </p>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: '1.5' }}>
+          <p style={{ fontSize: '13px', color: 'var(--text-tertiary)', margin: '0 0 12px', lineHeight: '1.5' }}>
             I would love any feedback on Scout. Thanks!
           </p>
           <a
@@ -47,13 +38,12 @@ export default function MascotFeedback() {
               display: 'block',
               padding: '8px 14px',
               borderRadius: '8px',
-              background: '#B31B1B',
+              background: 'var(--school-primary, #B31B1B)',
               color: '#fff',
               fontWeight: 600,
               fontSize: '13px',
               textDecoration: 'none',
             }}
-            onClick={() => setOpen(false)}
           >
             ibw22@cornell.edu
           </a>

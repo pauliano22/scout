@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import PlanClient from './PlanClient'
 import SearchClient from './SearchClient'
-import MascotFeedback from '@/components/MascotFeedback'
 import { isInAlumniSearchTreatment } from '@scout/shared/featureFlags/alumniSearch'
 import { getSearchSuggestions } from '@/lib/search/suggestions'
 
@@ -111,7 +110,6 @@ export default async function PlanPage() {
           networkAlumniIds={networkAlumniIds}
         />
       )}
-      <MascotFeedback />
     </>
   )
 }

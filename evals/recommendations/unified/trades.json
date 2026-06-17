@@ -1,0 +1,413 @@
+{
+  "seeker": {
+    "id": "trades",
+    "field": "Skilled Trades",
+    "note": "No trades option and nothing fits — user skips the industry step (empty).",
+    "prefs": {
+      "industries": [],
+      "sports": [
+        "Sprint Football"
+      ],
+      "locations": [],
+      "roles": [
+        "Electrician",
+        "Technician",
+        "Foreman"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Manufacturing"
+    ]
+  },
+  "metrics": {
+    "id": "trades",
+    "field": "Skilled Trades",
+    "isFinance": false,
+    "picksWereEmpty": true,
+    "n": 10,
+    "fieldRelevance": 0,
+    "financeLeakage": 0.2,
+    "sportsShare": 0.2,
+    "distinctIndustries": 6,
+    "topIndustry": "Technology",
+    "topIndustryShare": 0.3,
+    "avgReasons": 1.9,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Finance": 2,
+      "Law": 1,
+      "Real Estate": 1,
+      "Sports": 2,
+      "Technology": 3,
+      "Education": 1
+    },
+    "top": [
+      {
+        "name": "Ian Rawn",
+        "industry": "Finance",
+        "score": 37,
+        "why": [
+          "Same sport — Sprint Football",
+          "At Strategy & Special Projects, Treville Capital",
+          "8 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Avery Hasenauer",
+        "industry": "Finance",
+        "score": 34,
+        "why": [
+          "Same sport — Sprint Football",
+          "At Senior Financial"
+        ]
+      },
+      {
+        "name": "Ryan Juliano",
+        "industry": "Law",
+        "score": 34,
+        "why": [
+          "Same sport — Sprint Football",
+          "At Building a Fractional Law",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Brandon Stoller",
+        "industry": "Real Estate",
+        "score": 34,
+        "why": [
+          "Same sport — Sprint Football",
+          "At Hospitality Real Estate Investment",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Kevin Nathanson",
+        "industry": "Sports",
+        "score": 31,
+        "why": [
+          "Same sport — Sprint Football"
+        ]
+      },
+      {
+        "name": "Aidan Tierney",
+        "industry": "Sports",
+        "score": 31,
+        "why": [
+          "Same sport — Sprint Football",
+          "4 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Skylar Carfi",
+        "industry": "Technology",
+        "score": 31,
+        "why": [
+          "Same sport — Sprint Football"
+        ]
+      },
+      {
+        "name": "Jessy Garcia",
+        "industry": "Technology",
+        "score": 31,
+        "why": [
+          "Same sport — Sprint Football"
+        ]
+      },
+      {
+        "name": "Connor Young",
+        "industry": "Technology",
+        "score": 31,
+        "why": [
+          "Same sport — Sprint Football",
+          "6 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Ailis Clyne",
+        "industry": "Education",
+        "score": 31,
+        "why": [
+          "Currently a Maple Technician, Arnot Forest, Cornell ..."
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Ian Rawn",
+      "industry": "Finance",
+      "company": "Strategy & Special Projects, Treville Capital",
+      "role": "Strategy & Special Projects, Treville Capital ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2018,
+      "prestige_score": 70,
+      "score": 37,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 5,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 37
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football",
+        "At Strategy & Special Projects, Treville Capital",
+        "8 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Avery Hasenauer",
+      "industry": "Finance",
+      "company": "Senior Financial",
+      "role": "Senior Financial ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2015,
+      "prestige_score": 70,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football",
+        "At Senior Financial"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Ryan Juliano",
+      "industry": "Law",
+      "company": "Building a Fractional Law",
+      "role": "Building a Fractional Law Department for ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2006,
+      "prestige_score": 40,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football",
+        "At Building a Fractional Law",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Brandon Stoller",
+      "industry": "Real Estate",
+      "company": "Hospitality Real Estate Investment",
+      "role": "Hospitality Real Estate Investment ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2009,
+      "prestige_score": 40,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football",
+        "At Hospitality Real Estate Investment",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Kevin Nathanson",
+      "industry": "Sports",
+      "company": null,
+      "role": "National Academy of Sports Medicine ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2017,
+      "prestige_score": 65,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Aidan Tierney",
+      "industry": "Sports",
+      "company": null,
+      "role": "Assistant Coach & Director of Football ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2022,
+      "prestige_score": 65,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football",
+        "4 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Skylar Carfi",
+      "industry": "Technology",
+      "company": null,
+      "role": "Experienced Front End Software Engineer ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2016,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Jessy Garcia",
+      "industry": "Technology",
+      "company": null,
+      "role": "Associate Director, Global Marketing ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2016,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Connor Young",
+      "industry": "Technology",
+      "company": null,
+      "role": "Technical Program Manager ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2020,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Sprint Football",
+        "6 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Ailis Clyne",
+      "industry": "Education",
+      "company": null,
+      "role": "Maple Technician, Arnot Forest, Cornell ...",
+      "sport": "Women's Track And Field",
+      "graduation_year": 2017,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "warmIntro": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Currently a Maple Technician, Arnot Forest, Cornell ..."
+      ]
+    }
+  ]
+}

@@ -1,15 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
-import MascotFeedback from '@/components/MascotFeedback'
 import CampaignClient from './CampaignClient'
-import { isInCampaignHome } from '@scout/shared/featureFlags/campaignHome'
 import type { UserRole } from '@scout/shared/types/database'
 
-// The agentic campaign home — the student's default landing when the
-// CAMPAIGN_HOME_ROLLOUT flag is on for them. Students only; everyone else (and
-// flagged-off students) is sent back to their normal home. The autonomous loop
-// stays separately gated by AGENT_PILOT_USER_IDS — this is just the surface.
+// The agentic picks page — the single student home. Alumni/admin are routed to
+// their own surfaces. The autonomous send-loop stays separately gated by
+// AGENT_PILOT_USER_IDS; this is just the surface every student lands on.
 export default async function CampaignPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -24,14 +21,22 @@ export default async function CampaignPage() {
   if (!profile?.onboarding_completed) redirect('/onboarding')
 
   const role = (profile?.account_role as UserRole | undefined) ?? 'student'
-  if (role !== 'student' || !isInCampaignHome(user.id)) {
-    redirect(role === 'alumni' ? '/profile' : role === 'admin' ? '/admin' : '/plan')
+  if (role !== 'student') {
+    redirect(role === 'alumni' ? '/profile' : role === 'admin' ? '/admin' : '/login')
   }
 
   const { count: networkCount } = await supabase
     .from('user_networks')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user.id)
+
+  // People who replied and are waiting on the student — surfaced as one quiet
+  // line on the home so the highest-value action isn't buried in Network.
+  const { count: waitingCount } = await supabase
+    .from('user_networks')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('status', 'response_needed')
 
   return (
     <>
@@ -40,8 +45,7 @@ export default async function CampaignPage() {
         networkCount={networkCount || 0}
         role={role}
       />
-      <CampaignClient profile={profile} />
-      <MascotFeedback />
+      <CampaignClient profile={profile} waitingCount={waitingCount || 0} />
     </>
   )
 }

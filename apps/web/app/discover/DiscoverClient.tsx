@@ -229,12 +229,6 @@ export default function DiscoverClient({
 
   const hasActiveFilters = industryFilter !== 'All' || sportFilter !== null || searchQuery !== '' || locationFilter !== ''
 
-  // Active filter summary for results line
-  const activeFilterParts: string[] = []
-  if (sportFilter) activeFilterParts.push(sportFilter)
-  if (industryFilter !== 'All') activeFilterParts.push(industryFilter)
-  if (locationFilter.trim()) activeFilterParts.push(locationFilter.trim())
-
   return (
     <main className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
       {/* Search bar — hero element, no distracting headline */}
@@ -279,17 +273,14 @@ export default function DiscoverClient({
             </button>
           ))}
 
-          {/* Divider */}
-          <div className="w-px h-4 bg-[--border-primary]" />
-
-          {/* My Sport */}
+          {/* My Sport — neutral until active, so red stays reserved */}
           {userSport && (
             <button
               onClick={handleMySportFilter}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
                 sportFilter === userSport
                   ? 'bg-[--school-primary] text-white'
-                  : 'bg-[--bg-secondary] text-[--school-primary] hover:bg-[--bg-tertiary] border border-[--school-primary]/50'
+                  : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
               }`}
             >
               <Users size={12} />
@@ -359,9 +350,6 @@ export default function DiscoverClient({
           {/* Results count — right-aligned */}
           <span className="ml-auto text-xs text-[--text-quaternary]">
             {totalCount.toLocaleString()} alumni
-            {activeFilterParts.length > 0 && (
-              <span className="text-[--school-primary]"> · {activeFilterParts.join(', ')}</span>
-            )}
           </span>
         </div>
       </div>
@@ -390,7 +378,9 @@ export default function DiscoverClient({
                 onClick={() => handleSelectAlumni(alumniItem)}
                 isLoading={loadingId === alumniItem.id}
                 warmNote={warmPaths[alumniItem.id]
-                  ? `${warmPaths[alumniItem.id].topName}${warmPaths[alumniItem.id].count > 1 ? ` +${warmPaths[alumniItem.id].count - 1}` : ''} can introduce you`
+                  ? (warmPaths[alumniItem.id].topRelation === 'teammate'
+                      ? `${warmPaths[alumniItem.id].topName.split(' ')[0]} played with them${warmPaths[alumniItem.id].count > 1 ? ` · +${warmPaths[alumniItem.id].count - 1} more` : ''}`
+                      : `${warmPaths[alumniItem.id].topName.split(' ')[0]} overlapped at Cornell`)
                   : null}
               />
             ))}

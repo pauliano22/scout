@@ -7,7 +7,7 @@ import { UserNetwork, PlanCustomContact } from '@scout/shared/types/database'
 import MessageModal from '@/components/MessageModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
 import Avatar from '@/components/Avatar'
-import { statusConfig, type CRMStatus } from '@/lib/statusConfig'
+import { type CRMStatus } from '@/lib/statusConfig'
 import { Search, Plus, X, Linkedin, Loader2, ChevronRight } from 'lucide-react'
 import { cleanField } from '@/lib/cleanField'
 
@@ -20,11 +20,13 @@ interface NetworkClientProps {
 
 type StatusFilter = 'all' | CRMStatus
 
+// Three quiet states + one reserved accent: gray = not yet acted on,
+// amber = in motion, red = they replied (urgent, the only accent), green = met.
 const STATUS_DOT: Record<CRMStatus, string> = {
-  interested:        'bg-blue-400',
+  interested:        'bg-zinc-400',
   awaiting_reply:    'bg-amber-400',
   response_needed:   'bg-red-400',
-  meeting_scheduled: 'bg-purple-400',
+  meeting_scheduled: 'bg-amber-400',
   met:               'bg-emerald-400',
 }
 
@@ -110,7 +112,13 @@ export default function NetworkClient({
         alumni?.role?.toLowerCase().includes(q)
       )
     }
-    return filtered
+    // Replies waiting on the student rise to the top; sort is stable so the
+    // rest keep their existing order.
+    return [...filtered].sort(
+      (a, b) =>
+        (getStatus(a) === 'response_needed' ? 0 : 1) -
+        (getStatus(b) === 'response_needed' ? 0 : 1),
+    )
   }, [network, searchQuery, statusFilter])
 
   const handleUpdateConnection = (updated: UserNetwork) => {
@@ -250,7 +258,6 @@ export default function NetworkClient({
         <div className="divide-y divide-[--border-primary]">
           {filteredNetwork.map(connection => {
             const status = getStatus(connection)
-            const sConfig = statusConfig[status]
             const role = cleanField(connection.alumni?.role)
             const company = cleanField(connection.alumni?.company)
             const lastTouched = formatRelativeDate(connection.contacted_at || connection.created_at)
@@ -273,17 +280,12 @@ export default function NetworkClient({
                 />
 
                 <div className="flex-1 min-w-0">
-                  {/* Name + status */}
+                  {/* Name + status dot — the CTA carries the rest */}
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-[--text-primary] truncate text-sm">
                       {connection.alumni?.full_name}
                     </span>
-                    <span className="flex items-center gap-1 flex-shrink-0">
-                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status]}`} />
-                      <span className={`text-xs ${isUrgent ? 'text-red-400 font-medium' : 'text-[--text-quaternary]'}`}>
-                        {sConfig.label}
-                      </span>
-                    </span>
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_DOT[status]}`} />
                   </div>
 
                   {/* Role + Company */}
@@ -302,16 +304,6 @@ export default function NetworkClient({
                     ].filter(Boolean).join(' ')}
                   </p>
                 </div>
-
-                {/* Circle cross-link — appears on hover, quiet */}
-                <a
-                  href={`/map?sel=${connection.alumni_id}`}
-                  onClick={e => e.stopPropagation()}
-                  className="flex-shrink-0 text-xs text-[--text-quaternary] hover:text-[--school-primary] opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Their circle"
-                >
-                  Circle →
-                </a>
 
                 {/* CTA */}
                 <button
@@ -348,13 +340,10 @@ export default function NetworkClient({
 
         {showAddContact && (
           <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2.5 mb-2.5">
-              <input type="text" placeholder="Name *" value={contactForm.name} onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))} className="input-field text-sm" />
-              <input type="text" placeholder="Company" value={contactForm.company} onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))} className="input-field text-sm" />
-              <input type="text" placeholder="Role" value={contactForm.role} onChange={e => setContactForm(p => ({ ...p, role: e.target.value }))} className="input-field text-sm" />
+            <div className="grid grid-cols-2 gap-2.5 mb-3">
+              <input type="text" placeholder="Name" autoFocus value={contactForm.name} onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))} className="input-field text-sm" />
               <input type="text" placeholder="LinkedIn URL" value={contactForm.linkedin_url} onChange={e => setContactForm(p => ({ ...p, linkedin_url: e.target.value }))} className="input-field text-sm" />
             </div>
-            <input type="text" placeholder="Notes" value={contactForm.notes} onChange={e => setContactForm(p => ({ ...p, notes: e.target.value }))} className="input-field text-sm mb-3" />
             <button
               onClick={handleAddCustomContact}
               disabled={!contactForm.name.trim() || isAddingContact}

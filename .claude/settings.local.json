@@ -15,7 +15,19 @@
       "Bash(python linkedin_scrape.py:*)",
       "Bash(test:*)",
       "Bash(find . -type f -name \"*.sql\" -exec echo \"=== {} ===\" ; -exec wc -l {} ;)",
-      "Bash(npx next build)"
+      "Bash(npx next build)",
+      "Read(//tmp/**)",
+      "mcp__claude_ai_Canva__create-design-from-candidate",
+      "mcp__claude_ai_Canva__export-design",
+      "mcp__claude_ai_Canva__generate-design",
+      "mcp__claude_ai_Canva__start-editing-transaction",
+      "mcp__claude_ai_Canva__perform-editing-operations",
+      "mcp__claude_ai_Canva__copy-design",
+      "mcp__claude_ai_Canva__commit-editing-transaction",
+      "mcp__claude_ai_Canva__merge-designs",
+      "Bash(mkdir -p ~/Downloads/scout-campaigns-carousel)",
+      "Read(//Users/q/Downloads/**)",
+      "Bash(file *.png)"
     ]
   }
 }

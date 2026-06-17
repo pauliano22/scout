@@ -4,9 +4,12 @@ import { Suspense, useEffect, useState } from 'react'
 import Link from '@/components/Link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase, Check } from 'lucide-react'
+import { Mail, Lock, User, Phone, ArrowRight, GraduationCap, Briefcase, Check } from 'lucide-react'
 
 type Role = 'student' | 'alumni'
+
+// US/CAN phone: 10 digits, optional parens/dashes/spaces/dots
+const PHONE_REGEX = /^\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/
 
 function SignupForm() {
   const router = useRouter()
@@ -23,6 +26,7 @@ function SignupForm() {
   const [role, setRole] = useState<Role | null>(initialRole)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -53,6 +57,12 @@ function SignupForm() {
       return
     }
 
+    // Phone is optional, but if provided must be valid US/CAN format
+    if (phone && !PHONE_REGEX.test(phone.trim())) {
+      setError('Please enter a valid phone number (e.g. 555-123-4567)')
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -76,6 +86,14 @@ function SignupForm() {
         await supabase
           .from('profiles')
           .update({ account_role: 'alumni', is_alumni: true })
+          .eq('id', data.user.id)
+      }
+
+      // Save phone number if provided
+      if (data.user && phone) {
+        await supabase
+          .from('profiles')
+          .update({ phone: phone.trim() })
           .eq('id', data.user.id)
       }
 
@@ -220,6 +238,26 @@ function SignupForm() {
                 {role === 'alumni'
                   ? 'Personal or work email is fine.'
                   : 'Use your Cornell email (@cornell.edu)'}
+              </p>
+            </div>
+
+            <div>
+              <div className="relative">
+                <Phone
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone (optional)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={isLoading}
+                  className="input-field !pl-11"
+                />
+              </div>
+              <p className="text-xs text-[--text-quaternary] mt-1 ml-1">
+                US or Canada number — used for important updates only
               </p>
             </div>
 

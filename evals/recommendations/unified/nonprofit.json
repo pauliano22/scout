@@ -1,0 +1,418 @@
+{
+  "seeker": {
+    "id": "nonprofit",
+    "field": "Nonprofit",
+    "note": "Picks 'Nonprofit / Social Impact' -> DB 'Nonprofit' (thin corpus).",
+    "prefs": {
+      "industries": [
+        "Nonprofit / Social Impact"
+      ],
+      "sports": [
+        "Rowing"
+      ],
+      "locations": [],
+      "roles": [
+        "Program",
+        "Coordinator",
+        "Director"
+      ],
+      "companies": [],
+      "priorities": {
+        "sameSport": true,
+        "similarIndustry": true,
+        "seniorAlumni": false
+      }
+    },
+    "expectedIndustries": [
+      "Nonprofit"
+    ]
+  },
+  "metrics": {
+    "id": "nonprofit",
+    "field": "Nonprofit",
+    "isFinance": false,
+    "picksWereEmpty": false,
+    "n": 10,
+    "fieldRelevance": 0.2,
+    "financeLeakage": 0,
+    "sportsShare": 0,
+    "distinctIndustries": 5,
+    "topIndustry": "Technology",
+    "topIndustryShare": 0.5,
+    "avgReasons": 2.1,
+    "pctGenericOnly": 0,
+    "industryHistogram": {
+      "Nonprofit": 2,
+      "Technology": 5,
+      "Software": 1,
+      "Consulting": 1,
+      "Education": 1
+    },
+    "top": [
+      {
+        "name": "Kira Pritchard",
+        "industry": "Nonprofit",
+        "score": 58,
+        "why": [
+          "Works in Nonprofit",
+          "Currently a Senior Program Officer, Laurie M. Tisch ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Demian Caponi",
+        "industry": "Technology",
+        "score": 48,
+        "why": [
+          "Same sport — Rowing",
+          "Currently a Scaling high impact programs. [moving to ...",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Kevin Rex",
+        "industry": "Nonprofit",
+        "score": 38,
+        "why": [
+          "Works in Nonprofit",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Chris Massey",
+        "industry": "Software",
+        "score": 34,
+        "why": [
+          "Same sport — Rowing",
+          "At Salesforce",
+          "Senior alum — strong perspective on hiring"
+        ]
+      },
+      {
+        "name": "Simon Hartt",
+        "industry": "Technology",
+        "score": 31,
+        "why": [
+          "Same sport — Rowing",
+          "6 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Nic Jedema",
+        "industry": "Technology",
+        "score": 31,
+        "why": [
+          "Same sport — Rowing"
+        ]
+      },
+      {
+        "name": "Maddie Watson",
+        "industry": "Technology",
+        "score": 31,
+        "why": [
+          "Currently a Sustainability Leadership Program ...",
+          "3 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Joel Cooper",
+        "industry": "Consulting",
+        "score": 31,
+        "why": [
+          "Same sport — Rowing"
+        ]
+      },
+      {
+        "name": "Jacob Shusko",
+        "industry": "Education",
+        "score": 31,
+        "why": [
+          "Same sport — Rowing",
+          "5 years out — recent enough for practical advice"
+        ]
+      },
+      {
+        "name": "Connor Young",
+        "industry": "Technology",
+        "score": 31,
+        "why": [
+          "Currently a Technical Program Manager ...",
+          "6 years out — recent enough for practical advice"
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "name": "Kira Pritchard",
+      "industry": "Nonprofit",
+      "company": null,
+      "role": "Senior Program Officer, Laurie M. Tisch ...",
+      "sport": "Women's Rowing",
+      "graduation_year": 2013,
+      "prestige_score": 0,
+      "score": 58,
+      "breakdown": {
+        "industry": 30,
+        "role": 20,
+        "warmIntro": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 58
+      },
+      "whyThisMatch": [
+        "Works in Nonprofit",
+        "Currently a Senior Program Officer, Laurie M. Tisch ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 2,
+      "name": "Demian Caponi",
+      "industry": "Technology",
+      "company": null,
+      "role": "Scaling high impact programs. [moving to ...",
+      "sport": "Rowing",
+      "graduation_year": 2005,
+      "prestige_score": 0,
+      "score": 48,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 48
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing",
+        "Currently a Scaling high impact programs. [moving to ...",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 3,
+      "name": "Kevin Rex",
+      "industry": "Nonprofit",
+      "company": null,
+      "role": "Empowering families to face the future ...",
+      "sport": "Football",
+      "graduation_year": 2006,
+      "prestige_score": 0,
+      "score": 38,
+      "breakdown": {
+        "industry": 30,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 2,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 38
+      },
+      "whyThisMatch": [
+        "Works in Nonprofit",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 4,
+      "name": "Chris Massey",
+      "industry": "Software",
+      "company": "Salesforce",
+      "role": "Regional Sales Director, Commercial ...",
+      "sport": "Rowing",
+      "graduation_year": 2013,
+      "prestige_score": 40,
+      "score": 34,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 4,
+        "graduationYear": 2,
+        "completeness": 8,
+        "prestige": 0,
+        "total": 34
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing",
+        "At Salesforce",
+        "Senior alum — strong perspective on hiring"
+      ]
+    },
+    {
+      "rank": 5,
+      "name": "Simon Hartt",
+      "industry": "Technology",
+      "company": null,
+      "role": "Catalytic Risk Managers, a DUAL ...",
+      "sport": "Rowing",
+      "graduation_year": 2020,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing",
+        "6 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 6,
+      "name": "Nic Jedema",
+      "industry": "Technology",
+      "company": null,
+      "role": "Structured Information Retrieval and ...",
+      "sport": "Rowing",
+      "graduation_year": 2017,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing"
+      ]
+    },
+    {
+      "rank": 7,
+      "name": "Maddie Watson",
+      "industry": "Technology",
+      "company": null,
+      "role": "Sustainability Leadership Program ...",
+      "sport": "Women's Gymnastics",
+      "graduation_year": 2023,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "warmIntro": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Currently a Sustainability Leadership Program ...",
+        "3 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 8,
+      "name": "Joel Cooper",
+      "industry": "Consulting",
+      "company": null,
+      "role": "Insights & Strategy | Oxford MBA '24 | Bain & ...",
+      "sport": "Rowing",
+      "graduation_year": 2017,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing"
+      ]
+    },
+    {
+      "rank": 9,
+      "name": "Jacob Shusko",
+      "industry": "Education",
+      "company": null,
+      "role": "Graduate Student in Operations Research ...",
+      "sport": "Rowing",
+      "graduation_year": 2021,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 0,
+        "warmIntro": 0,
+        "sport": 20,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Same sport — Rowing",
+        "5 years out — recent enough for practical advice"
+      ]
+    },
+    {
+      "rank": 10,
+      "name": "Connor Young",
+      "industry": "Technology",
+      "company": null,
+      "role": "Technical Program Manager ...",
+      "sport": "Sprint Football",
+      "graduation_year": 2020,
+      "prestige_score": 0,
+      "score": 31,
+      "breakdown": {
+        "industry": 0,
+        "role": 20,
+        "warmIntro": 0,
+        "sport": 0,
+        "location": 0,
+        "company": 0,
+        "graduationYear": 5,
+        "completeness": 6,
+        "prestige": 0,
+        "total": 31
+      },
+      "whyThisMatch": [
+        "Currently a Technical Program Manager ...",
+        "6 years out — recent enough for practical advice"
+      ]
+    }
+  ]
+}

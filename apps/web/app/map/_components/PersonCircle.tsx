@@ -54,7 +54,6 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick }: P
             {p.y ? <> · Class of '{String(p.y).slice(2)}</> : null}
           </p>
           {(work || p.hl) && <p className="pc-work">{work || p.hl}</p>}
-          <p className="pc-meta">{[p.in != null ? ds.data.industries[p.in] : null, p.lo].filter(Boolean).join(' · ')}</p>
         </div>
         <div className="pc-actions">
           {isSaved ? (
@@ -72,17 +71,18 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick }: P
         <div className="warm-card">
           <h3>Your way in</h3>
           {warm.slice(0, 4).map(w => (
-            <button key={w.contact.id} className="warm-row" onClick={() => onPick(w.contact)}>
+            <a key={w.contact.id} className="warm-row" href={`/network?highlight=${w.contact.id}`}>
               <span className="warm-name">
-                {w.contact.n}{w.contact.y ? ` '${String(w.contact.y).slice(2)}` : ''}
+                Ask {w.contact.n.split(' ')[0]} for an intro
                 <span className="warm-tag">{STATUS_LABEL[w.status ?? ''] ?? 'in your network'}</span>
+                <span className="warm-go" aria-hidden>→</span>
               </span>
               <span className="warm-meta">
                 {w.teammate
-                  ? `${w.seasons} season${w.seasons === 1 ? '' : 's'} together — ask for the intro`
-                  : 'On campus together — an easy opener'}
+                  ? `Played ${w.seasons} season${w.seasons === 1 ? '' : 's'} with ${p.n.split(' ')[0]}`
+                  : `On campus with ${p.n.split(' ')[0]} — an easy opener`}
               </span>
-            </button>
+            </a>
           ))}
         </div>
       )}

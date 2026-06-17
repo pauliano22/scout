@@ -67,6 +67,7 @@ export interface Profile {
   location: string | null
   linkedin_url: string | null
   avatar_url: string | null
+  phone: string | null
   is_alumni: boolean
   is_verified: boolean
   school_id: string | null

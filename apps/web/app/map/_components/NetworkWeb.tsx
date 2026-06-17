@@ -59,11 +59,7 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
   if (nodes.length < 2) {
     return (
       <div className="web-empty">
-        <p>
-          {nodes.length === 0
-            ? 'Search any athlete. Save contacts and your web builds itself here.'
-            : 'One more saved contact and your web appears.'}
-        </p>
+        <p>Save two alumni and your network web appears here.</p>
       </div>
     )
   }

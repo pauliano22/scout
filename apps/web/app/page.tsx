@@ -28,7 +28,6 @@ export default function HomePage() {
         postLoginPath(
           (profile?.account_role as UserRole | undefined) ?? 'student',
           Boolean(profile?.onboarding_completed),
-          user.id,
         ),
       )
     }

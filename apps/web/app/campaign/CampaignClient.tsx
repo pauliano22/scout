@@ -7,7 +7,9 @@
 // preferences sheet; goal/pacing are internal agent state.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from '@/components/Link'
 import Avatar from '@/components/Avatar'
+import SportIcon from '@/components/SportIcon'
 import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import { createClient } from '@/lib/supabase/client'
@@ -30,7 +32,7 @@ interface PicksPayload {
   needsField: boolean
 }
 
-export default function CampaignClient({ profile }: { profile: Profile }) {
+export default function CampaignClient({ profile, waitingCount }: { profile: Profile; waitingCount: number }) {
   const supabase = createClient()
   const [data, setData] = useState<PicksPayload | null>(null)
   const [loading, setLoading] = useState(true)
@@ -38,7 +40,6 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
   const [busy, setBusy] = useState<string | null>(null)
   const [sendPick, setSendPick] = useState<{ pick: Pick; draft: string; channel: 'linkedin' | 'email' } | null>(null)
   const [detailAlum, setDetailAlum] = useState<Alumni | null>(null)
-  const [saved, setSaved] = useState<Set<string>>(new Set())
   const [prefsOpen, setPrefsOpen] = useState(false)
   const [cityDraft, setCityDraft] = useState('')
   const cityInit = useRef(false)
@@ -89,17 +90,6 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     if (res.ok) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== sendPick.pick.queueId) } : d))
     }
-  }
-
-  async function save(pick: Pick) {
-    setBusy(pick.queueId)
-    const res = await fetch('/api/picks/action', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ queueId: pick.queueId, action: 'save' }),
-    })
-    if (res.ok) setSaved(s => new Set(s).add(pick.queueId))
-    setBusy(null)
   }
 
   async function skip(pick: Pick) {
@@ -156,10 +146,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         </button>
       </div>
       <p className="text-sm text-[--text-tertiary] mt-1">
-        Alumni your agent picked for you — a new pick lands every day.
-        {data.coverage != null && data.field
-          ? ` From ${data.coverage.toLocaleString()} ${data.field} alumni.`
-          : ''}
+        Chosen for you — a new pick lands each day.
       </p>
 
       {/* Inline field capture — one tap, only when we have nothing to target on */}
@@ -217,45 +204,57 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
 
       {/* The picks */}
       <div className="mt-6 space-y-3">
-        {data.picks.map(pick => (
-          <div key={pick.queueId} className="card pick-card p-4">
-            <button onClick={() => setDetailAlum(pick.alumnus)} className="w-full flex items-center gap-3.5 text-left">
-              <Avatar
-                name={pick.alumnus.full_name}
-                imageUrl={pick.alumnus.photo_url || pick.alumnus.avatar_url}
-                size="lg"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold text-[--text-primary] truncate">{pick.alumnus.full_name}</div>
-                <div className="text-sm text-[--text-secondary] truncate mt-0.5">{pick.why}</div>
-                {pick.warm && (
-                  <div className="text-[13px] font-medium text-green-700 dark:text-green-500 mt-1">
-                    {pick.warm.topName}{pick.warm.count > 1 ? ` +${pick.warm.count - 1}` : ''} can introduce you
-                  </div>
-                )}
+        {data.picks.map(pick => {
+          const warmFirstName = pick.warm?.topName.split(' ')[0] ?? ''
+          return (
+            <div key={pick.queueId} className="card pick-card p-5">
+              <button onClick={() => setDetailAlum(pick.alumnus)} className="w-full flex items-start gap-4 text-left">
+                <div className="relative shrink-0">
+                  <Avatar
+                    name={pick.alumnus.full_name}
+                    imageUrl={pick.alumnus.photo_url || pick.alumnus.avatar_url}
+                    size="lg"
+                  />
+                  {pick.alumnus.sport && (
+                    <span
+                      className="absolute -bottom-1 -right-1 w-[22px] h-[22px] rounded-full bg-[--bg-primary] ring-1 ring-[--border-primary] flex items-center justify-center text-[--text-secondary]"
+                      title={pick.alumnus.sport}
+                    >
+                      <SportIcon sport={pick.alumnus.sport} size={13} />
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-[--text-primary] truncate">{pick.alumnus.full_name}</div>
+                  <div className="text-sm text-[--text-secondary] mt-1 leading-relaxed">{pick.why}</div>
+                  {pick.warm && (
+                    <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-[--text-tertiary]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      {pick.warm.topRelation === 'teammate'
+                        ? `${warmFirstName} played with them`
+                        : `${warmFirstName} overlapped at Cornell`}
+                      {pick.warm.topRelation === 'teammate' && pick.warm.count > 1
+                        ? ` · +${pick.warm.count - 1} more`
+                        : ''}
+                    </div>
+                  )}
+                </div>
+              </button>
+              <div className="mt-4 flex items-center gap-2">
+                <button
+                  onClick={() => openDraft(pick)}
+                  disabled={busy === pick.queueId}
+                  className="btn-primary text-sm"
+                >
+                  {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
+                </button>
+                <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="btn-ghost text-sm ml-auto">
+                  Skip
+                </button>
               </div>
-            </button>
-            <div className="mt-3 flex items-center gap-2">
-              <button
-                onClick={() => openDraft(pick)}
-                disabled={busy === pick.queueId}
-                className="text-sm font-medium px-4 py-2 rounded-xl border border-[--school-primary] text-[--school-primary] transition hover:bg-[--school-primary]/5"
-              >
-                {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
-              </button>
-              <button
-                onClick={() => save(pick)}
-                disabled={busy === pick.queueId || saved.has(pick.queueId)}
-                className="btn-ghost text-sm"
-              >
-                {saved.has(pick.queueId) ? 'Saved ✓' : 'Save'}
-              </button>
-              <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="btn-ghost text-sm ml-auto">
-                Skip
-              </button>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {data.picks.length === 0 && !data.needsField && (
@@ -269,7 +268,17 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         </div>
       )}
 
-      <p className="mt-8 text-xs text-[--text-quaternary]">Nothing sends without your approval.</p>
+      {waitingCount > 0 && (
+        <Link
+          href="/network"
+          className="mt-8 flex items-center gap-1.5 text-sm font-medium text-[--school-primary] hover:opacity-80 transition-opacity"
+        >
+          {waitingCount} {waitingCount === 1 ? 'person is' : 'people are'} waiting on your reply
+          <span aria-hidden>→</span>
+        </Link>
+      )}
+
+      <p className={`${waitingCount > 0 ? 'mt-3' : 'mt-8'} text-xs text-[--text-quaternary]`}>Nothing sends without your approval.</p>
 
       {sendPick && (
         <MessageModal

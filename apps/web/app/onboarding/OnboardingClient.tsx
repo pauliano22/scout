@@ -140,7 +140,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
         networking_intensity: networkingIntensity,
       })
 
-      router.push('/plan')
+      router.push('/campaign')
     } catch (err: any) {
       setError(err.message || 'Failed to save. Please try again.')
       setIsSubmitting(false)

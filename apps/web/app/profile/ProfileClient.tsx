@@ -204,7 +204,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
     <main className="px-6 md:px-12 py-10 max-w-2xl mx-auto">
       <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">Profile</h1>
       <p className="text-[--text-tertiary] text-sm mb-8">
-        Your profile is visible to other athletes in the network.
+        Scout uses this to pick better alumni for you — and to help other athletes find you.
       </p>
 
       <form onSubmit={handleSave} className="space-y-6">
@@ -382,37 +382,24 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
           <p className="text-xs text-[--text-quaternary] mb-4">
             Uploading your resume helps us find better alumni matches and personalize your outreach. It&apos;s never shared with alumni.
           </p>
-          <ResumeUpload
-            userId={userId}
-            compact
-            onParsed={(data) => {
-              if (data.major) setInterests(prev => prev || `Major: ${data.major}`)
-            }}
-          />
+          <ResumeUpload userId={userId} compact />
         </div>
 
-        {/* Career Interests */}
+        {/* Focus */}
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
-          <h2 className="text-base font-semibold mb-2">Career Interests</h2>
+          <h2 className="text-base font-semibold mb-2">Focus</h2>
           <p className="text-[--text-tertiary] text-sm mb-4">
-            Used to personalize your AI-generated outreach messages.
+            A short focus sharpens the alumni Scout picks for you.
           </p>
 
-          <textarea
+          <input
+            type="text"
             value={interests}
             onChange={(e) => setInterests(e.target.value)}
-            placeholder="e.g., investment banking, private equity, product management, software engineering..."
-            rows={3}
-            className="input-field resize-none"
+            placeholder="e.g., fintech, sports media, growth marketing"
+            className="input-field"
           />
         </div>
-
-        {/* Info note */}
-        {sport && graduationYear && (
-          <p className="text-xs text-[--text-quaternary]">
-            Your profile will be visible to other Cornell athletes in the Discover page so they can connect with you.
-          </p>
-        )}
 
         <button
           type="submit"

@@ -49,6 +49,11 @@
   --border-primary:   #e4e4e7;
   --border-secondary: #d4d4d8;
 
+  /* Warm beige accent for onboarding / highlight sections */
+  --accent-warm:       #f5f0e8;
+  --accent-warm-muted: rgba(245, 240, 232, 0.4);
+  --accent-warm-border: rgba(245, 240, 232, 0.6);
+
   color-scheme: light;
 }
 

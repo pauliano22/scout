@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from '@/components/Link'
 import { ArrowRight, ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react'
+import ScoutLogo from '@/components/ScoutLogo'
 import { trackEvent } from '@/lib/track'
 import AlumniProfileForm, {
   AlumniProfileFormValues,
@@ -51,10 +52,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center gap-2 mb-12">
-          <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
-          <span className="logo-text text-lg">Scout</span>
-        </Link>
+        <ScoutLogo href="/" size="md" className="justify-center mb-12" />
         {children}
       </div>
     </main>
@@ -441,10 +439,10 @@ export default function AlumniOnboardingClient({
   return (
     <main className="min-h-screen px-4 py-12">
       <div className="w-full max-w-2xl mx-auto">
-        <Link href="/" className="flex items-center justify-center gap-2 mb-10">
-          <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
-          <span className="logo-text text-lg">Scout</span>
-        </Link>
+        {/* Warm beige accent bar at top */}
+        <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
+
+        <ScoutLogo href="/" size="md" className="justify-center mb-10" />
 
         <div className="flex items-center gap-2 mb-8">
           <div className="flex gap-1.5">

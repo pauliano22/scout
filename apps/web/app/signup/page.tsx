@@ -5,6 +5,7 @@ import Link from '@/components/Link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase, Check } from 'lucide-react'
+import ScoutLogo from '@/components/ScoutLogo'
 
 type Role = 'student' | 'alumni'
 
@@ -91,12 +92,21 @@ function SignupForm() {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
-          <Link href="/" className="flex items-center justify-center gap-2 mb-10">
-            <img src="/favicon.svg" alt="Scout" className="w-10 h-10" />
-            <span className="logo-text text-xl">scout</span>
-          </Link>
+          {/* Warm beige accent bar at top */}
+          <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
-          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
+          <ScoutLogo size="lg" className="justify-center mb-10" />
+
+          <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+            {/* Cornell 'C' watermark */}
+            <div
+              className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
+              aria-hidden="true"
+            >
+              C
+            </div>
+
+            <div className="relative z-10">
             <h1 className="text-xl font-semibold text-center mb-2">How do you want to join?</h1>
             <p className="text-[--text-tertiary] text-sm text-center mb-8">
               Pick one — you can always reach out to us if you need to switch later.
@@ -144,6 +154,7 @@ function SignupForm() {
                 Sign in
               </Link>
             </div>
+            </div>
           </div>
         </div>
       </main>
@@ -154,12 +165,21 @@ function SignupForm() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <Link href="/" className="flex items-center justify-center gap-2 mb-10">
-          <img src="/favicon.svg" alt="Scout" className="w-10 h-10" />
-          <span className="logo-text text-xl">scout</span>
-        </Link>
+        {/* Warm beige accent bar at top */}
+        <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
+        <ScoutLogo size="lg" className="justify-center mb-10" />
+
+        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+          {/* Cornell 'C' watermark */}
+          <div
+            className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
+            aria-hidden="true"
+          >
+            C
+          </div>
+
+          <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-xl font-semibold">Create your account</h1>
             <button
@@ -264,6 +284,7 @@ function SignupForm() {
             <Link href="/login" className="text-[--school-primary] hover:underline">
               Sign in
             </Link>
+          </div>
           </div>
         </div>
 

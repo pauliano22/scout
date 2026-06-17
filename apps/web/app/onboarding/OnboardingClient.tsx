@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react'
 import ResumeUpload from '@/components/ResumeUpload'
+import ScoutLogo from '@/components/ScoutLogo'
 import { trackEvent } from '@/lib/track'
 
 const INDUSTRIES = [
@@ -213,29 +214,39 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
+          {/* Warm beige accent bar at top */}
+          <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
+
           <div className="flex items-center justify-center gap-2 mb-8">
-            <img src="/favicon.svg" alt="Scout" className="w-10 h-10" />
-            <span className="logo-text text-xl">scout</span>
+            <ScoutLogo size="lg" href="/" />
           </div>
 
-          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
-            <h2 className="text-2xl font-semibold mb-2">Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!</h2>
-            <p className="text-[--text-tertiary] text-sm mb-6">
-              Before we get started, here's what you should know about Scout.
+          <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+            {/* Cornell 'C' watermark */}
+            <div
+              className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
+              aria-hidden="true"
+            >
+              C
+            </div>
+
+            <h2 className="text-2xl font-semibold mb-2 relative z-10">Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!</h2>
+            <p className="text-[--text-tertiary] text-sm mb-6 relative z-10">
+              Before we get started, here&apos;s what you should know about Scout.
             </p>
 
-            <div className="space-y-5 mb-8">
-              <div>
+            <div className="space-y-5 mb-8 relative z-10">
+              <div className="pb-5 border-b border-[--accent-warm-border]">
                 <div className="font-medium text-sm text-[--text-primary] mb-0.5">Cornell Athletes Only</div>
                 <div className="text-xs text-[--text-tertiary]">Scout is exclusively for current and former Cornell student-athletes. Access is verified through your Cornell email.</div>
               </div>
 
-              <div>
+              <div className="pb-5 border-b border-[--accent-warm-border]">
                 <div className="font-medium text-sm text-[--text-primary] mb-0.5">Your Data is Secure</div>
                 <div className="text-xs text-[--text-tertiary]">Your personal information is never sold to third parties. Only verified Cornell athletes can access the alumni directory.</div>
               </div>
 
-              <div>
+              <div className="pb-5 border-b border-[--accent-warm-border]">
                 <div className="font-medium text-sm text-[--text-primary] mb-0.5">Built for Networking</div>
                 <div className="text-xs text-[--text-tertiary]">Scout surfaces the most relevant alumni connections based on your sport, industry interests, and career goals.</div>
               </div>
@@ -246,13 +257,13 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
               </div>
             </div>
 
-            <p className="text-xs text-[--text-quaternary] mb-6">
+            <p className="text-xs text-[--text-quaternary] mb-6 relative z-10">
               By continuing, you agree that you are a current or former Cornell student-athlete and consent to Scout using your profile information to generate personalized networking recommendations.
             </p>
 
             <button
               onClick={() => setStep(1)}
-              className="btn-primary w-full flex items-center justify-center gap-2"
+              className="btn-primary w-full flex items-center justify-center gap-2 relative z-10"
             >
               Get Started
               <ArrowRight size={16} />
@@ -266,11 +277,11 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
+        {/* Warm beige accent bar at top */}
+        <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
+
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <img src="/favicon.svg" alt="Scout" className="w-10 h-10" />
-          <span className="logo-text text-xl">scout</span>
-        </div>
+        <ScoutLogo size="lg" href="/" className="justify-center mb-8" />
 
         {/* Progress bar */}
         <div className="mb-8">
@@ -286,7 +297,14 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
           </div>
         </div>
 
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
+        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+          {/* Cornell 'C' watermark */}
+          <div
+            className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[80px] font-bold leading-none opacity-20"
+            aria-hidden="true"
+          />
+
+          <div className="relative z-10">
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm mb-4">
               {error}
@@ -722,6 +740,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
                 )}
               </button>
             )}
+          </div>
           </div>
         </div>
       </div>

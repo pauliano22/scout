@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { postLoginPath } from '@/lib/auth/postLoginPath'
 import type { UserRole } from '@scout/shared/types/database'
 import { Mail, Lock, ArrowRight } from 'lucide-react'
+import ScoutLogo from '@/components/ScoutLogo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -57,14 +58,23 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-md">
+        {/* Warm beige accent bar at top */}
+        <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
+
         {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-2 mb-10">
-          <img src="/favicon.svg" alt="Scout" className="w-10 h-10" />
-          <span className="logo-text text-xl">scout</span>
-        </Link>
+        <ScoutLogo size="lg" className="justify-center mb-10" />
 
         {/* Login Card */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8">
+        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+          {/* Cornell 'C' watermark */}
+          <div
+            className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
+            aria-hidden="true"
+          >
+            C
+          </div>
+
+          <div className="relative z-10">
           <h1 className="text-xl font-semibold text-center mb-2">Welcome back</h1>
           <p className="text-[--text-tertiary] text-sm text-center mb-8">
             Sign in to access your network
@@ -130,10 +140,11 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-[--text-tertiary] text-sm">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-[--school-primary] hover:underline">
               Sign up
             </Link>
+          </div>
           </div>
         </div>
 

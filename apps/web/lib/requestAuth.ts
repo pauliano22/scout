@@ -1,5 +1,5 @@
 // Resolves the calling user for routes that serve BOTH the web app (cookie
-// session) and the mobile app (Authorization: Bearer <access_token>). Returns
+// session) and the mobile app (Authorization: Bearer *** Returns
 // a Supabase client appropriate to the path: the cookie client (RLS) for web,
 // or the service client for mobile — callers must scope every query by the
 // returned userId.

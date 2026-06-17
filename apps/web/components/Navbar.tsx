@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from '@/components/Link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Users, LogOut, User, ClipboardList, Home, Waypoints } from 'lucide-react'
+import { Search, Users, LogOut, User, ClipboardList, Home, Waypoints, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@scout/shared/types/database'
 import { isInCampaignHome } from '@scout/shared/featureFlags/campaignHome'
@@ -130,7 +130,23 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
               </>
             )}
 
-            <div className="w-px h-4 bg-[--border-primary] mx-1 hidden sm:block" />
+            {/* Admin link for admin users */}
+            {role === 'admin' && (
+              <>
+                <Link
+                  href="/admin"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    pathname.startsWith('/admin')
+                      ? 'bg-[--bg-tertiary] text-[--text-primary]'
+                      : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
+                  }`}
+                >
+                  <Shield size={14} />
+                  <span className="hidden sm:inline">Admin</span>
+                </Link>
+                <div className="w-px h-4 bg-[--border-primary] mx-1 hidden sm:block" />
+              </>
+            )}
 
             <ThemeToggle />
 

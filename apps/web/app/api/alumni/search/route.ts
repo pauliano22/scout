@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getRedis, buildAlumniSearchCacheKey } from '@/lib/redis'
 import type { Alumni } from '@scout/shared/types/database'
 import {
   scoreAlumnus,
@@ -27,6 +28,34 @@ export async function GET(request: NextRequest) {
   const location = searchParams.get('location') || ''
   const page = parseInt(searchParams.get('page') || '1', 10)
   const limit = Math.min(parseInt(searchParams.get('limit') || String(PAGE_SIZE), 10), 100)
+
+  // -- Redis caching layer --
+  const hasRankingIntent =
+    !!search.trim() || (industry && industry !== 'All') || !!sport || !!location.trim()
+
+  const cacheKey = buildAlumniSearchCacheKey({
+    search: search.trim(),
+    industry,
+    sport,
+    location: location.trim(),
+    page,
+    limit,
+    hasRankingIntent,
+  })
+
+  const redis = getRedis()
+  if (redis) {
+    try {
+      const cached = await redis.get(cacheKey)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        return NextResponse.json(parsed)
+      }
+    } catch (err) {
+      // Redis read failure is non-fatal — fall through to DB query
+      console.warn('[redis] Cache read failed, falling back to DB:', err instanceof Error ? err.message : err)
+    }
+  }
 
   const offset = (page - 1) * limit
 
@@ -62,14 +91,6 @@ export async function GET(request: NextRequest) {
     query = query.ilike('location', `%${location.trim()}%`)
   }
 
-  // Whether the request actually expresses a ranking intent. With none of these
-  // set, the viewer is browsing the directory — fall back to the cheap SQL sort
-  // (completeness signals → recency) and skip the scorer. When any signal is
-  // present we hand off ranking to the shared scorer so the order reflects how
-  // well each alum matches the search.
-  const hasRankingIntent =
-    !!search.trim() || (industry && industry !== 'All') || !!sport || !!location.trim()
-
   if (!hasRankingIntent) {
     // Cheap path: SQL-level sort + pagination, identical to the unscored grid
     // in app/discover/page.tsx. prestige_score MUST lead so the directory
@@ -90,12 +111,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to search alumni' }, { status: 500 })
     }
     const total = count || 0
-    return NextResponse.json({
+    const cheapResponse = {
       alumni: alumni || [],
       total,
       page,
       hasMore: offset + limit < total,
-    })
+    }
+
+    // Store in cache (non-blocking; failure is non-fatal)
+    if (redis) {
+      redis.setex(cacheKey, 300, JSON.stringify(cheapResponse)).catch((err) =>
+        console.warn('[redis] Cache write failed:', err instanceof Error ? err.message : err)
+      )
+    }
+
+    return NextResponse.json(cheapResponse)
   }
 
   // Ranking path: pull the matching pool (capped), score every row against
@@ -133,10 +163,19 @@ export async function GET(request: NextRequest) {
   const total = count ?? scored.length
   const pageAlumni = scored.slice(offset, offset + limit).map((s) => s.row)
 
-  return NextResponse.json({
+  const rankingResponse = {
     alumni: pageAlumni,
     total,
     page,
     hasMore: offset + limit < total,
-  })
+  }
+
+  // Store in cache (non-blocking; failure is non-fatal)
+  if (redis) {
+    redis.setex(cacheKey, 300, JSON.stringify(rankingResponse)).catch((err) =>
+      console.warn('[redis] Cache write failed:', err instanceof Error ? err.message : err)
+    )
+  }
+
+  return NextResponse.json(rankingResponse)
 }

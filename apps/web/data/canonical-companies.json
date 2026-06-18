@@ -1,0 +1,252 @@
+[
+  {
+    "canonical": "Goldman Sachs Group",
+    "industry": "Finance",
+    "aliases": ["Goldman Sachs", "Goldman Sachs & Co", "Goldman Sachs Group Inc", "GS", "Goldman Sachs & Co."]
+  },
+  {
+    "canonical": "JPMorgan Chase & Co",
+    "industry": "Finance",
+    "aliases": ["JPMorgan Chase", "JP Morgan Chase", "JP Morgan", "JPMorgan", "JPMorgan Chase & Co.", "Chase", "J.P. Morgan"]
+  },
+  {
+    "canonical": "Morgan Stanley",
+    "industry": "Finance",
+    "aliases": ["Morgan Stanley & Co", "Morgan Stanley & Co.", "MS"]
+  },
+  {
+    "canonical": "Citigroup Inc",
+    "industry": "Finance",
+    "aliases": ["Citi", "Citigroup", "Citibank", "Citi Group", "Citigroup Inc.", "CitiBank"]
+  },
+  {
+    "canonical": "Bank of America",
+    "industry": "Finance",
+    "aliases": ["Bank of America Merrill Lynch", "BofA", "BofA Securities", "Merrill Lynch", "Bank of America Corp", "BAML"]
+  },
+  {
+    "canonical": "Wells Fargo & Co",
+    "industry": "Finance",
+    "aliases": ["Wells Fargo", "Wells Fargo Securities", "Wachovia"]
+  },
+  {
+    "canonical": "BlackRock Inc",
+    "industry": "Finance",
+    "aliases": ["BlackRock", "BlackRock Financial Management"]
+  },
+  {
+    "canonical": "The Blackstone Group",
+    "industry": "Finance",
+    "aliases": ["Blackstone", "Blackstone Group"]
+  },
+  {
+    "canonical": "KKR & Co Inc",
+    "industry": "Finance",
+    "aliases": ["KKR", "Kohlberg Kravis Roberts"]
+  },
+  {
+    "canonical": "Credit Suisse",
+    "industry": "Finance",
+    "aliases": ["Credit Suisse Group", "Credit Suisse Securities"]
+  },
+  {
+    "canonical": "UBS Group AG",
+    "industry": "Finance",
+    "aliases": ["UBS", "UBS AG", "Union Bank of Switzerland"]
+  },
+  {
+    "canonical": "McKinsey & Company",
+    "industry": "Consulting",
+    "aliases": ["McKinsey", "McKinsey & Co", "McKinsey & Co.", "McKinsey and Company"]
+  },
+  {
+    "canonical": "Boston Consulting Group",
+    "industry": "Consulting",
+    "aliases": ["BCG", "The Boston Consulting Group"]
+  },
+  {
+    "canonical": "Bain & Company",
+    "industry": "Consulting",
+    "aliases": ["Bain", "Bain & Co", "Bain & Co.", "Bain and Company"]
+  },
+  {
+    "canonical": "Deloitte",
+    "industry": "Consulting",
+    "aliases": ["Deloitte & Touche", "Deloitte Consulting", "Deloitte & Touche LLP", "Deloitte LLP"]
+  },
+  {
+    "canonical": "PricewaterhouseCoopers",
+    "industry": "Consulting",
+    "aliases": ["PwC", "Price Waterhouse Coopers", "PricewaterhouseCoopers LLP"]
+  },
+  {
+    "canonical": "Ernst & Young",
+    "industry": "Consulting",
+    "aliases": ["EY", "Ernst & Young LLP", "Ernst and Young", "Ernst & Young LLC"]
+  },
+  {
+    "canonical": "KPMG",
+    "industry": "Consulting",
+    "aliases": ["KPMG LLP", "KPMG International", "KPMG US"]
+  },
+  {
+    "canonical": "Accenture",
+    "industry": "Consulting",
+    "aliases": ["Accenture PLC", "Accenture LLP", "Accenture Consulting"]
+  },
+  {
+    "canonical": "Alphabet Inc",
+    "industry": "Technology",
+    "aliases": ["Google", "Google LLC", "Google Inc", "Alphabet", "YouTube"]
+  },
+  {
+    "canonical": "Apple Inc",
+    "industry": "Technology",
+    "aliases": ["Apple", "Apple Computer"]
+  },
+  {
+    "canonical": "Microsoft Corporation",
+    "industry": "Technology",
+    "aliases": ["Microsoft", "Microsoft Corp", "MSFT"]
+  },
+  {
+    "canonical": "Amazon.com Inc",
+    "industry": "Technology",
+    "aliases": ["Amazon", "Amazon Web Services", "AWS", "Amazon.com"]
+  },
+  {
+    "canonical": "Meta Platforms Inc",
+    "industry": "Technology",
+    "aliases": ["Meta", "Facebook", "Facebook Inc", "Instagram"]
+  },
+  {
+    "canonical": "Netflix Inc",
+    "industry": "Technology",
+    "aliases": ["Netflix", "Netflix.com"]
+  },
+  {
+    "canonical": "Tesla Inc",
+    "industry": "Technology",
+    "aliases": ["Tesla", "Tesla Motors"]
+  },
+  {
+    "canonical": "Nvidia Corporation",
+    "industry": "Technology",
+    "aliases": ["Nvidia", "NVIDIA"]
+  },
+  {
+    "canonical": "Salesforce Inc",
+    "industry": "Technology",
+    "aliases": ["Salesforce", "Salesforce.com"]
+  },
+  {
+    "canonical": "Oracle Corporation",
+    "industry": "Technology",
+    "aliases": ["Oracle", "Oracle Corp"]
+  },
+  {
+    "canonical": "Johnson & Johnson",
+    "industry": "Healthcare",
+    "aliases": ["J&J", "Johnson and Johnson"]
+  },
+  {
+    "canonical": "Pfizer Inc",
+    "industry": "Healthcare",
+    "aliases": ["Pfizer", "Pfizer Pharmaceuticals"]
+  },
+  {
+    "canonical": "UnitedHealth Group",
+    "industry": "Healthcare",
+    "aliases": ["UnitedHealth", "United Healthcare", "Optum"]
+  },
+  {
+    "canonical": "CVS Health Corporation",
+    "industry": "Healthcare",
+    "aliases": ["CVS", "CVS Health", "CVS Caremark"]
+  },
+  {
+    "canonical": "Cigna Corporation",
+    "industry": "Healthcare",
+    "aliases": ["Cigna", "Cigna Healthcare"]
+  },
+  {
+    "canonical": "Skadden Arps Slate Meagher & Flom",
+    "industry": "Law",
+    "aliases": ["Skadden", "Skadden Arps", "Skadden Arps Slate Meagher & Flom LLP"]
+  },
+  {
+    "canonical": "Davis Polk & Wardwell",
+    "industry": "Law",
+    "aliases": ["Davis Polk", "Davis Polk & Wardwell LLP"]
+  },
+  {
+    "canonical": "Cravath Swaine & Moore",
+    "industry": "Law",
+    "aliases": ["Cravath", "Cravath Swaine & Moore LLP"]
+  },
+  {
+    "canonical": "Sullivan & Cromwell",
+    "industry": "Law",
+    "aliases": ["Sullivan Cromwell", "Sullivan & Cromwell LLP", "S&C"]
+  },
+  {
+    "canonical": "Latham & Watkins",
+    "industry": "Law",
+    "aliases": ["Latham", "Latham & Watkins LLP"]
+  },
+  {
+    "canonical": "Kirkland & Ellis",
+    "industry": "Law",
+    "aliases": ["Kirkland", "Kirkland & Ellis LLP", "K&E"]
+  },
+  {
+    "canonical": "The New York Times Company",
+    "industry": "Media",
+    "aliases": ["New York Times", "NYT", "The New York Times"]
+  },
+  {
+    "canonical": "The Walt Disney Company",
+    "industry": "Media",
+    "aliases": ["Disney", "Walt Disney", "Disney ABC", "ESPN"]
+  },
+  {
+    "canonical": "Comcast Corporation",
+    "industry": "Media",
+    "aliases": ["Comcast", "NBCUniversal", "NBC", "Universal"]
+  },
+  {
+    "canonical": "Warner Bros Discovery",
+    "industry": "Media",
+    "aliases": ["Warner Bros", "HBO", "CNN", "Turner Broadcasting", "Discovery Inc"]
+  },
+  {
+    "canonical": "Paramount Global",
+    "industry": "Media",
+    "aliases": ["Paramount", "CBS", "ViacomCBS", "Viacom", "MTV", "Paramount Pictures"]
+  },
+  {
+    "canonical": "Nike Inc",
+    "industry": "Sports",
+    "aliases": ["Nike", "Nike Corporation", "Nike Sportswear"]
+  },
+  {
+    "canonical": "IMG Worldwide",
+    "industry": "Sports",
+    "aliases": ["IMG", "IMG Academy", "IMG Sports"]
+  },
+  {
+    "canonical": "The Madison Square Garden Company",
+    "industry": "Sports",
+    "aliases": ["MSG", "Madison Square Garden", "Sphere Entertainment"]
+  },
+  {
+    "canonical": "Cornell University",
+    "industry": "Education",
+    "aliases": ["Cornell", "Cornell University College of", "Cornell College", "Cornell Alumni"]
+  },
+  {
+    "canonical": "Harvard University",
+    "industry": "Education",
+    "aliases": ["Harvard", "Harvard Business School", "Harvard Law School", "Harvard Medical School"]
+  }
+]

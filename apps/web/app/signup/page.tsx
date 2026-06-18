@@ -106,9 +106,9 @@ function SignupForm() {
           {/* Warm beige accent bar at top */}
           <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
-          <ScoutLogo size="lg" className="justify-center mb-10" />
+          <ScoutLogo size="md" className="justify-center mb-8" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start max-w-4xl mx-auto">
             {/* Onboarding video — full-width on mobile, left column on md+ */}
             <Suspense fallback={<div className="aspect-video rounded-xl bg-[--bg-tertiary] animate-pulse" />}>
               <OnboardingVideo />
@@ -186,7 +186,7 @@ function SignupForm() {
         {/* Warm beige accent bar at top */}
         <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
-        <ScoutLogo size="lg" className="justify-center mb-10" />
+        <ScoutLogo size="md" className="justify-center mb-8" />
 
         <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
           {/* Cornell 'C' watermark */}

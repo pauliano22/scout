@@ -69,7 +69,7 @@ export default function LoginPage() {
         <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
         {/* Logo */}
-        <ScoutLogo size="md" className="justify-center mb-8" />
+        <ScoutLogo size="lg" className="justify-center mb-10" />
 
         {/* Login Card */}
         <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">

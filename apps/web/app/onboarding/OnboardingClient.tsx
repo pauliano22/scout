@@ -218,7 +218,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
           <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
           <div className="flex items-center justify-center gap-2 mb-8">
-            <ScoutLogo size="md" href="/" />
+            <ScoutLogo size="lg" href="/" />
           </div>
 
           <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
@@ -281,7 +281,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
         <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
         {/* Logo */}
-        <ScoutLogo size="md" href="/" className="justify-center mb-8" />
+        <ScoutLogo size="lg" href="/" className="justify-center mb-8" />
 
         {/* Progress bar */}
         <div className="mb-8">

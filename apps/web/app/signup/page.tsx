@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase, Check } from 'lucide-react'
 import ScoutLogo from '@/components/ScoutLogo'
+import OnboardingVideo from './OnboardingVideo'
+import OnboardingVideo from './OnboardingVideo'
 
 type Role = 'student' | 'alumni'
 
@@ -164,6 +166,8 @@ function SignupForm() {
                 Sign in
               </Link>
             </div>
+
+            <OnboardingVideo />
             </div>
           </div>
         </div>

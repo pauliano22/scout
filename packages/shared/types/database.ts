@@ -191,7 +191,28 @@ export interface AlumniFilters {
   school_id?: string
 }
 
+export type IndustryCategory =
+  | 'Finance'
+  | 'Consulting'
+  | 'Technology'
+  | 'Law'
+  | 'Medicine'
+  | 'Sports'
+  | 'Education'
+  | 'Media'
+  | 'Real Estate'
+  | 'Non-Profit'
+  | 'Government'
+  | 'Other'
+
 export type Industry = 'Finance' | 'Technology' | 'Consulting' | 'Healthcare' | 'Law' | 'Media'
+
+export interface CompanyAlias {
+  id: string
+  canonical_name: string
+  alias: string
+  created_at: string
+}
 
 export type Sport =
   | 'Basketball'

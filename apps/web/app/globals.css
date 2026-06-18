@@ -30,6 +30,31 @@
   --school-primary-hover: #a01818;
   --school-name: 'Cornell';
 
+  /* Spacing scale — generous whitespace */
+  --space-xs:  0.375rem;
+  --space-sm:  0.625rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  /* Typography scale */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+
+  /* Transition defaults — 250ms for smooth micro-interactions */
+  --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
+
   color-scheme: dark;
 }
 
@@ -81,17 +106,35 @@ body {
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   background: var(--bg-primary);
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: 1.6;
   letter-spacing: -0.011em;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   color: var(--text-primary);
+  line-height: 1.15;
 }
 
-p { color: var(--text-secondary); }
+h1 { letter-spacing: -0.03em; }
+h2 { letter-spacing: -0.025em; }
+h3 { letter-spacing: -0.02em; }
+
+p { color: var(--text-secondary); line-height: 1.65; }
+
+/* Smooth micro-interactions on all interactive elements */
+a, button, .card, .card-interactive, .btn-primary, .btn-secondary, .btn-ghost, .tag, .input-field {
+  transition: all var(--transition-base);
+}
+a:hover, button:hover, .card-interactive:hover {
+  transition-duration: var(--transition-fast);
+}
+
+::selection {
+  background: var(--school-primary);
+  color: white;
+}
 
 /* ============================================
    SCROLLBAR
@@ -250,12 +293,13 @@ textarea:focus {
 }
 
 /* ============================================
-   CARDS — soft shadow in light, hairline in dark
+   CARDS — unified radii, shadow, padding
    ============================================ */
 :root {
   --card-radius: 16px;
   --card-shadow: 0 2px 16px rgba(10, 10, 20, 0.06);
   --card-border: transparent;
+  --card-padding: 1.5rem;
 }
 [data-theme='dark'] {
   --card-shadow: none;
@@ -266,46 +310,61 @@ textarea:focus {
   --card-border: transparent;
 }
 
+/* Base card — every card in the app inherits this */
 .card {
   background: var(--bg-secondary);
   border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
+  padding: var(--card-padding);
 }
 
-/* Today's-picks card: the school-red outline that makes picks read as the
-   main event on Home without shouting (softened red + faint tinted shadow). */
-.pick-card {
-  border: 1px solid color-mix(in srgb, var(--school-primary) 55%, transparent);
-  box-shadow: 0 2px 16px color-mix(in srgb, var(--school-primary) 7%, rgba(10, 10, 20, 0.05));
-}
-
+/* Interactive cards — hover lifts slightly */
 .card-interactive {
   background: var(--bg-secondary);
   border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
+  padding: var(--card-padding);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
-.card-interactive:hover  { background: var(--bg-tertiary); }
-.card-interactive:active { transform: scale(0.985); }
-
-.alumni-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--card-border);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  transition: background 0.2s ease;
+.card-interactive:hover {
+  background: var(--bg-tertiary);
+  transform: scale(1.01);
 }
-.alumni-card:hover { background: var(--bg-tertiary); }
+.card-interactive:active {
+  transform: scale(0.985);
+}
 
-.stat-card {
+/* Stat cards — compact version */
+.card-stat {
   background: var(--bg-secondary);
   border: 1px solid var(--card-border);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
   padding: 1.25rem;
+  text-align: center;
+}
+.card-alumni {
+  background: var(--bg-secondary);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  transition: background var(--transition-base);
+}
+.card-alumni:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Today's-picks card: the school-red outline that makes picks read as the
+   main event on Home without shouting (softened red + faint tinted shadow). */
+.pick-card {
+  background: var(--bg-secondary);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  border: 1px solid color-mix(in srgb, var(--school-primary) 55%, transparent);
+  box-shadow: 0 2px 16px color-mix(in srgb, var(--school-primary) 7%, rgba(10, 10, 20, 0.05));
 }
 
 /* ============================================
@@ -400,7 +459,11 @@ textarea:focus {
   to   { opacity: 1; }
 }
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes scaleIn {
@@ -424,9 +487,10 @@ textarea:focus {
   75%       { transform: translateX(4px); }
 }
 
-.animate-fade-in      { animation: fadeIn 0.15s ease-out forwards; }
-.animate-fade-in-up   { animation: fadeInUp 0.2s ease-out forwards; }
-.animate-scale-in     { animation: scaleIn 0.18s ease-out forwards; }
+.animate-fade-in      { animation: fadeIn var(--transition-base) ease-out forwards; }
+.animate-fade-in-up   { animation: fadeInUp var(--transition-slow) ease-out forwards; }
+.animate-fade-in-down { animation: fadeInDown var(--transition-base) ease-out forwards; }
+.animate-scale-in     { animation: scaleIn var(--transition-base) ease-out forwards; }
 .animate-spin         { animation: spin 1s linear infinite; }
 .animate-pulse        { animation: pulse 2s ease-in-out infinite; }
 .animate-shake        { animation: shake 0.25s ease-in-out; }
@@ -450,10 +514,6 @@ textarea:focus {
 :focus-visible {
   outline: 2px solid var(--school-primary);
   outline-offset: 2px;
-}
-::selection {
-  background: var(--school-primary);
-  color: white;
 }
 
 /* ============================================

@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase, Check } from 'lucide-react'
 import ScoutLogo from '@/components/ScoutLogo'
 import OnboardingVideo from './OnboardingVideo'
-import OnboardingVideo from './OnboardingVideo'
 
 type Role = 'student' | 'alumni'
 
@@ -103,71 +102,76 @@ function SignupForm() {
   if (!role) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-4xl">
           {/* Warm beige accent bar at top */}
           <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
           <ScoutLogo size="lg" className="justify-center mb-10" />
 
-          <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
-            {/* Cornell 'C' watermark */}
-            <div
-              className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
-              aria-hidden="true"
-            >
-              C
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {/* Onboarding video — full-width on mobile, left column on md+ */}
+            <Suspense fallback={<div className="aspect-video rounded-xl bg-[--bg-tertiary] animate-pulse" />}>
+              <OnboardingVideo />
+            </Suspense>
 
-            <div className="relative z-10">
-            <h1 className="text-xl font-semibold text-center mb-2">How do you want to join?</h1>
-            <p className="text-[--text-tertiary] text-sm text-center mb-8">
-              Pick one — you can always reach out to us if you need to switch later.
-            </p>
-
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => setRole('student')}
-                className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
+            <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+              {/* Cornell 'C' watermark */}
+              <div
+                className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
+                aria-hidden="true"
               >
-                <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
-                  <GraduationCap size={20} className="text-[--school-primary]" />
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-[--text-primary]">Join as Student-Athlete</div>
-                  <div className="text-xs text-[--text-tertiary] mt-1">
-                    Discover alumni, plan outreach, and grow your network.
+                C
+              </div>
+
+              <div className="relative z-10">
+              <h1 className="text-xl font-semibold text-center mb-2">How do you want to join?</h1>
+              <p className="text-[--text-tertiary] text-sm text-center mb-8">
+                Pick one — you can always reach out to us if you need to switch later.
+              </p>
+
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setRole('student')}
+                  className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
+                    <GraduationCap size={20} className="text-[--school-primary]" />
                   </div>
-                </div>
-                <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-3" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRole('alumni')}
-                className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
-                  <Briefcase size={20} className="text-[--school-primary]" />
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-[--text-primary]">Join as Alumni</div>
-                  <div className="text-xs text-[--text-tertiary] mt-1">
-                    Claim your profile and help current Cornell student-athletes.
+                  <div className="flex-1">
+                    <div className="font-medium text-[--text-primary]">Join as Student-Athlete</div>
+                    <div className="text-xs text-[--text-tertiary] mt-1">
+                      Discover alumni, plan outreach, and grow your network.
+                    </div>
                   </div>
-                </div>
-                <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-3" />
-              </button>
-            </div>
+                  <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-3" />
+                </button>
 
-            <div className="mt-6 text-center text-[--text-tertiary] text-sm">
-              Already have an account?{' '}
-              <Link href="/login" className="text-[--school-primary] hover:underline">
-                Sign in
-              </Link>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setRole('alumni')}
+                  className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
+                    <Briefcase size={20} className="text-[--school-primary]" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-[--text-primary]">Join as Alumni</div>
+                    <div className="text-xs text-[--text-tertiary] mt-1">
+                      Claim your profile and help current Cornell student-athletes.
+                    </div>
+                  </div>
+                  <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-3" />
+                </button>
+              </div>
 
-            <OnboardingVideo />
+              <div className="mt-6 text-center text-[--text-tertiary] text-sm">
+                Already have an account?{' '}
+                <Link href="/login" className="text-[--school-primary] hover:underline">
+                  Sign in
+                </Link>
+              </div>
+              </div>
             </div>
           </div>
         </div>

@@ -36,7 +36,6 @@ function SignupForm() {
           ? 'student'
           : null
     if (next && next !== role) setRole(next)
-    // Only react to URL changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
@@ -48,7 +47,6 @@ function SignupForm() {
       setError('Please choose how you want to join.')
       return
     }
-    // Students must use @cornell.edu so we can verify them. Alumni can use any email.
     if (role === 'student' && !email.toLowerCase().endsWith('@cornell.edu')) {
       setError('Please use your Cornell email address (@cornell.edu)')
       return
@@ -70,9 +68,6 @@ function SignupForm() {
 
       if (error) throw error
 
-      // Set the role on the profile after signup. The DB trigger creates a
-      // baseline profile row with default role; this updates it to match
-      // what the user picked. Best-effort — failure here doesn't block signup.
       if (data.user && role === 'alumni') {
         await supabase
           .from('profiles')
@@ -80,7 +75,6 @@ function SignupForm() {
           .eq('id', data.user.id)
       }
 
-      // Log signup activity (best-effort)
       fetch('/api/activity/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -100,70 +94,57 @@ function SignupForm() {
   // ─── Step 1: Role selection ──────────────────────────────────────
   if (!role) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md">
-          {/* Warm beige accent bar at top */}
-          <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
+      <main className="min-h-screen flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md animate-fade-in-up">
+          <ScoutLogo size="lg" className="justify-center mb-12" />
 
-          <ScoutLogo size="lg" className="justify-center mb-10" />
-
-          <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
-            {/* Cornell 'C' watermark */}
-            <div
-              className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
-              aria-hidden="true"
-            >
-              C
-            </div>
-
-            <div className="relative z-10">
+          <div className="card">
             <h1 className="text-xl font-semibold text-center mb-2">How do you want to join?</h1>
-            <p className="text-[--text-tertiary] text-sm text-center mb-8">
+            <p className="text-[--text-tertiary] text-sm text-center mb-10">
               Pick one — you can always reach out to us if you need to switch later.
             </p>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button
                 type="button"
                 onClick={() => setRole('student')}
-                className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
+                className="w-full text-left card-interactive flex items-start gap-4 group"
               >
                 <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
                   <GraduationCap size={20} className="text-[--school-primary]" />
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-[--text-primary]">Join as Student-Athlete</div>
-                  <div className="text-xs text-[--text-tertiary] mt-1">
+                  <div className="text-xs text-[--text-tertiary] mt-1.5">
                     Discover alumni, plan outreach, and grow your network.
                   </div>
                 </div>
-                <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-3" />
+                <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-2 flex-shrink-0" />
               </button>
 
               <button
                 type="button"
                 onClick={() => setRole('alumni')}
-                className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
+                className="w-full text-left card-interactive flex items-start gap-4 group"
               >
                 <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
                   <Briefcase size={20} className="text-[--school-primary]" />
                 </div>
                 <div className="flex-1">
                   <div className="font-medium text-[--text-primary]">Join as Alumni</div>
-                  <div className="text-xs text-[--text-tertiary] mt-1">
+                  <div className="text-xs text-[--text-tertiary] mt-1.5">
                     Claim your profile and help current Cornell student-athletes.
                   </div>
                 </div>
-                <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-3" />
+                <ArrowRight size={16} className="text-[--text-quaternary] group-hover:text-[--school-primary] mt-2 flex-shrink-0" />
               </button>
             </div>
 
-            <div className="mt-6 text-center text-[--text-tertiary] text-sm">
+            <div className="mt-8 text-center text-[--text-tertiary] text-sm">
               Already have an account?{' '}
               <Link href="/login" className="text-[--school-primary] hover:underline">
                 Sign in
               </Link>
-            </div>
             </div>
           </div>
         </div>
@@ -173,23 +154,11 @@ function SignupForm() {
 
   // ─── Step 2: Account form ────────────────────────────────────────
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Warm beige accent bar at top */}
-        <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
+    <main className="min-h-screen flex items-center justify-center px-4 py-16">
+      <div className="w-full max-w-md animate-fade-in-up">
+        <ScoutLogo size="lg" className="justify-center mb-12" />
 
-        <ScoutLogo size="lg" className="justify-center mb-10" />
-
-        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
-          {/* Cornell 'C' watermark */}
-          <div
-            className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
-            aria-hidden="true"
-          >
-            C
-          </div>
-
-          <div className="relative z-10">
+        <div className="card">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-xl font-semibold">Create your account</h1>
             <button
@@ -200,16 +169,16 @@ function SignupForm() {
               Change
             </button>
           </div>
-          <div className="flex items-center gap-2 mb-6 text-xs text-[--text-tertiary]">
+          <div className="flex items-center gap-2 mb-8 text-xs text-[--text-tertiary]">
             <Check size={13} className="text-emerald-500" />
             Joining as <span className="font-medium text-[--text-secondary]">
               {role === 'alumni' ? 'Alumni' : 'Student-Athlete'}
             </span>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleSignup} className="space-y-5">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3.5 text-red-400 text-sm">
                 {error}
               </div>
             )}
@@ -246,7 +215,7 @@ function SignupForm() {
                   className="input-field !pl-11"
                 />
               </div>
-              <p className="text-xs text-[--text-quaternary] mt-1 ml-1">
+              <p className="text-xs text-[--text-quaternary] mt-1.5 ml-1">
                 {role === 'alumni'
                   ? 'Personal or work email is fine.'
                   : 'Use your Cornell email (@cornell.edu)'}
@@ -273,7 +242,7 @@ function SignupForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary flex items-center justify-center gap-2"
+              className="w-full btn-primary flex items-center justify-center gap-2 py-3"
             >
               {isLoading ? (
                 <>
@@ -289,16 +258,15 @@ function SignupForm() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-[--text-tertiary] text-sm">
+          <div className="mt-8 text-center text-[--text-tertiary] text-sm">
             Already have an account?{' '}
             <Link href="/login" className="text-[--school-primary] hover:underline">
               Sign in
             </Link>
           </div>
-          </div>
         </div>
 
-        <p className="text-center text-[--text-quaternary] text-xs mt-6">
+        <p className="text-center text-[--text-quaternary] text-xs mt-8">
           By signing up, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>

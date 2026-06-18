@@ -138,7 +138,12 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
               : 'translate(24px, -50%)',
           }}
         >
-          <PersonHoverCard ds={ds} person={hoverNode.p} />
+          <PersonHoverCard
+            ds={ds}
+            person={hoverNode.p}
+            onViewCircle={() => onPick(hoverNode.p)}
+            isSaved={true}
+          />
         </div>
       )}
       </div>

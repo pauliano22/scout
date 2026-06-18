@@ -189,6 +189,16 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
 
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
+
+      // Log profile update activity (best-effort)
+      fetch('/api/activity/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'profile_update',
+          metadata: { full_name: fullName, sport, company },
+        }),
+      }).catch(() => {})
     } catch (error) {
       console.error('Error updating profile:', error)
       alert('Failed to update profile. Please try again.')

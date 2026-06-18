@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     let query = db
       .from('activity_log')
-      .select('*, profiles!inner(full_name, email)', { count: 'exact' })
+      .select('*, profiles(full_name, email)', { count: 'exact' })
 
     if (action) {
       query = query.eq('action', action)

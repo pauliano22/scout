@@ -110,23 +110,23 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-px bg-[--border-primary] rounded-xl overflow-hidden border border-[--border-primary]">
-              <div className="bg-[--bg-secondary] p-8">
-                <p className="text-xs font-medium tracking-widest uppercase text-[--text-quaternary] mb-4">01</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
+                <p className="text-xs font-medium tracking-widest uppercase text-[--school-primary] mb-4">01</p>
                 <h3 className="text-lg font-semibold mb-3 tracking-tight">Discover</h3>
                 <p className="text-sm text-[--text-secondary] leading-relaxed">
                   Search 55 years of Cornell athlete alumni by industry, company, sport, or graduation year.
                 </p>
               </div>
-              <div className="bg-[--bg-secondary] p-8">
-                <p className="text-xs font-medium tracking-widest uppercase text-[--text-quaternary] mb-4">02</p>
+              <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
+                <p className="text-xs font-medium tracking-widest uppercase text-[--school-primary] mb-4">02</p>
                 <h3 className="text-lg font-semibold mb-3 tracking-tight">Connect</h3>
                 <p className="text-sm text-[--text-secondary] leading-relaxed">
                   Generate personalized outreach messages in seconds. Reference shared experiences. Make it real.
                 </p>
               </div>
-              <div className="bg-[--bg-secondary] p-8">
-                <p className="text-xs font-medium tracking-widest uppercase text-[--text-quaternary] mb-4">03</p>
+              <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
+                <p className="text-xs font-medium tracking-widest uppercase text-[--school-primary] mb-4">03</p>
                 <h3 className="text-lg font-semibold mb-3 tracking-tight">Track</h3>
                 <p className="text-sm text-[--text-secondary] leading-relaxed">
                   Save contacts, manage conversations, and run your entire job search pipeline from one place.
@@ -139,14 +139,14 @@ export default function HomePage() {
         {/* ── Stats ── */}
         <section className="px-6 md:px-12 py-28">
           <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { number: '55', label: 'Years of Rosters' },
                 { number: '40+', label: 'Sports Represented' },
                 { number: '18k+', label: 'Alumni Profiles' },
                 { number: 'Free', label: 'For All Athletes' },
               ].map(({ number, label }) => (
-                <div key={label} className="text-center">
+                <div key={label} className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 text-center transition-colors hover:bg-[--bg-tertiary]">
                   <p className="text-4xl md:text-5xl font-bold text-[--school-primary] tracking-tight mb-1">{number}</p>
                   <p className="text-xs text-[--text-quaternary] tracking-wide">{label}</p>
                 </div>
@@ -163,41 +163,45 @@ export default function HomePage() {
               From Wall Street to Silicon Valley
             </h2>
             <p className="text-[--text-secondary] mb-10">Our alumni are everywhere.</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Real Estate', 'Education', 'Government'].map(ind => (
-                <span key={ind} className="px-4 py-2 bg-[--bg-primary] border border-[--border-primary] rounded-lg text-sm text-[--text-secondary] font-medium">
-                  {ind}
-                </span>
-              ))}
+            <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 inline-block">
+              <div className="flex flex-wrap justify-center gap-2">
+                {['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Real Estate', 'Education', 'Government'].map(ind => (
+                  <span key={ind} className="px-4 py-2 bg-[--bg-secondary] border border-[--border-primary] rounded-lg text-sm text-[--text-secondary] font-medium transition-colors hover:border-[--school-primary]/40 hover:text-[--text-primary]">
+                    {ind}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* ── Final CTA ── */}
-        <section className="px-6 md:px-12 py-32">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-5 tracking-tight">
-              Ready to unlock your<br />athlete network?
-            </h2>
-            <p className="text-[--text-secondary] mb-8 max-w-md mx-auto">
-              Join hundreds of Cornell athletes already building their careers through Scout.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-              <Link
-                href="/signup?role=student"
-                className="btn-primary inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold"
-              >
-                <GraduationCap size={15} />
-                Join as Student-Athlete
-                <ArrowRight size={15} />
-              </Link>
-              <Link
-                href="/signup?role=alumni"
-                className="btn-secondary inline-flex items-center gap-2 px-8 py-3.5 text-sm font-medium"
-              >
-                <Briefcase size={15} />
-                Join as Alumni
-              </Link>
+        <section className="px-6 md:px-12 py-24">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-[--bg-secondary] border border-[--school-primary]/20 rounded-xl p-12 md:p-16 text-center">
+              <h2 className="text-4xl md:text-5xl font-bold mb-5 tracking-tight">
+                Ready to unlock your<br />athlete network?
+              </h2>
+              <p className="text-[--text-secondary] mb-8 max-w-md mx-auto">
+                Join hundreds of Cornell athletes already building their careers through Scout.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+                <Link
+                  href="/signup?role=student"
+                  className="btn-primary inline-flex items-center gap-2 px-8 py-3.5 text-sm font-semibold"
+                >
+                  <GraduationCap size={15} />
+                  Join as Student-Athlete
+                  <ArrowRight size={15} />
+                </Link>
+                <Link
+                  href="/signup?role=alumni"
+                  className="btn-secondary inline-flex items-center gap-2 px-8 py-3.5 text-sm font-medium"
+                >
+                  <Briefcase size={15} />
+                  Join as Alumni
+                </Link>
+              </div>
             </div>
           </div>
         </section>

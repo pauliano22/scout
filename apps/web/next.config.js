@@ -13,7 +13,6 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
-  ignoreDuringBuilds: true,
   transpilePackages: ['@scout/shared'],
   experimental: {
     // Ship the pre-baked alumni map dataset with the serverless bundle

@@ -80,6 +80,16 @@ function SignupForm() {
           .eq('id', data.user.id)
       }
 
+      // Log signup activity (best-effort)
+      fetch('/api/activity/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'signup',
+          metadata: { role, full_name: fullName },
+        }),
+      }).catch(() => {})
+
       router.push('/onboarding')
     } catch (err: any) {
       setError(err.message || 'Failed to sign up')

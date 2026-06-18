@@ -40,19 +40,27 @@ export default function SearchHero({ ds, onPick }: Props) {
 
   return (
     <div className="search-hero" role="combobox" aria-expanded={results.length > 0} aria-haspopup="listbox" aria-owns={listId}>
-      <input
-        type="search"
-        value={text}
-        placeholder="Search a name or company"
-        aria-label="Search alumni"
-        aria-autocomplete="list"
-        aria-controls={listId}
-        aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-        onChange={e => onChange(e.target.value)}
-        onKeyDown={onKeyDown}
-      />
+      <div className="search-hero-inner">
+        <svg className="search-hero-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M7.333 12.667A5.333 5.333 0 1 0 7.333 2a5.333 5.333 0 0 0 0 10.667ZM14 14l-2.9-2.9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <input
+          type="search"
+          value={text}
+          placeholder="Search a name or company"
+          aria-label="Search alumni"
+          aria-autocomplete="list"
+          aria-controls={listId}
+          aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={onKeyDown}
+        />
+      </div>
       {results.length > 0 && (
         <ul className="search-hero-list" role="listbox" id={listId}>
+          <li className="search-hero-result-count" role="presentation">
+            {results.length} result{results.length === 1 ? '' : 's'}
+          </li>
           {results.map((p, i) => (
             <li
               key={p.id}

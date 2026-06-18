@@ -46,6 +46,13 @@ export default function LoginPage() {
         )
       }
 
+      // Log login activity (best-effort)
+      fetch('/api/activity/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login' }),
+      }).catch(() => {})
+
       router.push(dest)
       router.refresh()
     } catch (err: any) {

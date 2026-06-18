@@ -52,6 +52,7 @@ export default function CirclesClient({ userId, saved }: { userId: string; saved
   }
 
   const person = selectedId ? ds.byId.get(selectedId) ?? null : null
+  const showOnboarding = !person && savedList.length < 1
 
   return (
     <div className="circles">
@@ -61,6 +62,32 @@ export default function CirclesClient({ userId, saved }: { userId: string; saved
       </header>
 
       <SearchHero ds={ds} onPick={p => setSelectedId(p.id)} />
+
+      {showOnboarding && (
+        <div className="circles-onboarding" role="status">
+          <div className="onboarding-steps">
+            <div className="onboarding-step">
+              <span className="onboarding-num">1</span>
+              <span>Search any Cornell athlete above by name or company</span>
+            </div>
+            <div className="onboarding-step">
+              <span className="onboarding-num">2</span>
+              <span>See who they played with, season by season</span>
+            </div>
+            <div className="onboarding-step">
+              <span className="onboarding-num">3</span>
+              <span><strong>Save</strong> contacts you want to connect with — your network&apos;s web builds itself</span>
+            </div>
+            <div className="onboarding-step">
+              <span className="onboarding-num">4</span>
+              <span>Find <strong>warm intro paths</strong> through people you already know</span>
+            </div>
+          </div>
+          <p className="onboarding-hint">
+            Already have saved contacts? <em>Select one from above to see their circle.</em>
+          </p>
+        </div>
+      )}
 
       {person ? (
         <>

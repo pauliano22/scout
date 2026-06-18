@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     let query = db
       .from('reported_content')
-      .select('*, profiles!inner(full_name, email)', { count: 'exact' })
+      .select('*, profiles(full_name, email)', { count: 'exact' })
 
     if (status) {
       query = query.eq('status', status)

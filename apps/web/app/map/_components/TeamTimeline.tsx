@@ -82,11 +82,12 @@ export default function TeamTimeline({ ds, ego, mates, onPick }: Props) {
       })}
 
       {hover && (
-        <div className="tl-card-anchor" style={{ top: `${44 + (hover.row + 1) * 26}px` }}>
+        <div className="tl-card-anchor" style={{ top: `${44 + (hover.row + 1) * 32}px` }}>
           <PersonHoverCard
             ds={ds}
             person={hover.p}
             note={`${seasonsShared(ego, hover.p)} season${seasonsShared(ego, hover.p) === 1 ? '' : 's'} with ${ego.n.split(' ')[0]}`}
+            onViewCircle={() => onPick(hover.p)}
           />
         </div>
       )}

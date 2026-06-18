@@ -3,7 +3,7 @@
 import { Alumni } from '@scout/shared/types/database'
 import { MapPin, Plus, Check, Linkedin, ArrowRight, Flag } from 'lucide-react'
 import Link from '@/components/Link'
-import Avatar from '@/components/Avatar'
+import SportAvatar from '@/components/SportAvatar'
 import { cleanField } from '@/lib/cleanField'
 import { useState } from 'react'
 
@@ -70,7 +70,7 @@ export default function AlumniCard({
       className={`card p-5 flex flex-col items-center text-center gap-2.5 transition-colors hover:bg-[--bg-tertiary] ${onClick ? 'cursor-pointer' : ''}`}
     >
       {/* Avatar */}
-      <Avatar
+      <SportAvatar
         name={alumni.full_name}
         sport={alumni.sport}
         imageUrl={alumni.avatar_url || alumni.photo_url}
@@ -205,6 +205,3 @@ export default function AlumniCard({
           <Flag size={13} />
         </button>
       </div>
-    </div>
-  )
-}

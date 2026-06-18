@@ -12,8 +12,9 @@ import {
   Loader2,
   Briefcase,
   Mail,
+  Flag,
 } from 'lucide-react'
-import Avatar from '@/components/Avatar'
+import SportAvatar from '@/components/SportAvatar'
 import { cleanField } from '@/lib/cleanField'
 import type { WorkHistoryEntry } from '@scout/shared/types/database'
 
@@ -61,6 +62,11 @@ export default function AlumniDetailModal({
   const [isAdding, setIsAdding] = useState(false)
   const [addedToNetwork, setAddedToNetwork] = useState(isInNetwork)
   const [warm, setWarm] = useState<{ count: number; topName: string; topRelation: string } | null>(null)
+  const [showFlagForm, setShowFlagForm] = useState(false)
+  const [flagReason, setFlagReason] = useState('')
+  const [flagSubmitted, setFlagSubmitted] = useState(false)
+  const [flagError, setFlagError] = useState('')
+  const [flagLoading, setFlagLoading] = useState(false)
 
   // Warm path through the viewer's saved network — best-effort enrichment.
   useEffect(() => {
@@ -92,6 +98,27 @@ export default function AlumniDetailModal({
     }
   }
 
+  const handleFlag = async () => {
+    if (flagReason.trim().length < 5) return
+    setFlagLoading(true)
+    setFlagError('')
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alumniId: alumni.id, reason: flagReason.trim() }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to submit')
+      setFlagSubmitted(true)
+      setShowFlagForm(false)
+    } catch (e: any) {
+      setFlagError(e.message)
+    } finally {
+      setFlagLoading(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
@@ -111,7 +138,7 @@ export default function AlumniDetailModal({
           {/* Hero header — avatar left, info right */}
           <div className="p-6 pb-4">
             <div className="flex items-start gap-4">
-              <Avatar
+              <SportAvatar
                 name={alumni.full_name}
                 sport={alumni.sport}
                 imageUrl={alumni.avatar_url || alumni.photo_url}
@@ -219,7 +246,51 @@ export default function AlumniDetailModal({
                 <span className="hidden sm:inline">Email</span>
               </a>
             )}
+
+            {/* Flag button */}
+            <button
+              onClick={() => setShowFlagForm(!showFlagForm)}
+              className={`btn-ghost px-3 transition-colors ${showFlagForm ? 'text-red-500 bg-red-500/10' : 'text-[--text-quaternary] hover:text-red-400'}`}
+              title="Flag this profile"
+            >
+              <Flag size={15} />
+            </button>
           </div>
+
+          {/* Inline flag form */}
+          {showFlagForm && (
+            <div className="px-6 pb-4" onClick={e => e.stopPropagation()}>
+              <textarea
+                value={flagReason}
+                onChange={(e) => setFlagReason(e.target.value)}
+                placeholder="What's wrong with this profile?"
+                className="w-full text-xs p-2.5 rounded-lg bg-[--bg-primary] border border-[--border-primary] resize-none min-h-[70px] focus:outline-none focus:border-red-400"
+                autoFocus
+              />
+              {flagError && (
+                <p className="text-[10px] text-red-400 mt-1">{flagError}</p>
+              )}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={handleFlag}
+                  disabled={flagLoading || flagReason.trim().length < 5}
+                  className="flex-1 text-xs py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-500 disabled:opacity-40 transition-colors"
+                >
+                  {flagLoading ? 'Submitting...' : 'Submit Report'}
+                </button>
+                <button
+                  onClick={() => { setShowFlagForm(false); setFlagError('') }}
+                  className="text-xs py-1.5 px-3 rounded-lg bg-[--bg-tertiary] text-[--text-tertiary] hover:text-[--text-secondary] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {flagSubmitted && (
+            <p className="text-[11px] text-emerald-500 px-6 pb-4">Flag submitted — thanks for helping keep Scout accurate</p>
+          )}
 
           {/* Career: headline, bio, work history (the full-profile expand) */}
           {(alumni.display_headline || alumni.bio || (alumni.work_history && alumni.work_history.length > 0)) && (
@@ -276,7 +347,7 @@ export default function AlumniDetailModal({
                       onClick={() => onSelectAlumni?.(similar)}
                       className="w-full flex items-center gap-3 p-3 rounded-xl bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] transition-colors text-left group"
                     >
-                      <Avatar
+                      <SportAvatar
                         name={similar.full_name}
                         sport={similar.sport}
                         imageUrl={similar.avatar_url || similar.photo_url}

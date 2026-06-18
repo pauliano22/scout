@@ -7,7 +7,7 @@
 // preferences sheet; goal/pacing are internal agent state.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Avatar from '@/components/Avatar'
+import SportAvatar from '@/components/SportAvatar'
 import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import { createClient } from '@/lib/supabase/client'
@@ -220,8 +220,9 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         {data.picks.map(pick => (
           <div key={pick.queueId} className="card pick-card p-4">
             <button onClick={() => setDetailAlum(pick.alumnus)} className="w-full flex items-center gap-3.5 text-left">
-              <Avatar
+              <SportAvatar
                 name={pick.alumnus.full_name}
+                sport={pick.alumnus.sport}
                 imageUrl={pick.alumnus.photo_url || pick.alumnus.avatar_url}
                 size="lg"
               />

@@ -6,7 +6,7 @@ import MessageModal from '@/components/MessageModal'
 import { trackEvent } from '@/lib/track'
 import { getStatusConfig } from '@/lib/statusConfig'
 import type { Profile, NetworkingPlan, PlanAlumni, UserNetwork, Alumni } from '@scout/shared/types/database'
-import Avatar from '@/components/Avatar'
+import SportAvatar from '@/components/SportAvatar'
 import { cleanField } from '@/lib/cleanField'
 import {
   ChevronDown,
@@ -399,7 +399,7 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
                   className="w-full flex items-center justify-between p-5 text-left hover:bg-[--bg-tertiary]/50 transition-colors"
                 >
                   <div className="flex items-center gap-4 min-w-0">
-                    <Avatar
+                    <SportAvatar
                       name={alumni.full_name || '?'}
                       sport={alumni.sport || undefined}
                       imageUrl={alumni.avatar_url || alumni.photo_url}

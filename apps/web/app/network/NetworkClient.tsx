@@ -7,6 +7,7 @@ import { UserNetwork, PlanCustomContact } from '@scout/shared/types/database'
 import MessageModal from '@/components/MessageModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
 import Avatar from '@/components/Avatar'
+import SportAvatar from '@/components/SportAvatar'
 import { statusConfig, type CRMStatus } from '@/lib/statusConfig'
 import { Search, Plus, X, Linkedin, Loader2, ChevronRight } from 'lucide-react'
 import { cleanField } from '@/lib/cleanField'
@@ -265,7 +266,7 @@ export default function NetworkClient({
                   highlightedId === connection.id ? 'ring-2 ring-[--school-primary] rounded-xl bg-[--bg-secondary]' : ''
                 }`}
               >
-                <Avatar
+                <SportAvatar
                   name={connection.alumni?.full_name || '?'}
                   sport={connection.alumni?.sport}
                   imageUrl={connection.alumni?.avatar_url || connection.alumni?.photo_url}

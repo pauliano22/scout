@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/track'
-import Avatar from '@/components/Avatar'
+import SportAvatar from '@/components/SportAvatar'
 import AlumniDetailModal, { type AlumniBase } from '@/components/AlumniDetailModal'
 import type { Profile, Alumni } from '@scout/shared/types/database'
 import { ArrowUp, Loader2, Plus, Check, Linkedin, Trash2 } from 'lucide-react'
@@ -357,7 +357,7 @@ function TurnView({
             return (
               <div key={alumnus.id} className="bg-[--bg-secondary] border border-[--border-primary] rounded-2xl p-4 transition-colors hover:border-[--border-secondary]">
                 <div className="flex items-start gap-3">
-                  <Avatar name={alumnus.full_name} sport={alumnus.sport} imageUrl={alumnus.avatar_url || alumnus.photo_url} size="md" />
+                  <SportAvatar name={alumnus.full_name} sport={alumnus.sport} imageUrl={alumnus.avatar_url || alumnus.photo_url} size="md" />
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold text-[--text-primary] truncate">{alumnus.full_name}</div>
                     <div className="text-sm text-[--text-tertiary] truncate">

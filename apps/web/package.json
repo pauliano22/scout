@@ -13,9 +13,7 @@
     "proxy:photos": "npx tsx scripts/proxy-photos.ts",
     "enrich:pdl": "npx tsx scripts/enrich-pdl.ts",
     "sync:jobs": "npx tsx scripts/sync-jobs.ts",
-    "embed:alumni": "npx tsx scripts/index-alumni-embeddings.ts",
-    "normalize:companies": "npx tsx scripts/normalize-companies.ts",
-    "normalize:companies:apply": "npx tsx scripts/normalize-companies.ts --apply"
+    "embed:alumni": "npx tsx scripts/index-alumni-embeddings.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

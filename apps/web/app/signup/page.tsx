@@ -1,15 +1,11 @@
 'use client'
 
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Link from '@/components/Link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase, Check } from 'lucide-react'
 import ScoutLogo from '@/components/ScoutLogo'
-
-// Lazy-loaded so the signup form paints without waiting on the demo bundle —
-// the Suspense fallback below shows a skeleton until it's ready.
-const OnboardingVideo = lazy(() => import('./OnboardingVideo'))
 
 type Role = 'student' | 'alumni'
 
@@ -110,10 +106,6 @@ function SignupForm() {
           <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
           <ScoutLogo size="lg" className="justify-center mb-10" />
-
-          <Suspense fallback={<div className="aspect-video rounded-xl bg-[--bg-tertiary] animate-pulse mb-8" />}>
-            <OnboardingVideo />
-          </Suspense>
 
           <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
             {/* Cornell 'C' watermark */}

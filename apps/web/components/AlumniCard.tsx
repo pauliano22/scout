@@ -1,10 +1,11 @@
 'use client'
 
 import { Alumni } from '@scout/shared/types/database'
-import { MapPin, Plus, Check, Linkedin, ArrowRight } from 'lucide-react'
+import { MapPin, Plus, Check, Linkedin, ArrowRight, Flag } from 'lucide-react'
 import Link from '@/components/Link'
 import Avatar from '@/components/Avatar'
 import { cleanField } from '@/lib/cleanField'
+import { useState } from 'react'
 
 interface AlumniCardProps {
   alumni: Alumni | {
@@ -36,6 +37,33 @@ export default function AlumniCard({
   isLoading = false,
   warmNote = null,
 }: AlumniCardProps) {
+  const [showFlagForm, setShowFlagForm] = useState(false)
+  const [flagReason, setFlagReason] = useState('')
+  const [flagSubmitted, setFlagSubmitted] = useState(false)
+  const [flagError, setFlagError] = useState('')
+  const [flagLoading, setFlagLoading] = useState(false)
+
+  const handleFlag = async () => {
+    if (flagReason.trim().length < 5) return
+    setFlagLoading(true)
+    setFlagError('')
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alumniId: alumni.id, reason: flagReason.trim() }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Failed to submit')
+      setFlagSubmitted(true)
+      setShowFlagForm(false)
+    } catch (e: any) {
+      setFlagError(e.message)
+    } finally {
+      setFlagLoading(false)
+    }
+  }
+
   return (
     <div
       onClick={onClick}
@@ -89,6 +117,41 @@ export default function AlumniCard({
         </p>
       )}
 
+      {/* Flag form — inline, appears below location */}
+      {showFlagForm && (
+        <div className="w-full mt-1" onClick={e => e.stopPropagation()}>
+          <textarea
+            value={flagReason}
+            onChange={(e) => setFlagReason(e.target.value)}
+            placeholder="What's wrong with this profile?"
+            className="w-full text-xs p-2 rounded-lg bg-[--bg-primary] border border-[--border-primary] resize-none min-h-[60px] focus:outline-none focus:border-red-400"
+            autoFocus
+          />
+          {flagError && (
+            <p className="text-[10px] text-red-400 mt-1">{flagError}</p>
+          )}
+          <div className="flex gap-2 mt-1.5">
+            <button
+              onClick={handleFlag}
+              disabled={flagLoading || flagReason.trim().length < 5}
+              className="flex-1 text-xs py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-500 disabled:opacity-40 transition-colors"
+            >
+              {flagLoading ? 'Submitting...' : 'Submit Report'}
+            </button>
+            <button
+              onClick={() => { setShowFlagForm(false); setFlagError('') }}
+              className="text-xs py-1.5 px-3 rounded-lg bg-[--bg-tertiary] text-[--text-tertiary] hover:text-[--text-secondary] transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {flagSubmitted && (
+        <p className="text-[10px] text-emerald-500 mt-1">Flag submitted — thanks for helping keep Scout accurate</p>
+      )}
+
       {/* Actions */}
       <div
         className="flex gap-2 w-full mt-auto pt-2.5 border-t border-[--border-primary]"
@@ -132,6 +195,15 @@ export default function AlumniCard({
             <Linkedin size={13} />
           </a>
         )}
+
+        {/* Flag button */}
+        <button
+          onClick={() => setShowFlagForm(!showFlagForm)}
+          className={`btn-ghost p-2 transition-colors ${showFlagForm ? 'text-red-500' : 'text-[--text-quaternary] hover:text-red-400'}`}
+          title="Flag this profile"
+        >
+          <Flag size={13} />
+        </button>
       </div>
     </div>
   )

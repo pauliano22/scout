@@ -13,6 +13,7 @@ import AlumniProfileForm, {
   AlumniProfileFormValues,
   emptyAlumniProfileValues,
 } from '@/components/AlumniProfileForm'
+import LinkedInImport from '@/components/LinkedInImport'
 
 interface Props {
   userEmail: string
@@ -239,6 +240,9 @@ export default function AlumniProfileClient({
             )}
           </Section>
         )}
+
+        {/* LinkedIn Import */}
+        <LinkedInImport />
 
         {/* Contact */}
         <Section title="Contact">

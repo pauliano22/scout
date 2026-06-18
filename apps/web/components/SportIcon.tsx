@@ -1,10 +1,11 @@
 import {
   PiFootball, PiBasketball, PiSoccerBall, PiVolleyball, PiBaseball,
-  PiTennisBall, PiRacquet, PiHockey, PiBoat, PiSailboat,
+  PiTennisBall, PiRacquet, PiHockey, PiSailboat,
   PiPersonSimpleSwim, PiPersonSimpleRun, PiGolf,
   PiPersonArmsSpread, PiBoxingGlove, PiHorse, PiTrophy,
 } from 'react-icons/pi'
 import { GiFencer } from 'react-icons/gi'
+import { MdRowing } from 'react-icons/md'
 import type { IconType } from 'react-icons'
 
 // One consistent icon family (Phosphor) so the set reads as legit. Distinct
@@ -27,7 +28,7 @@ function resolve(raw: string): IconType | Custom {
   if (s.includes('field hockey')) return 'fieldhockey' // before generic hockey
   if (s.includes('hockey')) return PiHockey
   if (s.includes('lacrosse')) return 'lacrosse'
-  if (s.includes('rowing') || s.includes('crew')) return PiBoat
+  if (s.includes('rowing') || s.includes('crew')) return MdRowing
   if (s.includes('sailing')) return PiSailboat
   if (s.includes('swim') || s.includes('diving')) return PiPersonSimpleSwim
   if (s.includes('track') || s.includes('cross country')) return PiPersonSimpleRun

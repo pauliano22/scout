@@ -211,185 +211,191 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
   const years = Array.from({ length: 10 }, (_, i) => currentYear + 4 - i)
 
   return (
-    <main className="px-6 md:px-12 py-10 max-w-2xl mx-auto">
-      <h1 className="text-2xl md:text-3xl font-semibold mb-2 tracking-tight">Profile</h1>
-      <p className="text-[--text-tertiary] text-sm mb-8">
+    <main className="px-6 md:px-12 py-12 max-w-2xl mx-auto animate-fade-in-up">
+      <h1 className="text-3xl font-semibold mb-2 tracking-tight">Profile</h1>
+      <p className="text-[--text-tertiary] text-sm mb-10">
         Your profile is visible to other athletes in the network.
       </p>
 
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} className="space-y-8">
         {/* Avatar Upload */}
-        <div className="flex items-center gap-5">
-          <div className="relative group">
-            <Avatar
-              name={fullName || 'You'}
-              sport={sport}
-              imageUrl={avatarUrl || null}
-              size="xl"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-            >
-              {isUploading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Camera size={20} className="text-white" />
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarUpload}
-              className="hidden"
-            />
-          </div>
-          <div>
-            <p className="font-medium text-[--text-primary]">{fullName || 'Your Name'}</p>
-            <p className="text-sm text-[--text-tertiary]">{userEmail}</p>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="text-xs text-[--school-primary] hover:underline mt-1"
-            >
-              {avatarUrl ? 'Change photo' : 'Upload photo'}
-            </button>
+        <div className="card">
+          <div className="flex items-center gap-6">
+            <div className="relative group flex-shrink-0">
+              <Avatar
+                name={fullName || 'You'}
+                sport={sport}
+                imageUrl={avatarUrl || null}
+                size="xl"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                {isUploading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Camera size={20} className="text-white" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+            </div>
+            <div>
+              <p className="font-medium text-[--text-primary] text-lg">{fullName || 'Your Name'}</p>
+              <p className="text-sm text-[--text-tertiary]">{userEmail}</p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs text-[--school-primary] hover:underline mt-2"
+              >
+                {avatarUrl ? 'Change photo' : 'Upload photo'}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Personal Information */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-5">
-          <h2 className="text-base font-semibold">Personal Information</h2>
+        <div className="card">
+          <h2 className="text-base font-semibold mb-6">Personal Information</h2>
 
-          <div>
-            <label className="block text-sm text-[--text-tertiary] mb-2">Full Name</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your full name"
-              className="input-field"
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-5">
             <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
-              <select
-                value={sport}
-                onChange={(e) => setSport(e.target.value)}
-                className="input-field cursor-pointer"
-              >
-                <option value="">Select your sport</option>
-                {sports.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+              <label className="block text-sm font-medium text-[--text-secondary] mb-2">Full Name</label>
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full name"
+                className="input-field"
+              />
             </div>
 
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">
-                Graduation Year
-              </label>
-              <select
-                value={graduationYear}
-                onChange={(e) => setGraduationYear(e.target.value)}
-                className="input-field cursor-pointer"
-              >
-                <option value="">Select year</option>
-                {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+            <div className="grid md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-[--text-secondary] mb-2">Sport</label>
+                <select
+                  value={sport}
+                  onChange={(e) => setSport(e.target.value)}
+                  className="input-field cursor-pointer"
+                >
+                  <option value="">Select your sport</option>
+                  {sports.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[--text-secondary] mb-2">
+                  Graduation Year
+                </label>
+                <select
+                  value={graduationYear}
+                  onChange={(e) => setGraduationYear(e.target.value)}
+                  className="input-field cursor-pointer"
+                >
+                  <option value="">Select year</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Career Information */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-5">
-          <div>
+        <div className="card">
+          <div className="mb-6">
             <h2 className="text-base font-semibold">Career Information</h2>
             <p className="text-xs text-[--text-quaternary] mt-1">
               This helps other athletes find and connect with you.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-5">
+            <div className="grid md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-[--text-secondary] mb-2">Company</label>
+                <input
+                  type="text"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="e.g., Goldman Sachs"
+                  className="input-field"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[--text-secondary] mb-2">Role</label>
+                <input
+                  type="text"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="e.g., Analyst"
+                  className="input-field"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-sm font-medium text-[--text-secondary] mb-2">Industry</label>
+                <select
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  className="input-field cursor-pointer"
+                >
+                  <option value="">Select industry</option>
+                  {industries.map((i) => (
+                    <option key={i} value={i}>
+                      {i}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[--text-secondary] mb-2">Location</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g., New York, NY"
+                  className="input-field"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Company</label>
+              <label className="block text-sm font-medium text-[--text-secondary] mb-2">LinkedIn URL</label>
               <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="e.g., Goldman Sachs"
+                type="url"
+                value={linkedinUrl}
+                onChange={(e) => setLinkedinUrl(e.target.value)}
+                placeholder="https://linkedin.com/in/yourprofile"
                 className="input-field"
               />
             </div>
-
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Role</label>
-              <input
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g., Analyst"
-                className="input-field"
-              />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Industry</label>
-              <select
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-                className="input-field cursor-pointer"
-              >
-                <option value="">Select industry</option>
-                {industries.map((i) => (
-                  <option key={i} value={i}>
-                    {i}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g., New York, NY"
-                className="input-field"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-[--text-tertiary] mb-2">LinkedIn URL</label>
-            <input
-              type="url"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              placeholder="https://linkedin.com/in/yourprofile"
-              className="input-field"
-            />
           </div>
         </div>
 
         {/* Resume Upload */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
-          <h2 className="text-base font-semibold mb-1">Resume</h2>
-          <p className="text-xs text-[--text-quaternary] mb-4">
+        <div className="card">
+          <h2 className="text-base font-semibold mb-2">Resume</h2>
+          <p className="text-xs text-[--text-quaternary] mb-5">
             Uploading your resume helps us find better alumni matches and personalize your outreach. It&apos;s never shared with alumni.
           </p>
           <ResumeUpload
@@ -402,9 +408,9 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
         </div>
 
         {/* Career Interests */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
+        <div className="card">
           <h2 className="text-base font-semibold mb-2">Career Interests</h2>
-          <p className="text-[--text-tertiary] text-sm mb-4">
+          <p className="text-[--text-tertiary] text-sm mb-5">
             Used to personalize your AI-generated outreach messages.
           </p>
 

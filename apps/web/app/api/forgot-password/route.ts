@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  rateLimitExceeded,
+  getClientIp,
+} from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Rate limit: public tier (30 req/min) keyed by IP ──
+    const rl = checkRateLimit(`forgot-password:${getClientIp(request)}`, 'public')
+    if (!rl.success) return rateLimitExceeded(rl)
+
     const body = await request.json()
     const { email } = body
 
@@ -127,7 +137,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true })
+    return addRateLimitHeaders(NextResponse.json({ success: true }), rl)
   } catch (error) {
     console.error('Error in forgot-password:', error)
     return NextResponse.json(

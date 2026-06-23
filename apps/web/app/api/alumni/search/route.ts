@@ -6,6 +6,12 @@ import {
   scoreAlumnus,
   type UserPreferences,
 } from '@scout/shared/scoring/recommendationScoring'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  rateLimitExceeded,
+  getClientIp,
+} from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,12 +20,14 @@ const PAGE_SIZE = 50
 const POOL_CAP = 500
 
 export async function GET(request: NextRequest) {
+  // ── Rate limit: authenticated tier (100 req/min) keyed by user ID ──
   const supabase = createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const rl = checkRateLimit(`search:${user.id}`, 'authenticated')
+  if (!rl.success) return rateLimitExceeded(rl)
 
   const searchParams = request.nextUrl.searchParams
   const search = (searchParams.get('search') || '').slice(0, 100)
@@ -49,7 +57,7 @@ export async function GET(request: NextRequest) {
       const cached = await redis.get(cacheKey)
       if (cached) {
         const parsed = JSON.parse(cached)
-        return NextResponse.json(parsed)
+        return addRateLimitHeaders(NextResponse.json(parsed), rl)
       }
     } catch (err) {
       // Redis read failure is non-fatal — fall through to DB query
@@ -108,7 +116,7 @@ export async function GET(request: NextRequest) {
     const { data: alumni, error, count } = await query
     if (error) {
       console.error('Alumni search error:', error)
-      return NextResponse.json({ error: 'Failed to search alumni' }, { status: 500 })
+      return addRateLimitHeaders(NextResponse.json({ error: 'Failed to search alumni' }, { status: 500 }), rl)
     }
     const total = count || 0
     const cheapResponse = {
@@ -125,7 +133,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(cheapResponse)
+    return addRateLimitHeaders(NextResponse.json(cheapResponse), rl)
   }
 
   // Ranking path: pull the matching pool (capped), score every row against
@@ -135,7 +143,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('Alumni search error:', error)
-    return NextResponse.json({ error: 'Failed to search alumni' }, { status: 500 })
+    return addRateLimitHeaders(NextResponse.json({ error: 'Failed to search alumni' }, { status: 500 }), rl)
   }
 
   const prefs: UserPreferences = {
@@ -177,5 +185,5 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  return NextResponse.json(rankingResponse)
+  return addRateLimitHeaders(NextResponse.json(rankingResponse), rl)
 }

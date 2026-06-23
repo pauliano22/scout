@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  rateLimitExceeded,
+  getClientIp,
+} from '@/lib/rate-limit'
 
 function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -21,6 +27,10 @@ export async function POST(request: NextRequest) {
   console.log('=== RESET PASSWORD POST ===')
 
   try {
+    // ── Rate limit: public tier (30 req/min) keyed by IP ──
+    const rl = checkRateLimit(`reset-password:${getClientIp(request)}`, 'public')
+    if (!rl.success) return rateLimitExceeded(rl)
+
     const body = await request.json()
     const { token, password } = body
 
@@ -111,7 +121,7 @@ export async function POST(request: NextRequest) {
       .eq('token', token)
 
     console.log('Password reset successful')
-    return NextResponse.json({ success: true })
+    return addRateLimitHeaders(NextResponse.json({ success: true }), rl)
   } catch (error) {
     console.error('Error in reset-password:', error)
     return NextResponse.json(
@@ -126,6 +136,10 @@ export async function GET(request: NextRequest) {
   console.log('=== RESET PASSWORD GET (verify token) ===')
 
   try {
+    // ── Rate limit: public tier (30 req/min) keyed by IP ──
+    const rl = checkRateLimit(`reset-password-verify:${getClientIp(request)}`, 'public')
+    if (!rl.success) return rateLimitExceeded(rl)
+
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token')
 
@@ -173,7 +187,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Token valid')
-    return NextResponse.json({ valid: true })
+    return addRateLimitHeaders(NextResponse.json({ valid: true }), rl)
   } catch (error) {
     console.error('Error verifying token:', error)
     return NextResponse.json(

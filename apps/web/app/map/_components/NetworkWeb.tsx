@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { Dataset } from '../_lib/data'
 import type { Person, SavedContact } from '../_lib/types'
 import { seasonsShared, yearsOverlap } from '../_lib/overlap'
@@ -32,6 +32,20 @@ interface Node {
  */
 export default function NetworkWeb({ ds, saved, onPick }: Props) {
   const [hoverId, setHoverId] = useState<string | null>(null)
+  // Keep the hover card up briefly after the cursor leaves the node, and alive
+  // while the cursor is over the card itself — so you can move onto it to click.
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const show = (id: string) => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    setHoverId(id)
+  }
+  const scheduleHide = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    hideTimer.current = setTimeout(() => setHoverId(null), 320)
+  }
+  const keepOpen = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+  }
 
   const { nodes, edges } = useMemo(() => {
     const people = saved
@@ -105,8 +119,8 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
               key={n.p.id}
               className={`web-node ${dimmed(n) ? 'web-node-dim' : ''}`}
               transform={`translate(${n.x},${n.y})`}
-              onMouseEnter={() => setHoverId(n.p.id)}
-              onMouseLeave={() => setHoverId(h => (h === n.p.id ? null : h))}
+              onMouseEnter={() => show(n.p.id)}
+              onMouseLeave={scheduleHide}
               onClick={() => onPick(n.p)}
               tabIndex={0}
               role="button"
@@ -130,6 +144,8 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
       {hoverNode && (
         <div
           className="web-card-anchor"
+          onMouseEnter={keepOpen}
+          onMouseLeave={scheduleHide}
           style={{
             left: `${(hoverNode.x / W) * 100}%`,
             top: `${(hoverNode.y / H) * 100}%`,

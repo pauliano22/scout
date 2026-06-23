@@ -55,6 +55,9 @@
   outline: none;
 }
 .search-hero input::placeholder { color: var(--muted); }
+/* The box shows its own focus ring via :focus-within — don't also draw the
+   global offset outline inside it (that's the "outline pops into the box" bug). */
+.search-hero input:focus-visible { outline: none; }
 .search-hero-list {
   position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 50;
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
@@ -221,7 +224,10 @@
 .web-edge-era { stroke: var(--line); }
 .web-edge-dim { opacity: 0.12; }
 .web-edge-active { opacity: 1; }
-.web-node { cursor: pointer; transition: opacity .12s; pointer-events: bounding-box; }
+/* Only the painted circle is the hit target — `bounding-box` made each node's
+   invisible box (incl. its outward label) overlap neighbours, so hovers fought. */
+.web-node { cursor: pointer; transition: opacity .12s; }
+.web-node circle { pointer-events: visiblePainted; }
 .web-node circle { fill: var(--tint); stroke: var(--accent); stroke-width: 1.5; }
 .web-node:hover circle { fill: var(--accent); }
 .web-node:hover .web-initials { fill: #fff; }

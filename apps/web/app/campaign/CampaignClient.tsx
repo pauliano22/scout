@@ -260,14 +260,11 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       </div>
 
       {data.picks.length === 0 && !data.needsField && (
-        <div className="mt-6 card p-6 text-center">
-          <p className="text-[--text-primary] font-medium">
-            {data.paused ? 'Picks are paused.' : 'All caught up.'}
-          </p>
-          <p className="text-sm text-[--text-tertiary] mt-1.5">
-            {data.paused ? 'Resume in Preferences when you’re ready.' : 'New picks land tomorrow.'}
-          </p>
-        </div>
+        <p className="mt-6 text-center text-sm text-[--text-tertiary]">
+          {data.paused
+            ? 'Picks are paused — resume in Preferences when you’re ready.'
+            : 'All caught up. New picks land tomorrow.'}
+        </p>
       )}
 
       <p className="mt-8 text-xs text-[--text-quaternary]">Nothing sends without your approval.</p>

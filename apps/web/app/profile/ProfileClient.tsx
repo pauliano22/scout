@@ -392,9 +392,6 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
           <ResumeUpload
             userId={userId}
             compact
-            onParsed={(data) => {
-              if (data.major) setInterests(prev => prev || `Major: ${data.major}`)
-            }}
           />
         </div>
 

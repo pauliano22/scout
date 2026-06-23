@@ -7,6 +7,7 @@
 // preferences sheet; goal/pacing are internal agent state.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Users, GraduationCap, MapPin, Briefcase } from 'lucide-react'
 import SportAvatar from '@/components/SportAvatar'
 import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
@@ -39,7 +40,15 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
   const [sendPick, setSendPick] = useState<{ pick: Pick; draft: string; channel: 'linkedin' | 'email' } | null>(null)
   const [detailAlum, setDetailAlum] = useState<Alumni | null>(null)
   const [saved, setSaved] = useState<Set<string>>(new Set())
+  const [expandedExp, setExpandedExp] = useState<Set<string>>(new Set())
   const [prefsOpen, setPrefsOpen] = useState(false)
+
+  const toggleExp = (id: string) =>
+    setExpandedExp(s => {
+      const next = new Set(s)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
   const [cityDraft, setCityDraft] = useState('')
   const cityInit = useRef(false)
 
@@ -148,18 +157,19 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="flex items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight text-[--text-primary]">
+        <h1 className="text-3xl font-bold tracking-tight text-[--text-primary]">
           Today's picks{firstName !== 'there' ? `, ${firstName}` : ''}.
         </h1>
-        <button onClick={() => setPrefsOpen(o => !o)} className="text-xs text-[--text-quaternary] hover:text-[--text-secondary] shrink-0">
+        <button onClick={() => setPrefsOpen(o => !o)} className="text-sm text-[--text-quaternary] hover:text-[--text-primary] shrink-0">
           Preferences
         </button>
       </div>
-      <p className="text-sm text-[--text-tertiary] mt-1">
-        Alumni your agent picked for you — a new pick lands every day.
-        {data.coverage != null && data.field
-          ? ` From ${data.coverage.toLocaleString()} ${data.field} alumni.`
-          : ''}
+      <p className="text-sm text-[--text-tertiary] mt-2 leading-relaxed">
+        {data.picks.length > 0
+          ? `${data.picks.length} ${data.picks.length === 1 ? 'alum' : 'alumni'} your agent chose today`
+          : 'Your agent’s picks'}
+        {data.coverage != null && data.field ? `, from ${data.coverage.toLocaleString()} ${data.field} alumni` : ''}
+        . Everything you need to reach out — right here.
       </p>
 
       {/* Inline field capture — one tap, only when we have nothing to target on */}
@@ -215,48 +225,120 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         </div>
       )}
 
-      {/* The picks */}
-      <div className="mt-6 space-y-3">
-        {data.picks.map(pick => (
-          <div key={pick.queueId} className="card pick-card p-4">
-            <button onClick={() => setDetailAlum(pick.alumnus)} className="w-full flex items-center gap-3.5 text-left">
-              <SportAvatar
-                name={pick.alumnus.full_name}
-                sport={pick.alumnus.sport}
-                imageUrl={pick.alumnus.photo_url || pick.alumnus.avatar_url}
-                size="lg"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold text-[--text-primary] truncate">{pick.alumnus.full_name}</div>
-                <div className="text-sm text-[--text-secondary] truncate mt-0.5">{pick.why}</div>
-                {pick.warm && (
-                  <div className="text-[13px] font-medium text-green-700 dark:text-green-500 mt-1">
-                    {pick.warm.topName}{pick.warm.count > 1 ? ` +${pick.warm.count - 1}` : ''} can introduce you
+      {/* The picks — divider-separated, like Network */}
+      <div className="mt-6 divide-y divide-[--border-primary]">
+        {data.picks.map(pick => {
+          const a = pick.alumnus
+          const exp = Array.isArray(a.work_history) ? a.work_history : []
+          const expOpen = expandedExp.has(pick.queueId)
+          const shownExp = expOpen ? exp : exp.slice(0, 3)
+          const isSaved = saved.has(pick.queueId)
+          const warmExtra = pick.warm && pick.warm.count > 1 ? pick.warm.count - 1 : 0
+          return (
+            <div key={pick.queueId} className="py-7">
+              {/* Identity */}
+              <button onClick={() => setDetailAlum(a)} className="w-full flex items-start gap-3.5 text-left group">
+                <SportAvatar
+                  name={a.full_name}
+                  sport={a.sport}
+                  imageUrl={a.photo_url || a.avatar_url}
+                  size="lg"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-lg font-bold tracking-tight text-[--text-primary] leading-tight group-hover:underline">
+                    {a.full_name}
                   </div>
+                  <div className="text-sm text-[--text-primary] mt-0.5">
+                    {a.role
+                      ? <>{a.role}{a.company && <span className="text-[--text-tertiary]"> · {a.company}</span>}</>
+                      : <span className="text-[--text-tertiary]">{a.company}</span>}
+                  </div>
+                  <div className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2 text-xs text-[--text-tertiary]">
+                    {a.sport && <span className="inline-flex items-center gap-1.5"><Users size={13} className="text-[--text-quaternary]" />{a.sport}</span>}
+                    {a.graduation_year && <span className="inline-flex items-center gap-1.5"><GraduationCap size={13} className="text-[--text-quaternary]" />{a.graduation_year}</span>}
+                    {a.location && <span className="inline-flex items-center gap-1.5"><MapPin size={13} className="text-[--text-quaternary]" />{a.location}</span>}
+                    {a.industry && <span className="inline-flex items-center gap-1.5"><Briefcase size={13} className="text-[--text-quaternary]" />{a.industry}</span>}
+                  </div>
+                </div>
+              </button>
+
+              {/* Your way in */}
+              {pick.warm && (
+                <div className="mt-3.5 rounded-xl border border-green-200 bg-green-50 px-3.5 py-2.5 text-[13px] leading-relaxed text-green-800">
+                  <span className="font-semibold text-green-900">Your way in:</span>{' '}
+                  {pick.warm.topName}{warmExtra > 0 ? ` and ${warmExtra} other${warmExtra > 1 ? 's' : ''}` : ''} can introduce you — ask for an intro.
+                </div>
+              )}
+
+              {/* Two big CTAs */}
+              <div className="mt-4 flex gap-2.5">
+                <button
+                  onClick={() => openDraft(pick)}
+                  disabled={busy === pick.queueId}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--school-primary] text-white text-sm font-semibold transition hover:bg-[--school-primary-hover] disabled:opacity-60"
+                >
+                  {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
+                </button>
+                {a.linkedin_url && (
+                  <a
+                    href={a.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[--border-primary] text-sm font-semibold text-[--text-primary] transition hover:border-[#0a66c2]/40 hover:bg-[#0a66c2]/5"
+                  >
+                    <span className="w-5 h-5 rounded-[5px] bg-[#0a66c2] text-white grid place-items-center text-[11px] font-extrabold not-italic leading-none">in</span>
+                    LinkedIn
+                  </a>
                 )}
               </div>
-            </button>
-            <div className="mt-3 flex items-center gap-2">
-              <button
-                onClick={() => openDraft(pick)}
-                disabled={busy === pick.queueId}
-                className="text-sm font-medium px-4 py-2 rounded-xl border border-[--school-primary] text-[--school-primary] transition hover:bg-[--school-primary]/5"
-              >
-                {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
-              </button>
+
+              {/* Add to network — small */}
               <button
                 onClick={() => save(pick)}
-                disabled={busy === pick.queueId || saved.has(pick.queueId)}
-                className="btn-ghost text-sm"
+                disabled={busy === pick.queueId || isSaved}
+                className={`mt-2.5 inline-flex items-center gap-1.5 text-[13px] font-medium transition ${isSaved ? 'text-green-700' : 'text-[--text-tertiary] hover:text-[--text-primary]'}`}
               >
-                {saved.has(pick.queueId) ? 'Saved ✓' : 'Save'}
+                {isSaved ? '✓ In your network' : '+ Add to network'}
               </button>
-              <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="btn-ghost text-sm ml-auto">
-                Skip
-              </button>
+
+              {/* Experience — below the CTA */}
+              {exp.length > 0 && (
+                <div className="mt-5">
+                  <div className="text-[11px] font-bold tracking-[0.09em] text-[--text-quaternary] mb-2.5">EXPERIENCE</div>
+                  <div className="space-y-2.5">
+                    {shownExp.map((w, i) => (
+                      <div key={i} className="flex gap-2.5">
+                        <Briefcase size={14} className="text-[--text-quaternary] mt-0.5 shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-sm text-[--text-primary] leading-snug">
+                            {w.title || '—'}{w.title && w.company && <span className="text-[--text-tertiary]"> · {w.company}</span>}
+                          </div>
+                          {(w.duration || w.location) && (
+                            <div className="text-xs text-[--text-quaternary] mt-0.5">
+                              {[w.duration, w.location].filter(Boolean).join(' · ')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {exp.length > 3 && (
+                    <button onClick={() => toggleExp(pick.queueId)} className="mt-2.5 text-[13px] font-semibold text-[--school-primary] hover:underline">
+                      {expOpen ? 'Show less ↑' : `Show ${exp.length - 3} more ↓`}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Quiet dismiss */}
+              <div className="mt-4">
+                <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="text-[13px] text-[--text-quaternary] hover:text-[--text-tertiary]">
+                  Not a fit — skip
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {data.picks.length === 0 && !data.needsField && (

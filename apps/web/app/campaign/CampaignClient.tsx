@@ -244,10 +244,10 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                   size="lg"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-lg font-bold tracking-tight text-[--text-primary] leading-tight group-hover:underline">
+                  <div className="text-xl font-bold tracking-tight text-[--text-primary] leading-tight group-hover:underline">
                     {a.full_name}
                   </div>
-                  <div className="text-sm text-[--text-secondary] mt-0.5 leading-snug">
+                  <div className="text-base font-semibold text-[--text-primary] mt-1 leading-snug">
                     {a.role}{a.role && a.company && ' · '}{a.company}
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-sm text-[--text-tertiary]">
@@ -258,12 +258,12 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                 </div>
               </button>
 
-              {/* Actions — primary, then LinkedIn in the shared secondary style */}
-              <div className="mt-4 space-y-2">
+              {/* Actions — draft + LinkedIn on one line, split in half */}
+              <div className="mt-4 flex gap-2.5">
                 <button
                   onClick={() => openDraft(pick)}
                   disabled={busy === pick.queueId}
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--school-primary] text-white text-sm font-semibold transition hover:bg-[--school-primary-hover] disabled:opacity-60"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[--school-primary] text-white text-sm font-semibold transition hover:bg-[--school-primary-hover] disabled:opacity-60"
                 >
                   {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
                 </button>
@@ -272,7 +272,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                     href={a.linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-secondary w-full flex items-center justify-center gap-2 py-3"
+                    className="btn-secondary flex-1 flex items-center justify-center gap-2 py-2"
                   >
                     <Linkedin size={15} />
                     LinkedIn

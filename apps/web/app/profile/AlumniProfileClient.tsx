@@ -13,6 +13,7 @@ import AlumniProfileForm, {
   AlumniProfileFormValues,
   emptyAlumniProfileValues,
 } from '@/components/AlumniProfileForm'
+import ProfileCompletionWidget from '@/components/ProfileCompletionWidget'
 
 interface Props {
   userEmail: string
@@ -172,6 +173,22 @@ export default function AlumniProfileClient({
             <Pencil size={13} />
             Edit
           </button>
+        </div>
+
+        {/* Profile completion widget */}
+        <div className="mb-5">
+          <ProfileCompletionWidget
+            alumni={alumni}
+            compact={false}
+            onFieldClick={(label) => {
+              // Switch to edit mode when a missing field is clicked.
+              setValues({
+                ...values,
+                // Pre-populate from alumni data if available.
+              })
+              setMode(EDIT)
+            }}
+          />
         </div>
 
         {/* Header card */}

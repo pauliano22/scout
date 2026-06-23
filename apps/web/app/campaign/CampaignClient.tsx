@@ -247,7 +247,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                   <div className="text-xl font-bold tracking-tight text-[--text-primary] leading-tight group-hover:underline">
                     {a.full_name}
                   </div>
-                  <div className="text-base font-semibold text-[--text-primary] mt-1 leading-snug">
+                  <div className="text-base text-[--text-secondary] mt-1 leading-snug">
                     {a.role}{a.role && a.company && ' · '}{a.company}
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-sm text-[--text-tertiary]">

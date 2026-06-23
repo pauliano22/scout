@@ -1,0 +1,152 @@
+/* ================================================
+ * Scout Brand Colors — CSS Custom Properties
+ * Source of truth: BRAND_GUIDE.md
+ * ================================================
+ * Import this file into your project's root CSS
+ * or Tailwind config to use Scout brand tokens.
+ * ================================================ */
+
+:root {
+  /* ---- Primary Palette ---- */
+  --scout-red:          #B31B1B;
+  --scout-beige:        #F5F0EB;
+
+  /* ---- Red Scale ---- */
+  --scout-red-50:       #FEF2F2;
+  --scout-red-100:      #FEE2E2;
+  --scout-red-200:      #FECACA;
+  --scout-red-300:      #FCA5A5;
+  --scout-red-400:      #F87171;
+  --scout-red-500:      #EF4444;
+  --scout-red-600:      #DC2626;
+  --scout-red-700:      #B91C1C;
+  --scout-red-800:      #991B1B;
+  --scout-red-900:      #7F1D1D;
+
+  /* ---- Beige / Warm Neutrals Scale ---- */
+  --scout-beige-50:     #FDFBFA;
+  --scout-beige-100:    #FAF7F4;
+  --scout-beige-200:    #F5F0EB;
+  --scout-beige-300:    #EDE4DA;
+  --scout-beige-400:    #E2D5C7;
+  --scout-beige-500:    #D4C2B0;
+  --scout-beige-600:    #B8A38E;
+  --scout-beige-700:    #9A8571;
+  --scout-beige-800:    #7C6958;
+  --scout-beige-900:    #5E4F42;
+
+  /* ---- Accent Colors ---- */
+  --scout-red-dark:     #8C1515;
+  --scout-red-light:    #D44444;
+  --scout-beige-dark:   #E8DFD5;
+  --scout-beige-light:  #FAF7F4;
+  --scout-charcoal:     #2D2D2D;
+  --scout-slate:        #6B6B6B;
+  --scout-white:        #FFFFFF;
+
+  /* ---- Semantic Colors ---- */
+  --scout-success:      #2E7D32;
+  --scout-warning:      #F59E0B;
+  --scout-error:        #DC2626;
+
+  /* ---- Typography Colors ---- */
+  --scout-text-primary:    #2D2D2D;    /* Charcoal */
+  --scout-text-secondary:  #6B6B6B;    /* Slate */
+  --scout-text-link:       #B31B1B;    /* Red */
+  --scout-text-on-red:     #FFFFFF;    /* White on red bg */
+  --scout-text-on-beige:   #2D2D2D;    /* Charcoal on beige bg */
+
+  /* ---- Background Colors ---- */
+  --scout-bg-primary:      #FFFFFF;    /* White */
+  --scout-bg-secondary:    #F5F0EB;    /* Beige */
+  --scout-bg-tertiary:     #FAF7F4;    /* Light beige */
+  --scout-bg-inverse:      #2D2D2D;    /* Charcoal (dark mode) */
+
+  /* ---- Border Colors ---- */
+  --scout-border-light:    #E8DFD5;    /* Beige-dark */
+  --scout-border-medium:   #D4C2B0;    /* Beige-500 */
+  --scout-border-focus:    #B31B1B;    /* Red */
+
+  /* ---- Typography ---- */
+  --scout-font-family:     'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --scout-font-mono:       'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ---- Font Sizes ---- */
+  --scout-text-xs:         0.75rem;    /* 12px */
+  --scout-text-sm:         0.875rem;   /* 14px */
+  --scout-text-base:       1rem;       /* 16px */
+  --scout-text-lg:         1.125rem;   /* 18px */
+  --scout-text-xl:         1.25rem;    /* 20px */
+  --scout-text-2xl:        1.5rem;     /* 24px */
+  --scout-text-3xl:        1.875rem;   /* 30px */
+  --scout-text-4xl:        2.25rem;    /* 36px */
+  --scout-text-5xl:        3rem;       /* 48px */
+
+  /* ---- Font Weights ---- */
+  --scout-font-light:      300;
+  --scout-font-regular:    400;
+  --scout-font-medium:     500;
+  --scout-font-semibold:   600;
+  --scout-font-bold:       700;
+  --scout-font-extrabold:  800;
+
+  /* ---- Spacing ---- */
+  --scout-space-1:         0.25rem;    /* 4px */
+  --scout-space-2:         0.5rem;     /* 8px */
+  --scout-space-3:         0.75rem;    /* 12px */
+  --scout-space-4:         1rem;       /* 16px */
+  --scout-space-5:         1.25rem;    /* 20px */
+  --scout-space-6:         1.5rem;     /* 24px */
+  --scout-space-7:         1.75rem;    /* 28px */
+  --scout-space-8:         2rem;       /* 32px */
+  --scout-space-10:        2.5rem;     /* 40px */
+  --scout-space-12:        3rem;       /* 48px */
+  --scout-space-14:        3.5rem;     /* 56px */
+  --scout-space-16:        4rem;       /* 64px */
+  --scout-space-20:        5rem;       /* 80px */
+  --scout-space-24:        6rem;       /* 96px */
+
+  /* ---- Border Radius ---- */
+  --scout-radius-none:     0px;
+  --scout-radius-sm:       4px;
+  --scout-radius-md:       8px;
+  --scout-radius-lg:       12px;
+  --scout-radius-xl:       16px;
+  --scout-radius-2xl:      24px;
+  --scout-radius-full:     9999px;
+
+  /* ---- Shadows ---- */
+  --scout-shadow-sm:       0 1px 2px rgba(0, 0, 0, 0.05);
+  --scout-shadow-md:       0 4px 6px rgba(0, 0, 0, 0.07);
+  --scout-shadow-lg:       0 10px 15px rgba(0, 0, 0, 0.1);
+  --scout-shadow-xl:       0 20px 25px rgba(0, 0, 0, 0.15);
+  --scout-shadow-2xl:      0 25px 50px rgba(0, 0, 0, 0.2);
+
+  /* ---- Transitions ---- */
+  --scout-transition-fast:    150ms ease;
+  --scout-transition-normal:  250ms ease;
+  --scout-transition-slow:    350ms ease;
+
+  /* ---- Z-Index Scale ---- */
+  --scout-z-base:          1;
+  --scout-z-dropdown:      100;
+  --scout-z-sticky:        200;
+  --scout-z-nav:           300;
+  --scout-z-modal:         400;
+  --scout-z-overlay:       500;
+}
+
+/* ---- Dark Mode Overrides ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --scout-bg-primary:      #1A1A1A;
+    --scout-bg-secondary:    #2D2D2D;
+    --scout-bg-tertiary:     #333333;
+    --scout-text-primary:    #F5F0EB;
+    --scout-text-secondary:  #B8A38E;
+    --scout-text-on-red:     #FFFFFF;
+    --scout-text-on-beige:   #F5F0EB;
+    --scout-border-light:    #444444;
+    --scout-border-medium:   #555555;
+  }
+}

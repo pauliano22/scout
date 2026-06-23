@@ -12,5 +12,8 @@
     "dev:mobile": "npm run start --workspace=apps/mobile",
     "build:web": "npm run build --workspace=apps/web",
     "lint": "npm run lint --workspaces --if-present"
+  },
+  "dependencies": {
+    "@sentry/nextjs": "^10.60.0"
   }
 }

@@ -28,6 +28,7 @@
     "lucide-react": "^0.303.0",
     "next": "^14.0.4",
     "papaparse": "^5.5.3",
+    "pg": "^8.22.0",
     "posthog-js": "^1.359.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

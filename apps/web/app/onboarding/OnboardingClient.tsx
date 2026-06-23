@@ -124,40 +124,37 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
 
       if (updateError) throw updateError
 
+      // Seed today's picks from the COMPLETE profile (sport, industries, roles,
+      // locations) so alumni are already waiting on the home the moment they
+      // land. Awaited so the seed wins the first-visit race; the home also
+      // materializes lazily on load as a fallback.
+      await fetch('/api/picks/warm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      }).catch(() => {})
+
       trackEvent('onboarding_completed', {
         sport,
         primary_industry: industries[0] || '',
         current_stage: currentStage,
       })
 
-      router.push('/plan')
+      router.push('/campaign')
     } catch (err: any) {
       setError(err.message || 'Failed to save. Please try again.')
       setIsSubmitting(false)
     }
   }
 
-  // As soon as the primary industry is known, warm the match cache in the
-  // background so picks are ready before the student finishes onboarding.
-  const warmPicks = (industry: string) => {
-    fetch('/api/picks/warm', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ field: industry }),
-    }).catch(() => {})
-  }
-
   // Selection order is meaningful: the first industry tapped is the primary,
   // every subsequent one is a secondary "also open to".
   const toggleIndustry = (industry: string) => {
-    setIndustries(prev => {
-      const next = prev.includes(industry)
+    setIndustries(prev =>
+      prev.includes(industry)
         ? prev.filter(i => i !== industry)
         : [...prev, industry]
-      // Warm when a new primary emerges (first pick, or a removal promoted one).
-      if (next[0] && next[0] !== prev[0]) warmPicks(next[0])
-      return next
-    })
+    )
   }
 
   const addRole = () => {

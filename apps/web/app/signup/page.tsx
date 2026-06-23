@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import Link from '@/components/Link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase, Check } from 'lucide-react'
+import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase } from 'lucide-react'
 import ScoutLogo from '@/components/ScoutLogo'
 
 type Role = 'student' | 'alumni'
@@ -187,21 +187,17 @@ function SignupForm() {
           </div>
 
           <div className="relative z-10">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-xl font-semibold">Create your account</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-xl font-semibold">
+              Create your {role === 'alumni' ? 'alumni' : 'student-athlete'} account
+            </h1>
             <button
               type="button"
               onClick={() => setRole(null)}
-              className="text-xs text-[--text-tertiary] hover:text-[--text-secondary] underline"
+              className="text-xs text-[--text-tertiary] hover:text-[--text-secondary] underline shrink-0 ml-3"
             >
               Change
             </button>
-          </div>
-          <div className="flex items-center gap-2 mb-6 text-xs text-[--text-tertiary]">
-            <Check size={13} className="text-emerald-500" />
-            Joining as <span className="font-medium text-[--text-secondary]">
-              {role === 'alumni' ? 'Alumni' : 'Student-Athlete'}
-            </span>
           </div>
 
           <form onSubmit={handleSignup} className="space-y-4">

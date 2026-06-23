@@ -229,12 +229,6 @@ export default function DiscoverClient({
 
   const hasActiveFilters = industryFilter !== 'All' || sportFilter !== null || searchQuery !== '' || locationFilter !== ''
 
-  // Active filter summary for results line
-  const activeFilterParts: string[] = []
-  if (sportFilter) activeFilterParts.push(sportFilter)
-  if (industryFilter !== 'All') activeFilterParts.push(industryFilter)
-  if (locationFilter.trim()) activeFilterParts.push(locationFilter.trim())
-
   return (
     <main className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
       {/* Search bar — hero element, no distracting headline */}
@@ -359,9 +353,6 @@ export default function DiscoverClient({
           {/* Results count — right-aligned */}
           <span className="ml-auto text-xs text-[--text-quaternary]">
             {totalCount.toLocaleString()} alumni
-            {activeFilterParts.length > 0 && (
-              <span className="text-[--school-primary]"> · {activeFilterParts.join(', ')}</span>
-            )}
           </span>
         </div>
       </div>

@@ -15,9 +15,9 @@ function SignupForm() {
   const supabase = createClient()
 
   const initialRole: Role | null =
-    searchParams.get('role') === 'alumni'
+    searchParams?.get('role') === 'alumni'
       ? 'alumni'
-      : searchParams.get('role') === 'student'
+      : searchParams?.get('role') === 'student'
         ? 'student'
         : null
 
@@ -30,9 +30,9 @@ function SignupForm() {
 
   useEffect(() => {
     const next: Role | null =
-      searchParams.get('role') === 'alumni'
+      searchParams?.get('role') === 'alumni'
         ? 'alumni'
-        : searchParams.get('role') === 'student'
+        : searchParams?.get('role') === 'student'
           ? 'student'
           : null
     if (next && next !== role) setRole(next)

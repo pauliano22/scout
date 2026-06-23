@@ -136,7 +136,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
                 <Link
                   href="/admin"
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    pathname.startsWith('/admin')
+                    pathname?.startsWith('/admin')
                       ? 'bg-[--bg-tertiary] text-[--text-primary]'
                       : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
                   }`}

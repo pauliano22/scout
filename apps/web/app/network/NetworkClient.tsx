@@ -55,7 +55,7 @@ export default function NetworkClient({
 }: NetworkClientProps) {
   const supabase = createClient()
   const searchParams = useSearchParams()
-  const highlightId = searchParams.get('highlight')
+  const highlightId = searchParams?.get('highlight')
 
   const [network, setNetwork] = useState<UserNetwork[]>(initialNetwork)
   const [searchQuery, setSearchQuery] = useState('')

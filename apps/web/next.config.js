@@ -1,5 +1,3 @@
-const { withSentryConfig } = require('@sentry/nextjs')
-
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
   { key: 'X-Content-Type-Options',    value: 'nosniff' },
@@ -32,7 +30,6 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@scout/shared'],
   experimental: {
-    // Ship the pre-baked alumni map dataset with the serverless bundle
     outputFileTracingIncludes: {
       '/api/map/data': ['./data/alumni-map.json'],
       '/api/alumni/[id]/circle': ['./data/alumni-map.json'],
@@ -44,16 +41,4 @@ const nextConfig = {
   },
 }
 
-module.exports = withSentryConfig(nextConfig, {
-  // Silently disable Sentry telemetry
-  telemetry: false,
-  // Upload source maps during build
-  widenClientFileUpload: true,
-  // Hides source maps from the client — server-side errors get them, client-side don't
-  hideSourceMaps: true,
-  // Disable server-side auto-instrumentation for now
-  disableServerWebpackPlugin: false,
-  disableClientWebpackPlugin: false,
-  // Silence the release health check toast
-  silent: true,
-})
+module.exports = nextConfig

@@ -13,6 +13,8 @@ import AlumniProfileForm, {
   AlumniProfileFormValues,
   emptyAlumniProfileValues,
 } from '@/components/AlumniProfileForm'
+import FreshnessBanner from '@/components/FreshnessBanner'
+import { getStaleFields } from '@/lib/profile-freshness'
 
 interface Props {
   userEmail: string
@@ -160,9 +162,14 @@ export default function AlumniProfileClient({
   const shareEmail = Boolean(alumni?.share_email_with_students ?? values.share_email_with_students)
   const workHistory = (alumni?.work_history || []) as WorkHistoryEntry[]
 
+  const { stale, daysSinceUpdate } = alumni ? getStaleFields(alumni) : { stale: [], daysSinceUpdate: 0 }
+
   return (
     <main className="min-h-screen px-4 py-10">
       <div className="w-full max-w-2xl mx-auto">
+        {stale.length > 0 && (
+          <FreshnessBanner staleFields={stale} daysSinceUpdate={daysSinceUpdate} />
+        )}
         <div className="flex items-center justify-between mb-6">
           <p className="text-xs text-[--text-quaternary] uppercase tracking-widest">Your profile</p>
           <button

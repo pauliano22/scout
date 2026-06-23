@@ -189,19 +189,6 @@ export default function AlumniDetailModal({
             </div>
           </div>
 
-          {warm && (
-            <div className="mx-6 mb-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-600/25 text-[13px]">
-              <span className="font-semibold text-green-700 dark:text-green-500">Your way in: </span>
-              <span className="text-[--text-secondary]">
-                {warm.count > 1
-                  ? `${warm.topName} +${warm.count - 1} more in your network can introduce you.`
-                  : `${warm.topName} in your network ${warm.topRelation === 'teammate' ? 'played with them at Cornell' : 'was on campus with them'} — ask for an intro.`}
-              </span>{' '}
-              <a href={`/map?sel=${alumni.id}`} className="font-medium text-[--school-primary] hover:underline whitespace-nowrap">
-                Their circle →
-              </a>
-            </div>
-          )}
 
           {/* CTAs */}
           <div className="px-6 pb-5 flex gap-2.5">

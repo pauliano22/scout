@@ -7,7 +7,7 @@
 // preferences sheet; goal/pacing are internal agent state.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Users, GraduationCap, MapPin, Briefcase } from 'lucide-react'
+import { Briefcase, Linkedin } from 'lucide-react'
 import SportAvatar from '@/components/SportAvatar'
 import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
@@ -233,7 +233,6 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
           const expOpen = expandedExp.has(pick.queueId)
           const shownExp = expOpen ? exp : exp.slice(0, 3)
           const isSaved = saved.has(pick.queueId)
-          const warmExtra = pick.warm && pick.warm.count > 1 ? pick.warm.count - 1 : 0
           return (
             <div key={pick.queueId} className="py-7">
               {/* Identity */}
@@ -248,34 +247,23 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                   <div className="text-lg font-bold tracking-tight text-[--text-primary] leading-tight group-hover:underline">
                     {a.full_name}
                   </div>
-                  <div className="text-sm text-[--text-primary] mt-0.5">
-                    {a.role
-                      ? <>{a.role}{a.company && <span className="text-[--text-tertiary]"> · {a.company}</span>}</>
-                      : <span className="text-[--text-tertiary]">{a.company}</span>}
+                  <div className="text-sm text-[--text-secondary] mt-0.5 leading-snug">
+                    {a.role}{a.role && a.company && ' · '}{a.company}
                   </div>
-                  <div className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2 text-xs text-[--text-tertiary]">
-                    {a.sport && <span className="inline-flex items-center gap-1.5"><Users size={13} className="text-[--text-quaternary]" />{a.sport}</span>}
-                    {a.graduation_year && <span className="inline-flex items-center gap-1.5"><GraduationCap size={13} className="text-[--text-quaternary]" />{a.graduation_year}</span>}
-                    {a.location && <span className="inline-flex items-center gap-1.5"><MapPin size={13} className="text-[--text-quaternary]" />{a.location}</span>}
-                    {a.industry && <span className="inline-flex items-center gap-1.5"><Briefcase size={13} className="text-[--text-quaternary]" />{a.industry}</span>}
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-sm text-[--text-tertiary]">
+                    {a.sport && <span>{a.sport}</span>}
+                    {a.graduation_year && <span>&apos;{String(a.graduation_year).slice(-2)}</span>}
+                    {a.location && <span>{a.location}</span>}
                   </div>
                 </div>
               </button>
 
-              {/* Your way in */}
-              {pick.warm && (
-                <div className="mt-3.5 rounded-xl border border-green-200 bg-green-50 px-3.5 py-2.5 text-[13px] leading-relaxed text-green-800">
-                  <span className="font-semibold text-green-900">Your way in:</span>{' '}
-                  {pick.warm.topName}{warmExtra > 0 ? ` and ${warmExtra} other${warmExtra > 1 ? 's' : ''}` : ''} can introduce you — ask for an intro.
-                </div>
-              )}
-
-              {/* Two big CTAs */}
-              <div className="mt-4 flex gap-2.5">
+              {/* Actions — primary, then LinkedIn in the shared secondary style */}
+              <div className="mt-4 space-y-2">
                 <button
                   onClick={() => openDraft(pick)}
                   disabled={busy === pick.queueId}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--school-primary] text-white text-sm font-semibold transition hover:bg-[--school-primary-hover] disabled:opacity-60"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[--school-primary] text-white text-sm font-semibold transition hover:bg-[--school-primary-hover] disabled:opacity-60"
                 >
                   {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
                 </button>
@@ -284,9 +272,9 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                     href={a.linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[--border-primary] text-sm font-semibold text-[--text-primary] transition hover:border-[#0a66c2]/40 hover:bg-[#0a66c2]/5"
+                    className="btn-secondary w-full flex items-center justify-center gap-2 py-3"
                   >
-                    <span className="w-5 h-5 rounded-[5px] bg-[#0a66c2] text-white grid place-items-center text-[11px] font-extrabold not-italic leading-none">in</span>
+                    <Linkedin size={15} />
                     LinkedIn
                   </a>
                 )}

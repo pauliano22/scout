@@ -23,6 +23,28 @@ function getSupabaseAdmin() {
   })
 }
 
+/** Insert a row into the password_reset_audit_log table. Non-blocking — logs and swallows errors. */
+async function logAuditEvent(
+  supabase: ReturnType<typeof createClient>,
+  action: 'request' | 'reset',
+  email: string,
+  ip_address: string | null,
+  user_agent: string | null,
+  metadata: Record<string, unknown> = {},
+): Promise<void> {
+  try {
+    await supabase.from('password_reset_audit_log').insert({
+      action,
+      email,
+      ip_address,
+      user_agent,
+      metadata,
+    } as never)
+  } catch (err) {
+    console.error('Failed to write audit log:', err)
+  }
+}
+
 export async function POST(request: NextRequest) {
   console.log('=== RESET PASSWORD POST ===')
 
@@ -119,6 +141,16 @@ export async function POST(request: NextRequest) {
       .from('password_reset_tokens')
       .update({ used: true })
       .eq('token', token)
+
+    // Log the successful password reset
+    await logAuditEvent(
+      supabase,
+      'reset',
+      resetToken.email,
+      getClientIp(request),
+      request.headers.get('user-agent'),
+      { success: true },
+    )
 
     console.log('Password reset successful')
     return addRateLimitHeaders(NextResponse.json({ success: true }), rl)

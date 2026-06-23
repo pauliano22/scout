@@ -304,16 +304,6 @@ export default function NetworkClient({
                   </p>
                 </div>
 
-                {/* Circle cross-link — appears on hover, quiet */}
-                <a
-                  href={`/map?sel=${connection.alumni_id}`}
-                  onClick={e => e.stopPropagation()}
-                  className="flex-shrink-0 text-xs text-[--text-quaternary] hover:text-[--school-primary] opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Their circle"
-                >
-                  Circle →
-                </a>
-
                 {/* CTA */}
                 <button
                   onClick={e => handleNextAction(e, connection)}

@@ -8,22 +8,27 @@
    ============================================ */
 
 :root {
-  /* Background scale — dark mode (default) */
-  --bg-primary:   #0a0a0b;
-  --bg-secondary: #111113;
-  --bg-tertiary:  #18181b;
-  --bg-hover:     #1f1f23;
-  --bg-active:    #27272b;
+  /* Background scale — light only */
+  --bg-primary:   #ffffff;
+  --bg-secondary: #f9f9f9;
+  --bg-tertiary:  #f4f4f5;
+  --bg-hover:     #e4e4e7;
+  --bg-active:    #d4d4d8;
 
   /* Text scale */
-  --text-primary:    #fafafa;
-  --text-secondary:  #a1a1aa;
+  --text-primary:    #09090b;
+  --text-secondary:  #3f3f46;
   --text-tertiary:   #71717a;
-  --text-quaternary: #52525b;
+  --text-quaternary: #a1a1aa;
 
   /* Borders */
-  --border-primary:   #27272a;
-  --border-secondary: #3f3f46;
+  --border-primary:   #e4e4e7;
+  --border-secondary: #d4d4d8;
+
+  /* Warm beige accent for onboarding / highlight sections */
+  --accent-warm:       #f5f0e8;
+  --accent-warm-muted: rgba(245, 240, 232, 0.4);
+  --accent-warm-border: rgba(245, 240, 232, 0.6);
 
   /* Accent — used sparingly */
   --school-primary:       #B31B1B;
@@ -54,30 +59,6 @@
   --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow:   400ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  color-scheme: dark;
-}
-
-/* Light mode */
-[data-theme="light"] {
-  --bg-primary:   #ffffff;
-  --bg-secondary: #f9f9f9;
-  --bg-tertiary:  #f4f4f5;
-  --bg-hover:     #e4e4e7;
-  --bg-active:    #d4d4d8;
-
-  --text-primary:    #09090b;
-  --text-secondary:  #3f3f46;
-  --text-tertiary:   #71717a;
-  --text-quaternary: #a1a1aa;
-
-  --border-primary:   #e4e4e7;
-  --border-secondary: #d4d4d8;
-
-  /* Warm beige accent for onboarding / highlight sections */
-  --accent-warm:       #f5f0e8;
-  --accent-warm-muted: rgba(245, 240, 232, 0.4);
-  --accent-warm-border: rgba(245, 240, 232, 0.6);
 
   color-scheme: light;
 }
@@ -300,14 +281,6 @@ textarea:focus {
   --card-shadow: 0 2px 16px rgba(10, 10, 20, 0.06);
   --card-border: transparent;
   --card-padding: 1.5rem;
-}
-[data-theme='dark'] {
-  --card-shadow: none;
-  --card-border: var(--border-primary);
-}
-[data-theme='light'] {
-  --card-shadow: 0 2px 16px rgba(10, 10, 20, 0.06);
-  --card-border: transparent;
 }
 
 /* Base card — every card in the app inherits this */

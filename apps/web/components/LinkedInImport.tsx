@@ -137,7 +137,6 @@ export default function LinkedInImport() {
         <div className="flex flex-col items-center py-8">
           <Loader2 size={24} className="animate-spin text-[--school-primary] mb-3" />
           <p className="text-sm text-[--text-tertiary]">Parsing LinkedIn profile...</p>
-          <p className="text-xs text-[--text-quaternary] mt-1">This should only take a moment.</p>
         </div>
       )}
 

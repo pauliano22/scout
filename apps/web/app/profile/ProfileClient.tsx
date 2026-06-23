@@ -316,9 +316,6 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-5">
           <div>
             <h2 className="text-base font-semibold">Career Information</h2>
-            <p className="text-xs text-[--text-quaternary] mt-1">
-              This helps other athletes find and connect with you.
-            </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -390,7 +387,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
           <h2 className="text-base font-semibold mb-1">Resume</h2>
           <p className="text-xs text-[--text-quaternary] mb-4">
-            Uploading your resume helps us find better alumni matches and personalize your outreach. It&apos;s never shared with alumni.
+            Never shared with alumni.
           </p>
           <ResumeUpload
             userId={userId}

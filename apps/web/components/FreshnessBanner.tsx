@@ -73,9 +73,6 @@ export default function FreshnessBanner({ staleFields, daysSinceUpdate }: Props)
           <p className="text-sm text-amber-200 font-medium">
             Your {label} {staleFields.length === 1 ? 'is' : 'are'} {days} old
           </p>
-          <p className="text-xs text-amber-300/80 mt-0.5">
-            Keeping your profile up to date helps student-athletes find you.
-          </p>
           <Link
             href="/profile?tab=edit"
             className="inline-block mt-2 text-xs font-medium text-amber-200 underline underline-offset-2 hover:text-amber-100 transition-colors"

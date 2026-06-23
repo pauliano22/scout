@@ -7,7 +7,6 @@ import { Search, Users, LogOut, User, ClipboardList, Home, Waypoints, Shield } f
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@scout/shared/types/database'
 import { isInCampaignHome } from '@scout/shared/featureFlags/campaignHome'
-import ThemeToggle from './ThemeToggle'
 
 interface NavbarProps {
   user?: { email: string; full_name?: string } | null
@@ -148,8 +147,6 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
               </>
             )}
 
-            <ThemeToggle />
-
             {!isAlumni && (
               <Link href="/profile" className="btn-ghost p-2" title="Profile">
                 <User size={14} />
@@ -161,7 +158,6 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
           </>
         ) : (
           <>
-            <ThemeToggle />
             <Link href="/login"  className="btn-ghost text-sm">Log In</Link>
             <Link href="/signup" className="btn-primary text-sm">Sign Up</Link>
           </>

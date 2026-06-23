@@ -117,10 +117,7 @@ function SignupForm() {
             </div>
 
             <div className="relative z-10">
-            <h1 className="text-xl font-semibold text-center mb-2">How do you want to join?</h1>
-            <p className="text-[--text-tertiary] text-sm text-center mb-8">
-              Pick one — you can always reach out to us if you need to switch later.
-            </p>
+            <h1 className="text-xl font-semibold text-center mb-8">How do you want to join?</h1>
 
             <div className="space-y-3">
               <button

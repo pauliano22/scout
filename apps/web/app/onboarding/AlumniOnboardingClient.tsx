@@ -280,12 +280,6 @@ export default function AlumniOnboardingClient({
     return (
       <Shell>
         <div className="relative">
-          {/* Cornell 'C' watermark */}
-          <div
-            className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[80px] font-bold leading-none opacity-20"
-            aria-hidden="true"
-          />
-
           <div className="relative z-10">
           <div className="flex items-center gap-2 mb-8">
             <div className="flex gap-1.5">
@@ -310,16 +304,20 @@ export default function AlumniOnboardingClient({
           <div className="space-y-5">
             <div>
               <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
-              <select
+              <input
+                type="text"
+                list="alumni-sports-list"
                 value={sport}
                 onChange={(e) => setSport(e.target.value)}
-                className="input-field cursor-pointer"
-              >
-                <option value="">Select your sport</option>
+                placeholder="Start typing your sport"
+                autoComplete="off"
+                className="input-field"
+              />
+              <datalist id="alumni-sports-list">
                 {SPORTS_LIST.map((s) => (
-                  <option key={s} value={s}>{s}</option>
+                  <option key={s} value={s} />
                 ))}
-              </select>
+              </datalist>
             </div>
 
             <div>
@@ -386,11 +384,6 @@ export default function AlumniOnboardingClient({
 
         {/* High-confidence: name, sport, year */}
         <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4 overflow-hidden">
-          {/* Cornell 'C' watermark */}
-          <div
-            className="absolute -bottom-3 -right-3 text-[--accent-warm-muted] select-none pointer-events-none text-[60px] font-bold leading-none opacity-20"
-            aria-hidden="true"
-          />
           <p className="text-xs uppercase tracking-wide text-[--text-quaternary] mb-3 relative z-10">Match identifiers</p>
           <div className="space-y-2 relative z-10">
             <Row label="Name" value={match.full_name} />
@@ -406,7 +399,7 @@ export default function AlumniOnboardingClient({
               Existing info on Scout
             </p>
             <p className="text-xs text-[--text-quaternary] mb-3 italic">
-              May be outdated. You can edit or remove any of this in the next step.
+              May be outdated.
             </p>
             <div className="space-y-2">
               {match.role && <Row label="Role" value={match.role} muted />}
@@ -487,12 +480,6 @@ export default function AlumniOnboardingClient({
         </div>
 
         <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 md:p-8 overflow-hidden">
-          {/* Cornell 'C' watermark */}
-          <div
-            className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[80px] font-bold leading-none opacity-20"
-            aria-hidden="true"
-          />
-
           <div className="relative z-10">
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-5">
@@ -524,9 +511,6 @@ export default function AlumniOnboardingClient({
           </button>
         </div>
 
-        <p className="text-center text-xs text-[--text-quaternary] mt-5">
-          You can edit your profile anytime from your dashboard.
-        </p>
       </div>
     </main>
   )

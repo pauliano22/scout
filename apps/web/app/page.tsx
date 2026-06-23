@@ -3,7 +3,7 @@
 import Link from '@/components/Link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, GraduationCap, Briefcase } from 'lucide-react'
+import { ArrowRight, GraduationCap, Briefcase, LogIn } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { postLoginPath } from '@/lib/auth/postLoginPath'
 import type { UserRole } from '@scout/shared/types/database'
@@ -47,6 +47,19 @@ export default function HomePage() {
       }`}>
         <Navbar user={user} />
       </div>
+
+      {/* Always-available Sign In — top right, hides once the scroll navbar is shown */}
+      {!user && (
+        <Link
+          href="/login"
+          className={`btn-secondary fixed top-4 right-4 md:top-6 md:right-6 z-[60] gap-1.5 text-sm shadow-sm backdrop-blur-sm transition-all duration-300 ${
+            showNavbar ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <LogIn size={15} />
+          Sign In
+        </Link>
+      )}
 
       <main>
         {/* ── Hero ── */}

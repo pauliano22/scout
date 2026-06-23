@@ -25,14 +25,15 @@ const TYPES: OutreachType[] = ['introduction', 'follow_up', 'thank_you']
 const TONES: OutreachTone[] = ['friendly', 'neutral', 'formal']
 
 export async function POST(request: NextRequest) {
-  try {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // ── Rate limit: authenticated tier (100 req/min) keyed by user ID ──
-    const rl = checkRateLimit(`generate-message:${user.id}`, 'authenticated')
-    if (!rl.success) return rateLimitExceeded(rl)
+  // ── Rate limit: authenticated tier (100 req/min) keyed by user ID ──
+  const rl = checkRateLimit(`generate-message:${user.id}`, 'authenticated')
+  if (!rl.success) return rateLimitExceeded(rl)
+
+  try {
 
     const body = await request.json()
     const { alumni, tone, messageType = 'introduction', platform = 'linkedin', context } = body

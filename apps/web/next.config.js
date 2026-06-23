@@ -1,5 +1,3 @@
-const { withSentryConfig } = require('@sentry/nextjs')
-
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
   { key: 'X-Content-Type-Options',    value: 'nosniff' },
@@ -43,16 +41,4 @@ const nextConfig = {
   },
 }
 
-module.exports = withSentryConfig(nextConfig, {
-  // Silently disable Sentry telemetry
-  telemetry: false,
-  // Upload source maps during build
-  widenClientFileUpload: true,
-  // Hides source maps from the client — server-side errors get them, client-side don't
-  hideSourceMaps: true,
-  // Disable server-side auto-instrumentation for now
-  disableServerWebpackPlugin: false,
-  disableClientWebpackPlugin: false,
-  // Silence the release health check toast
-  silent: true,
-})
+module.exports = nextConfig

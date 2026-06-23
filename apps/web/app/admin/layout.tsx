@@ -84,7 +84,7 @@ export default function AdminLayout({
             const isActive =
               item.href === '/admin'
                 ? pathname === '/admin'
-                : pathname.startsWith(item.href)
+                : pathname?.startsWith(item.href) ?? false
             return (
               <Link
                 key={item.href}

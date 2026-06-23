@@ -1,0 +1,136 @@
+name: Migration Safety Review
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/supabase/migrations/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  migration-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: List changed migration files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            apps/web/supabase/migrations/**/*.sql
+
+      - name: Run migration safety check
+        id: safety-check
+        run: |
+          CHANGED_FILES="${{ steps.changed-files.outputs.all_changed_files }}"
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No migration files changed."
+            echo "result=pass" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Changed migration files:"
+          for FILE in $CHANGED_FILES; do
+            echo "  - $FILE"
+          done
+
+          # Build array of file arguments
+          FILE_ARGS=""
+          for FILE in $CHANGED_FILES; do
+            FILE_ARGS="$FILE_ARGS $FILE"
+          done
+
+          # Run the check script
+          bash apps/web/scripts/check-migrations.sh $FILE_ARGS
+          EXIT_CODE=$?
+
+          if [ "$EXIT_CODE" -eq 0 ]; then
+            echo "result=pass" >> $GITHUB_OUTPUT
+          else
+            echo "result=fail" >> $GITHUB_OUTPUT
+          fi
+          exit "$EXIT_CODE"
+
+      - name: Add migration review label
+        if: steps.safety-check.outputs.result == 'fail'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          labels: needs-migration-review
+
+      - name: Remove migration review label on pass
+        if: steps.safety-check.outputs.result == 'pass'
+        uses: actions-ecosystem/action-remove-labels@v1
+        continue-on-error: true
+        with:
+          labels: needs-migration-review
+
+      - name: Comment on PR with findings
+        if: always() && steps.safety-check.outcome != 'skipped'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = '${{ steps.safety-check.outputs.result }}';
+            const ref = context.payload.pull_request?.head?.sha?.substring(0, 7) || 'HEAD';
+
+            let body;
+            if (result === 'fail') {
+              body = `## ⚠️ Migration Safety Check: Issues Found
+
+            > **PR**: #${context.issue.number} · **Commit**: \`${ref}\`
+
+            This pull request contains **high-risk SQL patterns** (DROP, TRUNCATE, RENAME, DELETE) in migration files. These operations can cause **data loss, downtime, or irreversible schema changes** in production.
+
+            ### 🔍 Next Steps
+            1. **Review the flagged migrations carefully** — ensure they are safe for production.
+            2. If destructive operations are intentional, document them clearly in the migration file comments.
+            3. Consider wrapping destructive operations in a reversible pattern (e.g., backup before DROP).
+            4. Request a second review from a senior engineer or DBA.
+
+            > ⚡ Label **\`needs-migration-review\`** has been applied.
+
+            ---
+            _Migration Safety CI Gate · Automated check_`;
+            } else {
+              body = `## ✅ Migration Safety Check: Passed
+
+            > **PR**: #${context.issue.number} · **Commit**: \`${ref}\`
+
+            No high-risk SQL patterns detected in migration files.
+
+            ---
+            _Migration Safety CI Gate · Automated check_`;
+            }
+
+            // Find existing comment from this bot
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(
+              comment => comment.user.type === 'Bot' && comment.body.includes('Migration Safety Check')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+            }

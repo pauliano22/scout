@@ -112,8 +112,16 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
           )
         })}
         {nodes.map(n => {
-          const labelLeft = Math.cos(n.angle) < -0.2
+          // Place labels away from the ring's centre: above at the top, below at
+          // the bottom, out to the side on the left/right. Without the "below"
+          // case, bottom nodes all got side labels that stacked and overlapped.
           const labelAbove = Math.sin(n.angle) < -0.6
+          const labelBelow = Math.sin(n.angle) > 0.6
+          const labelLeft = Math.cos(n.angle) < -0.2
+          const vertical = labelAbove || labelBelow
+          const lx = vertical ? 0 : labelLeft ? -20 : 20
+          const ly = labelAbove ? -22 : labelBelow ? 27 : 4
+          const anchor = vertical ? 'middle' : labelLeft ? 'end' : 'start'
           return (
             <g
               key={n.p.id}
@@ -129,12 +137,7 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
             >
               <circle r="15" />
               <text className="web-initials" dy="4">{initials(n.p.n)}</text>
-              <text
-                className="web-label"
-                x={labelAbove ? 0 : labelLeft ? -20 : 20}
-                y={labelAbove ? -22 : 4}
-                textAnchor={labelAbove ? 'middle' : labelLeft ? 'end' : 'start'}
-              >
+              <text className="web-label" x={lx} y={ly} textAnchor={anchor}>
                 {shortName(n.p.n)}{n.p.y ? ` '${String(n.p.y).slice(2)}` : ''}
               </text>
             </g>

@@ -327,3 +327,29 @@ export interface RoleChangeLogEntry {
   changed_by: string | null
   changed_at: string
 }
+
+// =====================================================================
+// Security Incident Logging (IDEA 58)
+// =====================================================================
+
+export interface SecurityEvent {
+  id: string
+  event_type: string
+  severity: 'info' | 'warning' | 'critical'
+  source_ip: string | null
+  user_id: string | null
+  details: Record<string, unknown>
+  acknowledged: boolean
+  created_at: string
+}
+
+export interface SecurityAlert {
+  id: string
+  rule_name: string
+  threshold: number
+  actual_count: number
+  events: SecurityEvent[]
+  acknowledged: boolean
+  acknowledged_by: string | null
+  created_at: string
+}

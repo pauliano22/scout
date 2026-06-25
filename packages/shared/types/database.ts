@@ -327,3 +327,53 @@ export interface RoleChangeLogEntry {
   changed_by: string | null
   changed_at: string
 }
+
+// =====================================================================
+// Census gap analysis
+// =====================================================================
+
+export interface CensusReport {
+  id: string
+  generated_at: string
+  sport: string
+  graduation_year: number
+  total_rostered: number
+  total_registered: number
+  coverage_pct: number
+  gap_category: 'critical' | 'growing' | 'healthy'
+  created_at: string
+}
+
+export type GapCategory = 'critical' | 'growing' | 'healthy'
+
+// =====================================================================
+// Team Digest
+// =====================================================================
+
+export interface DigestSettings {
+  user_id: string
+  subscribed_sports: string[]
+  digest_frequency: 'weekly' | 'monthly' | 'never'
+  last_sent_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DigestQueueEntry {
+  id: string
+  user_id: string
+  sport: string
+  entries: DigestCareerUpdate[]
+  frequency: string
+  sent_at: string | null
+  generated_at: string
+}
+
+export interface DigestCareerUpdate {
+  alumni_id: string
+  alumni_name: string
+  company: string | null
+  role: string | null
+  action: string
+  timestamp: string
+}

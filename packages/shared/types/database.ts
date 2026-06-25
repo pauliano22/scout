@@ -327,3 +327,52 @@ export interface RoleChangeLogEntry {
   changed_by: string | null
   changed_at: string
 }
+
+// =====================================================================
+// Security Incident Logging (IDEA 58)
+// =====================================================================
+
+export interface SecurityEvent {
+  id: string
+  event_type: string
+  severity: 'info' | 'warning' | 'critical'
+  source_ip: string | null
+  user_id: string | null
+  details: Record<string, unknown>
+  acknowledged: boolean
+  created_at: string
+}
+
+export interface SecurityAlert {
+  id: string
+  rule_name: string
+  threshold: number
+  actual_count: number
+  events: SecurityEvent[]
+  acknowledged: boolean
+  acknowledged_by: string | null
+  created_at: string
+}
+
+// =====================================================================
+// IDEA 31 — Signup Funnel Analytics
+// =====================================================================
+
+export interface SignupEvent {
+  id: string
+  session_id: string
+  step: 'landing' | 'form' | 'submit' | 'verify' | 'complete'
+  user_id: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface AbandonedRegistration {
+  id: string
+  email: string
+  session_id: string
+  last_step: string
+  recovery_sent_at: string | null
+  recovered: boolean
+  created_at: string
+}

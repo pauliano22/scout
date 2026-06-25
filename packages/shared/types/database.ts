@@ -327,3 +327,101 @@ export interface RoleChangeLogEntry {
   changed_by: string | null
   changed_at: string
 }
+
+// =====================================================================
+// Census gap analysis (migration 036)
+// =====================================================================
+
+export interface CensusReport {
+  id: string
+  generated_at: string
+  report_data: CensusReportRow[]
+  sport: string
+  graduation_year: number
+  total_rostered: number
+  total_registered: number
+  coverage_pct: number
+  gap_category: 'critical' | 'growing' | 'healthy'
+  created_at: string
+}
+
+export interface CensusReportRow {
+  sport: string
+  graduation_year: number
+  total_rostered: number
+  total_registered: number
+  coverage_pct: number
+  gap_category: 'critical' | 'growing' | 'healthy'
+}
+
+export type GapCategory = 'critical' | 'growing' | 'healthy'
+
+// =====================================================================
+// Migration 036 — Smart Jobs Board
+// =====================================================================
+
+export type EmploymentType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary'
+export type ApplicationStatus = 'pending' | 'reviewed' | 'contacted' | 'rejected' | 'hired'
+
+export interface JobListing {
+  id: string
+  title: string
+  company: string
+  location: string | null
+  description: string | null
+  employment_type: EmploymentType | null
+  salary_range: string | null
+  application_url: string | null
+  posted_by: string
+  sport_tags: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface JobApplication {
+  id: string
+  job_listing_id: string
+  applicant_id: string
+  cover_note: string | null
+  resume_url: string | null
+  status: ApplicationStatus
+  created_at: string
+  updated_at: string
+}
+
+// =====================================================================
+// Migration 036 — Digest Settings & Queue
+// =====================================================================
+
+export interface DigestSettings {
+  user_id: string
+  subscribed_sports: string[]
+  digest_frequency: 'weekly' | 'monthly' | 'never'
+  last_sent_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DigestQueueEntry {
+  id: string
+  user_id: string
+  sport: string
+  digest_date: string
+  alumni_count: number
+  entries: DigestCareerUpdate[]
+  sent_at: string | null
+  created_at: string
+}
+
+export interface DigestCareerUpdate {
+  alumni_id: string
+  full_name: string
+  sport: string
+  company: string | null
+  role: string | null
+  previous_company: string | null
+  previous_role: string | null
+  update_type: 'new_job' | 'promotion' | 'move' | 'other'
+  linkedin_url: string | null
+}

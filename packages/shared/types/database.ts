@@ -327,3 +327,37 @@ export interface RoleChangeLogEntry {
   changed_by: string | null
   changed_at: string
 }
+
+// =====================================================================
+// Feature Flags (migration 035)
+// =====================================================================
+
+export interface FeatureFlag {
+  flag_name: string
+  enabled: boolean
+  rollout_percentage: number
+  created_at: string
+  updated_at: string
+}
+
+// =====================================================================
+// Session Token Rotation (IDEA 26)
+// =====================================================================
+
+export interface Session {
+  id: string
+  user_id: string
+  token_hash: string
+  created_at: string
+  expires_at: string
+  revoked_at: string | null
+  user_agent: string | null
+  ip_address: string | null
+}
+
+// Helper to check if a session is still valid
+export function isSessionValid(session: Session): boolean {
+  if (session.revoked_at) return false
+  if (new Date(session.expires_at) < new Date()) return false
+  return true
+}

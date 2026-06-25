@@ -10,6 +10,7 @@ import {
   Activity,
   ArrowLeft,
   Loader2,
+  ToggleLeft,
 } from 'lucide-react'
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/reports', label: 'Reports', icon: Flag },
   { href: '/admin/activity', label: 'Activity', icon: Activity },
+  { href: '/admin/feature-flags', label: 'Feature Flags', icon: ToggleLeft },
 ]
 
 export default function AdminLayout({

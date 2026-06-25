@@ -327,3 +327,40 @@ export interface RoleChangeLogEntry {
   changed_by: string | null
   changed_at: string
 }
+
+// =====================================================================
+// Bio Keyword Extraction (IDEA 62)
+// =====================================================================
+
+export type KeywordCategory = 'skill' | 'industry' | 'certification' | 'milestone'
+
+export interface ProfileKeyword {
+  id: string
+  alumni_id: string
+  keyword: string
+  category: KeywordCategory
+  source: string
+  created_at: string
+}
+
+// =====================================================================
+// IDEA 34 — Testimonials
+// =====================================================================
+
+export interface Testimonial {
+  id: string
+  alumni_id: string
+  content: string
+  source: 'email' | 'web' | 'admin'
+  featured: boolean
+  permission_granted: boolean
+  created_at: string
+}
+
+export interface TestimonialRequest {
+  id: string
+  alumni_id: string
+  sent_at: string
+  responded: boolean
+  response_at: string | null
+}

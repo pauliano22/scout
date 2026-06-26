@@ -8,18 +8,20 @@ import {
   Loader2, EyeOff, Linkedin,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { Alumni, WorkHistoryEntry } from '@scout/shared/types/database'
+import type { Alumni, AmbassadorProfile, AmbassadorTier, AmbassadorBadgeType, WorkHistoryEntry } from '@scout/shared/types/database'
 import AlumniProfileForm, {
   AlumniProfileFormValues,
   emptyAlumniProfileValues,
 } from '@/components/AlumniProfileForm'
 import LinkedInImport from '@/components/LinkedInImport'
+import VarsityBadge from '@/components/VarsityBadge'
 
 interface Props {
   userEmail: string
   fullName: string
   alumni: Alumni | null
   major: string | null
+  ambassador: AmbassadorProfile | null
 }
 
 const VIEW = 'view' as const
@@ -31,6 +33,7 @@ export default function AlumniProfileClient({
   fullName,
   alumni,
   major,
+  ambassador,
 }: Props) {
   const router = useRouter()
   const supabase = createClient()
@@ -192,6 +195,16 @@ export default function AlumniProfileClient({
                 {role && company && <span className="text-[--text-quaternary]"> · </span>}
                 {company}
               </p>
+            )}
+            {ambassador && (
+              <div className="mt-3">
+                <VarsityBadge
+                  sport={ambassador.sport}
+                  tier={ambassador.tier as AmbassadorTier}
+                  badgeType={ambassador.badge_type as AmbassadorBadgeType}
+                  size="lg"
+                />
+              </div>
             )}
           </div>
 

@@ -13,9 +13,21 @@
     "dev:mobile": "npm run dev --workspace=apps/mobile",
     "build:web": "npm run build --workspace=apps/web",
     "lint": "npm run lint --workspaces --if-present",
-    "db:seed": "node scripts/seed.js"
+    "db:seed": "node scripts/seed.js",
+    "typecheck": "npm run typecheck:web && npm run typecheck:shared",
+    "typecheck:web": "tsc --noEmit -p apps/web/tsconfig.json",
+    "typecheck:shared": "tsc --noEmit -p packages/shared/tsconfig.json",
+    "type-coverage:web": "type-coverage -p apps/web/tsconfig.json --strict --update-if-higher",
+    "type-coverage:shared": "type-coverage -p packages/shared/tsconfig.json --strict --update-if-higher",
+    "type-coverage": "npm run type-coverage:web && npm run type-coverage:shared"
   },
   "dependencies": {
     "next": "14.2.35"
+  },
+  "devDependencies": {
+    "type-coverage": "^2.29.7"
+  },
+  "typeCoverage": {
+    "atLeast": 95
   }
 }

@@ -14,6 +14,7 @@ import AlumniProfileForm, {
   emptyAlumniProfileValues,
 } from '@/components/AlumniProfileForm'
 import LinkedInImport from '@/components/LinkedInImport'
+import ReferralProgressTracker from '@/components/ReferralProgressTracker'
 
 interface Props {
   userEmail: string
@@ -243,6 +244,9 @@ export default function AlumniProfileClient({
 
         {/* LinkedIn Import */}
         <LinkedInImport />
+
+        {/* Referral Program */}
+        <ReferralProgressTracker />
 
         {/* Contact */}
         <Section title="Contact">

@@ -342,3 +342,21 @@ export interface ProfileKeyword {
   source: string
   created_at: string
 }
+
+// =====================================================================
+// Census gap analysis
+// =====================================================================
+
+export interface CensusReport {
+  id: string
+  generated_at: string
+  sport: string
+  graduation_year: number
+  total_rostered: number
+  total_registered: number
+  coverage_pct: number
+  gap_category: 'critical' | 'growing' | 'healthy'
+  created_at: string
+}
+
+export type GapCategory = 'critical' | 'growing' | 'healthy'

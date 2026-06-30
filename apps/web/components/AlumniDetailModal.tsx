@@ -15,6 +15,7 @@ import {
   Flag,
 } from 'lucide-react'
 import SportAvatar from '@/components/SportAvatar'
+import ShareProfileButton from '@/components/ShareProfileButton'
 import { cleanField } from '@/lib/cleanField'
 import type { WorkHistoryEntry } from '@scout/shared/types/database'
 

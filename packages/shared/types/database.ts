@@ -360,3 +360,15 @@ export interface CensusReport {
 }
 
 export type GapCategory = 'critical' | 'growing' | 'healthy'
+
+// =====================================================================
+// Feature Flags (migration 035)
+// =====================================================================
+
+export interface FeatureFlag {
+  flag_name: string
+  enabled: boolean
+  rollout_percentage: number
+  created_at: string
+  updated_at: string
+}

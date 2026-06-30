@@ -94,6 +94,35 @@ export interface Profile {
   updated_at: string
 }
 
+// =====================================================================
+// Migration 035 — Ambassador Program / Varsity Badges
+// =====================================================================
+
+export type AmbassadorTier = 'bronze' | 'silver' | 'gold' | 'platinum'
+export type AmbassadorBadgeType = 'varsity' | 'captain' | 'hall_of_fame'
+
+export interface AmbassadorProfile {
+  id: string
+  user_id: string
+  alumni_id: string | null
+  tier: AmbassadorTier
+  sport: string
+  badge_type: AmbassadorBadgeType
+  benefits_access: Record<string, unknown>
+  recruits_count: number
+  mentorship_hours: number
+  referrals_count: number
+  is_active: boolean
+  reviewed_by: string | null
+  reviewed_at: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+  // Joined data
+  profiles?: Profile
+  alumni?: Alumni
+}
+
 export interface UserNetwork {
   id: string
   user_id: string
@@ -274,6 +303,40 @@ export interface Interaction {
 
 export type UserRole = 'student' | 'alumni' | 'admin'
 export type TeamCode = 'football'
+
+// =====================================================================
+// Migration 035 — Event QR Connection Network
+// =====================================================================
+
+export interface EventChatSession {
+  id: string
+  event_id: string | null
+  sport: string
+  name: string
+  code: string
+  start_time: string
+  end_time: string | null
+  is_active: boolean
+  qr_code_url: string | null
+  created_at: string
+}
+
+export interface EventParticipant {
+  id: string
+  session_id: string
+  user_id: string
+  joined_at: string
+  display_name: string | null
+}
+
+export interface EventChatMessage {
+  id: string
+  session_id: string
+  user_id: string
+  display_name: string | null
+  content: string
+  created_at: string
+}
 export type EventKind = 'networking' | 'panel' | 'workshop' | 'game_day' | 'other'
 export type EventVisibility = 'team' | 'all'
 export type RsvpStatus = 'going' | 'maybe' | 'declined'

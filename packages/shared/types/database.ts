@@ -525,3 +525,37 @@ export interface SecurityAlert {
   acknowledged_by: string | null
   created_at: string
 }
+
+// =====================================================================
+// Smart Jobs Board
+// =====================================================================
+
+export type EmploymentType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary'
+export type ApplicationStatus = 'pending' | 'reviewed' | 'contacted' | 'rejected' | 'hired'
+
+export interface JobListing {
+  id: string
+  title: string
+  company: string
+  location: string | null
+  description: string | null
+  employment_type: EmploymentType | null
+  salary_range: string | null
+  application_url: string | null
+  posted_by: string
+  sport_tags: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface JobApplication {
+  id: string
+  job_listing_id: string
+  applicant_id: string
+  cover_note: string | null
+  resume_url: string | null
+  status: ApplicationStatus
+  created_at: string
+  updated_at: string
+}

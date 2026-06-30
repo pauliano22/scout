@@ -477,6 +477,7 @@ export interface OnboardingProgress {
   has_first_connection: boolean
   has_first_message: boolean
   completed_steps: OnboardingStep[]
+  updated_at?: string
 }
 
 // =====================================================================

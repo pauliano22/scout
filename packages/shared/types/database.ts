@@ -559,3 +559,34 @@ export interface JobApplication {
   created_at: string
   updated_at: string
 }
+
+// =====================================================================
+// Referral Program
+// =====================================================================
+
+export interface ReferralLink {
+  id: string
+  user_id: string
+  code: string
+  is_active: boolean
+  redemption_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ReferralRedemption {
+  id: string
+  referral_link_id: string
+  redeemed_by_user_id: string | null
+  redeemed_by_email: string | null
+  connected_alumni_id: string | null
+  created_at: string
+}
+
+export interface ReferralLeaderboardEntry {
+  user_id: string
+  full_name: string
+  sport: string | null
+  graduation_year: number | null
+  referral_count: number
+}

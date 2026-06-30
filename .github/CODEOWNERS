@@ -1,0 +1,23 @@
+# =============================================================================
+# Scout — CODEOWNERS
+# =============================================================================
+# Defines who must review changes to specific paths.
+#
+# Team members (set up in GitHub org):
+#   @pauliano22     — lead developer, project owner
+#
+# Patterns are evaluated from most-specific to least-specific.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# =============================================================================
+
+# ── CI/CD & Infrastructure ───────────────────────────────────────────────────
+# Any change to CI/CD workflows, scripts, or deployment config requires
+# the lead developer's review.
+.github/                                           @pauliano22
+scripts/                                           @pauliano22
+apps/web/vercel.json                               @pauliano22
+
+# ── Root config (package.json, tsconfig, etc.) ───────────────────────────────
+# Monorepo-wide changes may affect all workspaces.
+package.json                                       @pauliano22
+tsconfig.json                                      @pauliano22

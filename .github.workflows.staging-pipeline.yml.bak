@@ -1,0 +1,125 @@
+# =============================================================================
+# Scout — Staging Pipeline with Preview Deploys
+# =============================================================================
+# Triggers on pull requests targeting `main`. Deploys a Vercel preview,
+# runs smoke tests against the preview URL, and requires the smoke-test
+# check to pass before allowing merge.
+#
+# Branch protection rule (set manually in repo settings):
+#   - Require status check "smoke-test (ubuntu-latest)" before merging.
+# =============================================================================
+
+name: Staging Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: staging-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  # ── Deploy preview to Vercel ───────────────────────────────────────────────
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.vercel-deploy.outputs.preview-url || steps.vercel-preview-url.outputs.url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Vercel (Preview)
+        id: vercel-deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: pauliano22
+          github-comment: true
+          github-deployment: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fallback — Extract Vercel Preview URL
+        id: vercel-preview-url
+        if: steps.vercel-deploy.outputs.preview-url == ''
+        run: |
+          echo "url=$(npx vercel --token "${{ secrets.VERCEL_TOKEN }}" inspect --scope pauliano22 | grep -oP 'https?://[^\s]+')" >> "$GITHUB_OUTPUT"
+
+  # ── Smoke tests against the preview ────────────────────────────────────────
+  smoke-test:
+    name: Smoke Test
+    needs: deploy-preview
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run Smoke Tests
+        id: smoke
+        run: |
+          chmod +x scripts/smoke-test.sh
+          ./scripts/smoke-test.sh "${{ needs.deploy-preview.outputs.preview_url }}"
+        shell: bash
+
+      - name: Upload Smoke Test Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-log
+          path: /tmp/smoke-test-results.log
+          retention-days: 7
+
+      - name: Mark Status
+        if: steps.smoke.outcome == 'success'
+        run: echo "✅ Smoke tests passed against preview"
+
+  # ── Build check (parallel validation) ──────────────────────────────────────
+  build-check:
+    name: Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (Web)
+        run: npm run build:web
+        env:
+          # Minimal env vars needed for build to succeed
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

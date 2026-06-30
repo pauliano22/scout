@@ -51,3 +51,5 @@ apps/web/scripts/*
 !apps/web/scripts/security-scan.sh
 !apps/web/scripts/pii-endpoint-audit.ts
 !apps/web/scripts/README.md
+# Exception: root-level CI/CD helper scripts
+!scripts/smoke-test.sh

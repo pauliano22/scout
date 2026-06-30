@@ -49,3 +49,5 @@ apps/web/scripts/*
 !apps/web/scripts/index-alumni-embeddings.ts
 !apps/web/scripts/hermes-bridge.py
 !apps/web/scripts/security-scan.sh
+!apps/web/scripts/pii-endpoint-audit.ts
+!apps/web/scripts/README.md

@@ -372,3 +372,32 @@ export interface FeatureFlag {
   created_at: string
   updated_at: string
 }
+
+// =====================================================================
+// Onboarding progress (bundled with sport-name-normalization branch)
+// =====================================================================
+
+export type OnboardingStep = 'add_photo' | 'complete_bio' | 'first_connection' | 'first_message'
+
+export const ONBOARDING_STEPS: OnboardingStep[] = [
+  'add_photo',
+  'complete_bio',
+  'first_connection',
+  'first_message',
+]
+
+export const ONBOARDING_STEP_LABELS: Record<OnboardingStep, string> = {
+  add_photo: 'Add a photo',
+  complete_bio: 'Complete your bio',
+  first_connection: 'Find your first teammate',
+  first_message: 'Send your first message',
+}
+
+export interface OnboardingProgress {
+  user_id: string
+  has_photo: boolean
+  has_bio: boolean
+  has_first_connection: boolean
+  has_first_message: boolean
+  completed_steps: OnboardingStep[]
+}

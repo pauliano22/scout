@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, GraduationCap, Briefcase, LogIn } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import LiveUserCounter from '@/components/LiveUserCounter'
+import SpotlightStories from '@/components/SpotlightStories'
 import { postLoginPath } from '@/lib/auth/postLoginPath'
 import type { UserRole } from '@scout/shared/types/database'
 
@@ -147,6 +148,10 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* ── Alumni Spotlight Stories ── */}
+        <SpotlightStories />
+
 
         {/* ── Final CTA ── */}
         <section className="px-6 md:px-12 py-24">

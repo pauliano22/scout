@@ -622,3 +622,25 @@ export interface DigestCareerUpdate {
   action: string
   timestamp: string
 }
+
+// =====================================================================
+// Testimonial Collection Pipeline
+// =====================================================================
+
+export interface Testimonial {
+  id: string
+  alumni_id: string
+  content: string
+  source: 'email' | 'web' | 'admin'
+  featured: boolean
+  permission_granted: boolean
+  created_at: string
+}
+
+export interface TestimonialRequest {
+  id: string
+  alumni_id: string
+  sent_at: string
+  responded: boolean
+  response_at: string | null
+}

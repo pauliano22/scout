@@ -234,6 +234,19 @@ export default function AlumniDetailModal({
               </a>
             )}
 
+            {/* Share */}
+            <ShareProfileButton
+              alumni={{
+                full_name: alumni.full_name,
+                sport: alumni.sport,
+                graduation_year: alumni.graduation_year,
+                company: alumni.company,
+                role: alumni.role,
+                location: alumni.location,
+                photo_url: alumni.photo_url || alumni.avatar_url,
+              }}
+            />
+
             {/* Flag button */}
             <button
               onClick={() => setShowFlagForm(!showFlagForm)}

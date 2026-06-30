@@ -233,6 +233,20 @@ export type Sport =
   | 'Fencing'
   | 'Gymnastics'
 
+export interface SportNormalization {
+  canonical_name: string
+  aliases: string[]
+  category: 'team' | 'individual'
+  contact_type: 'contact' | 'non-contact'
+  level: 'varsity' | 'club' | 'intramural'
+  created_at: string
+  updated_at: string
+}
+
+export type SportCategory = SportNormalization['category']
+export type SportContactType = SportNormalization['contact_type']
+export type SportLevel = SportNormalization['level']
+
 export interface UserEvent {
   id: string
   user_id: string
@@ -400,4 +414,24 @@ export interface OnboardingProgress {
   has_first_connection: boolean
   has_first_message: boolean
   completed_steps: OnboardingStep[]
+}
+
+// =====================================================================
+// Migration 035 — Graduation Year Verification Pipeline
+// =====================================================================
+
+export type VerificationStatus = 'verified' | 'mismatch' | 'unverified' | 'pending'
+
+export interface GraduationVerification {
+  id: string
+  alumni_id: string
+  reported_year: number
+  roster_year: number | null
+  match_status: VerificationStatus
+  reviewed: boolean
+  flagged_at: string | null
+  created_at: string
+  updated_at: string
+  // Joined data
+  alumni?: Alumni
 }

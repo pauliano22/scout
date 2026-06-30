@@ -8,6 +8,7 @@ import {
   Users,
   Flag,
   Activity,
+  ShieldCheck,
   ArrowLeft,
   Loader2,
   ToggleLeft,
@@ -16,6 +17,7 @@ import {
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
   { href: '/admin/reports', label: 'Reports', icon: Flag },
   { href: '/admin/activity', label: 'Activity', icon: Activity },
   { href: '/admin/feature-flags', label: 'Feature Flags', icon: ToggleLeft },

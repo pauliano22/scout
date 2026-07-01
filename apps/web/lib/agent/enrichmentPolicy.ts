@@ -67,7 +67,7 @@ export function decideField(
  * `nowMs` is injected for deterministic testing.
  */
 export function enrichmentPriority(
-  row: { role: string | null; company: string | null; enriched_at: string | null | undefined },
+  row: { role: string | null; company: string | null; enriched_at?: string | null },
   nowMs: number,
 ): number {
   const missing = (row.role && row.role.trim() ? 0 : 1) + (row.company && row.company.trim() ? 0 : 1) // 0..2

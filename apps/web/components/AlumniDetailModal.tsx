@@ -61,7 +61,7 @@ export default function AlumniDetailModal({
 }: AlumniDetailModalProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [addedToNetwork, setAddedToNetwork] = useState(isInNetwork)
-  const [warm, setWarm] = useState<{ count: number; topName: string; topRelation: string } | null>(null)
+  const [warm, setWarm] = useState<{ count: number; topName: string; topRelation: string; topSeasons?: number; topSports?: string[] } | null>(null)
   const [showFlagForm, setShowFlagForm] = useState(false)
   const [flagReason, setFlagReason] = useState('')
   const [flagSubmitted, setFlagSubmitted] = useState(false)
@@ -189,6 +189,21 @@ export default function AlumniDetailModal({
             </div>
           </div>
 
+          {/* Warm path — your way in through someone you already saved */}
+          {warm && (
+            <div className="px-6 pb-3">
+              <div className="flex items-start gap-2 text-xs bg-[--school-primary]/8 border border-[--school-primary]/20 rounded-lg px-3 py-2.5">
+                <Users size={14} className="text-[--school-primary] flex-shrink-0 mt-0.5" />
+                <span className="text-[--text-secondary] leading-snug">
+                  <span className="font-semibold text-[--text-primary]">{warm.topName}</span>
+                  {warm.count > 1 ? ` +${warm.count - 1} more` : ''} in your network can introduce you
+                  {warm.topRelation === 'teammate' && (warm.topSeasons ?? 0) > 0
+                    ? ` · played ${warm.topSeasons} season${(warm.topSeasons ?? 0) > 1 ? 's' : ''} together`
+                    : ''}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* CTAs */}
           <div className="px-6 pb-5 flex gap-2.5">

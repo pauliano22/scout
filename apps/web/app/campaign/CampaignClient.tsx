@@ -11,6 +11,7 @@ import { Briefcase, Linkedin } from 'lucide-react'
 import SportAvatar from '@/components/SportAvatar'
 import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
+import OnboardingProgressBar from '@/components/OnboardingProgressBar'
 import { createClient } from '@/lib/supabase/client'
 import { CORPUS_INDUSTRIES } from '@/lib/campaign/industries'
 import type { Alumni, Profile, UserNetwork } from '@scout/shared/types/database'
@@ -51,6 +52,32 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     })
   const [cityDraft, setCityDraft] = useState('')
   const cityInit = useRef(false)
+
+  // ── Onboarding progress ─────────────────────────────────────────────
+  const [onboardingData, setOnboardingData] = useState<{
+    completedSteps: string[]
+    currentStepIndex: number
+    totalSteps: number
+    isComplete: boolean
+  } | null>(null)
+  const [onboardingLoading, setOnboardingLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/onboarding/progress')
+      .then(r => r.json())
+      .then(data => {
+        setOnboardingData({
+          completedSteps: data.completed_steps ?? [],
+          currentStepIndex: data.currentStepIndex ?? 0,
+          totalSteps: data.totalSteps ?? 4,
+          isComplete: data.isComplete ?? false,
+        })
+      })
+      .catch(() => {
+        // Silently fail — not critical
+      })
+      .finally(() => setOnboardingLoading(false))
+  }, [])
 
   const load = useCallback(async () => {
     try {
@@ -171,6 +198,17 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         {data.coverage != null && data.field ? `, from ${data.coverage.toLocaleString()} ${data.field} alumni` : ''}
         . Everything you need to reach out — right here.
       </p>
+
+      {/* Onboarding progress bar — show for users who haven't completed all steps */}
+      {!onboardingLoading && onboardingData && !onboardingData.isComplete && (
+        <div className="mt-6">
+          <OnboardingProgressBar
+            completedSteps={onboardingData.completedSteps as any}
+            currentStepIndex={onboardingData.currentStepIndex}
+            totalSteps={onboardingData.totalSteps}
+          />
+        </div>
+      )}
 
       {/* Inline field capture — one tap, only when we have nothing to target on */}
       {data.needsField && (

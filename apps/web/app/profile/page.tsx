@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import ProfileClient from './ProfileClient'
 import AlumniProfileClient from './AlumniProfileClient'
-import type { Alumni, UserRole } from '@scout/shared/types/database'
+import type { Alumni, AmbassadorProfile, UserRole } from '@scout/shared/types/database'
 
 export default async function ProfilePage() {
   const supabase = createClient()
@@ -41,6 +41,17 @@ export default async function ProfilePage() {
         .single()
       alumni = (data as Alumni | null) ?? null
     }
+
+    // Fetch ambassador profile for varsity badge
+    let ambassador: AmbassadorProfile | null = null
+    const { data: ambData } = await supabase
+      .from('ambassador_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle()
+    ambassador = (ambData as AmbassadorProfile | null) ?? null
+
     return (
       <>
         <Navbar
@@ -53,6 +64,7 @@ export default async function ProfilePage() {
           fullName={profile?.full_name || alumni?.full_name || ''}
           alumni={alumni}
           major={profile?.major ?? null}
+          ambassador={ambassador}
         />
       </>
     )

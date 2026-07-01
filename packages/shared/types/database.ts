@@ -52,6 +52,9 @@ export interface Alumni {
   claim_source:                 AlumniClaimSource | null
   claimed_by_user_id:           string | null
   profile_reviewed_by_alumni:   boolean
+  // Freshness engine (migration 035) — when/at-what-confidence this row was last auto-enriched.
+  enriched_at?:                 string | null
+  enrichment_confidence?:       number | null
 }
 
 export interface Profile {

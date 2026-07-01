@@ -1,18 +1,24 @@
+import os
 import requests
 import time
 import re
 from supabase import create_client
 
+
+def _require_env(name: str) -> str:
+    val = os.environ.get(name)
+    if not val:
+        raise SystemExit(f"Missing required env var: {name}. Export it before running (e.g. `export {name}=...`).")
+    return val
+
 # ==========================================
 # CONFIGURATION
 # ==========================================
 
-# Serper.dev API Key
-SERPER_API_KEY = "cf407b7c1990467853c02e0bce31778b6828f37d"
-
-# Supabase credentials
-SUPABASE_URL = "https://recftqpdnbdandloykms.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlY2Z0cXBkbmJkYW5kbG95a21zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDYwODU2OCwiZXhwIjoyMDgwMTg0NTY4fQ.p5Hs6kriDGTUoP73WMWmkmORMEhxf1qd0H6yxS9RmFY"
+# Secrets read from the environment — never hardcode them in a tracked file.
+SERPER_API_KEY = _require_env("SERPER_API_KEY")
+SUPABASE_URL = _require_env("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = _require_env("SUPABASE_SERVICE_KEY")
 
 DELAY_BETWEEN_CALLS = 0.5
 

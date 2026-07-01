@@ -7,9 +7,15 @@ from datetime import datetime
 # CONFIGURATION
 # ==========================================
 
-# Your Supabase credentials
-SUPABASE_URL = "https://recftqpdnbdandloykms.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlY2Z0cXBkbmJkYW5kbG95a21zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDYwODU2OCwiZXhwIjoyMDgwMTg0NTY4fQ.p5Hs6kriDGTUoP73WMWmkmORMEhxf1qd0H6yxS9RmFY"
+# Supabase credentials — read from the environment, never hardcode secrets in a tracked file.
+def _require_env(name: str) -> str:
+    val = os.environ.get(name)
+    if not val:
+        raise SystemExit(f"Missing required env var: {name}. Export it before running (e.g. `export {name}=...`).")
+    return val
+
+SUPABASE_URL = _require_env("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = _require_env("SUPABASE_SERVICE_KEY")
 
 # Cornell's school_id in your database
 CORNELL_SCHOOL_ID = "ca438d00-2bf0-48b7-82db-0d83e2b8a1dc"

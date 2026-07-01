@@ -8,15 +8,21 @@ import {
   Users,
   Flag,
   Activity,
+  ShieldCheck,
+  BarChart3,
   ArrowLeft,
   Loader2,
+  ToggleLeft,
 } from 'lucide-react'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/data', label: 'Data', icon: BarChart3 },
   { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
   { href: '/admin/reports', label: 'Reports', icon: Flag },
   { href: '/admin/activity', label: 'Activity', icon: Activity },
+  { href: '/admin/feature-flags', label: 'Feature Flags', icon: ToggleLeft },
 ]
 
 export default function AdminLayout({

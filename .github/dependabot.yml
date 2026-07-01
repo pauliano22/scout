@@ -1,28 +1,152 @@
+# Automated Dependency Update Workflow
+# See https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
+  # Weekly updates (minor/patch) for apps/web
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    versioning-strategy: increase
     open-pull-requests-limit: 10
     labels:
-      - 'dependencies'
-    commit-message:
-      prefix: 'chore'
-      include: 'scope'
-    # Group minor and patch updates together to reduce PR noise
-    groups:
-      minor-patch:
-        applies-to: version-updates
-        patterns:
-          - '*'
+      - "dependencies"
+      - "web"
+      - "auto-merge"
+    reviewers:
+      - "scout-maintainers"
+    allow:
+      - dependency-type: "direct"
         update-types:
-          - 'minor'
-          - 'patch'
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "fix(deps)"
+      prefix-development: "chore(deps-dev)"
 
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  # Weekly updates (minor/patch) for apps/mobile
+  - package-ecosystem: "npm"
+    directory: "/apps/mobile"
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: "weekly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "America/New_York"
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "mobile"
+      - "auto-merge"
+    reviewers:
+      - "scout-maintainers"
+    allow:
+      - dependency-type: "direct"
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "fix(deps)"
+      prefix-development: "chore(deps-dev)"
+
+  # Weekly updates (minor/patch) for packages/shared
+  - package-ecosystem: "npm"
+    directory: "/packages/shared"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "America/New_York"
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "shared"
+      - "auto-merge"
+    reviewers:
+      - "scout-maintainers"
+    allow:
+      - dependency-type: "direct"
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "fix(deps)"
+      prefix-development: "chore(deps-dev)"
+
+  # Monthly updates (major versions, manual review) for all workspaces
+  - package-ecosystem: "npm"
+    directory: "/apps/web"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "web"
+      - "major"
+      - "manual-review"
+    reviewers:
+      - "scout-maintainers"
+    allow:
+      - dependency-type: "direct"
+        update-types:
+          - "major"
+    commit-message:
+      prefix: "feat(deps)"
+      prefix-development: "chore(deps-dev)"
+
+  - package-ecosystem: "npm"
+    directory: "/apps/mobile"
+    schedule:
+      interval: "monthly"
+      day: "tuesday"
+      time: "09:00"
+      timezone: "America/New_York"
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "mobile"
+      - "major"
+      - "manual-review"
+    reviewers:
+      - "scout-maintainers"
+    allow:
+      - dependency-type: "direct"
+        update-types:
+          - "major"
+    commit-message:
+      prefix: "feat(deps)"
+      prefix-development: "chore(deps-dev)"
+
+  - package-ecosystem: "npm"
+    directory: "/packages/shared"
+    schedule:
+      interval: "monthly"
+      day: "wednesday"
+      time: "09:00"
+      timezone: "America/New_York"
+    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "shared"
+      - "major"
+      - "manual-review"
+    reviewers:
+      - "scout-maintainers"
+    allow:
+      - dependency-type: "direct"
+        update-types:
+          - "major"
+    commit-message:
+      prefix: "feat(deps)"
+      prefix-development: "chore(deps-dev)"

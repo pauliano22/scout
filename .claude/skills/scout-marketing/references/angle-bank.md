@@ -19,12 +19,12 @@ Concrete, ready-to-make post ideas grouped by pillar. Pull from here every batch
 - Cold application vs. warm intro — the response-rate gap, with a real outcome
 
 ## Education (highest volume — evergreen, earns saves)
+- **★ The recruiting timeline (cornerstone evergreen asset).** "When each track actually starts," as a carousel. Frame it **by school year, not hard calendar dates** — the by-year shape is stable, exact app open/close dates drift every cycle (always verify before posting hard dates). The insight that carries it: finance (IB) recruits roughly a year ahead of consulting and tech, so waiting until junior year misses the finance cycle. Nodes: Freshman = get on radars · Sophomore = finance opens (the key, carnelian) · Junior fall = consulting + tech · Senior = full-time/off-cycle. Repost each cycle. Pairs with the "start now, 2–3 conversations a month" habit.
 - The two things that get a busy alum to reply (specificity + a tiny ask)
 - Why warm intros beat job boards — the real response-rate reality
 - The athlete-to-finance pipeline, explained (carousel)
 - How to ask an alum for help without being annoying
 - What to say after they reply — where most people freeze
-- The IB/PE recruiting timeline — when to actually start
 - Five questions that make an informational interview land
 - The 2-minute networking habit that compounds
 - Reaching out senior year isn't too late — the myth that costs people

@@ -44,21 +44,32 @@ Good (specific, bursty, one CTA, no markdown emphasis):
 
 ---
 
-## 2. Brand & visual system — locked
+## 2. Brand & visual system — locked (Direction A: Modern Sans)
 
-Never redesign this; reuse it. New artwork must match.
+Never redesign this; reuse it. New artwork must match. The visual language is built **from the logo**, which is geometric sans — so the design is modern-sans, not editorial-serif.
 
 - **Background:** warm cream / off-white (`#F5F1EC`-ish). Never pure white.
-- **Headlines:** editorial serif, large. Black with one carnelian-red word for emphasis, often italic.
-- **Body / subheads:** clean sans-serif, gray.
-- **Accent color:** Cornell carnelian `#B31B1B`, used sparingly — one accent per slide. The restraint is the brand.
-- **Logo lockup:** `Scout · CORNELL`, top-left of every slide.
-- **Decoration:** faint dot-grid, top-right corner.
+- **Typeface:** Inter everywhere, matching the wordmark. No serif display faces.
+- **Headlines:** Inter, heavy (800–900), **left-aligned**, tight tracking (~-0.02em). Big and confident.
+- **Emphasis:** by **weight and carnelian color only — never italics.** A key word or number goes carnelian; that is the whole emphasis system. (Big typographic numbers, e.g. `18,000`, are a signature move.)
+- **Body / subheads:** Inter regular/medium, warm gray.
+- **Accent color:** Cornell carnelian `#B31B1B`, one accent per slide. The restraint is the brand.
+- **Logo:** the real Scout mark + `Scout` wordmark, top-left of every slide (assets in `~/Downloads/scout-logo/` — mark, horizontal, stacked, in SVG + PNG). Not a text lockup.
+- **Ownable motif:** the logo's **red corner-cut** (a carnelian triangle in the top-right corner of the slide), reused as the recurring brand device instead of the old dot-grid.
 - **Dividers:** hairlines only — no boxes, no heavy borders.
-- **Icons:** thin-line, inside pale-carnelian circles.
-- **Recurring character:** the Cornell football mascot bobblehead, as an occasional personality beat (not every slide).
-- **Footer:** `scoutcornell.com · free for Cornell athletes`.
-- **Carousels:** end on a carnelian CTA slide; keep pagination dots visible.
+- **Footer:** `scoutcornell.com · free for Cornell athletes`, bottom of every slide.
+- **Photography (best for looking un-AI):** when a real athlete/campus photo is available, run it full-bleed with a dark scrim and drop text to a clean lower-third, logo in white, one carnelian keyline. Real photos beat any built graphic.
+- **Carousels:** end on a solid-carnelian CTA slide (white type, one button); keep pagination dots visible.
+
+### Visual voice rules — keep the art from reading as AI (mirror of §1, for design)
+Run new artwork past this list. These are the visual equivalents of the copy tells.
+- **No borrowed elegant serif** (Playfair, Cormorant, etc.) — that centered-serif look is the #1 AI/Canva-template tell. Design from the logo (Inter).
+- **No lone italic accent word.** Emphasis is weight + carnelian, never a single slanted word.
+- **Break symmetry.** Left-align and let type sit with tension; avoid dead-centering everything.
+- **One ownable motif** (the corner-cut), reused — not generic decoration.
+- **One accent per slide.** More than one carnelian element and the restraint is gone.
+- **Prefer real photography** over illustrated/graphic filler whenever you can get it.
+- **Banned defaults:** gradient-mesh backgrounds, thin gold hairlines, glassmorphism, emoji in the headline, stocky thin-line icon sets used decoratively.
 
 ---
 

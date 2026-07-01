@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scout — IG Post Mockups (round 1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,600;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F5F1EC;
+    --carnelian:#B31B1B;
+    --ink:#1c1a18;
+    --gray:#6f6a64;
+    --hair:#ddd5ca;
+    --pale:#efe7dd;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e7e2db;font-family:'Inter',system-ui,sans-serif;color:#1c1a18;padding:40px 24px 80px}
+  .page{max-width:980px;margin:0 auto}
+  h1.title{font-family:'Playfair Display',Georgia,serif;font-size:30px;font-weight:800;margin-bottom:6px}
+  .sub{color:#555;font-size:14px;margin-bottom:32px;line-height:1.5}
+  .row{display:flex;gap:28px;align-items:flex-start;margin-bottom:46px;flex-wrap:wrap}
+  .meta{flex:1;min-width:260px;padding-top:6px}
+  .tag{display:inline-block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--carnelian);font-weight:600;border:1px solid var(--carnelian);border-radius:20px;padding:3px 10px;margin-bottom:12px}
+  .meta h3{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:10px}
+  .cap{font-size:13.5px;line-height:1.62;color:#333;white-space:pre-line}
+  .cap .htag{color:#8a8f99}
+  .note{font-size:12px;color:#9a7a2a;background:#fbf4e0;border:1px solid #ecdca6;border-radius:8px;padding:8px 11px;margin-top:12px;line-height:1.5}
+
+  /* ---- the IG card: 4:5 (1080x1350) rendered at 0.4 ---- */
+  .card{
+    width:432px;height:540px;flex:0 0 432px;
+    background:var(--cream);position:relative;overflow:hidden;
+    border-radius:6px;box-shadow:0 18px 40px rgba(0,0,0,.16);
+    padding:38px 36px;display:flex;flex-direction:column;
+  }
+  .dotgrid{position:absolute;top:0;right:0;width:150px;height:120px;
+    background-image:radial-gradient(circle, #d6ccbe 1.3px, transparent 1.3px);
+    background-size:13px 13px;opacity:.7;
+    -webkit-mask-image:linear-gradient(225deg,#000,transparent 70%);
+            mask-image:linear-gradient(225deg,#000,transparent 70%);}
+  .lockup{font-size:13px;font-weight:600;letter-spacing:.01em;z-index:2}
+  .lockup .dot{color:var(--carnelian);margin:0 5px}
+  .lockup .cornell{color:var(--gray);font-weight:600;letter-spacing:.16em;font-size:11px}
+  .foot{position:absolute;left:36px;bottom:26px;font-size:11px;color:var(--gray);letter-spacing:.02em}
+  .foot b{color:var(--carnelian);font-weight:600}
+
+  .serif{font-family:'Playfair Display',Georgia,serif}
+  .red{color:var(--carnelian)}
+  .it{font-style:italic}
+
+  /* Format C — big statement */
+  .c-wrap{flex:1;display:flex;align-items:center}
+  .c-head{font-family:'Playfair Display',serif;font-weight:700;font-size:38px;line-height:1.14;color:var(--ink)}
+
+  /* Format B — stacked rows */
+  .b-head{font-family:'Playfair Display',serif;font-weight:700;font-size:30px;line-height:1.15;margin:14px 0 26px}
+  .brow{display:flex;gap:16px;align-items:flex-start;padding:18px 0}
+  .brow + .brow{border-top:1px solid var(--hair)}
+  .icn{flex:0 0 40px;width:40px;height:40px;border-radius:50%;background:var(--pale);
+    display:flex;align-items:center;justify-content:center}
+  .icn svg{width:20px;height:20px;stroke:var(--carnelian);stroke-width:1.6;fill:none}
+  .brow .t{font-size:15.5px;line-height:1.45;color:#2c2926;font-weight:500}
+  .brow .t span{color:var(--gray);font-weight:400}
+
+  /* Format A — headline + angled screenshot */
+  .a-head{font-family:'Playfair Display',serif;font-weight:700;font-size:31px;line-height:1.16;margin-top:8px;max-width:280px}
+  .shot{position:absolute;right:-26px;bottom:64px;width:236px;background:#fff;border:1px solid #e7ded2;
+    border-radius:12px;box-shadow:0 16px 30px rgba(0,0,0,.14);padding:14px;transform:rotate(6deg)}
+  .shot .sh-h{font-size:10px;color:var(--gray);letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+  .shot .ln{height:8px;border-radius:4px;background:#ece6dd;margin:7px 0}
+  .shot .ln.s{width:60%}
+  .shot .chip{display:inline-block;font-size:10px;background:var(--pale);color:var(--carnelian);border-radius:10px;padding:2px 8px;margin-bottom:8px;font-weight:600}
+  .shot .send{margin-top:11px;background:var(--carnelian);color:#fff;font-size:11px;font-weight:600;
+    text-align:center;border-radius:7px;padding:7px}
+
+  /* Format D — CTA closer */
+  .d-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .d-head{font-family:'Playfair Display',serif;font-weight:700;font-size:33px;line-height:1.15;margin-bottom:24px}
+  .btn{background:var(--carnelian);color:#fff;font-weight:600;font-size:15px;padding:13px 26px;border-radius:30px;letter-spacing:.01em}
+  .dots{display:flex;gap:6px;justify-content:center;margin-top:auto;padding-top:14px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:#cfc6ba}
+  .dots i.on{background:var(--carnelian)}
+
+  .kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="title">Scout — Instagram mockups, round 1</h1>
+  <p class="sub">Real brand system: cream <code>#F5F1EC</code>, carnelian <code>#B31B1B</code>, editorial serif headlines, one accent per slide. Six cards across five formats (A–E) + a CTA closer. Caption sits to the right of each. React to these and we refine — copy, layout, or both.</p>
+
+  <!-- 1 · Community · Format C -->
+  <div class="row">
+    <div class="card">
+      <div class="dotgrid"></div>
+      <div class="lockup">Scout<span class="dot">·</span><span class="cornell">CORNELL</span></div>
+      <div class="c-wrap">
+        <div class="c-head">There are <span class="red">18,000</span> Cornell athletes who already made it.<br><span class="it">They were you first.</span></div>
+      </div>
+      <div class="foot">scoutcornell.com <b>·</b> free for Cornell athletes</div>
+    </div>
+    <div class="meta">
+      <span class="tag">Community · Format C</span>
+      <h3>Big-statement identity hook</h3>
+      <div class="cap">Every alum in finance, tech, law, medicine ran the same hills you do. Eighteen thousand of them came before you and figured out the next part, and most still remember being a junior with no idea who to call. A lot of them will pick up if a current athlete reaches out. That bridge already exists. Most people just never walk across it.
+
+Tag a teammate who needs to hear this.
+<span class="htag">#Cornell #CornellAthletics #BigRed #StudentAthlete #CareerNetworking</span></div>
+    </div>
+  </div>
+
+  <!-- 2 · Education · Format E (carousel cover) -->
+  <div class="row">
+    <div class="card">
+      <div class="dotgrid"></div>
+      <div class="lockup">Scout<span class="dot">·</span><span class="cornell">CORNELL</span></div>
+      <div class="c-wrap">
+        <div class="c-head">You don't have an application problem.<br>You have an <span class="red it">introduction</span> problem.</div>
+      </div>
+      <div class="dots" style="position:absolute;left:36px;bottom:54px"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      <div class="foot">swipe <b>→</b></div>
+    </div>
+    <div class="meta">
+      <span class="tag">Education · Format E · carousel cover</span>
+      <h3>Warm intros &gt; cold applications (5 slides)</h3>
+      <div class="cap">Slides: cover → "Cold applications vanish into a portal." → "An intro from someone who played your sport gets read." → "Same job. Same you. Different door." → CTA.
+
+Caption: Sending more applications won't fix a quiet inbox. You can drop fifty resumes into portals and hear nothing for weeks, while the person who got a 90-second intro from a Cornell alum already has a call booked. Same major, same season of two-a-days. The only thing that changed is that someone vouched for them. Save this before you fire off application fifty-one.</div>
+    </div>
+  </div>
+
+  <!-- 3 · Education · Format B -->
+  <div class="row">
+    <div class="card">
+      <div class="dotgrid"></div>
+      <div class="lockup">Scout<span class="dot">·</span><span class="cornell">CORNELL</span></div>
+      <div class="b-head">Two things get a busy<br>alum to <span class="red">reply.</span></div>
+      <div class="brow">
+        <div class="icn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16" y1="16" x2="21" y2="21"/></svg></div>
+        <div class="t">Be specific.<br><span>"Can I ask how you broke into S&amp;T?" beats "pick your brain."</span></div>
+      </div>
+      <div class="brow">
+        <div class="icn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><polyline points="12 7 12 12 15 14"/></svg></div>
+        <div class="t">Make the ask tiny.<br><span>Fifteen minutes, one question, not their whole afternoon.</span></div>
+      </div>
+      <div class="foot">scoutcornell.com <b>·</b> free for Cornell athletes</div>
+    </div>
+    <div class="meta">
+      <span class="tag">Education · Format B</span>
+      <h3>How to get an alum to reply</h3>
+      <div class="cap">Most outreach gets ignored for the same two reasons, and both are fixable. The first is being vague, because "I'd love to learn about your career" gives a stranger nothing to say yes to. The second is asking for too much, since nobody mentors a person they've never met for an hour. Name the one thing you want to know, keep it to fifteen minutes, and watch how many people say yes.
+
+Save this and steal it for your next message.
+<span class="htag">#Cornell #CornellAthletics #BigRed #StudentAthlete #Networking</span></div>
+    </div>
+  </div>
+
+  <!-- 4 · Product · Format A -->
+  <div class="row">
+    <div class="card">
+      <div class="dotgrid"></div>
+      <div class="lockup">Scout<span class="dot">·</span><span class="cornell">CORNELL</span></div>
+      <div class="kick" style="margin-top:26px">How Scout works</div>
+      <div class="a-head">Scout writes the first draft.<br><span class="red">You</span> send the message.</div>
+      <div class="shot">
+        <span class="chip">Same sport · Rowing</span>
+        <div class="sh-h">Draft to Sarah ’14 · Goldman</div>
+        <div class="ln"></div><div class="ln"></div><div class="ln s"></div>
+        <div class="ln"></div><div class="ln s"></div>
+        <div class="send">Review &amp; send →</div>
+      </div>
+      <div class="foot">scoutcornell.com <b>·</b> free for Cornell athletes</div>
+    </div>
+    <div class="meta">
+      <span class="tag">Product · Format A</span>
+      <h3>The composer — you review before sending</h3>
+      <div class="cap">No, Scout doesn't message anyone for you. You pick the alum you want to reach, Scout pulls what you actually share with them and writes a first draft so you're not staring at a blank box at 11pm. Then you read it, fix what sounds off, and hit send yourself. Nothing goes out under your name without you.
+
+See it at scoutcornell.com, free if you're a Cornell athlete.
+<span class="htag">#Cornell #CornellAthletics #BigRed #StudentAthlete #CareerNetworking</span></div>
+      <div class="note">⚠ The angled card is a placeholder for a real product screenshot — swap in an actual composer capture for the final.</div>
+    </div>
+  </div>
+
+  <!-- 5 · Build-in-public · Format C -->
+  <div class="row">
+    <div class="card">
+      <div class="dotgrid"></div>
+      <div class="lockup">Scout<span class="dot">·</span><span class="cornell">CORNELL</span></div>
+      <div class="kick" style="margin-top:24px">Why I built Scout</div>
+      <div class="c-wrap">
+        <div class="c-head">I kept watching the <span class="red it">wrong</span> people get the interviews.</div>
+      </div>
+      <div class="foot">scoutcornell.com <b>·</b> free for Cornell athletes</div>
+    </div>
+    <div class="meta">
+      <span class="tag">Build-in-public · Format C</span>
+      <h3>Founder origin</h3>
+      <div class="cap">I built Scout because I kept seeing the same thing. Athletes who could grind a 5am lift and a full course load would freeze the second it came to emailing a stranger, and the kids with finance-dad connections sailed right past them. Cornell has 18,000 athlete alumni who would happily help. The connection was the missing piece, so I built the thing that makes it.
+
+Follow along while we build this.
+<span class="htag">#Cornell #BigRed #StudentAthlete #BuildInPublic</span></div>
+      <div class="note">⚠ Make this your real origin — swap my guess for the actual moment that made you build it.</div>
+    </div>
+  </div>
+
+  <!-- 6 · CTA closer · Format D -->
+  <div class="row">
+    <div class="card">
+      <div class="dotgrid"></div>
+      <div class="lockup" style="color:#fff">Scout<span class="dot" style="color:#fff">·</span><span class="cornell" style="color:rgba(255,255,255,.7)">CORNELL</span></div>
+      <div class="d-wrap">
+        <div class="d-head" style="color:#fff">Find the alum<br>who opens the door.</div>
+        <div class="btn" style="background:#fff;color:var(--carnelian)">scoutcornell.com</div>
+      </div>
+      <div class="dots"><i></i><i></i><i></i><i></i><i class="on"></i></div>
+      <div class="foot" style="color:rgba(255,255,255,.8)">free for Cornell athletes</div>
+    </div>
+    <div class="meta">
+      <span class="tag">CTA closer · Format D</span>
+      <h3>Carousel end-slide (carnelian)</h3>
+      <div class="cap">This is the final slide every carousel ends on — solid carnelian, white type, one button. It's the only slide that flips to a red background; that contrast is what signals "act now" after 4 slides of teaching. Pagination dots stay visible.</div>
+      <div class="note">Note: this card is shown on carnelian to preview the closer. All other slides stay cream.</div>
+    </div>
+  </div>
+
+</div>
+<script>
+  // tint the Format D card background carnelian (kept out of CSS so the cream default is obvious)
+  document.querySelectorAll('.card').forEach(function(c){
+    if(c.querySelector('.d-wrap')) c.style.background = '#B31B1B';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scout — Instagram Month 1 (Direction A)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#F5F1EC;--carnelian:#B31B1B;--ink:#18181b;--gray:#6f6a64;--hair:#e0d8cd;--pale:#efe7dd}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e6e1da;font-family:'Inter',system-ui,sans-serif;color:var(--ink);padding:34px 22px 90px}
+  .page{max-width:1240px;margin:0 auto}
+  .h0{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--carnelian);font-weight:700;margin-bottom:6px}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+  .lead{color:#4a4640;font-size:14px;line-height:1.6;max-width:820px;margin-bottom:26px}
+  .wk{margin:26px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--ink);font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+  .row{display:flex;gap:22px;flex-wrap:wrap;margin-bottom:20px}
+  .unit{width:372px;flex:0 0 372px}
+  .cap{font-size:12px;color:#46423c;margin-top:9px;line-height:1.5;white-space:pre-line}
+  .meta{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--carnelian);font-weight:700;margin-bottom:6px}
+  .htag{color:#9a958c}
+  .warn{color:#9a7a2a}
+
+  .card{width:372px;height:465px;position:relative;overflow:hidden;background:var(--cream);
+    border-radius:6px;box-shadow:0 12px 30px rgba(0,0,0,.16);padding:28px}
+  .corner{position:absolute;top:0;right:0;width:0;height:0;border-top:50px solid var(--carnelian);border-left:50px solid transparent}
+  .lock{display:flex;align-items:center;gap:8px;position:relative;z-index:5}
+  .lock svg{width:22px;height:22px;display:block}
+  .lock .wm{font-weight:700;font-size:14px;letter-spacing:-.03em;color:#09090b}
+  .foot{position:absolute;left:28px;right:28px;bottom:17px;font-size:10px;color:var(--gray);display:flex;justify-content:space-between}
+  .foot b{color:var(--carnelian);font-weight:600}
+  .red{color:var(--carnelian)}
+  .kick{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);font-weight:600;margin:18px 0 8px}
+  .head{font-weight:800;line-height:1.12;letter-spacing:-.02em}
+  .h-xl{font-size:33px}.h-l{font-size:27px}.h-m{font-size:23px}
+  .bignum{font-weight:900;font-size:92px;line-height:.86;letter-spacing:-.04em;color:var(--carnelian)}
+  .sub{font-size:12.5px;color:#5b564f;line-height:1.45;margin-top:10px;max-width:300px}
+  .erow{display:flex;gap:11px;padding:12px 0}
+  .erow+.erow{border-top:1px solid var(--hair)}
+  .erow .num{font-weight:800;font-size:13px;color:var(--carnelian);width:20px;flex:0 0 20px}
+  .erow .tx{font-size:13.5px;font-weight:700;line-height:1.3}
+  .erow .tx span{display:block;font-weight:400;color:#6c675f;font-size:11.5px;margin-top:2px}
+  .dots{display:flex;gap:5px;position:absolute;left:28px;bottom:40px}
+  .dots i{width:5px;height:5px;border-radius:50%;background:#cfc6ba}
+  .dots i.on{background:var(--carnelian)}
+  .take{margin-top:13px;background:var(--carnelian);color:#fff;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:600}
+  .clock{padding:10px 0;display:flex;gap:11px}
+  .clock+.clock{border-top:1px solid var(--hair)}
+  .clock .mk{flex:0 0 10px;width:10px;height:10px;border-radius:3px;background:var(--hair);margin-top:4px}
+  .clock.hot .mk{background:var(--carnelian)}
+  .clock .cn{font-weight:800;font-size:13.5px}
+  .clock .ci{font-size:10.5px;color:var(--gray);margin:1px 0 2px}
+  .clock .cd{font-size:11.5px;color:#4d4842;line-height:1.35;max-width:290px}
+  /* product mini-mocks */
+  .browser{position:absolute;left:22px;right:-30px;bottom:44px;background:#fff;border:1px solid #e2d9cd;border-radius:9px 9px 0 0;box-shadow:0 14px 28px rgba(0,0,0,.14);overflow:hidden}
+  .browser .bar{height:20px;background:#efe9e0;display:flex;align-items:center;gap:4px;padding:0 9px;border-bottom:1px solid #e6ddd0}
+  .browser .bar i{width:6px;height:6px;border-radius:50%;background:#d9cfc0}
+  .browser img{display:block;width:100%;height:236px;object-fit:cover;object-position:top center}
+  .mock{position:absolute;right:-14px;bottom:52px;width:210px;background:#fff;border:1px solid #e7ded2;border-radius:11px;box-shadow:0 12px 24px rgba(0,0,0,.12);padding:12px;transform:rotate(3deg)}
+  .mock .chip{display:inline-block;font-size:9px;background:var(--pale);color:var(--carnelian);border-radius:9px;padding:2px 7px;margin-bottom:7px;font-weight:700}
+  .mock .mh{font-size:9px;color:var(--gray);letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
+  .mock .ln{height:7px;border-radius:4px;background:#ece6dd;margin:6px 0}.mock .ln.s{width:56%}
+  .mock .send{margin-top:9px;background:var(--carnelian);color:#fff;font-size:10px;font-weight:700;text-align:center;border-radius:6px;padding:6px}
+  .pipe{position:absolute;left:22px;right:22px;bottom:46px;display:flex;gap:7px}
+  .pipe .col{flex:1;background:#fff;border:1px solid #eadfd0;border-radius:8px;padding:8px 7px}
+  .pipe .col h5{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--gray);margin-bottom:6px}
+  .pipe .col .c2{height:22px;background:#f2ece2;border-radius:5px;margin-bottom:5px}
+  .pipe .col.on h5{color:var(--carnelian)}
+  .photo{position:absolute;inset:0;background:linear-gradient(135deg,#6d7178,#3f4147);}
+  .photo:after{content:"real team photo";position:absolute;top:44%;left:0;right:0;text-align:center;color:rgba(255,255,255,.5);font-size:11px}
+  .scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,9,8,.9) 8%,transparent 55%)}
+  .over{position:absolute;left:28px;right:28px;bottom:44px;z-index:3}
+  .over .kl{width:34px;height:3px;background:var(--carnelian);margin-bottom:12px}
+  .over h4{color:#fff;font-weight:800;font-size:24px;line-height:1.12;letter-spacing:-.02em}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="mk" viewBox="0 0 1024 1024">
+    <rect x="32" y="32" width="960" height="960" rx="192" ry="192" fill="none" stroke="#B31B1B" stroke-width="64"/>
+    <rect x="704" y="0" width="320" height="320" fill="#B31B1B"/>
+    <text x="512" y="742" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="600" font-weight="800" fill="#B31B1B" letter-spacing="-0.02em">S</text>
+  </symbol>
+</defs></svg>
+<script>
+  function L(dark){return '<div class="lock'+(dark?' d':'')+'"><svg><use href="#mk"/></svg><span class="wm" '+(dark?'style="color:#fff"':'')+'>Scout</span></div>';}
+</script>
+
+<div class="page">
+  <p class="h0">Scout · Instagram</p>
+  <h1>Month 1 — 12 posts, Direction A</h1>
+  <p class="lead">Mon / Wed / Fri for four weeks. Pillars balanced (Education 4 · Product 3 · Proof 2 · Community 2 · Build 1), no pillar twice in a row. Captions are voice-checked (rationed em-dashes, no "isn't X it's Y", varied rhythm). Two posts marked ⚠ need your real story before publishing.</p>
+
+  <!-- WEEK 1 -->
+  <div class="wk">Week 1</div>
+  <div class="row">
+    <!-- 1 Education / E -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick">Recruiting</div>
+        <div class="head h-xl" style="margin-top:20px">There's no such thing as one <span class="red">recruiting season.</span></div>
+        <div class="sub">Every industry runs on a different clock. Here's yours. Swipe.</div>
+        <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>swipe →</b></span></div>
+      </div>
+      <div class="meta">Mon · Education · Format E (carousel)</div>
+      <div class="cap">There's no such thing as one recruiting season. Finance and consulting start recruiting up to a year before the job begins. Accounting and engineering run structured fall cycles, all programs and deadlines. Real estate, startups, nonprofits? They barely post jobs at all, so it comes down to who you know before the role exists. Same graduating class, three different clocks. Most people don't start late, they just never learn which clock they're on. Save this and figure out where you stand.
+<span class="htag">#Cornell #StudentAthlete #Recruiting #CareerNetworking #BigRed</span></div>
+    </div>
+    <!-- 2 Product / A (real shot) -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="head h-l" style="margin-top:18px">Filtered to the ones who played <span class="red">your sport.</span></div>
+        <div class="browser"><div class="bar"><i></i><i></i><i></i></div><img src="scout-shots/discover-anon.png" alt="Scout discover"></div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Wed · Product · Format A (real screenshot)</div>
+      <div class="cap">There are thousands of Cornell athletes in Scout, and it narrows them to the ones who actually played your sport. You don't scroll a giant directory hoping to spot a name. You pick your sport, an industry, a city, and Scout surfaces alumni whose path looks like the one you want. Every profile is someone who sat where you're sitting. See who's in your corner at scoutcornell.com.
+<span class="htag">#Cornell #CornellAthletics #BigRed #StudentAthlete #CareerNetworking</span></div>
+    </div>
+    <!-- 3 Community / C -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick">They were you first</div>
+        <div class="bignum">18,000</div>
+        <div class="head h-m" style="margin-top:10px">Cornell athletes already made it. <span class="red">You're next.</span></div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Fri · Community · Format C</div>
+      <div class="cap">Every alum in finance, tech, law, medicine ran the same hills you do. Thousands came before you and figured out the next part, and most still remember being a junior with no idea who to call. A lot of them will pick up if a current athlete reaches out. That bridge already exists. Most people just never walk across it. Tag a teammate who needs to hear this.
+<span class="htag">#Cornell #CornellAthletics #BigRed #StudentAthlete #CareerNetworking</span>
+<span class="warn">⚠ number: confirm 18,000 vs 8,661</span></div>
+    </div>
+  </div>
+
+  <!-- WEEK 2 -->
+  <div class="wk">Week 2</div>
+  <div class="row">
+    <!-- 4 Education / B -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="head h-l" style="margin-top:22px">Two things get a busy alum to <span class="red">reply.</span></div>
+        <div style="margin-top:16px">
+          <div class="erow"><div class="num">01</div><div class="tx">Be specific.<span>"How did you break into S&amp;T?" beats "pick your brain."</span></div></div>
+          <div class="erow"><div class="num">02</div><div class="tx">Make the ask tiny.<span>Fifteen minutes, one question. Not their afternoon.</span></div></div>
+        </div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Mon · Education · Format B</div>
+      <div class="cap">Most outreach gets ignored for the same two reasons, and both are fixable. The first is being vague, because "I'd love to learn about your career" gives a stranger nothing to say yes to. The second is asking for too much, since nobody mentors someone they've never met for an hour. Name the one thing you want to know, keep it to fifteen minutes, and watch how many people say yes. Save this and steal it for your next message.
+<span class="htag">#Cornell #StudentAthlete #Networking #CareerNetworking #BigRed</span></div>
+    </div>
+    <!-- 5 Product / A composer mock -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick" style="margin-top:18px">How Scout works</div>
+        <div class="head h-l">Scout writes the first draft. <span class="red">You</span> send it.</div>
+        <div class="mock"><span class="chip">Same sport · Rowing</span><div class="mh">Draft to an alum at Goldman</div><div class="ln"></div><div class="ln"></div><div class="ln s"></div><div class="ln"></div><div class="send">Review &amp; send →</div></div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Wed · Product · Format A</div>
+      <div class="cap">No, Scout doesn't message anyone for you. You pick the alum you want to reach, Scout pulls what you actually share with them and writes a first draft so you're not staring at a blank box at 11pm. Then you read it, fix what sounds off, and hit send yourself. Nothing goes out under your name without you. See it at scoutcornell.com, free if you're a Cornell athlete.
+<span class="htag">#Cornell #CornellAthletics #StudentAthlete #CareerNetworking #BigRed</span></div>
+    </div>
+    <!-- 6 Build / C -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick" style="margin-top:20px">Why I built Scout</div>
+        <div class="head h-xl">I kept watching the <span class="red">wrong</span> people get the interviews.</div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Fri · Build-in-public · Format C</div>
+      <div class="cap">I built Scout because I kept seeing the same thing. Athletes who could grind a 5am lift and a full course load would freeze the second it came to emailing a stranger, and the kids with finance-dad connections sailed right past them. Cornell has thousands of athlete alumni who would happily help. The connection was the missing piece, so I built the thing that makes it. Follow along while we build this.
+<span class="htag">#Cornell #StudentAthlete #BuildInPublic #BigRed</span>
+<span class="warn">⚠ make this your real origin</span></div>
+    </div>
+  </div>
+
+  <!-- WEEK 3 -->
+  <div class="wk">Week 3</div>
+  <div class="row">
+    <!-- 7 Education / C -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick">Just-in-time clock</div>
+        <div class="head h-xl" style="margin-top:20px">Real estate won't <span class="red">post</span> the job you want.</div>
+        <div class="sub">Neither will most startups, nonprofits, or media roles.</div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Mon · Education · Format C</div>
+      <div class="cap">If you're waiting for the perfect real estate listing to appear, you'll be waiting past graduation. Real estate, startups, and nonprofits barely recruit on a schedule, and the roles get filled through people, usually before anything is posted. So instead of refreshing a job board, build three or four real relationships this semester with alumni already doing the work, and you're the first call when something opens. Save this if your field doesn't run on deadlines.
+<span class="htag">#Cornell #StudentAthlete #Recruiting #RealEstate #CareerNetworking</span></div>
+    </div>
+    <!-- 8 Proof / C -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="head h-xl" style="margin-top:30px">Same resume.<br>One got the <span class="red">call.</span></div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Wed · Proof · Format C</div>
+      <div class="cap">Two students went after the same firm. One sent a clean application into the portal and waited. The other got a short intro from a Cornell alum who played their sport, and had a conversation within the week. The resume didn't change anything. The introduction did. That gap is the whole reason Scout exists. DM us "Scout" and we'll show you how it works.
+<span class="htag">#Cornell #StudentAthlete #CareerNetworking #BigRed</span>
+<span class="warn">⚠ replace with a real (anonymized) intro when you have one</span></div>
+    </div>
+    <!-- 9 Community / A photo -->
+    <div class="unit">
+      <div class="card"><div class="photo"></div><div class="scrim"></div>
+        <div class="lock" style="position:absolute;top:26px;left:26px"><svg><use href="#mk"/></svg><span class="wm" style="color:#fff">Scout</span></div>
+        <div class="over"><div class="kl"></div><h4>Sport → Street: where Big Red rowers end up.</h4></div>
+        <div class="foot" style="color:rgba(255,255,255,.8)"><span>scoutcornell.com</span><span><b style="color:#ff8a8a">free for athletes</b></span></div>
+      </div>
+      <div class="meta">Fri · Community · Format A (photo-led)</div>
+      <div class="cap">Recurring series, one team at a time. This week, rowing. The 6am erg tests and a boat that only moves when everyone pulls together turn out to be decent training for a trading floor or a startup. We pulled a handful of Cornell rowers now working across finance, tech, and real estate, and every one of them started where the current squad is sitting. Which team should we feature next? Drop it in the comments.
+<span class="htag">#Cornell #CornellAthletics #BigRed #Rowing #StudentAthlete</span>
+<span class="warn">⚠ needs a real team photo</span></div>
+    </div>
+  </div>
+
+  <!-- WEEK 4 -->
+  <div class="wk">Week 4</div>
+  <div class="row">
+    <!-- 10 Product / A pipeline -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="head h-l" style="margin-top:18px">Your whole search in <span class="red">one view.</span></div>
+        <div class="sub">New. Sent. Replied. Met.</div>
+        <div class="pipe">
+          <div class="col on"><h5>New</h5><div class="c2"></div><div class="c2"></div></div>
+          <div class="col"><h5>Sent</h5><div class="c2"></div></div>
+          <div class="col"><h5>Replied</h5><div class="c2"></div></div>
+          <div class="col"><h5>Met</h5><div class="c2"></div></div>
+        </div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Mon · Product · Format A (recreation)</div>
+      <div class="cap">Networking falls apart when you lose track of it. You message three alumni, one replies two weeks later, and by then you've forgotten what you said. Scout keeps every conversation in one pipeline, from the first message to the coffee that actually happens. You always know who owes you a reply and who you owe one. See your pipeline at scoutcornell.com.
+<span class="htag">#Cornell #StudentAthlete #CareerNetworking #BigRed</span></div>
+    </div>
+    <!-- 11 Education / B -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="head h-l" style="margin-top:22px">They replied. <span class="red">Now what?</span></div>
+        <div style="margin-top:16px">
+          <div class="erow"><div class="num">01</div><div class="tx">Ask one real question.<span>Not five. One they'll actually enjoy answering.</span></div></div>
+          <div class="erow"><div class="num">02</div><div class="tx">End with a specific ask.<span>"Free for 15 min Thursday?" beats "let me know."</span></div></div>
+        </div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Wed · Education · Format B</div>
+      <div class="cap">The scariest moment in networking comes after the first message, when a busy alum actually writes back and you freeze. Here's the move. Thank them in one line, ask one genuine question about their path, and suggest a specific fifteen-minute call instead of "let me know if you're free." Vague invitations die in inboxes. A clear one gets a yes. Save this for the reply you're nervous about.
+<span class="htag">#Cornell #StudentAthlete #Networking #CareerNetworking #BigRed</span></div>
+    </div>
+    <!-- 12 Proof / C -->
+    <div class="unit">
+      <div class="card"><div class="corner"></div><div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick">The summer is the interview</div>
+        <div class="bignum" style="font-size:100px">63%</div>
+        <div class="head h-m" style="margin-top:8px">of interns get the <span class="red">full-time offer.</span></div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <div class="meta">Fri · Proof · Format C</div>
+      <div class="cap">Last year the intern-to-full-time conversion rate hit about 63 percent, the highest in five years. Translation: the summer internship is the real job interview, and most hiring happens before senior year even starts. So the alumni conversations that get you that internship are the highest-leverage thing you can do right now. Not senior fall. Now. Save this and start earlier than feels comfortable.
+<span class="htag">#Cornell #StudentAthlete #Recruiting #Internships #CareerNetworking</span>
+<span class="warn">stat: NACE 2024–25</span></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

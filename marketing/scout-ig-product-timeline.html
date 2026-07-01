@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scout — real product shot + three-clocks timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#F5F1EC;--carnelian:#B31B1B;--ink:#18181b;--gray:#6f6a64;--hair:#e0d8cd;--pale:#efe7dd}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#e6e1da;font-family:'Inter',system-ui,sans-serif;color:var(--ink);padding:36px 22px 90px}
+  .page{max-width:1180px;margin:0 auto}
+  .h0{font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--carnelian);font-weight:700;margin-bottom:6px}
+  h1{font-size:29px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+  .lead{color:#4a4640;font-size:14.5px;line-height:1.6;max-width:790px;margin-bottom:28px}
+  .secthead{margin:22px 0 18px;padding-bottom:9px;border-bottom:2px solid var(--ink);font-size:13px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+  .cards{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+  .unit{display:flex;flex-direction:column}
+  .capnote{font-size:13px;color:#46423c;max-width:432px;margin-top:10px;line-height:1.55;white-space:pre-line}
+  .tag{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--carnelian);font-weight:700;margin-bottom:7px}
+  .htag{color:#9a958c}
+  .warn{font-size:12px;color:#9a7a2a;background:#fbf4e0;border:1px solid #ecdca6;border-radius:8px;padding:8px 11px;margin-top:10px;line-height:1.5}
+
+  .card{width:432px;height:540px;flex:0 0 432px;position:relative;overflow:hidden;background:var(--cream);
+    border-radius:7px;box-shadow:0 16px 38px rgba(0,0,0,.18);padding:32px}
+  .corner{position:absolute;top:0;right:0;width:0;height:0;border-top:58px solid var(--carnelian);border-left:58px solid transparent}
+  .lock{display:flex;align-items:center;gap:9px;position:relative;z-index:5}
+  .lock svg{width:25px;height:25px;display:block}
+  .lock .wm{font-weight:700;font-size:16px;letter-spacing:-.03em;color:#09090b}
+  .foot{position:absolute;left:32px;right:32px;bottom:20px;font-size:11px;color:var(--gray);display:flex;justify-content:space-between}
+  .foot b{color:var(--carnelian);font-weight:600}
+  .red{color:var(--carnelian)}
+  .kick{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--gray);font-weight:600;margin:22px 0 10px}
+  .head{font-weight:800;font-size:29px;line-height:1.13;letter-spacing:-.02em;max-width:360px}
+
+  /* product screenshot frame */
+  .browser{position:absolute;left:26px;right:-40px;bottom:52px;background:#fff;border:1px solid #e2d9cd;
+    border-radius:12px 12px 0 0;box-shadow:0 20px 40px rgba(0,0,0,.16);overflow:hidden}
+  .browser .bar{height:26px;background:#efe9e0;display:flex;align-items:center;gap:5px;padding:0 11px;border-bottom:1px solid #e6ddd0}
+  .browser .bar i{width:8px;height:8px;border-radius:50%;background:#d9cfc0}
+  .browser .bar i:nth-child(1){background:#e0a3a0}
+  .browser img{display:block;width:100%;height:300px;object-fit:cover;object-position:top center}
+
+  /* three clocks */
+  .clock{padding:15px 0;display:flex;gap:14px}
+  .clock + .clock{border-top:1px solid var(--hair)}
+  .clock .mk{flex:0 0 12px;width:12px;height:12px;border-radius:3px;background:var(--hair);margin-top:4px}
+  .clock.hot .mk{background:var(--carnelian)}
+  .clock .cn{font-weight:800;font-size:15.5px;letter-spacing:-.01em}
+  .clock .ci{font-size:12.5px;color:var(--gray);margin:2px 0 4px}
+  .clock .cd{font-size:13px;color:#4d4842;line-height:1.4;max-width:330px}
+  .takeaway{margin-top:16px;background:var(--carnelian);color:#fff;border-radius:9px;padding:11px 14px;font-size:13.5px;font-weight:600}
+  .dots{display:flex;gap:6px;margin-top:12px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:#cfc6ba}
+  .dots i.on{background:var(--carnelian)}
+  .btn{display:inline-block;background:#fff;color:var(--carnelian);font-weight:700;font-size:15px;padding:12px 24px;border-radius:28px;margin-top:20px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="mk" viewBox="0 0 1024 1024">
+    <rect x="32" y="32" width="960" height="960" rx="192" ry="192" fill="none" stroke="#B31B1B" stroke-width="64"/>
+    <rect x="704" y="0" width="320" height="320" fill="#B31B1B"/>
+    <text x="512" y="742" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="600" font-weight="800" fill="#B31B1B" letter-spacing="-0.02em">S</text>
+  </symbol>
+</defs></svg>
+
+<div class="page">
+  <p class="h0">Scout · Instagram</p>
+  <h1>Real product shot (anonymized) + the three-clocks timeline</h1>
+  <p class="lead">Left: your live Discover screen, faces blurred and names swapped to fakes, framed on a Direction A card. Real firms and sports stay, so it still sells the network. Right of it: the new recruiting positioning — three clocks, "know what season you're in."</p>
+
+  <div class="secthead">Product · real screenshot, anonymized</div>
+  <div class="cards">
+    <div class="unit">
+      <div class="card">
+        <div class="corner"></div>
+        <div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="head" style="margin-top:22px">8,000+ alumni. Filtered to the ones who played <span class="red">your sport.</span></div>
+        <div class="browser">
+          <div class="bar"><i></i><i></i><i></i></div>
+          <img src="scout-shots/discover-anon.png" alt="Scout discover, anonymized">
+        </div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <p class="capnote"><span class="tag">Product · Format A</span>Real UI. Faces blurred, names faked — firms + sports kept. That's a safe, authentic hero shot.</p>
+    </div>
+    <div class="unit" style="flex:1;min-width:280px;padding-top:4px">
+      <span class="tag">Caption</span>
+      <div class="capnote" style="max-width:360px;margin-top:0">There are 8,000+ Cornell athletes in here, and Scout narrows them to the ones who actually played your sport.
+
+You don't scroll a giant directory hoping to spot a name. You pick your sport, an industry, a city, and Scout surfaces alumni whose path looks like the one you want. Every profile is someone who sat where you're sitting. Faces are blurred here for privacy, but the network is real.
+
+See who's in your corner at scoutcornell.com.
+<span class="htag">#Cornell #CornellAthletics #BigRed #StudentAthlete #CareerNetworking</span></div>
+      <div class="warn">⚠ Reconcile the number: this screen shows 8,661; the landing says 18,000+. Pick one for all marketing.</div>
+    </div>
+  </div>
+
+  <div class="secthead">Education · the three-clocks recruiting carousel</div>
+  <div class="cards">
+    <!-- cover -->
+    <div class="unit">
+      <div class="card">
+        <div class="corner"></div>
+        <div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick">Recruiting</div>
+        <div class="head" style="font-size:33px;margin-top:26px">There's no such thing as one <span class="red">recruiting season.</span></div>
+        <div class="capnote" style="margin-top:14px;max-width:330px;color:#5b564f">Every industry runs on a different clock. Here's yours.</div>
+        <div class="dots" style="position:absolute;left:32px;bottom:50px"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="foot"><span>scoutcornell.com</span><span><b>swipe →</b></span></div>
+      </div>
+      <p class="capnote"><span class="tag">Slide 1 · cover</span></p>
+    </div>
+    <!-- three clocks -->
+    <div class="unit">
+      <div class="card">
+        <div class="corner"></div>
+        <div class="lock"><svg><use href="#mk"/></svg><span class="wm">Scout</span></div>
+        <div class="kick" style="margin:18px 0 6px">Three clocks</div>
+        <div class="clock hot"><div class="mk"></div><div><div class="cn">Early Pipeline</div><div class="ci">Finance · Consulting · Big Tech · Quant</div><div class="cd">Starts up to a year before the job. Miss the window and it's closed.</div></div></div>
+        <div class="clock"><div class="mk"></div><div><div class="cn">Structured Fall</div><div class="ci">Accounting · Engineering · Healthcare · Rotational</div><div class="cd">Programs and hard deadlines, mostly fall. Get organized.</div></div></div>
+        <div class="clock"><div class="mk"></div><div><div class="cn">Just-in-Time</div><div class="ci">Real estate · Startups · Nonprofits · Media · Policy</div><div class="cd">Few postings. It comes down to who you know before the role exists.</div></div></div>
+        <div class="takeaway">Scout tells you which one you're in.</div>
+        <div class="dots" style="position:absolute;left:32px;bottom:48px"><i></i><i class="on"></i><i></i><i></i></div>
+        <div class="foot" style="bottom:18px"><span>scoutcornell.com</span><span><b>free for athletes</b></span></div>
+      </div>
+      <p class="capnote"><span class="tag">Slide 2 · the clocks</span>Only the Early-Pipeline marker is carnelian (the urgent one). One accent.</p>
+    </div>
+    <!-- caption -->
+    <div class="unit" style="flex:1;min-width:280px;padding-top:4px">
+      <span class="tag">Caption (whole post)</span>
+      <div class="capnote" style="max-width:350px;margin-top:0">There's no such thing as one recruiting season.
+
+Finance and consulting start recruiting up to a year before the job begins. Accounting and engineering run structured fall cycles, all programs and deadlines. Real estate, startups, nonprofits? They barely post jobs at all, so it comes down to who you know before the role exists. Same graduating class, three completely different clocks. Most people don't start late — they just never learn which clock they're on.
+
+Save this and figure out where you actually stand.
+<span class="htag">#Cornell #StudentAthlete #Recruiting #CareerNetworking</span></div>
+      <div class="warn">Slides 3–4: a "which clock are you on?" self-check + a carnelian CTA closer. Whole 12-industry breakdown now lives in the skill (recruiting-timelines.md) — enough for a quarter of posts.</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

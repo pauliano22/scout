@@ -22,7 +22,7 @@
     "@scout/shared": "*",
     "@supabase/supabase-js": "^2.105.0",
     "expo": "~54.0.33",
-    "expo-blur": "~15.0.8",
+    "expo-blur": "~56.0.3",
     "expo-clipboard": "~8.0.8",
     "expo-image": "~3.0.11",
     "expo-image-picker": "~16.0.6",

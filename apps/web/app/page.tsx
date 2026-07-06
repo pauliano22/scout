@@ -5,8 +5,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, GraduationCap, Briefcase, LogIn } from 'lucide-react'
 import Navbar from '@/components/Navbar'
-import LiveUserCounter from '@/components/LiveUserCounter'
-import SpotlightStories from '@/components/SpotlightStories'
 import { postLoginPath } from '@/lib/auth/postLoginPath'
 import type { UserRole } from '@scout/shared/types/database'
 
@@ -102,9 +100,6 @@ export default function HomePage() {
                 Join as Alumni
               </Link>
             </div>
-
-            {/* Live user counter */}
-            <LiveUserCounter />
           </div>
 
           {/* Scroll hint */}
@@ -148,9 +143,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* ── Alumni Spotlight Stories ── */}
-        <SpotlightStories />
 
 
         {/* ── Final CTA ── */}

@@ -15,43 +15,35 @@ echo "🔍 Scanning staged files for potential secrets..."
 # ---------------------------------------------------------------------------
 # 1. Secret patterns — API keys, tokens, credentials
 # ---------------------------------------------------------------------------
+# Value-signature patterns only — these match actual leaked credentials, not
+# env-var names. Bare-name patterns (SUPABASE_URL, DATABASE_URL, service_role,
+# *_KEY as identifiers) were removed: they false-positive on every legitimate
+# process.env reference and never indicate a real leak. The JWT pattern leads
+# because a hard-coded Supabase service-role JWT is the leak this repo had.
+# NOTE: the scan loop word-splits these, so every token must be space-free
+# (use "." to match a literal space, as in the PEM patterns below).
 SECRET_PATTERNS="
+eyJ[A-Za-z0-9_=-]{8,}\.eyJ[A-Za-z0-9_=-]{8,}\.[A-Za-z0-9_=-]{8,}
+sk-ant-[a-zA-Z0-9_-]{20,}
 sk-[a-zA-Z0-9]{20,}
-sk-[a-zA-Z0-9_-]{20,}
-pk-[a-zA-Z0-9]{20,}
-pk-[a-zA-Z0-9_-]{20,}
-service_role
-sendgrid[_-]?key
+sk_live_[0-9a-zA-Z]{20,}
+sk_test_[0-9a-zA-Z]{20,}
+pk_live_[0-9a-zA-Z]{20,}
+pk_test_[0-9a-zA-Z]{20,}
+whsec_[0-9a-zA-Z]{16,}
 SG\.[a-zA-Z0-9_-]{20,}
-xox[baprs]-[a-zA-Z0-9-]{20,}
-ghp_[a-zA-Z0-9]{36,}
-gho_[a-zA-Z0-9]{36,}
-ghu_[a-zA-Z0-9]{36,}
-ghs_[a-zA-Z0-9]{36,}
-ghr_[a-zA-Z0-9]{36,}
+re_[a-zA-Z0-9]{20,}
+xox[baprs]-[a-zA-Z0-9-]{10,}
+gh[pousr]_[a-zA-Z0-9]{20,}
+AIza[0-9A-Za-z_-]{30,}
 AKIA[0-9A-Z]{16}
-A3T[A-Z0-9]{16}
-AKID[A-Z0-9]{16}
------BEGIN (RSA |EC |DSA |OPENSSH |PGP )PRIVATE KEY-----
------BEGIN PRIVATE KEY-----
+-----BEGIN.PRIVATE.KEY-----
+-----BEGIN.(RSA|EC|DSA|OPENSSH|PGP).PRIVATE.KEY-----
 api[_-]?key[=:][[:space:]]*['\"][a-zA-Z0-9_\-]{16,}
-secret[_-]?key[=:][[:space:]]*['\"][a-zA-Z0-9_\-]{8,}
-token[_-]?key[=:][[:space:]]*['\"][a-zA-Z0-9_\-]{8,}
-bearer\s+[A-Za-z0-9_\-]{20,}
-SUPABASE[_-]?(SERVICE[_-]|ANON|JWT)[_-]?KEY
-SUPABASE[_-]?(URL|SERVICE[_-]ROLE[_-]KEY)
-DATABASE[_-]URL
-REDIS[_-]URL
-JWT[_-]SECRET
-STRIPE[_-]?(SECRET|PUBLISHABLE)[_-]?KEY
-STRIPE[_-]WEBHOOK[_-]SECRET
-OPENAI[_-]API[_-]KEY
-ANTHROPIC[_-]API[_-]KEY
-SENDGRID[_-]API[_-]KEY
-RESEND[_-]API[_-]KEY
-NEXTAUTH[_-]SECRET
-AUTH[_-]SECRET
-AUTH0[_-]?(CLIENT[_-]|MANAGEMENT[_-])?(SECRET|ISSUER)
+secret[_-]?key[=:][[:space:]]*['\"][a-zA-Z0-9_\-]{16,}
+service[_-]?role[_-]?key[=:][[:space:]]*['\"][a-zA-Z0-9_\-]{16,}
+client[_-]?secret[=:][[:space:]]*['\"][a-zA-Z0-9_\-]{16,}
+bearer[[:space:]]+[A-Za-z0-9_\-]{24,}
 "
 
 # ---------------------------------------------------------------------------

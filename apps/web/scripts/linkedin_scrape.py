@@ -1,18 +1,21 @@
 import requests
 import time
 import re
+import os
 from supabase import create_client
 
 # ==========================================
 # CONFIGURATION
 # ==========================================
 
-# Serper.dev API Key
-SERPER_API_KEY = "cf407b7c1990467853c02e0bce31778b6828f37d"
+# Credentials — read from the environment, never hard-code.
+# Export before running:
+#   export SERPER_API_KEY=... SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=...
+SERPER_API_KEY = os.environ["SERPER_API_KEY"]
 
 # Supabase credentials
-SUPABASE_URL = "https://recftqpdnbdandloykms.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlY2Z0cXBkbmJkYW5kbG95a21zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDYwODU2OCwiZXhwIjoyMDgwMTg0NTY4fQ.p5Hs6kriDGTUoP73WMWmkmORMEhxf1qd0H6yxS9RmFY"
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 
 DELAY_BETWEEN_CALLS = 0.5
 

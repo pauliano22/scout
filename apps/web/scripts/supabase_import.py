@@ -7,9 +7,10 @@ from datetime import datetime
 # CONFIGURATION
 # ==========================================
 
-# Your Supabase credentials
-SUPABASE_URL = "https://recftqpdnbdandloykms.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlY2Z0cXBkbmJkYW5kbG95a21zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDYwODU2OCwiZXhwIjoyMDgwMTg0NTY4fQ.p5Hs6kriDGTUoP73WMWmkmORMEhxf1qd0H6yxS9RmFY"
+# Supabase credentials — read from the environment, never hard-code.
+# Export before running:  export SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 
 # Cornell's school_id in your database
 CORNELL_SCHOOL_ID = "ca438d00-2bf0-48b7-82db-0d83e2b8a1dc"

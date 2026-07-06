@@ -23,6 +23,17 @@ interface Pick {
   why: string
   draftReady: boolean
   warm: WarmPath | null
+  createdAt: string
+}
+
+/** "Suggested today" (fresh) / "Suggested 3 days ago" for a pick card. */
+function suggestedLabel(iso: string): { text: string; fresh: boolean } {
+  const then = new Date(iso).getTime()
+  if (Number.isNaN(then)) return { text: '', fresh: false }
+  const days = Math.floor((Date.now() - then) / 86_400_000)
+  if (days <= 0) return { text: 'Suggested today', fresh: true }
+  if (days === 1) return { text: 'Suggested yesterday', fresh: false }
+  return { text: `Suggested ${days} days ago`, fresh: false }
 }
 interface PicksPayload {
   picks: Pick[]
@@ -295,6 +306,18 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                   </div>
                 </div>
               </button>
+
+              {/* When Scout suggested this alum — fresh picks stand out */}
+              {(() => {
+                const s = suggestedLabel(pick.createdAt)
+                if (!s.text) return null
+                return (
+                  <div className={`mt-2 inline-flex items-center gap-1.5 text-[12px] ${s.fresh ? 'font-semibold text-[--school-primary]' : 'font-medium text-[--text-quaternary]'}`}>
+                    {s.fresh && <span className="w-1.5 h-1.5 rounded-full bg-[--school-primary]" />}
+                    {s.text}
+                  </div>
+                )
+              })()}
 
               {/* Actions — draft + LinkedIn on one line, split in half */}
               <div className="mt-4 flex gap-2.5">

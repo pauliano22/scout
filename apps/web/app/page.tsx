@@ -179,6 +179,11 @@ export default function HomePage() {
 
       <footer className="px-6 md:px-12 py-8 border-t border-[--border-primary] text-center">
         <p className="text-xs text-[--text-quaternary]">© 2026 Scout. Built for Cornell Athletes. Not affiliated with Cornell University.</p>
+        <p className="text-xs text-[--text-quaternary] mt-2">
+          <Link href="/remove" className="hover:text-[--text-tertiary] hover:underline">
+            Remove my profile
+          </Link>
+        </p>
       </footer>
     </>
   )

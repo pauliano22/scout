@@ -49,17 +49,8 @@ export default function AboutPage() {
       <main className="overflow-hidden">
         {/* Hero Section - Different treatment with angled gradient */}
         <section className="relative px-6 md:px-12 pt-20 pb-32 md:pt-28 md:pb-40">
-          {/* Angled background */}
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-gradient-to-br from-[--bg-primary] via-[--bg-secondary] to-[--bg-primary]" />
-            <div
-              className="absolute bottom-0 left-0 right-0 h-32 bg-[--bg-secondary]"
-              style={{ clipPath: 'polygon(0 100%, 100% 100%, 100% 0, 0 100%)' }}
-            />
-            {/* Accent line */}
-            <div className="absolute top-1/2 left-0 w-1/3 h-px bg-gradient-to-r from-transparent via-[--school-primary]/30 to-transparent" />
-            <div className="absolute top-1/3 right-0 w-1/4 h-px bg-gradient-to-l from-transparent via-blue-500/20 to-transparent" />
-          </div>
+          {/* Background — a single quiet gradient */}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[--bg-primary] via-[--bg-secondary] to-[--bg-primary]" />
 
           <div className="max-w-5xl mx-auto">
             <div className="max-w-3xl animate-fade-in-up">
@@ -83,11 +74,11 @@ export default function AboutPage() {
               <div className="flex gap-4 flex-wrap">
                 {user ? (
                   <Link
-                    href="/plan"
+                    href="/campaign"
                     className="btn-primary flex items-center gap-2 group px-8 py-4 text-lg font-semibold shadow-lg shadow-[--school-primary]/30"
                   >
                     <Sparkles size={20} />
-                    Get Your Career Plan
+                    Go to Scout
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
                 ) : (
@@ -322,29 +313,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Alumni Join Section */}
-        <section className="px-6 md:px-12 py-16 bg-gradient-to-r from-[--school-primary]/10 via-[--school-primary]/5 to-transparent border-y border-[--school-primary]/20">
-          <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-[--school-primary] rounded-2xl flex items-center justify-center shadow-lg shadow-[--school-primary]/30">
-                <UserPlus size={28} className="text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold">Are you a Cornell athlete alumnus?</h3>
-                <p className="text-[--text-tertiary]">Add your info so current athletes can find and connect with you.</p>
-              </div>
-            </div>
-            <Link
-              href="/join"
-              className="btn-primary flex items-center gap-2 px-8 py-4 text-base font-semibold group whitespace-nowrap"
-            >
-              <UserPlus size={18} />
-              Join the Network
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </section>
-
         {/* CTA Section */}
         <section className="px-6 md:px-12 py-20 md:py-28 relative">
           {/* Background accent */}
@@ -365,11 +333,11 @@ export default function AboutPage() {
             </p>
             {user ? (
               <Link
-                href="/plan"
+                href="/campaign"
                 className="btn-primary inline-flex items-center gap-2 px-10 py-4 text-lg font-semibold group shadow-lg shadow-[--school-primary]/30"
               >
                 <Sparkles size={20} />
-                View Your Plan
+                Go to Scout
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </Link>
             ) : (

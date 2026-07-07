@@ -244,7 +244,7 @@ Respond ONLY with valid JSON.`
     // ── Insert plan_alumni ────────────────────────────────────────────────────
     const { error: insertError } = await supabase
       .from('plan_alumni')
-      .insert(planAlumniRows)
+      .insert(planAlumniRows as any)
 
     if (insertError) {
       console.error('[plan/generate] plan_alumni insert error:', insertError)

@@ -163,16 +163,20 @@ export default function AlumniProfileForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
-          <select
+          <input
+            type="text"
+            list="alumni-form-sports-list"
             value={values.sport}
             onChange={(e) => set('sport', e.target.value)}
-            className="input-field cursor-pointer"
-          >
-            <option value="">Select your sport</option>
+            placeholder="Start typing your sport"
+            autoComplete="off"
+            className="input-field"
+          />
+          <datalist id="alumni-form-sports-list">
             {SPORTS_LIST.map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s} />
             ))}
-          </select>
+          </datalist>
         </div>
         <div>
           <label className="block text-sm text-[--text-tertiary] mb-2">Graduation year</label>

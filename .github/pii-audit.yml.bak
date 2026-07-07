@@ -1,0 +1,62 @@
+name: PII Endpoint Audit
+
+on:
+  pull_request:
+    paths:
+      - 'apps/web/app/api/**'
+      - 'apps/web/scripts/pii-endpoint-audit.ts'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'apps/web/app/api/**'
+      - 'apps/web/scripts/pii-endpoint-audit.ts'
+  schedule:
+    # Run weekly on Monday at 9:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: PII Endpoint Auth Audit
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: .
+
+      - name: Run PII endpoint audit
+        id: audit
+        run: |
+          npx tsx scripts/pii-endpoint-audit.ts 2>&1 | tee audit-output.txt
+
+      - name: Check for unguarded endpoints
+        id: check
+        run: |
+          UNGUARDED=$(grep -c '⚠️  NO' audit-output.txt || true)
+          echo "unguarded=$UNGUARDED" >> $GITHUB_OUTPUT
+          if [ "$UNGUARDED" -gt "0" ]; then
+            echo "::warning title=PII Audit::$UNGUARDED endpoint(s) may lack authentication checks"
+          fi
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pii-audit-report
+          path: apps/web/audit-output.txt
+          retention-days: 14

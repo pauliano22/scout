@@ -8,7 +8,7 @@ import MessageModal from '@/components/MessageModal'
 import ConnectionDetailModal from '@/components/ConnectionDetailModal'
 import Avatar from '@/components/Avatar'
 import SportAvatar from '@/components/SportAvatar'
-import { statusConfig, type CRMStatus } from '@/lib/statusConfig'
+import { type CRMStatus } from '@/lib/statusConfig'
 import { Search, Plus, X, Linkedin, Loader2, ChevronRight } from 'lucide-react'
 import { cleanField } from '@/lib/cleanField'
 
@@ -55,7 +55,7 @@ export default function NetworkClient({
 }: NetworkClientProps) {
   const supabase = createClient()
   const searchParams = useSearchParams()
-  const highlightId = searchParams.get('highlight')
+  const highlightId = searchParams?.get('highlight')
 
   const [network, setNetwork] = useState<UserNetwork[]>(initialNetwork)
   const [searchQuery, setSearchQuery] = useState('')
@@ -251,7 +251,6 @@ export default function NetworkClient({
         <div className="divide-y divide-[--border-primary]">
           {filteredNetwork.map(connection => {
             const status = getStatus(connection)
-            const sConfig = statusConfig[status]
             const role = cleanField(connection.alumni?.role)
             const company = cleanField(connection.alumni?.company)
             const lastTouched = formatRelativeDate(connection.contacted_at || connection.created_at)
@@ -279,12 +278,7 @@ export default function NetworkClient({
                     <span className="font-medium text-[--text-primary] truncate text-sm">
                       {connection.alumni?.full_name}
                     </span>
-                    <span className="flex items-center gap-1 flex-shrink-0">
-                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status]}`} />
-                      <span className={`text-xs ${isUrgent ? 'text-red-400 font-medium' : 'text-[--text-quaternary]'}`}>
-                        {sConfig.label}
-                      </span>
-                    </span>
+                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_DOT[status]}`} />
                   </div>
 
                   {/* Role + Company */}
@@ -303,16 +297,6 @@ export default function NetworkClient({
                     ].filter(Boolean).join(' ')}
                   </p>
                 </div>
-
-                {/* Circle cross-link — appears on hover, quiet */}
-                <a
-                  href={`/map?sel=${connection.alumni_id}`}
-                  onClick={e => e.stopPropagation()}
-                  className="flex-shrink-0 text-xs text-[--text-quaternary] hover:text-[--school-primary] opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Their circle"
-                >
-                  Circle →
-                </a>
 
                 {/* CTA */}
                 <button

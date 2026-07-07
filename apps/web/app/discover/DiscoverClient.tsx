@@ -64,7 +64,7 @@ export default function DiscoverClient({
 
   // Network & modal state
   const [networkIds, setNetworkIds] = useState<Set<string>>(new Set(initialNetworkIds))
-  const [warmPaths, setWarmPaths] = useState<Record<string, { count: number; topName: string; topRelation: string }>>({})
+  const [warmPaths, setWarmPaths] = useState<Record<string, { count: number; topName: string; topRelation: string; topSeasons?: number; topSports?: string[] }>>({})
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [selectedAlumni, setSelectedAlumni] = useState<DiscoverAlumni | null>(null)
   const [similarAlumni, setSimilarAlumni] = useState<DiscoverAlumni[]>([])
@@ -229,12 +229,6 @@ export default function DiscoverClient({
 
   const hasActiveFilters = industryFilter !== 'All' || sportFilter !== null || searchQuery !== '' || locationFilter !== ''
 
-  // Active filter summary for results line
-  const activeFilterParts: string[] = []
-  if (sportFilter) activeFilterParts.push(sportFilter)
-  if (industryFilter !== 'All') activeFilterParts.push(industryFilter)
-  if (locationFilter.trim()) activeFilterParts.push(locationFilter.trim())
-
   return (
     <main className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
       {/* Search bar — hero element, no distracting headline */}
@@ -359,9 +353,6 @@ export default function DiscoverClient({
           {/* Results count — right-aligned */}
           <span className="ml-auto text-xs text-[--text-quaternary]">
             {totalCount.toLocaleString()} alumni
-            {activeFilterParts.length > 0 && (
-              <span className="text-[--school-primary]"> · {activeFilterParts.join(', ')}</span>
-            )}
           </span>
         </div>
       </div>
@@ -390,7 +381,11 @@ export default function DiscoverClient({
                 onClick={() => handleSelectAlumni(alumniItem)}
                 isLoading={loadingId === alumniItem.id}
                 warmNote={warmPaths[alumniItem.id]
-                  ? `${warmPaths[alumniItem.id].topName}${warmPaths[alumniItem.id].count > 1 ? ` +${warmPaths[alumniItem.id].count - 1}` : ''} can introduce you`
+                  ? `${warmPaths[alumniItem.id].topName}${warmPaths[alumniItem.id].count > 1 ? ` +${warmPaths[alumniItem.id].count - 1}` : ''} can introduce you${
+                      warmPaths[alumniItem.id].topRelation === 'teammate' && (warmPaths[alumniItem.id].topSeasons ?? 0) > 0
+                        ? ` · ${warmPaths[alumniItem.id].topSeasons} season${(warmPaths[alumniItem.id].topSeasons ?? 0) > 1 ? 's' : ''} together`
+                        : ''
+                    }`
                   : null}
               />
             ))}

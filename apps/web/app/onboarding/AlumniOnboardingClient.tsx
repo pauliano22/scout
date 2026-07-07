@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from '@/components/Link'
 import { ArrowRight, ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react'
-import ScoutLogo from '@/components/ScoutLogo'
 import { trackEvent } from '@/lib/track'
 import AlumniProfileForm, {
   AlumniProfileFormValues,
@@ -52,7 +51,10 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <ScoutLogo href="/" size="md" className="justify-center mb-12" />
+        <Link href="/" className="flex items-center justify-center gap-2 mb-12">
+          <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
+          <span className="logo-text text-lg">Scout</span>
+        </Link>
         {children}
       </div>
     </main>
@@ -235,21 +237,21 @@ export default function AlumniOnboardingClient({
         </div>
 
         <div className="space-y-4 mb-12">
-          <div className="flex items-start gap-4 py-5 border-t border-[--border-primary]">
+          <div className="flex items-start gap-4 py-5 border-t border-[--accent-warm-border]">
             <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2.5 flex-shrink-0" />
             <div>
               <p className="text-base font-medium text-[--text-primary]">You control what students see</p>
               <p className="text-sm text-[--text-tertiary] mt-1">Edit anything before it's published. Toggle email visibility on or off.</p>
             </div>
           </div>
-          <div className="flex items-start gap-4 py-5 border-t border-[--border-primary]">
+          <div className="flex items-start gap-4 py-5 border-t border-[--accent-warm-border]">
             <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2.5 flex-shrink-0" />
             <div>
               <p className="text-base font-medium text-[--text-primary]">Verified Cornell athletes only</p>
               <p className="text-sm text-[--text-tertiary] mt-1">Access is gated behind a Cornell email verification.</p>
             </div>
           </div>
-          <div className="flex items-start gap-4 py-5 border-t border-[--border-primary]">
+          <div className="flex items-start gap-4 py-5 border-t border-[--accent-warm-border]">
             <div className="w-1.5 h-1.5 rounded-full bg-[--school-primary] mt-2.5 flex-shrink-0" />
             <div>
               <p className="text-base font-medium text-[--text-primary]">Less than two minutes</p>
@@ -277,70 +279,78 @@ export default function AlumniOnboardingClient({
   if (step === 'identify') {
     return (
       <Shell>
-        <div className="flex items-center gap-2 mb-8">
-          <div className="flex gap-1.5">
-            <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
-            <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
-            <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
+        <div className="relative">
+          <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-8">
+            <div className="flex gap-1.5">
+              <div className="w-6 h-1 rounded-full bg-[--school-primary]" />
+              <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
+              <div className="w-6 h-1 rounded-full bg-[--border-secondary]" />
+            </div>
+            <span className="text-xs text-[--text-quaternary]">Step 1 of 3</span>
           </div>
-          <span className="text-xs text-[--text-quaternary]">Step 1 of 3</span>
-        </div>
 
-        <div className="mb-10">
-          <h2 className="text-3xl font-semibold text-[--text-primary] mb-2">Your Cornell athletics</h2>
-          <p className="text-base text-[--text-tertiary] leading-relaxed">Confirm your sport and graduation year so we can look up your starter profile.</p>
-        </div>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-5">
-            {error}
+          <div className="mb-10">
+            <h2 className="text-3xl font-semibold text-[--text-primary] mb-2">Your Cornell athletics</h2>
+            <p className="text-base text-[--text-tertiary] leading-relaxed">Confirm your sport and graduation year so we can look up your starter profile.</p>
           </div>
-        )}
 
-        <div className="space-y-5">
-          <div>
-            <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
-            <select
-              value={sport}
-              onChange={(e) => setSport(e.target.value)}
-              className="input-field cursor-pointer"
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-5">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
+              <input
+                type="text"
+                list="alumni-sports-list"
+                value={sport}
+                onChange={(e) => setSport(e.target.value)}
+                placeholder="Start typing your sport"
+                autoComplete="off"
+                className="input-field"
+              />
+              <datalist id="alumni-sports-list">
+                {SPORTS_LIST.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+            </div>
+
+            <div>
+              <label className="block text-sm text-[--text-tertiary] mb-2">Graduation year</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{4}"
+                maxLength={4}
+                value={graduationYear}
+                onChange={(e) => setGraduationYear(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder={`e.g., ${currentYear - 5}`}
+                autoComplete="off"
+                className="input-field"
+              />
+            </div>
+          </div>
+
+          <div className="mt-8 flex gap-3">
+            <button onClick={() => setStep('welcome')} className="btn-secondary px-5">
+              <ArrowLeft size={15} />
+            </button>
+            <button
+              onClick={handleIdentifyNext}
+              disabled={!sport || !graduationYear || isSubmitting}
+              className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-40"
             >
-              <option value="">Select your sport</option>
-              {SPORTS_LIST.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+              {isSubmitting ? <Loader2 size={15} className="animate-spin" /> : (
+                <>Look up my profile <ArrowRight size={15} /></>
+              )}
+            </button>
           </div>
-
-          <div>
-            <label className="block text-sm text-[--text-tertiary] mb-2">Graduation year</label>
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]{4}"
-              maxLength={4}
-              value={graduationYear}
-              onChange={(e) => setGraduationYear(e.target.value.replace(/[^0-9]/g, ''))}
-              placeholder={`e.g., ${currentYear - 5}`}
-              autoComplete="off"
-              className="input-field"
-            />
           </div>
-        </div>
-
-        <div className="mt-8 flex gap-3">
-          <button onClick={() => setStep('welcome')} className="btn-secondary px-5">
-            <ArrowLeft size={15} />
-          </button>
-          <button
-            onClick={handleIdentifyNext}
-            disabled={!sport || !graduationYear || isSubmitting}
-            className="btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-40"
-          >
-            {isSubmitting ? <Loader2 size={15} className="animate-spin" /> : (
-              <>Look up my profile <ArrowRight size={15} /></>
-            )}
-          </button>
         </div>
       </Shell>
     )
@@ -373,9 +383,9 @@ export default function AlumniOnboardingClient({
         </div>
 
         {/* High-confidence: name, sport, year */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4">
-          <p className="text-xs uppercase tracking-wide text-[--text-quaternary] mb-3">Match identifiers</p>
-          <div className="space-y-2">
+        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4 overflow-hidden">
+          <p className="text-xs uppercase tracking-wide text-[--text-quaternary] mb-3 relative z-10">Match identifiers</p>
+          <div className="space-y-2 relative z-10">
             <Row label="Name" value={match.full_name} />
             <Row label="Sport" value={match.sport} />
             <Row label="Graduation year" value={String(match.graduation_year)} />
@@ -389,7 +399,7 @@ export default function AlumniOnboardingClient({
               Existing info on Scout
             </p>
             <p className="text-xs text-[--text-quaternary] mb-3 italic">
-              May be outdated. You can edit or remove any of this in the next step.
+              May be outdated.
             </p>
             <div className="space-y-2">
               {match.role && <Row label="Role" value={match.role} muted />}
@@ -442,7 +452,10 @@ export default function AlumniOnboardingClient({
         {/* Warm beige accent bar at top */}
         <div className="h-1 w-16 mx-auto mb-6 rounded-full bg-[--accent-warm]" />
 
-        <ScoutLogo href="/" size="md" className="justify-center mb-10" />
+        <Link href="/" className="flex items-center justify-center gap-2 mb-10">
+          <img src="/favicon.svg" alt="Scout" className="w-7 h-7" />
+          <span className="logo-text text-lg">Scout</span>
+        </Link>
 
         <div className="flex items-center gap-2 mb-8">
           <div className="flex gap-1.5">
@@ -466,7 +479,8 @@ export default function AlumniOnboardingClient({
           </p>
         </div>
 
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 md:p-8">
+        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 md:p-8 overflow-hidden">
+          <div className="relative z-10">
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-5">
               {error}
@@ -474,6 +488,7 @@ export default function AlumniOnboardingClient({
           )}
 
           <AlumniProfileForm values={values} onChange={setValues} showReviewBanner />
+          </div>
         </div>
 
         <div className="mt-6 flex gap-3">
@@ -496,9 +511,6 @@ export default function AlumniOnboardingClient({
           </button>
         </div>
 
-        <p className="text-center text-xs text-[--text-quaternary] mt-5">
-          You can edit your profile anytime from your dashboard.
-        </p>
       </div>
     </main>
   )

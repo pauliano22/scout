@@ -150,6 +150,24 @@ export interface WarmPathSummaryOut {
   count: number
   topName: string
   topRelation: 'teammate' | 'same_era'
+  /** seasons the top introducer overlapped with the candidate (0 when unknown) */
+  topSeasons: number
+  /** the top introducer's sports (family names) */
+  topSports: string[]
+}
+
+/**
+ * Rank a warm-path introducer. A real teammate always beats a mere era-overlap,
+ * then more shared seasons, then recency — recent grads are the warm bridges to
+ * older alumni and respond far more often, so they get lifted within a tier.
+ */
+const WARM_NOW = new Date().getFullYear()
+export function warmScore(relation: 'teammate' | 'same_era', seasons: number, gradYear: number | null): number {
+  const rel = relation === 'teammate' ? 100 : 0
+  const seasonPts = Math.min(Math.max(seasons, 0), 6) * 4
+  const age = gradYear == null ? 40 : Math.max(0, WARM_NOW - gradYear)
+  const recency = age <= 3 ? 12 : age <= 6 ? 8 : age <= 12 ? 3 : 0
+  return rel + seasonPts + recency
 }
 
 /**
@@ -172,18 +190,20 @@ export async function warmPathsFor(
     const ego = ds.byId.get(id)
     if (!ego || ego.a == null) continue
     let count = 0
-    let top: { name: string; relation: 'teammate' | 'same_era'; seasons: number } | null = null
+    let top: { name: string; relation: 'teammate' | 'same_era'; seasons: number; sports: string[]; score: number } | null = null
     for (const c of contacts) {
       if (c.id === id || !overlaps(ego, c)) continue
       count++
       const relation: 'teammate' | 'same_era' = sharesTeam(ds, ego, c) ? 'teammate' : 'same_era'
       const seasons = seasonsShared(ego, c)
-      const better = !top
-        || (relation === 'teammate' && top.relation !== 'teammate')
-        || (relation === top.relation && seasons > top.seasons)
-      if (better) top = { name: c.n, relation, seasons }
+      const score = warmScore(relation, seasons, c.y ?? null)
+      if (!top || score > top.score) {
+        top = { name: c.n, relation, seasons, sports: c.sp.map(x => ds.raw.sports[x]), score }
+      }
     }
-    if (count > 0 && top) out[id] = { count, topName: top.name, topRelation: top.relation }
+    if (count > 0 && top) {
+      out[id] = { count, topName: top.name, topRelation: top.relation, topSeasons: top.seasons, topSports: top.sports }
+    }
   }
   return out
 }
@@ -227,7 +247,7 @@ export async function buildCircle(
     })
   }
   warmPaths.sort((a, b) =>
-    Number(b.relation === 'teammate') - Number(a.relation === 'teammate') || b.seasons - a.seasons
+    warmScore(b.relation, b.seasons, b.gradYear) - warmScore(a.relation, a.seasons, a.gradYear)
   )
 
   return {

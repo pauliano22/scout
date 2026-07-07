@@ -2,11 +2,21 @@ import { NextRequest } from 'next/server'
 import { ApiAuthError, requireAdmin } from '@/lib/auth'
 import { serviceClient } from '@/lib/requestAuth'
 import { ok, fail } from '@/lib/api/respond'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  rateLimitExceeded,
+} from '@/lib/rate-limit'
 
 export async function GET(request: NextRequest) {
   try {
     await requireAdmin()
     const db = serviceClient()
+
+    // ── Rate limit: admin tier (300 req/min) keyed by caller IP ──
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? ''
+    const rl = checkRateLimit(`admin:${ip || 'admin'}`, 'admin')
+    if (!rl.success) return rateLimitExceeded(rl)
 
     const searchParams = request.nextUrl.searchParams
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
@@ -39,13 +49,13 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
-    return ok({
+    return addRateLimitHeaders(ok({
       users: users ?? [],
       total: count ?? 0,
       page,
       limit,
       totalPages: Math.ceil((count ?? 0) / limit),
-    })
+    }), rl)
   } catch (e) {
     if (e instanceof ApiAuthError) return fail(e.message, e.status)
     if (e instanceof Error) return fail(e.message, 400)

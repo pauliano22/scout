@@ -15,6 +15,7 @@ import {
   Flag,
 } from 'lucide-react'
 import SportAvatar from '@/components/SportAvatar'
+import ShareProfileButton from '@/components/ShareProfileButton'
 import { cleanField } from '@/lib/cleanField'
 import type { WorkHistoryEntry } from '@scout/shared/types/database'
 
@@ -61,7 +62,7 @@ export default function AlumniDetailModal({
 }: AlumniDetailModalProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [addedToNetwork, setAddedToNetwork] = useState(isInNetwork)
-  const [warm, setWarm] = useState<{ count: number; topName: string; topRelation: string } | null>(null)
+  const [warm, setWarm] = useState<{ count: number; topName: string; topRelation: string; topSeasons?: number; topSports?: string[] } | null>(null)
   const [showFlagForm, setShowFlagForm] = useState(false)
   const [flagReason, setFlagReason] = useState('')
   const [flagSubmitted, setFlagSubmitted] = useState(false)
@@ -189,17 +190,19 @@ export default function AlumniDetailModal({
             </div>
           </div>
 
+          {/* Warm path — your way in through someone you already saved */}
           {warm && (
-            <div className="mx-6 mb-4 px-4 py-3 rounded-xl bg-green-500/10 border border-green-600/25 text-[13px]">
-              <span className="font-semibold text-green-700 dark:text-green-500">Your way in: </span>
-              <span className="text-[--text-secondary]">
-                {warm.count > 1
-                  ? `${warm.topName} +${warm.count - 1} more in your network can introduce you.`
-                  : `${warm.topName} in your network ${warm.topRelation === 'teammate' ? 'played with them at Cornell' : 'was on campus with them'} — ask for an intro.`}
-              </span>{' '}
-              <a href={`/map?sel=${alumni.id}`} className="font-medium text-[--school-primary] hover:underline whitespace-nowrap">
-                Their circle →
-              </a>
+            <div className="px-6 pb-3">
+              <div className="flex items-start gap-2 text-xs bg-[--school-primary]/8 border border-[--school-primary]/20 rounded-lg px-3 py-2.5">
+                <Users size={14} className="text-[--school-primary] flex-shrink-0 mt-0.5" />
+                <span className="text-[--text-secondary] leading-snug">
+                  <span className="font-semibold text-[--text-primary]">{warm.topName}</span>
+                  {warm.count > 1 ? ` +${warm.count - 1} more` : ''} in your network can introduce you
+                  {warm.topRelation === 'teammate' && (warm.topSeasons ?? 0) > 0
+                    ? ` · played ${warm.topSeasons} season${(warm.topSeasons ?? 0) > 1 ? 's' : ''} together`
+                    : ''}
+                </span>
+              </div>
             </div>
           )}
 
@@ -246,6 +249,19 @@ export default function AlumniDetailModal({
                 <span className="hidden sm:inline">Email</span>
               </a>
             )}
+
+            {/* Share */}
+            <ShareProfileButton
+              alumni={{
+                full_name: alumni.full_name,
+                sport: alumni.sport,
+                graduation_year: alumni.graduation_year,
+                company: alumni.company,
+                role: alumni.role,
+                location: alumni.location,
+                photo_url: alumni.photo_url || alumni.avatar_url,
+              }}
+            />
 
             {/* Flag button */}
             <button

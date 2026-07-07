@@ -35,24 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                function getTheme() {
-                  const stored = localStorage.getItem('theme');
-                  if (stored) return stored;
-                  // Default to light mode
-                  return 'light';
-                }
-                document.documentElement.setAttribute('data-theme', getTheme());
-              })();
-            `,
-          }}
-        />
-      </head>
+    <html lang="en" data-theme="light" className={inter.variable}>
       <body className="min-h-screen">
         <PostHogProvider>
           {children}

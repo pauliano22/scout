@@ -9,13 +9,27 @@ const securityHeaders = [
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
   },
+  {
+    key: 'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.cornell.edu",
+      "font-src 'self' https://fonts.gstatic.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      "frame-ancestors 'none'",
+      "form-action 'self' https://*.supabase.co",
+      "base-uri 'self'",
+      'report-uri /api/csp-report',
+    ].join('; '),
+  },
 ]
 
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@scout/shared'],
   experimental: {
-    // Ship the pre-baked alumni map dataset with the serverless bundle
     outputFileTracingIncludes: {
       '/api/map/data': ['./data/alumni-map.json'],
       '/api/alumni/[id]/circle': ['./data/alumni-map.json'],

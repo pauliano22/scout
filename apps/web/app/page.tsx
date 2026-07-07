@@ -3,7 +3,7 @@
 import Link from '@/components/Link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, GraduationCap, Briefcase } from 'lucide-react'
+import { ArrowRight, GraduationCap, Briefcase, LogIn } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { postLoginPath } from '@/lib/auth/postLoginPath'
 import type { UserRole } from '@scout/shared/types/database'
@@ -48,6 +48,19 @@ export default function HomePage() {
         <Navbar user={user} />
       </div>
 
+      {/* Always-available Sign In — top right, hides once the scroll navbar is shown */}
+      {!user && (
+        <Link
+          href="/login"
+          className={`btn-secondary fixed top-4 right-4 md:top-6 md:right-6 z-[60] gap-1.5 text-sm shadow-sm backdrop-blur-sm transition-all duration-300 ${
+            showNavbar ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <LogIn size={15} />
+          Sign In
+        </Link>
+      )}
+
       <main>
         {/* ── Hero ── */}
         <section className="min-h-screen flex flex-col items-center justify-center px-6 relative">
@@ -57,11 +70,6 @@ export default function HomePage() {
               <img src="/favicon.svg" alt="Scout" className="w-10 h-10 opacity-90" />
               <span className="text-2xl font-bold tracking-tight">Scout</span>
             </div>
-
-            {/* Eyebrow */}
-            <p className="text-xs font-medium tracking-widest uppercase text-[--text-quaternary] mb-5">
-              Cornell Athletics Alumni Network
-            </p>
 
             {/* Headline */}
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-[1.05] tracking-tight text-[--text-primary]">
@@ -136,44 +144,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── Stats ── */}
-        <section className="px-6 md:px-12 py-28">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { number: '55', label: 'Years of Rosters' },
-                { number: '40+', label: 'Sports Represented' },
-                { number: '18k+', label: 'Alumni Profiles' },
-                { number: 'Free', label: 'For All Athletes' },
-              ].map(({ number, label }) => (
-                <div key={label} className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 text-center transition-colors hover:bg-[--bg-tertiary]">
-                  <p className="text-4xl md:text-5xl font-bold text-[--school-primary] tracking-tight mb-1">{number}</p>
-                  <p className="text-xs text-[--text-quaternary] tracking-wide">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Industries ── */}
-        <section className="px-6 md:px-12 py-28 bg-[--bg-secondary]">
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="text-xs font-medium tracking-widest uppercase text-[--text-quaternary] mb-3">Alumni in Every Industry</p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">
-              From Wall Street to Silicon Valley
-            </h2>
-            <p className="text-[--text-secondary] mb-10">Our alumni are everywhere.</p>
-            <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-6 inline-block">
-              <div className="flex flex-wrap justify-center gap-2">
-                {['Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media', 'Real Estate', 'Education', 'Government'].map(ind => (
-                  <span key={ind} className="px-4 py-2 bg-[--bg-secondary] border border-[--border-primary] rounded-lg text-sm text-[--text-secondary] font-medium transition-colors hover:border-[--school-primary]/40 hover:text-[--text-primary]">
-                    {ind}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ── Final CTA ── */}
         <section className="px-6 md:px-12 py-24">

@@ -2,15 +2,20 @@
   "name": "scout",
   "version": "1.0.0",
   "private": true,
-  "description": "Cornell Athlete Alumni Networking Platform — monorepo root",
+  "description": "Cornell Athlete Alumni Networking Platform",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/web",
+    "apps/mobile",
+    "packages/shared"
   ],
   "scripts": {
     "dev:web": "npm run dev --workspace=apps/web",
-    "dev:mobile": "npm run start --workspace=apps/mobile",
+    "dev:mobile": "npm run dev --workspace=apps/mobile",
     "build:web": "npm run build --workspace=apps/web",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "db:seed": "node scripts/seed.js"
+  },
+  "dependencies": {
+    "next": "14.2.35"
   }
 }

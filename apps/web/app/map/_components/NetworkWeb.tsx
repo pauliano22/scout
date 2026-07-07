@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { Dataset } from '../_lib/data'
 import type { Person, SavedContact } from '../_lib/types'
 import { seasonsShared, yearsOverlap } from '../_lib/overlap'
@@ -32,6 +32,20 @@ interface Node {
  */
 export default function NetworkWeb({ ds, saved, onPick }: Props) {
   const [hoverId, setHoverId] = useState<string | null>(null)
+  // Keep the hover card up briefly after the cursor leaves the node, and alive
+  // while the cursor is over the card itself — so you can move onto it to click.
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const show = (id: string) => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    setHoverId(id)
+  }
+  const scheduleHide = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    hideTimer.current = setTimeout(() => setHoverId(null), 320)
+  }
+  const keepOpen = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+  }
 
   const { nodes, edges } = useMemo(() => {
     const people = saved
@@ -98,15 +112,23 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
           )
         })}
         {nodes.map(n => {
-          const labelLeft = Math.cos(n.angle) < -0.2
+          // Place labels away from the ring's centre: above at the top, below at
+          // the bottom, out to the side on the left/right. Without the "below"
+          // case, bottom nodes all got side labels that stacked and overlapped.
           const labelAbove = Math.sin(n.angle) < -0.6
+          const labelBelow = Math.sin(n.angle) > 0.6
+          const labelLeft = Math.cos(n.angle) < -0.2
+          const vertical = labelAbove || labelBelow
+          const lx = vertical ? 0 : labelLeft ? -20 : 20
+          const ly = labelAbove ? -22 : labelBelow ? 27 : 4
+          const anchor = vertical ? 'middle' : labelLeft ? 'end' : 'start'
           return (
             <g
               key={n.p.id}
               className={`web-node ${dimmed(n) ? 'web-node-dim' : ''}`}
               transform={`translate(${n.x},${n.y})`}
-              onMouseEnter={() => setHoverId(n.p.id)}
-              onMouseLeave={() => setHoverId(h => (h === n.p.id ? null : h))}
+              onMouseEnter={() => show(n.p.id)}
+              onMouseLeave={scheduleHide}
               onClick={() => onPick(n.p)}
               tabIndex={0}
               role="button"
@@ -115,12 +137,7 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
             >
               <circle r="15" />
               <text className="web-initials" dy="4">{initials(n.p.n)}</text>
-              <text
-                className="web-label"
-                x={labelAbove ? 0 : labelLeft ? -20 : 20}
-                y={labelAbove ? -22 : 4}
-                textAnchor={labelAbove ? 'middle' : labelLeft ? 'end' : 'start'}
-              >
+              <text className="web-label" x={lx} y={ly} textAnchor={anchor}>
                 {shortName(n.p.n)}{n.p.y ? ` '${String(n.p.y).slice(2)}` : ''}
               </text>
             </g>
@@ -130,6 +147,8 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
       {hoverNode && (
         <div
           className="web-card-anchor"
+          onMouseEnter={keepOpen}
+          onMouseLeave={scheduleHide}
           style={{
             left: `${(hoverNode.x / W) * 100}%`,
             top: `${(hoverNode.y / H) * 100}%`,

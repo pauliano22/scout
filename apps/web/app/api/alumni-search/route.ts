@@ -25,6 +25,11 @@ import { embedText, EmbeddingProviderError } from '@/lib/search/embeddings'
 import { parseQuery, type ParsedIntent } from '@/lib/search/queryParse'
 import { rerankCandidates, type CandidateRow, type RerankMatch } from '@/lib/search/rerank'
 import { isInAlumniSearchTreatment } from '@scout/shared/featureFlags/alumniSearch'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  rateLimitExceeded,
+} from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,21 +78,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ── Rate limit: authenticated tier (100 req/min) keyed by user ID ──
+  const rl = checkRateLimit(`alumni-search:${user.id}`, 'authenticated')
+  if (!rl.success) return rateLimitExceeded(rl)
+
   // Feature flag gate. 503 (not 403) so the client can render a calm
   // "search is rolling out" state without blowing up auth flows.
   if (!isInAlumniSearchTreatment(user.id)) {
-    return NextResponse.json({ error: 'Feature not available for this user' }, { status: 503 })
+    return addRateLimitHeaders(NextResponse.json({ error: 'Feature not available for this user' }, { status: 503 }), rl)
   }
 
   let body: RequestBody
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return addRateLimitHeaders(NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 }), rl)
   }
   const rawQuery = typeof body.query === 'string' ? body.query.trim() : ''
   if (!rawQuery) {
-    return NextResponse.json({ error: 'Empty query' }, { status: 400 })
+    return addRateLimitHeaders(NextResponse.json({ error: 'Empty query' }, { status: 400 }), rl)
   }
   const history = Array.isArray(body.history)
     ? body.history.filter((s): s is string => typeof s === 'string').slice(-5)
@@ -122,12 +131,12 @@ export async function POST(request: NextRequest) {
   // Genuine ambiguity short-circuits before we burn embedding + rerank budget.
   if (intent.clarifyingQuestion) {
     await logSearch(supabase, user.id, rawQuery, [], 'clarify', source, intent.soft)
-    return NextResponse.json<AlumniSearchResponse>({
+    return addRateLimitHeaders(NextResponse.json<AlumniSearchResponse>({
       intent,
       matches: [],
       clarifying_question: intent.clarifyingQuestion,
       no_matches_reason: null,
-    })
+    }), rl)
   }
 
   // ── 2. Retrieve ───────────────────────────────────────────────────────────
@@ -145,7 +154,7 @@ export async function POST(request: NextRequest) {
 
   if (candidates.rows.length === 0) {
     await logSearch(supabase, user.id, rawQuery, [], 'no_candidates', source, intent.soft)
-    return NextResponse.json<AlumniSearchResponse>({
+    return addRateLimitHeaders(NextResponse.json<AlumniSearchResponse>({
       intent,
       matches: [],
       clarifying_question: null,
@@ -153,7 +162,7 @@ export async function POST(request: NextRequest) {
         candidates.embeddingFailed
           ? 'Alumni search is temporarily unavailable. Try again shortly.'
           : 'No alumni in our index match this query. Try widening the role, industry, or location.',
-    })
+    }), rl)
   }
 
   // ── 3. Pre-score with the shared scorer ───────────────────────────────────
@@ -174,13 +183,13 @@ export async function POST(request: NextRequest) {
 
   if (preScored.length === 0) {
     await logSearch(supabase, user.id, rawQuery, [], 'below_floor', source, intent.soft)
-    return NextResponse.json<AlumniSearchResponse>({
+    return addRateLimitHeaders(NextResponse.json<AlumniSearchResponse>({
       intent,
       matches: [],
       clarifying_question: null,
       no_matches_reason:
         'I found some candidates, but none were a strong match for what you asked. Try a different angle or broaden one of the constraints.',
-    })
+    }), rl)
   }
 
   // ── 4. Rerank ─────────────────────────────────────────────────────────────
@@ -223,12 +232,12 @@ export async function POST(request: NextRequest) {
   // ── 6. Log ────────────────────────────────────────────────────────────────
   await logSearch(supabase, user.id, rawQuery, matches.map((m) => m.alumnus.id), matches.length ? 'matches' : 'no_matches', source, intent.soft)
 
-  return NextResponse.json<AlumniSearchResponse>({
+  return addRateLimitHeaders(NextResponse.json<AlumniSearchResponse>({
     intent,
     matches,
     clarifying_question: rerank.clarifying_question,
     no_matches_reason: matches.length === 0 ? (rerank.no_matches_reason ?? 'No strong matches.') : null,
-  })
+  }), rl)
 }
 
 // ─── Retrieval helpers ─────────────────────────────────────────────────────

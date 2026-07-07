@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import MascotFeedback from '@/components/MascotFeedback'
 import CampaignClient from './CampaignClient'
-import { isInCampaignHome } from '@scout/shared/featureFlags/campaignHome'
 import type { UserRole } from '@scout/shared/types/database'
 
 // The agentic campaign home — the student's default landing when the
@@ -24,9 +23,9 @@ export default async function CampaignPage() {
   if (!profile?.onboarding_completed) redirect('/onboarding')
 
   const role = (profile?.account_role as UserRole | undefined) ?? 'student'
-  if (role !== 'student' || !isInCampaignHome(user.id)) {
-    redirect(role === 'alumni' ? '/profile' : role === 'admin' ? '/admin' : '/plan')
-  }
+  // Campaign is the single student home. Non-students go to their own surface.
+  if (role === 'alumni') redirect('/profile')
+  if (role === 'admin') redirect('/admin')
 
   const { count: networkCount } = await supabase
     .from('user_networks')

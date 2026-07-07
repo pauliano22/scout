@@ -1,8 +1,87 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  rateLimitExceeded,
+  getClientIp,
+} from '@/lib/rate-limit'
+
+// ─── Per-email rate limit store (max 3 requests per email per hour) ──────
+const emailRateLimitStore = new Map<string, number[]>()
+const EMAIL_RATE_LIMIT = 3
+const EMAIL_RATE_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+
+/** Prune stale email rate-limit entries every 60 seconds. */
+let lastEmailPrune = Date.now()
+function pruneEmailStore(): void {
+  const now = Date.now()
+  if (now - lastEmailPrune < 60_000) return
+  lastEmailPrune = now
+  const cutoff = now - EMAIL_RATE_WINDOW_MS * 2
+  for (const [key, timestamps] of emailRateLimitStore) {
+    const fresh = timestamps.filter((t) => t > cutoff)
+    if (fresh.length === 0) {
+      emailRateLimitStore.delete(key)
+    } else {
+      emailRateLimitStore.set(key, fresh)
+    }
+  }
+}
+
+/**
+ * Check per-email rate limit. Returns { allowed: true } if within limit,
+ * or { allowed: false, retryAfter } if the email has exceeded the quota.
+ */
+function checkEmailRateLimit(email: string): { allowed: boolean; retryAfter?: number } {
+  pruneEmailStore()
+  const now = Date.now()
+  const cutoff = now - EMAIL_RATE_WINDOW_MS
+  let timestamps = emailRateLimitStore.get(email) ?? []
+  timestamps = timestamps.filter((t) => t > cutoff)
+
+  if (timestamps.length >= EMAIL_RATE_LIMIT) {
+    const oldest = timestamps[0]
+    return {
+      allowed: false,
+      retryAfter: Math.ceil((oldest + EMAIL_RATE_WINDOW_MS - now) / 1000),
+    }
+  }
+
+  timestamps.push(now)
+  emailRateLimitStore.set(email, timestamps)
+  return { allowed: true }
+}
+
+/** Insert a row into the password_reset_audit_log table. Non-blocking — logs and swallows errors. */
+async function logAuditEvent(
+  // internal audit helper; client generic varies across supabase-js versions
+  supabase: any,
+  action: 'request' | 'reset',
+  email: string,
+  ip_address: string | null,
+  user_agent: string | null,
+  metadata: Record<string, unknown> = {},
+): Promise<void> {
+  try {
+    await supabase.from('password_reset_audit_log').insert({
+      action,
+      email,
+      ip_address,
+      user_agent,
+      metadata,
+    } as never)
+  } catch (err) {
+    console.error('Failed to write audit log:', err)
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // ── Rate limit: public tier (30 req/min) keyed by IP ──
+    const rl = checkRateLimit(`forgot-password:${getClientIp(request)}`, 'public')
+    if (!rl.success) return rateLimitExceeded(rl)
+
     const body = await request.json()
     const { email } = body
 
@@ -12,6 +91,24 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    const normalizedEmail = email.toLowerCase()
+
+    // ── Per-email rate limit: max 3 requests per email per hour ──
+    const emailRl = checkEmailRateLimit(normalizedEmail)
+    if (!emailRl.allowed) {
+      return addRateLimitHeaders(
+        NextResponse.json(
+          { error: 'Too many password reset requests for this email. Please try again later.' },
+          { status: 429 },
+        ),
+        rl,
+      )
+    }
+
+    // Extract IP and user agent for audit logging
+    const ipAddress = getClientIp(request)
+    const userAgent = request.headers.get('user-agent')
 
     // Create Supabase client with service role key (inside function so env vars are available)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -35,7 +132,7 @@ export async function POST(request: NextRequest) {
     // Verify the user exists in Supabase auth before creating a token
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'recovery',
-      email: email.toLowerCase(),
+      email: normalizedEmail,
     })
 
     if (linkError || !linkData?.user) {
@@ -49,14 +146,14 @@ export async function POST(request: NextRequest) {
     // Generate a secure random token
     const token = crypto.randomUUID()
 
-    // Set expiration to 1 hour from now
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    // Set expiration to 15 minutes from now
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
 
     // Store the token in password_reset_tokens table
     const { error: insertError } = await supabase
       .from('password_reset_tokens')
       .insert({
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         token,
         expires_at: expiresAt,
         used: false
@@ -69,6 +166,11 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Log the password reset request
+    await logAuditEvent(supabase, 'request', normalizedEmail, ipAddress, userAgent, {
+      token_created: true,
+    })
 
     // Send email via Resend API
     const resetUrl = `https://scoutcornell.com/reset-password?token=${token}`
@@ -103,7 +205,7 @@ export async function POST(request: NextRequest) {
               <a href="${resetUrl}" style="background-color: #B31B1B; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-block;">Reset Password</a>
             </div>
 
-            <p style="color: #666; font-size: 14px;">This link will expire in 1 hour for security reasons.</p>
+            <p style="color: #666; font-size: 14px;">This link will expire in 15 minutes for security reasons.</p>
 
             <p style="color: #666; font-size: 14px;">If you didn't request this password reset, you can safely ignore this email. Your password will remain unchanged.</p>
 
@@ -127,7 +229,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ success: true })
+    return addRateLimitHeaders(NextResponse.json({ success: true }), rl)
   } catch (error) {
     console.error('Error in forgot-password:', error)
     return NextResponse.json(

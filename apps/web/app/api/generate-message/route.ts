@@ -13,6 +13,11 @@ import {
   buildOutreachUser, buildOutreachSystem, connectionNote, factNote, generateOutreach,
   type OutreachChannel, type OutreachTone, type OutreachType,
 } from '@/lib/agent/outreach'
+import {
+  checkRateLimit,
+  addRateLimitHeaders,
+  rateLimitExceeded,
+} from '@/lib/rate-limit'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -20,10 +25,15 @@ const TYPES: OutreachType[] = ['introduction', 'follow_up', 'thank_you']
 const TONES: OutreachTone[] = ['friendly', 'neutral', 'formal']
 
 export async function POST(request: NextRequest) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // ── Rate limit: authenticated tier (100 req/min) keyed by user ID ──
+  const rl = checkRateLimit(`generate-message:${user.id}`, 'authenticated')
+  if (!rl.success) return rateLimitExceeded(rl)
+
   try {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
     const { alumni, tone, messageType = 'introduction', platform = 'linkedin', context } = body
@@ -61,9 +71,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ message: generatedMessage })
+    return addRateLimitHeaders(NextResponse.json({ message: generatedMessage }), rl)
   } catch (error) {
     console.error('Error generating message:', error)
-    return NextResponse.json({ error: 'Failed to generate message' }, { status: 500 })
+    return addRateLimitHeaders(NextResponse.json({ error: 'Failed to generate message' }, { status: 500 }), rl)
   }
 }

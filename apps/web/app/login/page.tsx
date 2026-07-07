@@ -32,7 +32,7 @@ export default function LoginPage() {
       if (error) throw error
 
       const userId = signInData.user?.id
-      let dest = '/plan'
+      let dest = '/campaign'
       if (userId) {
         const { data: profile } = await supabase
           .from('profiles')

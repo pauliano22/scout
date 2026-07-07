@@ -68,25 +68,6 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick }: P
         </div>
       </div>
 
-      {warm.length > 0 && (
-        <div className="warm-card">
-          <h3>Your way in</h3>
-          {warm.slice(0, 4).map(w => (
-            <button key={w.contact.id} className="warm-row" onClick={() => onPick(w.contact)}>
-              <span className="warm-name">
-                {w.contact.n}{w.contact.y ? ` '${String(w.contact.y).slice(2)}` : ''}
-                <span className="warm-tag">{STATUS_LABEL[w.status ?? ''] ?? 'in your network'}</span>
-              </span>
-              <span className="warm-meta">
-                {w.teammate
-                  ? `${w.seasons} season${w.seasons === 1 ? '' : 's'} together — ask for the intro`
-                  : 'On campus together — an easy opener'}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
       {p.a != null && mates.length > 0 ? (
         <div className="pc-timeline">
           <h3>Who they played with</h3>

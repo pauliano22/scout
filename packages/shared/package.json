@@ -11,6 +11,7 @@
     "./profile/*": "./profile/*.ts",
     "./scoring/*": "./scoring/*.ts",
     "./featureFlags/*": "./featureFlags/*.ts",
-    "./agent/*": "./agent/*.ts"
+    "./agent/*": "./agent/*.ts",
+    "./utils/*": "./utils/*.ts"
   }
 }

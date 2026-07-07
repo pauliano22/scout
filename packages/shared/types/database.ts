@@ -94,6 +94,35 @@ export interface Profile {
   updated_at: string
 }
 
+// =====================================================================
+// Migration 035 — Ambassador Program / Varsity Badges
+// =====================================================================
+
+export type AmbassadorTier = 'bronze' | 'silver' | 'gold' | 'platinum'
+export type AmbassadorBadgeType = 'varsity' | 'captain' | 'hall_of_fame'
+
+export interface AmbassadorProfile {
+  id: string
+  user_id: string
+  alumni_id: string | null
+  tier: AmbassadorTier
+  sport: string
+  badge_type: AmbassadorBadgeType
+  benefits_access: Record<string, unknown>
+  recruits_count: number
+  mentorship_hours: number
+  referrals_count: number
+  is_active: boolean
+  reviewed_by: string | null
+  reviewed_at: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+  // Joined data
+  profiles?: Profile
+  alumni?: Alumni
+}
+
 export interface UserNetwork {
   id: string
   user_id: string
@@ -233,6 +262,20 @@ export type Sport =
   | 'Fencing'
   | 'Gymnastics'
 
+export interface SportNormalization {
+  canonical_name: string
+  aliases: string[]
+  category: 'team' | 'individual'
+  contact_type: 'contact' | 'non-contact'
+  level: 'varsity' | 'club' | 'intramural'
+  created_at: string
+  updated_at: string
+}
+
+export type SportCategory = SportNormalization['category']
+export type SportContactType = SportNormalization['contact_type']
+export type SportLevel = SportNormalization['level']
+
 export interface UserEvent {
   id: string
   user_id: string
@@ -260,6 +303,40 @@ export interface Interaction {
 
 export type UserRole = 'student' | 'alumni' | 'admin'
 export type TeamCode = 'football'
+
+// =====================================================================
+// Migration 035 — Event QR Connection Network
+// =====================================================================
+
+export interface EventChatSession {
+  id: string
+  event_id: string | null
+  sport: string
+  name: string
+  code: string
+  start_time: string
+  end_time: string | null
+  is_active: boolean
+  qr_code_url: string | null
+  created_at: string
+}
+
+export interface EventParticipant {
+  id: string
+  session_id: string
+  user_id: string
+  joined_at: string
+  display_name: string | null
+}
+
+export interface EventChatMessage {
+  id: string
+  session_id: string
+  user_id: string
+  display_name: string | null
+  content: string
+  created_at: string
+}
 export type EventKind = 'networking' | 'panel' | 'workshop' | 'game_day' | 'other'
 export type EventVisibility = 'team' | 'all'
 export type RsvpStatus = 'going' | 'maybe' | 'declined'
@@ -348,4 +425,244 @@ export function isSessionValid(session: Session): boolean {
   if (session.revoked_at) return false
   if (new Date(session.expires_at) < new Date()) return false
   return true
+}
+
+// =====================================================================
+// Bio Keyword Extraction (IDEA 62)
+// =====================================================================
+
+export type KeywordCategory = 'skill' | 'industry' | 'certification' | 'milestone'
+
+export interface ProfileKeyword {
+  id: string
+  alumni_id: string
+  keyword: string
+  category: KeywordCategory
+  source: string
+  created_at: string
+}
+
+// =====================================================================
+// Census gap analysis
+// =====================================================================
+
+export interface CensusReport {
+  id: string
+  generated_at: string
+  sport: string
+  graduation_year: number
+  total_rostered: number
+  total_registered: number
+  coverage_pct: number
+  gap_category: 'critical' | 'growing' | 'healthy'
+  created_at: string
+}
+
+export type GapCategory = 'critical' | 'growing' | 'healthy'
+
+// =====================================================================
+// Feature Flags (migration 035)
+// =====================================================================
+
+export interface FeatureFlag {
+  flag_name: string
+  enabled: boolean
+  rollout_percentage: number
+  created_at: string
+  updated_at: string
+}
+
+// =====================================================================
+// Onboarding progress (bundled with sport-name-normalization branch)
+// =====================================================================
+
+export type OnboardingStep = 'add_photo' | 'complete_bio' | 'first_connection' | 'first_message'
+
+export const ONBOARDING_STEPS: OnboardingStep[] = [
+  'add_photo',
+  'complete_bio',
+  'first_connection',
+  'first_message',
+]
+
+export const ONBOARDING_STEP_LABELS: Record<OnboardingStep, string> = {
+  add_photo: 'Add a photo',
+  complete_bio: 'Complete your bio',
+  first_connection: 'Find your first teammate',
+  first_message: 'Send your first message',
+}
+
+export interface OnboardingProgress {
+  user_id: string
+  has_photo: boolean
+  has_bio: boolean
+  has_first_connection: boolean
+  has_first_message: boolean
+  completed_steps: OnboardingStep[]
+  updated_at?: string
+}
+
+// =====================================================================
+// Migration 035 — Graduation Year Verification Pipeline
+// =====================================================================
+
+export type VerificationStatus = 'verified' | 'mismatch' | 'unverified' | 'pending'
+
+export interface GraduationVerification {
+  id: string
+  alumni_id: string
+  reported_year: number
+  roster_year: number | null
+  match_status: VerificationStatus
+  reviewed: boolean
+  flagged_at: string | null
+  created_at: string
+  updated_at: string
+  // Joined data
+  alumni?: Alumni
+}
+
+// =====================================================================
+// Security Incident Logging (IDEA 58)
+// =====================================================================
+
+export interface SecurityEvent {
+  id: string
+  event_type: string
+  severity: 'info' | 'warning' | 'critical'
+  source_ip: string | null
+  user_id: string | null
+  details: Record<string, unknown>
+  acknowledged: boolean
+  created_at: string
+}
+
+export interface SecurityAlert {
+  id: string
+  rule_name: string
+  threshold: number
+  actual_count: number
+  events: SecurityEvent[]
+  acknowledged: boolean
+  acknowledged_by: string | null
+  created_at: string
+}
+
+// =====================================================================
+// Smart Jobs Board
+// =====================================================================
+
+export type EmploymentType = 'full-time' | 'part-time' | 'contract' | 'internship' | 'temporary'
+export type ApplicationStatus = 'pending' | 'reviewed' | 'contacted' | 'rejected' | 'hired'
+
+export interface JobListing {
+  id: string
+  title: string
+  company: string
+  location: string | null
+  description: string | null
+  employment_type: EmploymentType | null
+  salary_range: string | null
+  application_url: string | null
+  posted_by: string
+  sport_tags: string[]
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface JobApplication {
+  id: string
+  job_listing_id: string
+  applicant_id: string
+  cover_note: string | null
+  resume_url: string | null
+  status: ApplicationStatus
+  created_at: string
+  updated_at: string
+}
+
+// =====================================================================
+// Referral Program
+// =====================================================================
+
+export interface ReferralLink {
+  id: string
+  user_id: string
+  code: string
+  is_active: boolean
+  redemption_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ReferralRedemption {
+  id: string
+  referral_link_id: string
+  redeemed_by_user_id: string | null
+  redeemed_by_email: string | null
+  connected_alumni_id: string | null
+  created_at: string
+}
+
+export interface ReferralLeaderboardEntry {
+  user_id: string
+  full_name: string
+  sport: string | null
+  graduation_year: number | null
+  referral_count: number
+}
+
+// =====================================================================
+// Team Career-Update Digest
+// =====================================================================
+
+export interface DigestSettings {
+  user_id: string
+  subscribed_sports: string[]
+  digest_frequency: 'weekly' | 'monthly' | 'never'
+  last_sent_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DigestQueueEntry {
+  id: string
+  user_id: string
+  sport: string
+  entries: DigestCareerUpdate[]
+  frequency: string
+  sent_at: string | null
+  generated_at: string
+}
+
+export interface DigestCareerUpdate {
+  alumni_id: string
+  alumni_name: string
+  company: string | null
+  role: string | null
+  action: string
+  timestamp: string
+}
+
+// =====================================================================
+// Testimonial Collection Pipeline
+// =====================================================================
+
+export interface Testimonial {
+  id: string
+  alumni_id: string
+  content: string
+  source: 'email' | 'web' | 'admin'
+  featured: boolean
+  permission_granted: boolean
+  created_at: string
+}
+
+export interface TestimonialRequest {
+  id: string
+  alumni_id: string
+  sent_at: string
+  responded: boolean
+  response_at: string | null
 }

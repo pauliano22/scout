@@ -64,7 +64,7 @@ export default function DiscoverClient({
 
   // Network & modal state
   const [networkIds, setNetworkIds] = useState<Set<string>>(new Set(initialNetworkIds))
-  const [warmPaths, setWarmPaths] = useState<Record<string, { count: number; topName: string; topRelation: string }>>({})
+  const [warmPaths, setWarmPaths] = useState<Record<string, { count: number; topName: string; topRelation: string; topSeasons?: number; topSports?: string[] }>>({})
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [selectedAlumni, setSelectedAlumni] = useState<DiscoverAlumni | null>(null)
   const [similarAlumni, setSimilarAlumni] = useState<DiscoverAlumni[]>([])
@@ -381,7 +381,11 @@ export default function DiscoverClient({
                 onClick={() => handleSelectAlumni(alumniItem)}
                 isLoading={loadingId === alumniItem.id}
                 warmNote={warmPaths[alumniItem.id]
-                  ? `${warmPaths[alumniItem.id].topName}${warmPaths[alumniItem.id].count > 1 ? ` +${warmPaths[alumniItem.id].count - 1}` : ''} can introduce you`
+                  ? `${warmPaths[alumniItem.id].topName}${warmPaths[alumniItem.id].count > 1 ? ` +${warmPaths[alumniItem.id].count - 1}` : ''} can introduce you${
+                      warmPaths[alumniItem.id].topRelation === 'teammate' && (warmPaths[alumniItem.id].topSeasons ?? 0) > 0
+                        ? ` · ${warmPaths[alumniItem.id].topSeasons} season${(warmPaths[alumniItem.id].topSeasons ?? 0) > 1 ? 's' : ''} together`
+                        : ''
+                    }`
                   : null}
               />
             ))}

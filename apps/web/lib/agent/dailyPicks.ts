@@ -152,14 +152,19 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
   }
 
   return {
-    picks: pending.map(r => ({
-      queueId: r.id as string,
-      alumnus: r.alumni as unknown as Alumni,
-      why: (r.why as string) || reasonLine(r.alumni as unknown as Alumni),
-      draftReady: !!(r.draft_body as string)?.trim(),
-      warm: warm[r.alumni_id as string] ?? null,
-      createdAt: r.created_at as string,
-    })),
+    // Newest suggestions first so freshly-sourced alumni surface at the top.
+    // (pending stays oldest-first above for the CARD_CAP expiry; only this
+    // returned view is reordered.)
+    picks: pending
+      .map(r => ({
+        queueId: r.id as string,
+        alumnus: r.alumni as unknown as Alumni,
+        why: (r.why as string) || reasonLine(r.alumni as unknown as Alumni),
+        draftReady: !!(r.draft_body as string)?.trim(),
+        warm: warm[r.alumni_id as string] ?? null,
+        createdAt: r.created_at as string,
+      }))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     paused,
     field,
     coverage,

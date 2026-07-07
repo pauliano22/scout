@@ -1,14 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+// GET /api/admin/census — cohort coverage report for the admin dashboard.
+// Auth: requireAdmin() enforced server-side (the admin layout check is client-only).
+
+import { NextResponse } from 'next/server'
+import { ApiAuthError, requireAdmin } from '@/lib/auth'
+import { serviceClient } from '@/lib/requestAuth'
 
 export async function GET() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll() } }
-  )
+  try {
+    await requireAdmin()
+  } catch (e) {
+    const status = e instanceof ApiAuthError ? e.status : 401
+    return NextResponse.json({ error: 'Unauthorized' }, { status })
+  }
+
+  const supabase = serviceClient()
 
   const { data } = await supabase
     .from('census_reports')

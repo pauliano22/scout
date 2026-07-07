@@ -213,8 +213,9 @@ export default function AlumniOnboardingClient({
         had_match: Boolean(matchedAlumniId),
       })
       if (data.status === 'pending_review') {
-        setPendingReview(true)
-        setIsSubmitting(false)
+        // Account is pending admin approval — the /review page is the single
+        // "under review" surface, and middleware keeps them there until approved.
+        router.push('/review')
         return
       }
       router.push('/profile')

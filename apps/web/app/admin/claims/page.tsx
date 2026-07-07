@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { Loader2, UserCheck, Check, X, Linkedin } from 'lucide-react'
+import { Loader2, UserCheck, Check, X, Linkedin, Send } from 'lucide-react'
 
 interface Claim {
   id: string
@@ -22,6 +22,32 @@ export default function AdminClaimsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [acting, setActing] = useState<string | null>(null)
+  const [tgTesting, setTgTesting] = useState(false)
+  const [tgResult, setTgResult] = useState<string | null>(null)
+
+  const testTelegram = async () => {
+    setTgTesting(true)
+    setTgResult(null)
+    try {
+      const res = await fetch('/api/admin/telegram-test', { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Test failed')
+      const d = json.data
+      if (d.sent) {
+        setTgResult('✓ Sent — check your Telegram.')
+      } else if (!d.hasToken || !d.hasChatId) {
+        const missing = [!d.hasToken && 'TELEGRAM_BOT_TOKEN', !d.hasChatId && 'TELEGRAM_CHAT_ID']
+          .filter(Boolean).join(' + ')
+        setTgResult(`✗ The deployed app is missing ${missing}. Add it in Vercel (Production) and Redeploy.`)
+      } else {
+        setTgResult('✗ Env vars are present but the send failed — check the token/chat ID, or that you tapped Start on the bot.')
+      }
+    } catch (e: any) {
+      setTgResult('✗ ' + e.message)
+    } finally {
+      setTgTesting(false)
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -60,12 +86,29 @@ export default function AdminClaimsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[--text-primary]">Claims</h1>
-        <p className="text-sm text-[--text-secondary] mt-1">
-          Alumni profile claims whose name wasn&apos;t found on the roster — approve to
-          publish the profile and grant the person directory access, or reject to keep it hidden.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[--text-primary]">Claims</h1>
+          <p className="text-sm text-[--text-secondary] mt-1">
+            Alumni profile claims whose name wasn&apos;t found on the roster — approve to
+            publish the profile and grant the person directory access, or reject to keep it hidden.
+          </p>
+        </div>
+        <div className="flex-shrink-0 text-right">
+          <button
+            onClick={testTelegram}
+            disabled={tgTesting}
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-[--bg-secondary] border border-[--border-primary] text-[--text-secondary] hover:text-[--text-primary] disabled:opacity-50"
+          >
+            {tgTesting ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+            Test Telegram
+          </button>
+          {tgResult && (
+            <p className={`text-xs mt-2 max-w-xs ${tgResult.startsWith('✓') ? 'text-emerald-400' : 'text-red-400'}`}>
+              {tgResult}
+            </p>
+          )}
+        </div>
       </div>
 
       {error && (

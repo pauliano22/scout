@@ -11,6 +11,7 @@ import { Briefcase, Linkedin } from 'lucide-react'
 import SportAvatar from '@/components/SportAvatar'
 import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
+import OnboardingProgressBar from '@/components/OnboardingProgressBar'
 import { createClient } from '@/lib/supabase/client'
 import { CORPUS_INDUSTRIES } from '@/lib/campaign/industries'
 import type { Alumni, Profile, UserNetwork } from '@scout/shared/types/database'
@@ -22,6 +23,17 @@ interface Pick {
   why: string
   draftReady: boolean
   warm: WarmPath | null
+  createdAt: string
+}
+
+/** "Suggested today" (fresh) / "Suggested 3 days ago" for a pick card. */
+function suggestedLabel(iso: string): { text: string; fresh: boolean } {
+  const then = new Date(iso).getTime()
+  if (Number.isNaN(then)) return { text: '', fresh: false }
+  const days = Math.floor((Date.now() - then) / 86_400_000)
+  if (days <= 0) return { text: 'Suggested today', fresh: true }
+  if (days === 1) return { text: 'Suggested yesterday', fresh: false }
+  return { text: `Suggested ${days} days ago`, fresh: false }
 }
 interface PicksPayload {
   picks: Pick[]
@@ -51,6 +63,32 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     })
   const [cityDraft, setCityDraft] = useState('')
   const cityInit = useRef(false)
+
+  // ── Onboarding progress ─────────────────────────────────────────────
+  const [onboardingData, setOnboardingData] = useState<{
+    completedSteps: string[]
+    currentStepIndex: number
+    totalSteps: number
+    isComplete: boolean
+  } | null>(null)
+  const [onboardingLoading, setOnboardingLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/onboarding/progress')
+      .then(r => r.json())
+      .then(data => {
+        setOnboardingData({
+          completedSteps: data.completed_steps ?? [],
+          currentStepIndex: data.currentStepIndex ?? 0,
+          totalSteps: data.totalSteps ?? 4,
+          isComplete: data.isComplete ?? false,
+        })
+      })
+      .catch(() => {
+        // Silently fail — not critical
+      })
+      .finally(() => setOnboardingLoading(false))
+  }, [])
 
   const load = useCallback(async () => {
     try {
@@ -172,6 +210,17 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         . Everything you need to reach out — right here.
       </p>
 
+      {/* Onboarding progress bar — show for users who haven't completed all steps */}
+      {!onboardingLoading && onboardingData && !onboardingData.isComplete && (
+        <div className="mt-6">
+          <OnboardingProgressBar
+            completedSteps={onboardingData.completedSteps as any}
+            currentStepIndex={onboardingData.currentStepIndex}
+            totalSteps={onboardingData.totalSteps}
+          />
+        </div>
+      )}
+
       {/* Inline field capture — one tap, only when we have nothing to target on */}
       {data.needsField && (
         <div className="mt-4 card p-4">
@@ -257,6 +306,18 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                   </div>
                 </div>
               </button>
+
+              {/* When Scout suggested this alum — fresh picks stand out */}
+              {(() => {
+                const s = suggestedLabel(pick.createdAt)
+                if (!s.text) return null
+                return (
+                  <div className={`mt-2 inline-flex items-center gap-1.5 text-[12px] ${s.fresh ? 'font-semibold text-[--school-primary]' : 'font-medium text-[--text-quaternary]'}`}>
+                    {s.fresh && <span className="w-1.5 h-1.5 rounded-full bg-[--school-primary]" />}
+                    {s.text}
+                  </div>
+                )
+              })()}
 
               {/* Actions — draft + LinkedIn on one line, split in half */}
               <div className="mt-4 flex gap-2.5">

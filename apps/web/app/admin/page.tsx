@@ -10,6 +10,7 @@ import {
   ChevronRight,
   BadgeCheck,
   Loader2,
+  ShieldCheck,
 } from 'lucide-react'
 
 interface Stats {
@@ -87,6 +88,13 @@ export default function AdminDashboardPage() {
       icon: Flag,
       color: 'bg-amber-500/10 text-amber-500',
       href: '/admin/reports',
+    },
+    {
+      label: 'Sport Normalization',
+      value: 'Manage',
+      icon: ShieldCheck,
+      color: 'bg-rose-500/10 text-rose-500',
+      href: '/admin/sports',
     },
   ]
 

@@ -527,3 +527,41 @@ textarea:focus {
 .path-node.locked    { opacity: 0.35; }
 .path-connector      { background: var(--border-primary); }
 .path-connector.completed { background: var(--border-secondary); }
+
+/* ============================================
+   ONBOARDING PROGRESS BAR — confetti & step animations
+   ============================================ */
+@keyframes confetti-particle {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--p-x, 100px), var(--p-y, -100px)) rotate(var(--p-r, 720deg)) scale(0.3);
+  }
+}
+
+.animate-confetti-particle {
+  animation: confetti-particle 0.8s ease-out forwards;
+}
+
+@keyframes step-complete {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.3);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-step-complete {
+  animation: step-complete 0.6s ease-out forwards;
+}

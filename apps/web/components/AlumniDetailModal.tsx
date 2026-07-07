@@ -15,6 +15,7 @@ import {
   Flag,
 } from 'lucide-react'
 import SportAvatar from '@/components/SportAvatar'
+import ShareProfileButton from '@/components/ShareProfileButton'
 import { cleanField } from '@/lib/cleanField'
 import type { WorkHistoryEntry } from '@scout/shared/types/database'
 
@@ -248,6 +249,19 @@ export default function AlumniDetailModal({
                 <span className="hidden sm:inline">Email</span>
               </a>
             )}
+
+            {/* Share */}
+            <ShareProfileButton
+              alumni={{
+                full_name: alumni.full_name,
+                sport: alumni.sport,
+                graduation_year: alumni.graduation_year,
+                company: alumni.company,
+                role: alumni.role,
+                location: alumni.location,
+                photo_url: alumni.photo_url || alumni.avatar_url,
+              }}
+            />
 
             {/* Flag button */}
             <button

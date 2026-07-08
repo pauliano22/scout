@@ -42,6 +42,7 @@ export interface ScoreBreakdown {
   industry: number;
   role: number;
   warmIntro: number;
+  engagementIntent: number;
   sport: number;
   location: number;
   company: number;
@@ -87,6 +88,11 @@ export const BASE_WEIGHTS = {
   // A reachable alum beats a marginally better-matched stranger: a teammate
   // of someone the student already saved is a door that actually opens.
   warmIntro: 18,
+  // Self-declared receptivity (alumni.engagement_intent, mig 056). Positive
+  // for here_to_help/both, NEGATIVE for seeking_employment — a fellow seeker
+  // shouldn't be pitched as an intro target. Below warmIntro: a known door
+  // still beats a willing stranger.
+  engagementIntent: 12,
 };
 
 export const QUALITY_THRESHOLD = 50;
@@ -137,6 +143,12 @@ function computeWhyThisMatch(
         ? `${warmPath.topName} +${warmPath.count - 1} more in your network can introduce you`
         : `${warmPath.topName} in your network ${verb}`,
     );
+  }
+
+  // Declared receptivity is the next-best actionable reason: this alum
+  // explicitly asked to hear from student-athletes.
+  if (breakdown.engagementIntent > 0) {
+    reasons.push('Signed up to help student-athletes');
   }
 
   // Past-company overlap with the user's target companies. Strong signal
@@ -357,6 +369,7 @@ export function scoreAlumnus(
     industry: 0,
     role: 0,
     warmIntro: 0,
+    engagementIntent: 0,
     sport: 0,
     location: 0,
     company: 0,
@@ -473,8 +486,19 @@ export function scoreAlumnus(
       : Math.round(BASE_WEIGHTS.warmIntro * 0.5);
   }
 
+  // Engagement intent — like warmIntro, NOT gated on industry: an alum who
+  // signed up to help is a door that opens regardless of field. An alum who is
+  // themselves job-hunting is actively down-ranked. NULL (every unclaimed
+  // scraped row) contributes 0, so the pre-056 directory is unaffected.
+  if (alumni.engagement_intent === 'here_to_help' || alumni.engagement_intent === 'both') {
+    breakdown.engagementIntent = BASE_WEIGHTS.engagementIntent;
+  } else if (alumni.engagement_intent === 'seeking_employment') {
+    breakdown.engagementIntent = -BASE_WEIGHTS.engagementIntent;
+  }
+
   breakdown.total =
     breakdown.warmIntro +
+    breakdown.engagementIntent +
     breakdown.industry +
     breakdown.role +
     breakdown.sport +

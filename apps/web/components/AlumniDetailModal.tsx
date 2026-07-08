@@ -38,6 +38,14 @@ export interface AlumniBase {
   display_headline?: string | null
   bio?: string | null
   work_history?: WorkHistoryEntry[] | null
+  engagement_intent?: string | null
+}
+
+// Student-facing labels for alumni.engagement_intent (mig 056).
+const INTENT_LABELS: Record<string, string> = {
+  here_to_help: 'Here to help — open to advice and intros',
+  seeking_employment: 'Open to opportunities themselves',
+  both: 'Here to help · Also exploring opportunities',
 }
 
 interface AlumniDetailModalProps {
@@ -185,6 +193,13 @@ export default function AlumniDetailModal({
                   <span className="inline-block mt-1 text-xs text-[--text-quaternary]">
                     {alumni.industry}
                   </span>
+                )}
+
+                {/* Engagement intent */}
+                {alumni.engagement_intent && INTENT_LABELS[alumni.engagement_intent] && (
+                  <p className="mt-2 text-xs font-medium text-green-700 dark:text-green-500">
+                    {INTENT_LABELS[alumni.engagement_intent]}
+                  </p>
                 )}
               </div>
             </div>

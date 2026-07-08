@@ -77,7 +77,7 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick }: P
           </p>
         </div>
       ) : (
-        <p className="muted">No class year on record — seasons can't be matched for this profile.</p>
+        <p className="muted">No class year on record, so seasons can't be matched for this profile.</p>
       )}
     </section>
   )

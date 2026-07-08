@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 import Link from '@/components/Link'
 import { notFound } from 'next/navigation'
 import { ArrowRight, Users, Briefcase, GraduationCap } from 'lucide-react'
@@ -48,32 +48,32 @@ const SPORT_META: Record<string, { description: string; longDescription: string 
   baseball: {
     description: 'Connect with Cornell Baseball alumni across every industry.',
     longDescription:
-      "From the diamond to the boardroom — Cornell Baseball alumni have built careers across finance, tech, law, and beyond. Whether you're a current player scouting internships or an alum looking to network, Scout makes it easy to find your people.",
+      "From the diamond to the boardroom, Cornell Baseball alumni have built careers in finance, tech, law, and beyond. Scout makes it easy to find your people.",
   },
   basketball: {
     description: 'Connect with Cornell Basketball alumni across every industry.',
     longDescription:
-      "Cornell basketball alumni are making moves across every industry. Scout connects current players and alumni who share the hardwood bond — opening doors at top firms, startups, and everything in between.",
+      "Cornell Basketball alumni work across every industry. Scout connects current players with the alumni who share the hardwood bond.",
   },
   football: {
     description: 'Connect with Cornell Football alumni across every industry.',
     longDescription:
-      "Cornell Football runs deep. Over decades, Big Red football players have gone on to lead in finance, tech, medicine, law, and more. Scout puts that entire network in your pocket — connect with alumni who've walked the same path from gridiron to career.",
+      "Cornell Football runs deep. Big Red players have gone on to lead in finance, tech, medicine, and law, and Scout puts that whole network in your pocket.",
   },
   hockey: {
     description: 'Connect with Cornell Hockey alumni across every industry.',
     longDescription:
-      "Lynah Faithful for life. Cornell Hockey alumni form one of the tightest networks in college sports — and Scout connects you directly to them. From the ice to the executive suite, find the alumni who can open doors.",
+      "Lynah Faithful for life. Cornell Hockey alumni form one of the tightest networks in college sports, and Scout connects you directly to them.",
   },
   soccer: {
     description: 'Connect with Cornell Soccer alumni across every industry.',
     longDescription:
-      "Cornell Soccer alumni are spread across every field — not just the pitch. Scout helps current players and alumni connect, network, and build careers together. One tap to find an alum at your dream company.",
+      "Cornell Soccer alumni are spread across every field, not just the pitch. Scout helps current players find an alum at their dream company in one tap.",
   },
   lacrosse: {
     description: 'Connect with Cornell Lacrosse alumni across every industry.',
     longDescription:
-      "Cornell Lacrosse has produced leaders in every arena. Scout connects the lax community — from Schoellkopf to Wall Street, from Teagle to Silicon Valley. Find your next mentor, referral, or hire.",
+      "Cornell Lacrosse has produced leaders in every arena. Scout connects the lax community, from Schoellkopf to Wall Street. Find your next mentor, referral, or hire.",
   },
 }
 
@@ -86,7 +86,7 @@ function getDefaultMeta(sport: string): { description: string; longDescription: 
     .replace(/^Womens /, "Women's ")
   return {
     description: `Connect with Cornell ${displayName} alumni across every industry.`,
-    longDescription: `Cornell ${displayName} alumni have built incredible careers across every industry. Scout connects current athletes and alumni, making it easy to find mentors, land interviews, and grow your network.`,
+    longDescription: `Cornell ${displayName} alumni work across every industry. Scout connects them with current athletes looking for mentors, interviews, and a bigger network.`,
   }
 }
 
@@ -137,19 +137,26 @@ export default async function SportLandingPage({
     notFound()
   }
 
-  const supabase = createClient()
+  // Service-role reads: this page is public (mostly logged-out, SEO traffic)
+  // and every RLS policy on alumni is TO authenticated, so the cookie client
+  // returned 0 rows here. Count is an aggregate; the featured strip is
+  // limited to public AND claimed profiles, i.e. people who chose to publish.
+  const supabase = serviceClient()
 
   // Fetch alumni count for this sport
-  const { count: alumniCount, error: countError } = await supabase
+  const { count: alumniCount } = await supabase
     .from('alumni')
     .select('id', { count: 'exact', head: true })
     .in('sport', teamNames)
+    .eq('is_public', true)
 
   // Fetch a few featured alumni to show off (recent grads with companies)
   const { data: featuredAlumni } = await supabase
     .from('alumni')
     .select('id, full_name, company, role, graduation_year, sport')
     .in('sport', teamNames)
+    .eq('is_public', true)
+    .eq('is_claimed', true)
     .not('company', 'is', null)
     .not('role', 'is', null)
     .order('graduation_year', { ascending: false })

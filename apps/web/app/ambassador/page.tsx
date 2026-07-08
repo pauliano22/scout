@@ -343,7 +343,7 @@ function TierProgress({ currentTier, recruits }: { currentTier: AmbassadorTier; 
         />
       </div>
       <p className="text-xs text-[--text-tertiary] mt-1">
-        {recruits} / {nextThreshold} recruits — {nextThreshold - recruits} more to go
+        {recruits} / {nextThreshold} recruits, {nextThreshold - recruits} more to go
       </p>
     </div>
   )

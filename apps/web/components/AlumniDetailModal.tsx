@@ -43,9 +43,9 @@ export interface AlumniBase {
 
 // Student-facing labels for alumni.engagement_intent (mig 056).
 const INTENT_LABELS: Record<string, string> = {
-  here_to_help: 'Here to help — open to advice and intros',
+  here_to_help: 'Here to help with advice and intros',
   seeking_employment: 'Open to opportunities themselves',
-  both: 'Here to help · Also exploring opportunities',
+  both: 'Here to help, and exploring opportunities too',
 }
 
 interface AlumniDetailModalProps {

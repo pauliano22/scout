@@ -183,7 +183,7 @@ function computeWhyThisMatch(
   }
 
   if (breakdown.sport > 0 && profile.sport && prefs.sports.length > 0) {
-    reasons.push(`Same sport — ${profile.sport}`);
+    reasons.push(`Also played ${profile.sport}`);
   }
   if (breakdown.location > 0 && profile.location && reasons.length < 3) {
     reasons.push(`Based in ${profile.location}`);
@@ -207,15 +207,15 @@ function computeWhyThisMatch(
     !reasons.some((r) => r.startsWith('At ') || r.startsWith('Worked at ')) &&
     reasons.length < 3
   ) {
-    reasons.push(profile.currentCompany ? `Top-tier firm — ${profile.currentCompany}` : 'Senior alum at a top-tier firm');
+    reasons.push(profile.currentCompany ? `Top-tier firm (${profile.currentCompany})` : 'Senior alum at a top-tier firm');
   }
 
   if (profile.graduationYear && reasons.length < 3) {
     const yearsOut = new Date().getFullYear() - profile.graduationYear;
     if (yearsOut >= 3 && yearsOut <= 8) {
-      reasons.push(`${yearsOut} years out — recent enough for practical advice`);
+      reasons.push(`${yearsOut} years out, recent enough for practical advice`);
     } else if (yearsOut >= 12) {
-      reasons.push(`Senior alum — strong perspective on hiring`);
+      reasons.push(`Senior alum with a strong perspective on hiring`);
     }
   }
 

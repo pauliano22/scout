@@ -1,8 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import {
   Camera, Mail, MapPin, Briefcase, GraduationCap, Award, Pencil, Check,
   Loader2, EyeOff, Linkedin,
@@ -37,10 +36,46 @@ export default function AlumniProfileClient({
   ambassador,
 }: Props) {
   const router = useRouter()
-  const supabase = createClient()
   const [mode, setMode] = useState<Mode>(VIEW)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  // One-time, dismissible prompt for claimed alumni who haven't said why
+  // they're here. Skipping hides it on this device for good; no re-asking.
+  const INTENT_NUDGE_KEY = 'scout_intent_nudge_dismissed'
+  const [intentNudgeHidden, setIntentNudgeHidden] = useState(true)
+  const [intentSaving, setIntentSaving] = useState<string | null>(null)
+  useEffect(() => {
+    if (alumni?.is_claimed && !alumni.engagement_intent) {
+      try {
+        setIntentNudgeHidden(localStorage.getItem(INTENT_NUDGE_KEY) === '1')
+      } catch {
+        setIntentNudgeHidden(false)
+      }
+    }
+  }, [alumni?.is_claimed, alumni?.engagement_intent])
+
+  const dismissIntentNudge = () => {
+    setIntentNudgeHidden(true)
+    try { localStorage.setItem(INTENT_NUDGE_KEY, '1') } catch {}
+  }
+
+  const saveIntent = async (intent: 'here_to_help' | 'seeking_employment' | 'both') => {
+    if (!alumni?.id) return
+    setIntentSaving(intent)
+    try {
+      const res = await fetch('/api/alumni/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ engagement_intent: intent }),
+      })
+      if (!res.ok) throw new Error()
+      setIntentNudgeHidden(true)
+      router.refresh()
+    } catch {
+      setIntentSaving(null)
+    }
+  }
 
   const initialValues: AlumniProfileFormValues = useMemo(() => ({
     ...emptyAlumniProfileValues(),
@@ -102,14 +137,18 @@ export default function AlumniProfileClient({
 
   const toggleEmailVisibility = async () => {
     const next = !values.share_email_with_students
-    // Optimistic flip in view mode without entering full edit.
+    // Optimistic flip in view mode without entering full edit. Goes through
+    // the settings route: RLS on alumni is SELECT-only, so a browser-side
+    // UPDATE silently matches 0 rows.
     setValues((v) => ({ ...v, share_email_with_students: next }))
     if (!alumni?.id) return
     try {
-      await supabase
-        .from('alumni')
-        .update({ share_email_with_students: next })
-        .eq('id', alumni.id)
+      const res = await fetch('/api/alumni/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ share_email_with_students: next }),
+      })
+      if (!res.ok) throw new Error()
       router.refresh()
     } catch {
       // Revert on error.
@@ -219,6 +258,45 @@ export default function AlumniProfileClient({
             <Meta icon={Briefcase} label="Major" value={major} />
           </div>
         </div>
+
+        {/* Engagement intent nudge: one question, one tap, easy to skip */}
+        {alumni?.is_claimed && !alumni.engagement_intent && !intentNudgeHidden && (
+          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-2xl p-5 mb-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-[--text-primary]">
+                  Are you here to help students, open to opportunities yourself, or both?
+                </p>
+                <p className="text-xs text-[--text-tertiary] mt-1">
+                  Students see this on your profile. You can change it anytime.
+                </p>
+              </div>
+              <button
+                onClick={dismissIntentNudge}
+                className="text-xs text-[--text-quaternary] hover:text-[--text-secondary] flex-shrink-0"
+              >
+                Skip
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {([
+                ['here_to_help', 'Here to help'],
+                ['seeking_employment', 'Open to opportunities'],
+                ['both', 'Both'],
+              ] as const).map(([value, label]) => (
+                <button
+                  key={value}
+                  onClick={() => saveIntent(value)}
+                  disabled={intentSaving !== null}
+                  className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
+                >
+                  {intentSaving === value && <Loader2 size={11} className="animate-spin" />}
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Advice */}
         {alumni?.advice && (

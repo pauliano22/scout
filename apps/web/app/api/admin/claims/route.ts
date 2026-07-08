@@ -65,8 +65,12 @@ export async function POST(request: NextRequest) {
           .from('profiles')
           .update({ directory_access: true })
           .eq('id', row.claimed_by_user_id)
+        return ok({ status: 'approved' })
       }
-      return ok({ status: 'approved' })
+      // Shouldn't happen (the claim API always links an account), but surface
+      // it: the row is published while the claimant still can't browse.
+      console.warn(`[admin/claims] approved ${alumni_id} with no claimed_by_user_id; directory access not granted`)
+      return ok({ status: 'approved', warning: 'No linked account on this claim, so directory access was not granted.' })
     }
 
     // reject → keep hidden, mark rejected

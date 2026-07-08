@@ -296,7 +296,7 @@ export default function PlanClient({ userId, profile, plan: initialPlan, stats, 
         <div className="py-16 text-center mb-8">
           <h2 className="text-2xl font-semibold mb-2 tracking-tight">Build your networking plan</h2>
           <p className="text-sm text-[--text-secondary] mb-8 max-w-sm mx-auto leading-relaxed">
-            We'll match you with the best alumni connections and generate personalized talking points.
+            We'll match you with relevant alumni and draft talking points for each one.
           </p>
 
           <div className="max-w-xs mx-auto mb-6">

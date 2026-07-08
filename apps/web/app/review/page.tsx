@@ -32,12 +32,12 @@ export default function ReviewPendingPage() {
             Your account is under review
           </h1>
           <p className="text-[--text-secondary] leading-relaxed">
-            We couldn&apos;t automatically match your name to the Cornell Athletics roster,
-            so a person is reviewing your profile before it goes live. This is usually quick.
+            We couldn&apos;t match your name to the Cornell Athletics roster automatically,
+            so a real person is taking a quick look before your profile goes live.
           </p>
           <p className="text-[--text-tertiary] text-sm mt-4 leading-relaxed">
-            Once you&apos;re approved, you&apos;ll have full access to the alumni network —
-            no need to do anything else. Feel free to close this tab; you can sign back in later.
+            Nothing else to do. You can close this tab and sign back in once
+            you&apos;re approved.
           </p>
 
           <button

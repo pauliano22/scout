@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
+import type { AlumniEngagementIntent } from '@scout/shared/types/database'
 
 export interface AlumniProfileFormValues {
   current_role: string
@@ -15,7 +16,14 @@ export interface AlumniProfileFormValues {
   advice: string
   profile_photo_url: string
   share_email_with_students: boolean
+  engagement_intent: AlumniEngagementIntent | ''
 }
+
+const ENGAGEMENT_INTENT_OPTIONS: { value: AlumniEngagementIntent; label: string; hint: string }[] = [
+  { value: 'here_to_help', label: 'Here to help', hint: 'Advice, intros, mentorship' },
+  { value: 'seeking_employment', label: 'Seeking opportunities', hint: 'Open to new roles myself' },
+  { value: 'both', label: 'Both', hint: 'Happy to help, also looking' },
+]
 
 export const SPORTS_LIST = [
   'Baseball', 'Equestrian', 'Fencing', 'Field Hockey', 'Football',
@@ -48,6 +56,7 @@ export function emptyAlumniProfileValues(): AlumniProfileFormValues {
     advice: '',
     profile_photo_url: '',
     share_email_with_students: true,
+    engagement_intent: '',
   }
 }
 
@@ -253,6 +262,35 @@ export default function AlumniProfileForm({
           className="input-field resize-none"
           maxLength={600}
         />
+      </div>
+
+      {/* Engagement intent */}
+      <div>
+        <label className="block text-sm text-[--text-tertiary] mb-2">Why are you here?</label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {ENGAGEMENT_INTENT_OPTIONS.map((opt) => {
+            const selected = values.engagement_intent === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => set('engagement_intent', selected ? '' : opt.value)}
+                aria-pressed={selected}
+                className={`text-left rounded-lg border p-3 transition ${
+                  selected
+                    ? 'border-[--school-primary] bg-[--school-primary]/10'
+                    : 'border-[--border-primary] bg-[--bg-primary] hover:border-[--border-secondary]'
+                }`}
+              >
+                <p className="text-sm font-medium text-[--text-primary]">{opt.label}</p>
+                <p className="text-xs text-[--text-tertiary] mt-0.5">{opt.hint}</p>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-xs text-[--text-quaternary] mt-1.5">
+          Optional — helps students know whether to ask you for advice or send job leads your way.
+        </p>
       </div>
 
       {/* Email visibility toggle */}

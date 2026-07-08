@@ -16,7 +16,10 @@ interface ClaimPayload {
   advice?: string
   profile_photo_url?: string
   share_email_with_students?: boolean
+  engagement_intent?: string
 }
+
+const ENGAGEMENT_INTENTS = ['seeking_employment', 'here_to_help', 'both'] as const
 
 /**
  * Final write of the alumni claim wizard.
@@ -43,6 +46,14 @@ export async function POST(request: Request) {
     if (!currentRole || !currentCompany) {
       return NextResponse.json(
         { error: 'current_role and current_company are required.' },
+        { status: 400 },
+      )
+    }
+
+    const engagementIntent = body.engagement_intent?.trim() || null
+    if (engagementIntent && !ENGAGEMENT_INTENTS.includes(engagementIntent as any)) {
+      return NextResponse.json(
+        { error: 'Invalid engagement_intent.' },
         { status: 400 },
       )
     }
@@ -146,6 +157,7 @@ export async function POST(request: Request) {
       advice: body.advice?.trim() || null,
       photo_url: body.profile_photo_url?.trim() || null,
       share_email_with_students: Boolean(body.share_email_with_students),
+      engagement_intent: engagementIntent,
       is_claimed: true,
       claimed_at: new Date().toISOString(),
       claim_source: 'self_signup' as const,

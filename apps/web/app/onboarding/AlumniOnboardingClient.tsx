@@ -146,6 +146,7 @@ export default function AlumniOnboardingClient({
       advice: fromMatch?.advice || values.advice || '',
       profile_photo_url: fromMatch?.photo_url || values.profile_photo_url || '',
       share_email_with_students: values.share_email_with_students,
+      engagement_intent: values.engagement_intent,
     })
   }
 
@@ -204,6 +205,7 @@ export default function AlumniOnboardingClient({
           advice: values.advice,
           profile_photo_url: values.profile_photo_url,
           share_email_with_students: values.share_email_with_students,
+          engagement_intent: values.engagement_intent || null,
         }),
       })
       const data = await res.json()

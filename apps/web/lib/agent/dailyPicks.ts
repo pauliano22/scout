@@ -20,7 +20,7 @@ import { ensureAgentState } from '@/lib/campaign/goal'
 // Every alumni column EXCEPT the pgvector embedding (1536 floats/row — selecting
 // it via '*' made each candidate pool ~50MB and took the Supabase instance down
 // during backfill). Never select('*') on alumni in hot paths.
-const ALUMNI_COLS = 'id, full_name, email, linkedin_url, sport, graduation_year, company, role, industry, location, avatar_url, photo_url, is_verified, is_public, source, school_id, created_at, updated_at, work_history, skills, education, display_headline, path_summary_stub, current_status_type, bio, advice, share_email_with_students, is_claimed, claimed_at, claim_source, claimed_by_user_id, profile_reviewed_by_alumni, prestige_score'
+const ALUMNI_COLS = 'id, full_name, email, linkedin_url, sport, graduation_year, company, role, industry, location, avatar_url, photo_url, is_verified, is_public, source, school_id, created_at, updated_at, work_history, skills, education, display_headline, path_summary_stub, current_status_type, bio, advice, share_email_with_students, is_claimed, claimed_at, claim_source, claimed_by_user_id, profile_reviewed_by_alumni, engagement_intent, prestige_score'
 
 export const SEED_PICKS = 3
 export const CARD_CAP = 5

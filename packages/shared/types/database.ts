@@ -52,7 +52,11 @@ export interface Alumni {
   claim_source:                 AlumniClaimSource | null
   claimed_by_user_id:           string | null
   profile_reviewed_by_alumni:   boolean
+  // Why the alum is here (mig 056); null = unknown (unclaimed/scraped rows)
+  engagement_intent:            AlumniEngagementIntent | null
 }
+
+export type AlumniEngagementIntent = 'seeking_employment' | 'here_to_help' | 'both'
 
 export interface Profile {
   id: string

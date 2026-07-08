@@ -55,6 +55,7 @@ export default function AlumniProfileClient({
     advice: alumni?.advice || '',
     profile_photo_url: alumni?.photo_url || '',
     share_email_with_students: Boolean(alumni?.share_email_with_students),
+    engagement_intent: alumni?.engagement_intent || '',
   }), [alumni, major])
 
   const [values, setValues] = useState<AlumniProfileFormValues>(initialValues)
@@ -85,6 +86,7 @@ export default function AlumniProfileClient({
           advice: values.advice,
           profile_photo_url: values.profile_photo_url,
           share_email_with_students: values.share_email_with_students,
+          engagement_intent: values.engagement_intent || null,
         }),
       })
       const data = await res.json()

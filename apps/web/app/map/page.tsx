@@ -4,8 +4,8 @@ import Navbar from '@/components/Navbar'
 import CirclesClient from './CirclesClient'
 
 export const metadata = {
-  title: 'Circles — Scout',
-  description: 'Who they played with, season by season — and the warm paths through your own network.',
+  title: 'Circles · Scout',
+  description: 'Who they played with, season by season, and the warm paths through your own network.',
 }
 
 export default async function CirclesPage() {

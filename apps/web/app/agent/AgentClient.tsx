@@ -319,12 +319,12 @@ function DraftView({
         {/* Hint — shown only when LinkedIn URL is available */}
         {alumni?.linkedin_url && !justApproved && (
           <p className="text-[11px] text-[--text-quaternary]">
-            Copies message · opens {alumni.full_name.split(' ')[0]}'s LinkedIn — just paste and send.
+            Copies the message and opens {alumni.full_name.split(' ')[0]}'s LinkedIn. Just paste and send.
           </p>
         )}
         {!alumni?.linkedin_url && !justApproved && (
           <p className="text-[11px] text-[--text-quaternary]">
-            Copies message to clipboard — paste into LinkedIn to send.
+            Copies the message. Paste it into LinkedIn to send.
           </p>
         )}
       </div>
@@ -570,7 +570,7 @@ export default function AgentClient({ userSport, userName }: Props) {
               {selectedPreset.input.goal}.
             </h1>
             <p className="text-sm text-[--text-secondary] mt-3 leading-relaxed">
-              Scout finds your best Cornell alumni contacts, ranks them, and prepares outreach — before you take a single action.
+              Scout finds strong Cornell alumni contacts, ranks them, and preps the outreach before you lift a finger.
             </p>
 
             {/* Goal selector */}

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 import InviteClient from './InviteClient'
 
 interface InvitePageParams {
@@ -46,7 +46,10 @@ export default async function InvitePage({ params }: { params: InvitePageParams 
   const displaySport = normaliseSportSlug(sport)
 
   try {
-    const supabase = createClient()
+    // Service-role reads: invite pages are public (the invitee is logged out)
+    // and alumni RLS is TO authenticated, so the cookie client saw 0 rows.
+    // Both queries filter is_public so opt-outs stay hidden.
+    const supabase = serviceClient()
 
     // Count alumni matching sport + year
     const { count, error: countError } = await supabase
@@ -54,6 +57,7 @@ export default async function InvitePage({ params }: { params: InvitePageParams 
       .select('*', { count: 'exact', head: true })
       .ilike('sport', displaySport)
       .eq('graduation_year', graduationYear)
+      .eq('is_public', true)
 
     if (countError) {
       console.error('[invite-page] count error:', countError)
@@ -66,6 +70,7 @@ export default async function InvitePage({ params }: { params: InvitePageParams 
       .select('full_name, company, role')
       .ilike('sport', displaySport)
       .eq('graduation_year', graduationYear)
+      .eq('is_public', true)
       .order('full_name', { ascending: true })
       .limit(6)
 

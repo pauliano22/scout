@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { ReferralLink } from '@scout/shared/types/database'
@@ -12,10 +13,15 @@ interface InvitePageProps {
 export default async function InvitePage({ params }: InvitePageProps) {
   const supabase = createClient()
 
+  // Data reads use the service client: the visitor is usually logged out, and
+  // RLS lets only the OWNER read a referral_links row, so the cookie client
+  // 404'd this page for the exact people the link is for.
+  const db = serviceClient()
+
   const code = params.code.toUpperCase().trim()
 
   // Look up the referral link
-  const { data: referralLink } = await supabase
+  const { data: referralLink } = await db
     .from('referral_links')
     .select('id, user_id')
     .eq('code', code)
@@ -27,7 +33,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
   }
 
   // Get the referrer's profile and alumni info
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('profiles')
     .select('full_name, sport, graduation_year, company, role, alumni_id')
     .eq('id', referralLink.user_id)
@@ -42,7 +48,7 @@ export default async function InvitePage({ params }: InvitePageProps) {
   // If they have an alumni record, use that for richer info
   let alumniRecord = null
   if (profile?.alumni_id) {
-    const { data: alumni } = await supabase
+    const { data: alumni } = await db
       .from('alumni')
       .select('full_name, sport, graduation_year, company, role, industry, photo_url')
       .eq('id', profile.alumni_id)

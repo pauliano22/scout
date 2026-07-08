@@ -49,7 +49,7 @@ export default function InviteClient({ data }: { data: CohortData }) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: `Scout — ${data.sport} Class of ${data.graduation_year}`,
+          title: `Scout: ${data.sport} Class of ${data.graduation_year}`,
           text: shareText,
           url: inviteUrl,
         })

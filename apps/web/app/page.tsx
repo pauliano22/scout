@@ -130,7 +130,7 @@ export default function HomePage() {
                 <p className="text-xs font-medium tracking-widest uppercase text-[--school-primary] mb-4">02</p>
                 <h3 className="text-lg font-semibold mb-3 tracking-tight">Connect</h3>
                 <p className="text-sm text-[--text-secondary] leading-relaxed">
-                  Generate personalized outreach messages in seconds. Reference shared experiences. Make it real.
+                  Draft outreach in seconds that leads with what you and the alum actually share.
                 </p>
               </div>
               <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
@@ -150,7 +150,7 @@ export default function HomePage() {
           <div className="max-w-2xl mx-auto">
             <div className="bg-[--bg-secondary] border border-[--school-primary]/20 rounded-xl p-12 md:p-16 text-center">
               <h2 className="text-4xl md:text-5xl font-bold mb-5 tracking-tight">
-                Ready to unlock your<br />athlete network?
+                Ready to build your<br />athlete network?
               </h2>
               <p className="text-[--text-secondary] mb-8 max-w-md mx-auto">
                 Join hundreds of Cornell athletes already building their careers through Scout.

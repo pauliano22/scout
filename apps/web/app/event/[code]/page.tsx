@@ -225,7 +225,7 @@ export default function EventPage() {
               <span className="text-sm font-medium">Scan to connect</span>
             </div>
             <p className="text-xs text-[--text-quaternary] text-left">
-              Share this QR code at the event. Anyone who scans it will be auto-connected to this temporary chat.
+              Share this QR code at the event and anyone who scans it joins this temporary chat.
             </p>
           </div>
 

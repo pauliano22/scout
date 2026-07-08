@@ -111,7 +111,7 @@ export default function SearchClient({ userId, profile, networkAlumniIds, sugges
       const rolling = err?.message === 'rolling-out'
       setTurns((prev) => prev.map((t) => t.id === id ? {
         ...t, status: 'error',
-        errorText: rolling ? 'Search is still rolling out for your account.' : 'Something went wrong — try again in a moment.',
+        errorText: rolling ? 'Search is still rolling out for your account.' : 'Something went wrong. Try again in a moment.',
       } : t))
     } finally {
       setBusy(false)
@@ -283,7 +283,7 @@ function InputBar({
   // simple opener.
   const refineHint = allowSuggestions && lastQuery ? suggestRefinement(lastQuery, profile) : null
   const placeholder = allowSuggestions
-    ? (refineHint ? `e.g. ${refineHint}` : 'Refine your results — add a city, company, or seniority')
+    ? (refineHint ? `e.g. ${refineHint}` : 'Refine with a city, company, or seniority')
     : 'e.g. someone who works in tech'
 
   return (
@@ -430,7 +430,7 @@ function buildIntentSummary(r: SearchResponse): string | null {
   if (r.intent.soft.industries.length) parts.push(`in ${r.intent.soft.industries.join(', ')}`)
   if (r.intent.hard.location) parts.push(`(${r.intent.hard.location})`)
   else if (r.intent.soft.locations.length) parts.push(`(${r.intent.soft.locations.join(', ')})`)
-  if (r.intent.soft.themes.length) parts.push(`— ${r.intent.soft.themes[0]}`)
+  if (r.intent.soft.themes.length) parts.push(`· ${r.intent.soft.themes[0]}`)
   if (r.intent.exclude?.length) parts.push(`· excluding ${r.intent.exclude.join(', ')}`)
   return parts.length ? `Looking for ${parts.join(' ')}` : null
 }

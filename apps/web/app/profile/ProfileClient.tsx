@@ -150,42 +150,9 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
 
       if (error) throw error
 
-      // Sync to alumni table if sport and graduation year are provided
-      if (sport && graduationYear) {
-        const alumniData = {
-          full_name: fullName,
-          email: userEmail,
-          sport,
-          graduation_year: parseInt(graduationYear),
-          company: company || null,
-          role: role || null,
-          industry: industry || null,
-          location: location || null,
-          linkedin_url: linkedinUrl || null,
-          avatar_url: avatarUrl ? avatarUrl.split('?')[0] : null, // Remove cache bust param
-          source: 'opt_in',
-          is_public: true,
-          is_verified: true,
-        }
-
-        // Check if alumni entry already exists for this email
-        const { data: existingAlumni } = await supabase
-          .from('alumni')
-          .select('id')
-          .eq('email', userEmail)
-          .single()
-
-        if (existingAlumni) {
-          await supabase
-            .from('alumni')
-            .update(alumniData)
-            .eq('id', existingAlumni.id)
-        } else {
-          await supabase
-            .from('alumni')
-            .insert(alumniData)
-        }
-      }
+      // No alumni-table sync here: students don't write directory rows.
+      // RLS on alumni is SELECT-only, so the old sync silently did nothing;
+      // alumni rows are created/updated exclusively via the claim flow.
 
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)

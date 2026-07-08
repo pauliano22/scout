@@ -76,7 +76,7 @@ export default function CirclesClient({ userId, saved }: { userId: string; saved
             </div>
             <div className="onboarding-step">
               <span className="onboarding-num">3</span>
-              <span><strong>Save</strong> contacts you want to connect with — your network&apos;s web builds itself</span>
+              <span><strong>Save</strong> contacts you want to connect with and your network&apos;s web builds itself</span>
             </div>
             <div className="onboarding-step">
               <span className="onboarding-num">4</span>

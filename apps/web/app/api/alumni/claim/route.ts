@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { notifyTelegram } from '@/lib/notify/telegram'
+import { linkedinSlug, findAlumniByLinkedInSlug } from '@/lib/alumni/linkedin'
 
 interface ClaimPayload {
   alumni_id?: string | null
@@ -183,6 +184,47 @@ export async function POST(request: Request) {
         .single()
       if (insertErr) throw insertErr
       alumniId = inserted.id
+    }
+
+    // If they gave a LinkedIn URL, auto-fill career history from what our
+    // directory already has on file for that URL (same lookup as the manual
+    // /api/profile/linkedin-import). Fills only an EMPTY work_history, never
+    // overwrites, and only from the row itself or an unclaimed row, so it
+    // can't copy another member's claimed data. Best-effort.
+    const claimLinkedinUrl = body.linkedin_url?.trim()
+    if (claimLinkedinUrl && alumniId) {
+      try {
+        const slug = linkedinSlug(claimLinkedinUrl)
+        if (slug) {
+          const { data: target } = await service
+            .from('alumni')
+            .select('work_history, education')
+            .eq('id', alumniId)
+            .single()
+          const targetHistory = Array.isArray(target?.work_history) ? target.work_history : []
+          if (targetHistory.length === 0) {
+            const sources = await findAlumniByLinkedInSlug(service, slug)
+            const source = sources.find(
+              (r) =>
+                r.id !== alumniId &&
+                Array.isArray(r.work_history) &&
+                (r.work_history as unknown[]).length > 0 &&
+                (!r.claimed_by_user_id || r.claimed_by_user_id === user.id),
+            )
+            if (source) {
+              await service
+                .from('alumni')
+                .update({
+                  work_history: source.work_history,
+                  education: target?.education ?? source.education ?? null,
+                })
+                .eq('id', alumniId)
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('claim: linkedin auto-fill skipped:', e)
+      }
     }
 
     // Link the row to the profile. directory_access is granted only when the

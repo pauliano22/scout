@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Camera, Mail, MapPin, Briefcase, GraduationCap, Award, Pencil, Check,
+  Mail, MapPin, Briefcase, GraduationCap, Award, Pencil, Check,
   Loader2, EyeOff, Linkedin,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -13,6 +13,7 @@ import AlumniProfileForm, {
   emptyAlumniProfileValues,
 } from '@/components/AlumniProfileForm'
 import LinkedInImport from '@/components/LinkedInImport'
+import SportAvatar from '@/components/SportAvatar'
 import VarsityBadge from '@/components/VarsityBadge'
 import ReferralProgressTracker from '@/components/ReferralProgressTracker'
 
@@ -174,7 +175,7 @@ export default function AlumniProfileClient({
                 {error}
               </div>
             )}
-            <AlumniProfileForm values={values} onChange={setValues} showReviewBanner />
+            <AlumniProfileForm values={values} onChange={setValues} showReviewBanner fullName={fullName} />
           </div>
 
           <div className="mt-6 flex gap-3 justify-end">
@@ -223,12 +224,13 @@ export default function AlumniProfileClient({
         {/* Header card */}
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-2xl p-8 md:p-10 mb-5">
           <div className="flex flex-col items-center text-center">
-            <div className="w-28 h-28 rounded-full bg-[--bg-tertiary] border border-[--border-primary] overflow-hidden flex items-center justify-center mb-4">
-              {photoUrl ? (
-                <img src={photoUrl} alt={fullName} className="w-full h-full object-cover" />
-              ) : (
-                <Camera size={28} className="text-[--text-quaternary]" />
-              )}
+            <div className="mb-4">
+              <SportAvatar
+                name={fullName}
+                sport={alumni?.sport}
+                imageUrl={photoUrl || null}
+                size="2xl"
+              />
             </div>
             <h1 className="text-2xl font-semibold text-[--text-primary]">{fullName}</h1>
             {(role || company) && (

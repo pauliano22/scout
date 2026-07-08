@@ -520,7 +520,7 @@ export default function AlumniOnboardingClient({
             </div>
           )}
 
-          <AlumniProfileForm values={values} onChange={setValues} showReviewBanner />
+          <AlumniProfileForm values={values} onChange={setValues} showReviewBanner fullName={userName} />
           </div>
         </div>
 

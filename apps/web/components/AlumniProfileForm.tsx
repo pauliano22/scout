@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
+import SportAvatar from '@/components/SportAvatar'
 import type { AlumniEngagementIntent } from '@scout/shared/types/database'
 
 export interface AlumniProfileFormValues {
@@ -41,6 +42,8 @@ interface AlumniProfileFormProps {
   values: AlumniProfileFormValues
   onChange: (next: AlumniProfileFormValues) => void
   showReviewBanner?: boolean
+  /** Shown as the initials + sport avatar while there's no photo. */
+  fullName?: string
 }
 
 export function emptyAlumniProfileValues(): AlumniProfileFormValues {
@@ -64,6 +67,7 @@ export default function AlumniProfileForm({
   values,
   onChange,
   showReviewBanner = false,
+  fullName,
 }: AlumniProfileFormProps) {
   const currentYear = new Date().getFullYear()
   const [photoUploading, setPhotoUploading] = useState(false)
@@ -103,17 +107,21 @@ export default function AlumniProfileForm({
       <div>
         <label className="block text-sm text-[--text-tertiary] mb-2">Profile photo</label>
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-[--bg-tertiary] border border-[--border-primary] overflow-hidden flex items-center justify-center flex-shrink-0">
-            {values.profile_photo_url ? (
+          {values.profile_photo_url ? (
+            <div className="w-20 h-20 rounded-full bg-[--bg-tertiary] border border-[--border-primary] overflow-hidden flex items-center justify-center flex-shrink-0">
               <img
                 src={values.profile_photo_url}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
-            ) : (
+            </div>
+          ) : fullName ? (
+            <SportAvatar name={fullName} sport={values.sport || null} size="xl" />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-[--bg-tertiary] border border-[--border-primary] overflow-hidden flex items-center justify-center flex-shrink-0">
               <Camera size={20} className="text-[--text-quaternary]" />
-            )}
-          </div>
+            </div>
+          )}
           <div className="flex-1">
             <label className="btn-secondary inline-flex items-center gap-2 cursor-pointer text-sm">
               {photoUploading ? (

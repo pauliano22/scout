@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { serviceClient } from '@/lib/requestAuth'
+import { linkedinSlug, findAlumniByLinkedInSlug } from '@/lib/alumni/linkedin'
 
 // ────────────────────────────────────────────────────────────────────────────
 // POST /api/profile/linkedin-import
@@ -19,13 +20,6 @@ import { serviceClient } from '@/lib/requestAuth'
 // by a different account is never returned, so this can't be used to fish
 // other members' data past the directory gate.
 // ────────────────────────────────────────────────────────────────────────────
-
-/** Extract the /in/<slug> from any linkedin URL variant, lowercased. */
-function linkedinSlug(url: string | null | undefined): string | null {
-  if (!url) return null
-  const m = url.toLowerCase().match(/linkedin\.com\/in\/([\w\-%.]+)/)
-  return m ? m[1].replace(/\/+$/, '') : null
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -63,15 +57,7 @@ export async function POST(request: NextRequest) {
     // caller's own scraped row may predate their claim, and RLS would hide
     // it. Ownership is enforced below instead.
     const db = serviceClient()
-    const { data: rows } = await db
-      .from('alumni')
-      .select('id, linkedin_url, company, role, location, work_history, education, claimed_by_user_id')
-      .ilike('linkedin_url', `%linkedin.com/in/${slug}%`)
-      .limit(5)
-
-    // The ilike is a prefix net (john-smith also catches john-smith-2), so
-    // require an exact slug match.
-    const matches = (rows ?? []).filter((r) => linkedinSlug(r.linkedin_url) === slug)
+    const matches = await findAlumniByLinkedInSlug(db, slug)
 
     const own = matches.find(
       (r) => r.id === profile?.alumni_id || r.claimed_by_user_id === user.id,

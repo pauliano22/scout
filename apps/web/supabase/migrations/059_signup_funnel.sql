@@ -32,6 +32,15 @@ CREATE POLICY "Users can read own signup events"
   ON public.signup_events FOR SELECT
   USING (auth.uid() = user_id);
 
+-- The ingest route (/api/analytics/signup) inserts as anon (pre-signup) or as
+-- the signed-in user — not service role. Allow those inserts, but never let a
+-- caller attribute an event to someone else's user_id. Spam pressure is
+-- handled by the route's public-tier rate limit.
+CREATE POLICY "Anyone can log own signup events"
+  ON public.signup_events FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (user_id IS NULL OR user_id = auth.uid());
+
 -- Service role can insert and read everything.
 CREATE POLICY "Service role full access signup_events"
   ON public.signup_events

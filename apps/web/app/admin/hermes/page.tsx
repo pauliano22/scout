@@ -4,7 +4,6 @@
 // Reads from /api/admin/hermes (which shells out to scripts/hermes-bridge.py).
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import {
   Shield,
   Wrench,
@@ -18,7 +17,6 @@ import {
   FileText,
   Clock,
   Lightbulb,
-  ArrowUpRight,
   AlertTriangle,
   Bot,
   Zap,
@@ -576,9 +574,8 @@ export default function HermesDashboardPage() {
       {/* ── New ideas ───────────────────────────────────────────────────── */}
       <section>
         <SectionHeader icon={Lightbulb}>New Ideas</SectionHeader>
-        <Link
-          href="/admin/ideas"
-          className="group flex items-center justify-between gap-4 rounded-xl border border-[--border-primary] bg-[--bg-secondary] p-5 hover:border-[--border-hover] transition-colors"
+        <div
+          className="flex items-center justify-between gap-4 rounded-xl border border-[--border-primary] bg-[--bg-secondary] p-5"
         >
           <div className="flex items-start gap-3">
             <div className="shrink-0 p-2.5 rounded-lg bg-amber-500/10 text-amber-400">
@@ -592,8 +589,7 @@ export default function HermesDashboardPage() {
               </p>
             </div>
           </div>
-          <ArrowUpRight size={18} className="shrink-0 text-[--text-quaternary] group-hover:text-[--text-secondary] transition-colors" />
-        </Link>
+        </div>
       </section>
 
       <div className="flex items-center gap-1.5 pt-2 text-[11px] text-[--text-quaternary]">

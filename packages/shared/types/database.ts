@@ -57,6 +57,9 @@ export interface Alumni {
   // Freshness engine (migration 060) — when/at-what-confidence this row was last auto-enriched.
   enriched_at?:                 string | null
   enrichment_confidence?:       number | null
+  // Dedup soft-merge (migration 061): true = hidden, merged into merged_into_id.
+  is_duplicate?:                boolean
+  merged_into_id?:              string | null
 }
 
 export type AlumniEngagementIntent = 'seeking_employment' | 'here_to_help' | 'both'

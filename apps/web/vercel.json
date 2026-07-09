@@ -7,6 +7,10 @@
     {
       "path": "/api/agent/tick",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/recover-abandoned",
+      "schedule": "0 15 * * *"
     }
   ]
 }

@@ -33,20 +33,29 @@ export async function GET(request: NextRequest) {
     // and don't already have a recovery_sent record.
     //
     // Strategy: get all sessions with at least one event, then filter out
-    // those that have hit 'complete'. Remaining sessions are "abandoned".
+    // those that have hit 'complete'. Remaining sessions are "abandoned" —
+    // but only once their newest event is over an hour old, so someone
+    // mid-signup when the cron fires isn't flagged.
     const { data: allSessions, error: sessionError } = await supabase
       .from('signup_events')
-      .select('session_id')
+      .select('session_id, created_at')
 
     if (sessionError) {
       console.error('[recover-abandoned] session fetch error:', sessionError)
       return NextResponse.json({ error: 'Failed to query sessions' }, { status: 500 })
     }
 
-    // Deduplicate session IDs
-    const sessionSet = new Set<string>()
+    const cutoff = Date.now() - 60 * 60 * 1000
+    const latestBySession = new Map<string, number>()
     for (const row of allSessions ?? []) {
-      sessionSet.add(row.session_id)
+      const ts = new Date(row.created_at).getTime()
+      if (ts > (latestBySession.get(row.session_id) ?? 0)) {
+        latestBySession.set(row.session_id, ts)
+      }
+    }
+    const sessionSet = new Set<string>()
+    for (const [sessionId, latest] of latestBySession) {
+      if (latest < cutoff) sessionSet.add(sessionId)
     }
 
     if (sessionSet.size === 0) {

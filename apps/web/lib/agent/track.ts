@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Scout Agent — Lightweight Event Tracking
 //
-// Fire-and-forget. Logs to console in dev. Structured for future
-// flush to analytics (PostHog, Supabase events table, etc.).
+// Fire-and-forget. Logs to console in dev and forwards to the shared
+// trackEvent pipe (Supabase user_events + PostHog) when running in a browser.
 //
 // Events:
 //   agent_run_started       { goal_id, user_sport }
@@ -13,6 +13,8 @@
 //   draft_skipped           { agent_run_id, goal_id, alumni_id, draft_id }
 //   followup_scheduled      { agent_run_id, goal_id, alumni_id, due_date }
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { trackEvent } from '@/lib/track'
 
 interface AgentEvent {
   event: string
@@ -33,6 +35,12 @@ export function agentTrack(
     ts: new Date().toISOString(),
   }
   _log.push(entry)
+
+  // Persist through the shared pipe (user_events + PostHog). Browser-only:
+  // trackEvent posts to a relative URL and captures via posthog-js.
+  if (typeof window !== 'undefined') {
+    trackEvent(event, properties)
+  }
 
   if (process.env.NODE_ENV !== 'production') {
     console.debug(`[Scout Agent] ${event}`, properties)

@@ -137,6 +137,9 @@ export interface UserNetwork {
   // set when the student logs that the alum replied (status → response_needed);
   // powers reply-rate / time-to-reply metrics (migration 054)
   replied_at?: string | null
+  // what the connection led to, logged after status = met (migration 058)
+  outcome?: 'helpful_convo' | 'referral' | 'interview' | 'offer' | null
+  outcome_at?: string | null
   notes: string | null
   created_at: string
   // status is a real column (unified in migration 025; 'proposed' added in 026);

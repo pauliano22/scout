@@ -45,6 +45,13 @@ export async function buildAdReport(windowDays = 30): Promise<AdReport> {
   const db = serviceClient()
   const since = new Date(Date.now() - windowDays * 86_400_000).toISOString()
 
+  // Exclude soft-deleted duplicate rows (migration 061) from directory counts —
+  // but only when the column exists, so the report still works pre-migration.
+  const dedupProbe = await db.from('alumni').select('id', { count: 'exact', head: true }).eq('is_duplicate', true)
+  const hasDedup = !dedupProbe.error
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const notDup = <T,>(q: T): T => (hasDedup ? (q as any).eq('is_duplicate', false) : q)
+
   const [
     studentsRes,
     newStudentsRes,
@@ -74,11 +81,11 @@ export async function buildAdReport(windowDays = 30): Promise<AdReport> {
     db.from('user_networks').select('id', { count: 'exact', head: true }).eq('status', 'met'),
     db.from('user_networks').select('contacted_at, replied_at').not('replied_at', 'is', null).not('contacted_at', 'is', null).limit(10000),
     db.from('messages').select('sent_via').limit(20000),
-    db.from('alumni').select('id', { count: 'exact', head: true }),
-    db.from('alumni').select('id', { count: 'exact', head: true }).eq('is_claimed', true),
-    db.from('alumni').select('engagement_intent').not('engagement_intent', 'is', null).limit(20000),
+    notDup(db.from('alumni').select('id', { count: 'exact', head: true })),
+    notDup(db.from('alumni').select('id', { count: 'exact', head: true }).eq('is_claimed', true)),
+    notDup(db.from('alumni').select('engagement_intent').not('engagement_intent', 'is', null).limit(20000)),
     db.from('roster_entries').select('sport').limit(20000),
-    db.from('alumni').select('sport').limit(20000),
+    notDup(db.from('alumni').select('sport').limit(20000)),
   ])
 
   const activeUsers = new Set((activeRes.data ?? []).map(r => (r as { user_id: string }).user_id))

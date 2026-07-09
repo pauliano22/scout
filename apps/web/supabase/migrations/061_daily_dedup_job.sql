@@ -163,7 +163,6 @@ DECLARE
   v_score      integer;
   v_best_score integer := -1;
 BEGIN
-  -- Bail if fewer than 2 ids
   IF cardinality(group_ids) < 2 THEN
     RETURN;
   END IF;
@@ -178,114 +177,90 @@ BEGIN
     END IF;
   END LOOP;
 
-  -- Update FK references from all non-canonical records to point to canonical
+  -- Transfer FK references to the canonical record. Optional tables are
+  -- guarded with to_regclass — plpgsql never parses an untaken branch, so a
+  -- table that does not exist in a given environment is skipped instead of
+  -- aborting the merge (the original referenced agent_action_queue, which
+  -- does not exist in prod). Tables with a UNIQUE(user_id, alumni_id[, ...])
+  -- constraint drop the duplicate-pointing row when a canonical-pointing row
+  -- already exists for the same owner.
   FOREACH v_id IN ARRAY group_ids
   LOOP
     CONTINUE WHEN v_id = v_canonical;
 
-    -- profiles (ON DELETE SET NULL → safe to update)
-    UPDATE public.profiles
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    UPDATE public.profiles SET alumni_id = v_canonical WHERE alumni_id = v_id;
 
-    -- user_networks (ON DELETE CASCADE → must transfer)
-    -- Guard UNIQUE: if a row already points at the canonical record for the
-    -- same owner, drop the duplicate-pointing row instead of colliding.
     DELETE FROM public.user_networks d
       WHERE d.alumni_id = v_id
-        AND EXISTS (
-          SELECT 1 FROM public.user_networks k
-          WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical
-        );
-    UPDATE public.user_networks
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+        AND EXISTS (SELECT 1 FROM public.user_networks k
+                    WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical);
+    UPDATE public.user_networks SET alumni_id = v_canonical WHERE alumni_id = v_id;
 
-    -- messages (ON DELETE CASCADE → must transfer)
-    UPDATE public.messages
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    UPDATE public.messages SET alumni_id = v_canonical WHERE alumni_id = v_id;
 
-    -- suggested_actions (ON DELETE SET NULL → safe to update)
-    UPDATE public.suggested_actions
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    IF to_regclass('public.suggested_actions') IS NOT NULL THEN
+      UPDATE public.suggested_actions SET alumni_id = v_canonical WHERE alumni_id = v_id;
+    END IF;
 
-    -- plan_alumni (ON DELETE CASCADE → must transfer)
-    UPDATE public.plan_alumni
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    IF to_regclass('public.plan_alumni') IS NOT NULL THEN
+      UPDATE public.plan_alumni SET alumni_id = v_canonical WHERE alumni_id = v_id;
+    END IF;
 
-    -- agent_action_queue (ON DELETE CASCADE → must transfer)
-    -- Guard UNIQUE: if a row already points at the canonical record for the
-    -- same owner, drop the duplicate-pointing row instead of colliding.
-    DELETE FROM public.agent_action_queue d
-      WHERE d.alumni_id = v_id
-        AND EXISTS (
-          SELECT 1 FROM public.agent_action_queue k
-          WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical AND k.action_type = d.action_type
-        );
-    UPDATE public.agent_action_queue
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    IF to_regclass('public.connection_action_state') IS NOT NULL THEN
+      DELETE FROM public.connection_action_state d
+        WHERE d.alumni_id = v_id
+          AND EXISTS (SELECT 1 FROM public.connection_action_state k
+                      WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical
+                        AND k.action_type = d.action_type);
+      UPDATE public.connection_action_state SET alumni_id = v_canonical WHERE alumni_id = v_id;
+    END IF;
 
-    -- alumni_outreach_ledger (ON DELETE CASCADE → must transfer)
-    -- Guard UNIQUE: if a row already points at the canonical record for the
-    -- same owner, drop the duplicate-pointing row instead of colliding.
-    DELETE FROM public.alumni_outreach_ledger d
-      WHERE d.alumni_id = v_id
-        AND EXISTS (
-          SELECT 1 FROM public.alumni_outreach_ledger k
-          WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical
-        );
-    UPDATE public.alumni_outreach_ledger
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    IF to_regclass('public.agent_action_queue') IS NOT NULL THEN
+      DELETE FROM public.agent_action_queue d
+        WHERE d.alumni_id = v_id
+          AND EXISTS (SELECT 1 FROM public.agent_action_queue k
+                      WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical
+                        AND k.action_type = d.action_type);
+      UPDATE public.agent_action_queue SET alumni_id = v_canonical WHERE alumni_id = v_id;
+    END IF;
 
-    -- outreach_queue (ON DELETE CASCADE → must transfer)
-    -- Guard UNIQUE: if a row already points at the canonical record for the
-    -- same owner, drop the duplicate-pointing row instead of colliding.
-    DELETE FROM public.outreach_queue d
-      WHERE d.alumni_id = v_id
-        AND EXISTS (
-          SELECT 1 FROM public.outreach_queue k
-          WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical AND k.message_type = d.message_type
-        );
-    UPDATE public.outreach_queue
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    IF to_regclass('public.alumni_outreach_ledger') IS NOT NULL THEN
+      DELETE FROM public.alumni_outreach_ledger d
+        WHERE d.alumni_id = v_id
+          AND EXISTS (SELECT 1 FROM public.alumni_outreach_ledger k
+                      WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical);
+      UPDATE public.alumni_outreach_ledger SET alumni_id = v_canonical WHERE alumni_id = v_id;
+    END IF;
 
-    -- alumni_swipes (ON DELETE CASCADE → must transfer)
-    -- Guard UNIQUE: if a row already points at the canonical record for the
-    -- same owner, drop the duplicate-pointing row instead of colliding.
-    DELETE FROM public.alumni_swipes d
-      WHERE d.alumni_id = v_id
-        AND EXISTS (
-          SELECT 1 FROM public.alumni_swipes k
-          WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical
-        );
-    UPDATE public.alumni_swipes
-      SET alumni_id = v_canonical
-      WHERE alumni_id = v_id;
+    IF to_regclass('public.outreach_queue') IS NOT NULL THEN
+      DELETE FROM public.outreach_queue d
+        WHERE d.alumni_id = v_id
+          AND EXISTS (SELECT 1 FROM public.outreach_queue k
+                      WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical
+                        AND k.message_type = d.message_type);
+      UPDATE public.outreach_queue SET alumni_id = v_canonical WHERE alumni_id = v_id;
+    END IF;
 
-    -- Mark the record as a duplicate
+    IF to_regclass('public.alumni_swipes') IS NOT NULL THEN
+      DELETE FROM public.alumni_swipes d
+        WHERE d.alumni_id = v_id
+          AND EXISTS (SELECT 1 FROM public.alumni_swipes k
+                      WHERE k.user_id = d.user_id AND k.alumni_id = v_canonical);
+      UPDATE public.alumni_swipes SET alumni_id = v_canonical WHERE alumni_id = v_id;
+    END IF;
+
     UPDATE public.alumni
-      SET
-        is_duplicate   = true,
-        merged_into_id = v_canonical,
-        is_public      = false,
-        updated_at     = now()
+      SET is_duplicate   = true,
+          merged_into_id = v_canonical,
+          is_public      = false,
+          updated_at     = now()
       WHERE id = v_id;
 
     v_count := v_count + 1;
   END LOOP;
 
-  -- Update the canonical record's timestamp
-  UPDATE public.alumni
-    SET updated_at = now()
-    WHERE id = v_canonical;
+  UPDATE public.alumni SET updated_at = now() WHERE id = v_canonical;
 
-  -- Return result
   canonical_id   := v_canonical;
   merged_ids     := array_remove(group_ids, v_canonical);
   records_merged := v_count;

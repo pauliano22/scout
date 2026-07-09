@@ -1,5 +1,5 @@
 # Dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.js
 
@@ -54,3 +54,4 @@ apps/web/scripts/*
 !apps/web/scripts/README.md
 # Exception: root-level CI/CD helper scripts
 !scripts/smoke-test.sh
+.env*

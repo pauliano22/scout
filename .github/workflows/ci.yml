@@ -1,0 +1,53 @@
+# =============================================================================
+# Scout — CI (typecheck + lint)
+# =============================================================================
+# Runs on every PR to main and on direct pushes to main. Typecheck is the gate;
+# lint is informational for now (does not block) so the burn-down of existing
+# lint debt can happen incrementally. A full `next build` gate lives in the
+# staging-pipeline workflow, which needs Vercel secrets configured first.
+# =============================================================================
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: Typecheck (web + shared)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Typecheck
+        # apps/web/tsconfig has strict:true and includes @scout/shared sources,
+        # so this covers both. Matches what Vercel enforces at build time.
+        run: npx tsc --noEmit -p apps/web/tsconfig.json
+
+  lint:
+    name: Lint (informational)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        continue-on-error: true
+        run: npm run lint

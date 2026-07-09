@@ -654,3 +654,26 @@ export interface TestimonialRequest {
   responded: boolean
   response_at: string | null
 }
+
+// =====================================================================
+// IDEA 31 — Signup Funnel Analytics
+// =====================================================================
+
+export interface SignupEvent {
+  id: string
+  session_id: string
+  step: 'landing' | 'form' | 'submit' | 'verify' | 'complete'
+  user_id: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface AbandonedRegistration {
+  id: string
+  email: string
+  session_id: string
+  last_step: string
+  recovery_sent_at: string | null
+  recovered: boolean
+  created_at: string
+}

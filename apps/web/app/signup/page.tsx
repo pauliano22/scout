@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Mail, Lock, User, ArrowRight, GraduationCap, Briefcase } from 'lucide-react'
 import ScoutLogo from '@/components/ScoutLogo'
+import { logSignupStep } from '@/lib/signupFunnel'
 
 type Role = 'student' | 'alumni'
 
@@ -40,6 +41,15 @@ function SignupForm() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
+  // Funnel: page reached, then form shown once a role is picked. Duplicate
+  // step events are fine — funnel stats count unique sessions per step.
+  useEffect(() => {
+    logSignupStep('landing')
+  }, [])
+  useEffect(() => {
+    if (role) logSignupStep('form', { role })
+  }, [role])
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -55,6 +65,9 @@ function SignupForm() {
     }
 
     setIsLoading(true)
+    // Email in metadata is what the abandoned-registration recovery cron
+    // uses to reach people who submit but never complete.
+    logSignupStep('submit', { role, email })
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -90,6 +103,7 @@ function SignupForm() {
         }),
       }).catch(() => {})
 
+      logSignupStep('complete', { role })
       router.push('/onboarding')
     } catch (err: any) {
       setError(err.message || 'Failed to sign up')

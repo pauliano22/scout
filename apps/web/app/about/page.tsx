@@ -163,8 +163,8 @@ export default function AboutPage() {
                   </div>
                   <h3 className="text-2xl font-bold mb-3">Verified Alumni Database</h3>
                   <p className="text-[--text-secondary] leading-relaxed mb-6">
-                    55 years of Cornell athlete rosters, enriched with LinkedIn data.
-                    Every profile includes current role, company, industry, and contact info.
+                    55 years of Cornell athlete rosters with current roles, companies,
+                    industries, and contact info.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {['Finance', 'Tech', 'Consulting', 'Law'].map(tag => (
@@ -187,8 +187,8 @@ export default function AboutPage() {
                   </div>
                   <h3 className="text-lg font-bold mb-2">AI Message Generation</h3>
                   <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                    Generate personalized outreach that references your shared athletic background.
-                    No more generic templates.
+                    Outreach drafts that lead with your shared athletic background
+                    instead of a generic template.
                   </p>
                 </div>
               </div>
@@ -200,8 +200,8 @@ export default function AboutPage() {
                   </div>
                   <h3 className="text-lg font-bold mb-2">Network Tracker</h3>
                   <p className="text-[--text-tertiary] text-sm leading-relaxed">
-                    Save contacts, track conversations, mark who you've reached out to.
-                    Your entire pipeline in one place.
+                    Save contacts, track conversations, and keep your whole
+                    outreach pipeline in one place.
                   </p>
                 </div>
               </div>

@@ -106,7 +106,7 @@ export default function NetworkWeb({ ds, saved, onPick }: Props) {
               className={`web-edge ${e.team ? 'web-edge-team' : 'web-edge-era'} ${hoverId ? (active ? 'web-edge-active' : 'web-edge-dim') : ''}`}
             >
               <title>
-                {e.a.p.n} & {e.b.p.n} — {e.team ? `teammates, ${e.seasons} season${e.seasons === 1 ? '' : 's'}` : 'on campus together'}
+                {e.a.p.n} & {e.b.p.n}: {e.team ? `teammates, ${e.seasons} season${e.seasons === 1 ? '' : 's'}` : 'on campus together'}
               </title>
             </line>
           )

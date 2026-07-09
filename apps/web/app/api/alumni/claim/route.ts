@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { notifyTelegram } from '@/lib/notify/telegram'
+import { linkedinSlug, findAlumniByLinkedInSlug } from '@/lib/alumni/linkedin'
 
 interface ClaimPayload {
   alumni_id?: string | null
@@ -15,11 +17,20 @@ interface ClaimPayload {
   advice?: string
   profile_photo_url?: string
   share_email_with_students?: boolean
+  engagement_intent?: string
 }
 
+const ENGAGEMENT_INTENTS = ['seeking_employment', 'here_to_help', 'both'] as const
+
 /**
- * Final write of the alumni claim wizard. User-submitted values are the source
- * of truth and overwrite any existing scraped values on the matched row.
+ * Final write of the alumni claim wizard.
+ *
+ * Access gating: if the claimant's name matches the Cornell roster (either the
+ * specific row they picked, or a unique name match when they didn't), the claim
+ * is auto-accepted — published and the account granted directory access. If the
+ * name isn't in the roster (or is ambiguous), the profile is saved HIDDEN and
+ * queued for admin review (/admin/claims); an admin approves to publish + grant
+ * access. This is why we don't just trust the client-supplied alumni_id.
  */
 export async function POST(request: Request) {
   try {
@@ -36,6 +47,14 @@ export async function POST(request: Request) {
     if (!currentRole || !currentCompany) {
       return NextResponse.json(
         { error: 'current_role and current_company are required.' },
+        { status: 400 },
+      )
+    }
+
+    const engagementIntent = body.engagement_intent?.trim() || null
+    if (engagementIntent && !ENGAGEMENT_INTENTS.includes(engagementIntent as any)) {
+      return NextResponse.json(
+        { error: 'Invalid engagement_intent.' },
         { status: 400 },
       )
     }
@@ -69,8 +88,8 @@ export async function POST(request: Request) {
     const fullName = (profile.full_name || '').trim()
     const email = profile.email || user.email || null
 
-    // Service-role client to write to alumni / storage without RLS friction;
-    // the user's identity is already verified via the cookie session above.
+    // Service-role client to write to alumni without RLS friction; the user's
+    // identity is already verified via the cookie session above.
     const service = createServiceClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -83,6 +102,48 @@ export async function POST(request: Request) {
         { status: 400 },
       )
     }
+
+    // ── Determine whether this claim matches the roster ──────────────────
+    // matched → auto-accept (publish + grant access); otherwise → admin review.
+    let alumniId = body.alumni_id?.trim() || null
+    let matched = false
+
+    if (alumniId) {
+      const { data: existing } = await service
+        .from('alumni')
+        .select('id, full_name, claimed_by_user_id, is_claimed')
+        .eq('id', alumniId)
+        .single()
+
+      if (!existing) {
+        return NextResponse.json({ error: 'Starter profile not found.' }, { status: 404 })
+      }
+      if (existing.is_claimed && existing.claimed_by_user_id && existing.claimed_by_user_id !== user.id) {
+        return NextResponse.json(
+          { error: 'This profile has already been claimed by another account.' },
+          { status: 409 },
+        )
+      }
+      // Auto-accept only if the account name matches the row being claimed.
+      matched = !!fullName &&
+        (existing.full_name || '').trim().toLowerCase() === fullName.toLowerCase()
+    } else if (fullName.length >= 3) {
+      // No row picked: auto-accept only on a UNIQUE roster name match.
+      const { data: nameMatches } = await service
+        .from('alumni')
+        .select('id, claimed_by_user_id, is_claimed')
+        .ilike('full_name', fullName)
+
+      const claimable = (nameMatches ?? []).filter(
+        (r) => !(r.is_claimed && r.claimed_by_user_id && r.claimed_by_user_id !== user.id),
+      )
+      if (claimable.length === 1) {
+        alumniId = claimable[0].id as string
+        matched = true
+      }
+    }
+
+    const publish = matched
 
     const writeFields = {
       full_name: fullName,
@@ -97,41 +158,23 @@ export async function POST(request: Request) {
       advice: body.advice?.trim() || null,
       photo_url: body.profile_photo_url?.trim() || null,
       share_email_with_students: Boolean(body.share_email_with_students),
+      engagement_intent: engagementIntent,
       is_claimed: true,
       claimed_at: new Date().toISOString(),
       claim_source: 'self_signup' as const,
       claimed_by_user_id: user.id,
       profile_reviewed_by_alumni: true,
-      is_public: true,
-      is_verified: true,
+      is_public: publish,
+      is_verified: publish,
+      claim_review_status: publish ? 'approved' : 'pending',
       source: 'opt_in' as const,
     }
 
-    let alumniId = body.alumni_id?.trim() || null
-
     if (alumniId) {
-      // Verify the row exists and is not already claimed by someone else.
-      const { data: existing } = await service
-        .from('alumni')
-        .select('id, claimed_by_user_id, is_claimed')
-        .eq('id', alumniId)
-        .single()
-
-      if (!existing) {
-        return NextResponse.json({ error: 'Starter profile not found.' }, { status: 404 })
-      }
-      if (existing.is_claimed && existing.claimed_by_user_id && existing.claimed_by_user_id !== user.id) {
-        return NextResponse.json(
-          { error: 'This profile has already been claimed by another account.' },
-          { status: 409 },
-        )
-      }
-
       const { error: updateErr } = await service
         .from('alumni')
         .update(writeFields)
         .eq('id', alumniId)
-
       if (updateErr) throw updateErr
     } else {
       const { data: inserted, error: insertErr } = await service
@@ -139,12 +182,53 @@ export async function POST(request: Request) {
         .insert(writeFields)
         .select('id')
         .single()
-
       if (insertErr) throw insertErr
       alumniId = inserted.id
     }
 
-    // Save major + linkedin_url to profile too, and link the row.
+    // If they gave a LinkedIn URL, auto-fill career history from what our
+    // directory already has on file for that URL (same lookup as the manual
+    // /api/profile/linkedin-import). Fills only an EMPTY work_history, never
+    // overwrites, and only from the row itself or an unclaimed row, so it
+    // can't copy another member's claimed data. Best-effort.
+    const claimLinkedinUrl = body.linkedin_url?.trim()
+    if (claimLinkedinUrl && alumniId) {
+      try {
+        const slug = linkedinSlug(claimLinkedinUrl)
+        if (slug) {
+          const { data: target } = await service
+            .from('alumni')
+            .select('work_history, education')
+            .eq('id', alumniId)
+            .single()
+          const targetHistory = Array.isArray(target?.work_history) ? target.work_history : []
+          if (targetHistory.length === 0) {
+            const sources = await findAlumniByLinkedInSlug(service, slug)
+            const source = sources.find(
+              (r) =>
+                r.id !== alumniId &&
+                Array.isArray(r.work_history) &&
+                (r.work_history as unknown[]).length > 0 &&
+                (!r.claimed_by_user_id || r.claimed_by_user_id === user.id),
+            )
+            if (source) {
+              await service
+                .from('alumni')
+                .update({
+                  work_history: source.work_history,
+                  education: target?.education ?? source.education ?? null,
+                })
+                .eq('id', alumniId)
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('claim: linkedin auto-fill skipped:', e)
+      }
+    }
+
+    // Link the row to the profile. directory_access is granted only when the
+    // claim is accepted; a pending claim leaves it false (no browsing yet).
     await service
       .from('profiles')
       .update({
@@ -157,10 +241,26 @@ export async function POST(request: Request) {
         role: currentRole,
         location: body.city?.trim() || null,
         onboarding_completed: true,
+        directory_access: publish,
       })
       .eq('id', user.id)
 
-    return NextResponse.json({ success: true, alumni_id: alumniId })
+    // Notify an admin (Telegram) about claims needing review. Best-effort.
+    if (!publish) {
+      await notifyTelegram(
+        `🟠 <b>New Scout claim needs review</b>\n` +
+        `${fullName || '(no name)'} · ${email || 'no email'}\n` +
+        `${sport} '${String(gradYear).slice(-2)} · ${currentRole} @ ${currentCompany}\n` +
+        `Name not found on the roster.\n` +
+        `Review: https://scoutcornell.com/admin/claims`,
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      alumni_id: alumniId,
+      status: publish ? 'published' : 'pending_review',
+    })
   } catch (err: any) {
     console.error('Alumni claim error:', err)
     return NextResponse.json(

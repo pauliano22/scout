@@ -207,7 +207,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
           ? `${data.picks.length} ${data.picks.length === 1 ? 'alum' : 'alumni'} your agent chose today`
           : 'Your agent’s picks'}
         {data.coverage != null && data.field ? `, from ${data.coverage.toLocaleString()} ${data.field} alumni` : ''}
-        . Everything you need to reach out — right here.
+        . Everything you need to reach out, right here.
       </p>
 
       {/* Onboarding progress bar — show for users who haven't completed all steps */}
@@ -259,7 +259,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                 type="text"
                 value={cityDraft}
                 onChange={e => setCityDraft(e.target.value)}
-                placeholder="City, region, or state — blank for anywhere"
+                placeholder="City, region, or state (blank for anywhere)"
                 className="input-field text-sm flex-1"
               />
               <button onClick={() => patchSettings({ city: cityDraft })} className="btn-secondary text-sm">Save</button>
@@ -382,7 +382,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
               {/* Quiet dismiss */}
               <div className="mt-4">
                 <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="text-[13px] text-[--text-quaternary] hover:text-[--text-tertiary]">
-                  Not a fit — skip
+                  Not a fit? Skip
                 </button>
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       {data.picks.length === 0 && !data.needsField && (
         <p className="mt-6 text-center text-sm text-[--text-tertiary]">
           {data.paused
-            ? 'Picks are paused — resume in Preferences when you’re ready.'
+            ? 'Picks are paused. Resume in Preferences when you’re ready.'
             : 'All caught up. New picks land tomorrow.'}
         </p>
       )}

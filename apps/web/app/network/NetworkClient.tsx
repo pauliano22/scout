@@ -67,6 +67,9 @@ export default function NetworkClient({
   const [showAddContact, setShowAddContact] = useState(false)
   const [contactForm, setContactForm] = useState({ name: '', company: '', role: '', linkedin_url: '', notes: '' })
   const [isAddingContact, setIsAddingContact] = useState(false)
+  // Sent rows where the student dismissed the "did they reply?" prompt this
+  // session, so it stops nagging without persisting a misleading state.
+  const [dismissedReplyPrompts, setDismissedReplyPrompts] = useState<Set<string>>(new Set())
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   useEffect(() => {
@@ -134,6 +137,31 @@ export default function NetworkClient({
       setNetwork(prev => prev.map(c => c.id === connectionId ? { ...c, contacted: true, contacted_at: now, status: 'awaiting_reply' as const } : c))
     } catch (err) { console.error('handleSendMessage:', err) }
     if (sentVia === 'marked') setSelectedConnection(null)
+  }
+
+  // Reply-outcome logging: the student marks that an alum wrote back. Advances
+  // the Sent row into the "Replied" lane and stamps replied_at (the one success
+  // metric Scout can capture, since sends happen off-platform).
+  const handleMarkReplied = async (e: React.MouseEvent, connectionId: string) => {
+    e.stopPropagation()
+    const now = new Date().toISOString()
+    // Optimistic update; own-row RLS on user_networks permits this write.
+    setNetwork(prev => prev.map(c =>
+      c.id === connectionId ? { ...c, status: 'response_needed' as const, replied_at: now } : c
+    ))
+    try {
+      await supabase
+        .from('user_networks')
+        .update({ status: 'response_needed', replied_at: now })
+        .eq('id', connectionId)
+    } catch (err) {
+      console.error('handleMarkReplied:', err)
+    }
+  }
+
+  const handleDismissReplyPrompt = (e: React.MouseEvent, connectionId: string) => {
+    e.stopPropagation()
+    setDismissedReplyPrompts(prev => new Set(prev).add(connectionId))
   }
 
   const handleNextAction = (e: React.MouseEvent, connection: UserNetwork) => {
@@ -255,6 +283,8 @@ export default function NetworkClient({
             const company = cleanField(connection.alumni?.company)
             const lastTouched = formatRelativeDate(connection.contacted_at || connection.created_at)
             const isUrgent = status === 'response_needed'
+            const firstName = connection.alumni?.full_name?.split(' ')[0]
+            const showReplyPrompt = status === 'awaiting_reply' && !dismissedReplyPrompts.has(connection.id)
 
             return (
               <div
@@ -296,6 +326,28 @@ export default function NetworkClient({
                       lastTouched ? `· ${lastTouched}` : null,
                     ].filter(Boolean).join(' ')}
                   </p>
+
+                  {/* Reply-outcome prompt — only on Sent rows, one tap to log */}
+                  {showReplyPrompt && (
+                    <div className="flex items-center gap-2 mt-1.5" onClick={e => e.stopPropagation()}>
+                      <span className="text-xs text-[--text-quaternary]">
+                        Heard back{firstName ? ` from ${firstName}` : ''}?
+                      </span>
+                      <button
+                        onClick={e => handleMarkReplied(e, connection.id)}
+                        className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+                      >
+                        Yes
+                      </button>
+                      <span className="text-[--text-quaternary] text-xs">·</span>
+                      <button
+                        onClick={e => handleDismissReplyPrompt(e, connection.id)}
+                        className="text-xs text-[--text-quaternary] hover:text-[--text-secondary] transition-colors"
+                      >
+                        Not yet
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* CTA */}

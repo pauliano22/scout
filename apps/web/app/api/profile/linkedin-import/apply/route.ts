@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 import type {
   WorkHistoryEntry,
   EducationEntry,
@@ -75,7 +76,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { error: updateError } = await supabase
+    // Service client: RLS on alumni is SELECT-only, so this update via the
+    // cookie client silently matched 0 rows and reported success. The row is
+    // the caller's own (profiles.alumni_id comes from their profile).
+    const { error: updateError } = await serviceClient()
       .from('alumni')
       .update(updates)
       .eq('id', profile.alumni_id)

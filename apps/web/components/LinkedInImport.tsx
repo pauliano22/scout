@@ -94,7 +94,7 @@ export default function LinkedInImport() {
       {(state.status === 'idle' || state.status === 'error') && (
         <div className="space-y-4">
           <p className="text-sm text-[--text-tertiary]">
-            Paste your LinkedIn profile URL to automatically import your work history, education, and contact details.
+            Paste your LinkedIn URL and we&apos;ll fill in the work history and education we have on file for you.
           </p>
           <div className="flex gap-2">
             <input
@@ -136,14 +136,14 @@ export default function LinkedInImport() {
       {state.status === 'loading' && (
         <div className="flex flex-col items-center py-8">
           <Loader2 size={24} className="animate-spin text-[--school-primary] mb-3" />
-          <p className="text-sm text-[--text-tertiary]">Parsing LinkedIn profile...</p>
+          <p className="text-sm text-[--text-tertiary]">Looking up your profile...</p>
         </div>
       )}
 
       {state.status === 'preview' && (
         <div className="space-y-4">
           <div className="bg-[--school-primary]/10 border border-[--school-primary]/20 rounded-lg p-3 text-sm text-[--text-secondary]">
-            We found the following information. Review and click "Apply to Profile" to save it.
+            Here&apos;s what we have on file for you. Review it and click &quot;Apply to Profile&quot; to save it.
           </div>
 
           {/* Current position */}

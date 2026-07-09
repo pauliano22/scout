@@ -84,6 +84,7 @@ export default function AlumniOnboardingClient({
   // Match result.
   const [match, setMatch] = useState<MatchedAlumni | null>(null)
   const [matchedAlumniId, setMatchedAlumniId] = useState<string | null>(prefillAlumniId || null)
+  const [pendingReview, setPendingReview] = useState(false)
 
   // Review-step values.
   const [values, setValues] = useState<AlumniProfileFormValues>(() => ({
@@ -145,6 +146,7 @@ export default function AlumniOnboardingClient({
       advice: fromMatch?.advice || values.advice || '',
       profile_photo_url: fromMatch?.photo_url || values.profile_photo_url || '',
       share_email_with_students: values.share_email_with_students,
+      engagement_intent: values.engagement_intent,
     })
   }
 
@@ -203,6 +205,7 @@ export default function AlumniOnboardingClient({
           advice: values.advice,
           profile_photo_url: values.profile_photo_url,
           share_email_with_students: values.share_email_with_students,
+          engagement_intent: values.engagement_intent || null,
         }),
       })
       const data = await res.json()
@@ -211,11 +214,41 @@ export default function AlumniOnboardingClient({
       trackEvent('alumni_profile_claimed', {
         had_match: Boolean(matchedAlumniId),
       })
+      if (data.status === 'pending_review') {
+        // Account is pending admin approval — the /review page is the single
+        // "under review" surface, and middleware keeps them there until approved.
+        router.push('/review')
+        return
+      }
       router.push('/profile')
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.')
       setIsSubmitting(false)
     }
+  }
+
+  // ─── Pending review (name didn't match the roster) ──────────────────
+  if (pendingReview) {
+    return (
+      <Shell>
+        <div className="text-center py-10">
+          <div className="w-14 h-14 rounded-full bg-[--school-primary]/10 flex items-center justify-center mx-auto mb-5">
+            <Check size={26} className="text-[--school-primary]" />
+          </div>
+          <h1 className="text-3xl font-semibold text-[--text-primary] mb-3">
+            Thanks — you&apos;re almost in.
+          </h1>
+          <p className="text-[--text-secondary] leading-relaxed max-w-md mx-auto">
+            We couldn&apos;t automatically match your name to the Cornell Athletics roster,
+            so your profile is pending a quick review. We&apos;ll approve it shortly and
+            you&apos;ll have full access then — no further action needed.
+          </p>
+          <Link href="/" className="btn-primary inline-flex items-center gap-2 mt-7">
+            Back to home
+          </Link>
+        </div>
+      </Shell>
+    )
   }
 
   // ─── Welcome ────────────────────────────────────────────────────────
@@ -487,7 +520,7 @@ export default function AlumniOnboardingClient({
             </div>
           )}
 
-          <AlumniProfileForm values={values} onChange={setValues} showReviewBanner />
+          <AlumniProfileForm values={values} onChange={setValues} showReviewBanner fullName={userName} />
           </div>
         </div>
 

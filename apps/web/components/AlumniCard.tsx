@@ -6,6 +6,23 @@ import Link from '@/components/Link'
 import SportAvatar from '@/components/SportAvatar'
 import { cleanField } from '@/lib/cleanField'
 
+// Student-facing labels for alumni.engagement_intent (mig 056): tells the
+// student whether to ask this alum for help or treat them as a fellow seeker.
+const INTENT_BADGES: Record<string, { label: string; className: string }> = {
+  here_to_help: {
+    label: 'Here to help',
+    className: 'bg-green-500/10 text-green-700 dark:text-green-500',
+  },
+  seeking_employment: {
+    label: 'Open to opportunities',
+    className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+  },
+  both: {
+    label: 'Here to help · Also looking',
+    className: 'bg-green-500/10 text-green-700 dark:text-green-500',
+  },
+}
+
 interface AlumniCardProps {
   alumni: Alumni | {
     id: string
@@ -19,6 +36,7 @@ interface AlumniCardProps {
     location: string | null
     photo_url?: string | null
     avatar_url?: string | null
+    engagement_intent?: string | null
   }
   isInNetwork?: boolean
   onAddToNetwork?: (id: string) => void
@@ -57,6 +75,18 @@ export default function AlumniCard({
           {alumni.sport} · {alumni.graduation_year}
         </p>
       </div>
+
+      {(() => {
+        const badge = 'engagement_intent' in alumni && alumni.engagement_intent
+          ? INTENT_BADGES[alumni.engagement_intent]
+          : null
+        if (!badge) return null
+        return (
+          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
+            {badge.label}
+          </span>
+        )
+      })()}
 
       {/* Role + Company */}
       <div className="flex flex-col items-center flex-1 w-full justify-start">

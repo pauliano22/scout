@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
+import SportAvatar from '@/components/SportAvatar'
+import type { AlumniEngagementIntent } from '@scout/shared/types/database'
 
 export interface AlumniProfileFormValues {
   current_role: string
@@ -15,7 +17,14 @@ export interface AlumniProfileFormValues {
   advice: string
   profile_photo_url: string
   share_email_with_students: boolean
+  engagement_intent: AlumniEngagementIntent | ''
 }
+
+const ENGAGEMENT_INTENT_OPTIONS: { value: AlumniEngagementIntent; label: string; hint: string }[] = [
+  { value: 'here_to_help', label: 'Here to help', hint: 'Advice, intros, mentorship' },
+  { value: 'seeking_employment', label: 'Seeking opportunities', hint: 'Open to new roles myself' },
+  { value: 'both', label: 'Both', hint: 'Happy to help, also looking' },
+]
 
 export const SPORTS_LIST = [
   'Baseball', 'Equestrian', 'Fencing', 'Field Hockey', 'Football',
@@ -33,6 +42,8 @@ interface AlumniProfileFormProps {
   values: AlumniProfileFormValues
   onChange: (next: AlumniProfileFormValues) => void
   showReviewBanner?: boolean
+  /** Shown as the initials + sport avatar while there's no photo. */
+  fullName?: string
 }
 
 export function emptyAlumniProfileValues(): AlumniProfileFormValues {
@@ -48,6 +59,7 @@ export function emptyAlumniProfileValues(): AlumniProfileFormValues {
     advice: '',
     profile_photo_url: '',
     share_email_with_students: true,
+    engagement_intent: '',
   }
 }
 
@@ -55,6 +67,7 @@ export default function AlumniProfileForm({
   values,
   onChange,
   showReviewBanner = false,
+  fullName,
 }: AlumniProfileFormProps) {
   const currentYear = new Date().getFullYear()
   const [photoUploading, setPhotoUploading] = useState(false)
@@ -94,17 +107,21 @@ export default function AlumniProfileForm({
       <div>
         <label className="block text-sm text-[--text-tertiary] mb-2">Profile photo</label>
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-[--bg-tertiary] border border-[--border-primary] overflow-hidden flex items-center justify-center flex-shrink-0">
-            {values.profile_photo_url ? (
+          {values.profile_photo_url ? (
+            <div className="w-20 h-20 rounded-full bg-[--bg-tertiary] border border-[--border-primary] overflow-hidden flex items-center justify-center flex-shrink-0">
               <img
                 src={values.profile_photo_url}
                 alt="Profile"
                 className="w-full h-full object-cover"
               />
-            ) : (
+            </div>
+          ) : fullName ? (
+            <SportAvatar name={fullName} sport={values.sport || null} size="xl" />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-[--bg-tertiary] border border-[--border-primary] overflow-hidden flex items-center justify-center flex-shrink-0">
               <Camera size={20} className="text-[--text-quaternary]" />
-            )}
-          </div>
+            </div>
+          )}
           <div className="flex-1">
             <label className="btn-secondary inline-flex items-center gap-2 cursor-pointer text-sm">
               {photoUploading ? (
@@ -253,6 +270,35 @@ export default function AlumniProfileForm({
           className="input-field resize-none"
           maxLength={600}
         />
+      </div>
+
+      {/* Engagement intent */}
+      <div>
+        <label className="block text-sm text-[--text-tertiary] mb-2">Why are you here?</label>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {ENGAGEMENT_INTENT_OPTIONS.map((opt) => {
+            const selected = values.engagement_intent === opt.value
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => set('engagement_intent', selected ? '' : opt.value)}
+                aria-pressed={selected}
+                className={`text-left rounded-lg border p-3 transition ${
+                  selected
+                    ? 'border-[--school-primary] bg-[--school-primary]/10'
+                    : 'border-[--border-primary] bg-[--bg-primary] hover:border-[--border-secondary]'
+                }`}
+              >
+                <p className="text-sm font-medium text-[--text-primary]">{opt.label}</p>
+                <p className="text-xs text-[--text-tertiary] mt-0.5">{opt.hint}</p>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-xs text-[--text-quaternary] mt-1.5">
+          Optional — helps students know whether to ask you for advice or send job leads your way.
+        </p>
       </div>
 
       {/* Email visibility toggle */}

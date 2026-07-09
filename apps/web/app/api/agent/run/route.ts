@@ -54,6 +54,11 @@ export async function POST(request: NextRequest) {
     linkedin_url: r.linkedin_url,
   }))
 
-  const result = runScoutNetworkingAgent(body.input, pool)
-  return NextResponse.json({ result })
+  try {
+    const result = runScoutNetworkingAgent(body.input, pool)
+    return NextResponse.json({ result })
+  } catch (err) {
+    console.error('Agent run: agent execution error', err)
+    return NextResponse.json({ error: 'Agent run failed' }, { status: 500 })
+  }
 }

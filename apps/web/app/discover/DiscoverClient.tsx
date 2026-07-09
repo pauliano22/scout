@@ -96,19 +96,20 @@ export default function DiscoverClient({
     if (!res.ok) throw new Error('Search failed')
 
     const data = await res.json()
+    const items: DiscoverAlumni[] = Array.isArray(data?.alumni) ? data.alumni : []
 
     if (append) {
       setAlumni(prev => {
         const existingIds = new Set(prev.map(a => a.id))
-        const newItems = data.alumni.filter((a: DiscoverAlumni) => !existingIds.has(a.id))
+        const newItems = items.filter((a: DiscoverAlumni) => !existingIds.has(a.id))
         return [...prev, ...newItems]
       })
     } else {
-      setAlumni(data.alumni)
+      setAlumni(items)
     }
-    setTotalCount(data.total)
+    setTotalCount(typeof data?.total === 'number' ? data.total : items.length)
     setCurrentPage(page)
-    setHasMore(data.hasMore)
+    setHasMore(Boolean(data?.hasMore))
   }, [])
 
   // Debounced search - fires when search/filters change

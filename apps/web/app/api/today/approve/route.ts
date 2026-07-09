@@ -92,15 +92,22 @@ export async function POST(request: NextRequest) {
     if (q.status !== 'queued_for_approval') return NextResponse.json({ error: 'Already actioned' }, { status: 409 })
 
     const nowIso = new Date().toISOString()
-    // 1. mark the queue row sent
-    await sb.from('outreach_queue').update({ status: 'approved_sent', sent_at: nowIso }).eq('id', queueId).eq('user_id', user.id)
+    // 1. mark the queue row sent — gating write; fail loudly if it doesn't land so
+    //    we never report a send that wasn't recorded.
+    const { error: queueErr } = await sb
+      .from('outreach_queue')
+      .update({ status: 'approved_sent', sent_at: nowIso })
+      .eq('id', queueId)
+      .eq('user_id', user.id)
+    if (queueErr) return NextResponse.json({ error: 'Failed to record send' }, { status: 500 })
     // 2. log the outbound (authoritative loop state regardless of channel observability)
-    await sb.from('messages').insert({
+    const { error: msgErr } = await sb.from('messages').insert({
       user_id: user.id,
       alumni_id: q.alumni_id,
       message_content: editedBody ?? q.draft_body,
       sent_via: sentVia ?? (q.channel === 'email' ? 'email' : 'linkedin'),
     })
+    if (msgErr) console.error('today/approve: messages insert failed', msgErr)
     // 3. advance the connection
     await sb.from('user_networks')
       .update({ status: 'awaiting_reply', contacted: true, contacted_at: nowIso })

@@ -54,6 +54,12 @@ export interface Alumni {
   profile_reviewed_by_alumni:   boolean
   // Why the alum is here (mig 056); null = unknown (unclaimed/scraped rows)
   engagement_intent:            AlumniEngagementIntent | null
+  // Freshness engine (migration 060) — when/at-what-confidence this row was last auto-enriched.
+  enriched_at?:                 string | null
+  enrichment_confidence?:       number | null
+  // Dedup soft-merge (migration 061): true = hidden, merged into merged_into_id.
+  is_duplicate?:                boolean
+  merged_into_id?:              string | null
 }
 
 export type AlumniEngagementIntent = 'seeking_employment' | 'here_to_help' | 'both'
@@ -137,6 +143,9 @@ export interface UserNetwork {
   // set when the student logs that the alum replied (status → response_needed);
   // powers reply-rate / time-to-reply metrics (migration 054)
   replied_at?: string | null
+  // what the connection led to, logged after status = met (migration 058)
+  outcome?: 'helpful_convo' | 'referral' | 'interview' | 'offer' | null
+  outcome_at?: string | null
   notes: string | null
   created_at: string
   // status is a real column (unified in migration 025; 'proposed' added in 026);
@@ -650,4 +659,27 @@ export interface TestimonialRequest {
   sent_at: string
   responded: boolean
   response_at: string | null
+}
+
+// =====================================================================
+// IDEA 31 — Signup Funnel Analytics
+// =====================================================================
+
+export interface SignupEvent {
+  id: string
+  session_id: string
+  step: 'landing' | 'form' | 'submit' | 'verify' | 'complete'
+  user_id: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface AbandonedRegistration {
+  id: string
+  email: string
+  session_id: string
+  last_step: string
+  recovery_sent_at: string | null
+  recovered: boolean
+  created_at: string
 }

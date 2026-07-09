@@ -109,11 +109,22 @@ export async function POST(request: Request) {
     let matched = false
 
     if (alumniId) {
-      const { data: existing } = await service
+      let { data: existing } = await service
         .from('alumni')
-        .select('id, full_name, claimed_by_user_id, is_claimed')
+        .select('id, full_name, claimed_by_user_id, is_claimed, is_duplicate, merged_into_id')
         .eq('id', alumniId)
         .single()
+
+      // A stale link can point at a row that was soft-merged away (migration
+      // 061) — follow the pointer so the alum claims the canonical record.
+      if (existing?.is_duplicate && existing.merged_into_id) {
+        alumniId = existing.merged_into_id as string
+        ;({ data: existing } = await service
+          .from('alumni')
+          .select('id, full_name, claimed_by_user_id, is_claimed, is_duplicate, merged_into_id')
+          .eq('id', alumniId)
+          .single())
+      }
 
       if (!existing) {
         return NextResponse.json({ error: 'Starter profile not found.' }, { status: 404 })
@@ -129,10 +140,13 @@ export async function POST(request: Request) {
         (existing.full_name || '').trim().toLowerCase() === fullName.toLowerCase()
     } else if (fullName.length >= 3) {
       // No row picked: auto-accept only on a UNIQUE roster name match.
+      // Exclude soft-merged duplicates (061) — without this, everyone whose
+      // duplicate was merged matches two rows and loses the auto-accept.
       const { data: nameMatches } = await service
         .from('alumni')
         .select('id, claimed_by_user_id, is_claimed')
         .ilike('full_name', fullName)
+        .eq('is_duplicate', false)
 
       const claimable = (nameMatches ?? []).filter(
         (r) => !(r.is_claimed && r.claimed_by_user_id && r.claimed_by_user_id !== user.id),

@@ -11,6 +11,16 @@ import SportAvatar from '@/components/SportAvatar'
 import { type CRMStatus } from '@/lib/statusConfig'
 import { Search, Plus, X, Linkedin, Loader2, ChevronRight } from 'lucide-react'
 import { cleanField } from '@/lib/cleanField'
+import { trackEvent } from '@/lib/track'
+
+type Outcome = NonNullable<UserNetwork['outcome']>
+
+const OUTCOME_OPTIONS: Array<{ value: Outcome; label: string }> = [
+  { value: 'helpful_convo', label: 'Good convo' },
+  { value: 'referral', label: 'Referral' },
+  { value: 'interview', label: 'Interview' },
+  { value: 'offer', label: 'Offer' },
+]
 
 interface NetworkClientProps {
   initialNetwork: UserNetwork[]
@@ -70,6 +80,8 @@ export default function NetworkClient({
   // Sent rows where the student dismissed the "did they reply?" prompt this
   // session, so it stops nagging without persisting a misleading state.
   const [dismissedReplyPrompts, setDismissedReplyPrompts] = useState<Set<string>>(new Set())
+  // Same, for the "did it lead to anything?" prompt on Met rows.
+  const [dismissedOutcomePrompts, setDismissedOutcomePrompts] = useState<Set<string>>(new Set())
   const rowRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   useEffect(() => {
@@ -162,6 +174,30 @@ export default function NetworkClient({
   const handleDismissReplyPrompt = (e: React.MouseEvent, connectionId: string) => {
     e.stopPropagation()
     setDismissedReplyPrompts(prev => new Set(prev).add(connectionId))
+  }
+
+  // Outcome logging: after a meeting, the student marks what it led to —
+  // the referral/interview/offer numbers behind the AD report (migration 058).
+  const handleLogOutcome = async (e: React.MouseEvent, connectionId: string, outcome: Outcome) => {
+    e.stopPropagation()
+    const now = new Date().toISOString()
+    setNetwork(prev => prev.map(c =>
+      c.id === connectionId ? { ...c, outcome, outcome_at: now } : c
+    ))
+    try {
+      await supabase
+        .from('user_networks')
+        .update({ outcome, outcome_at: now })
+        .eq('id', connectionId)
+      trackEvent('outcome_logged', { connection_id: connectionId, outcome })
+    } catch (err) {
+      console.error('handleLogOutcome:', err)
+    }
+  }
+
+  const handleDismissOutcomePrompt = (e: React.MouseEvent, connectionId: string) => {
+    e.stopPropagation()
+    setDismissedOutcomePrompts(prev => new Set(prev).add(connectionId))
   }
 
   const handleNextAction = (e: React.MouseEvent, connection: UserNetwork) => {
@@ -285,6 +321,7 @@ export default function NetworkClient({
             const isUrgent = status === 'response_needed'
             const firstName = connection.alumni?.full_name?.split(' ')[0]
             const showReplyPrompt = status === 'awaiting_reply' && !dismissedReplyPrompts.has(connection.id)
+            const showOutcomePrompt = status === 'met' && !connection.outcome && !dismissedOutcomePrompts.has(connection.id)
 
             return (
               <div
@@ -342,6 +379,29 @@ export default function NetworkClient({
                       <span className="text-[--text-quaternary] text-xs">·</span>
                       <button
                         onClick={e => handleDismissReplyPrompt(e, connection.id)}
+                        className="text-xs text-[--text-quaternary] hover:text-[--text-secondary] transition-colors"
+                      >
+                        Not yet
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Outcome prompt — only on Met rows with nothing logged yet */}
+                  {showOutcomePrompt && (
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap" onClick={e => e.stopPropagation()}>
+                      <span className="text-xs text-[--text-quaternary]">Did it lead to anything?</span>
+                      {OUTCOME_OPTIONS.map(opt => (
+                        <button
+                          key={opt.value}
+                          onClick={e => handleLogOutcome(e, connection.id, opt.value)}
+                          className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                      <span className="text-[--text-quaternary] text-xs">·</span>
+                      <button
+                        onClick={e => handleDismissOutcomePrompt(e, connection.id)}
                         className="text-xs text-[--text-quaternary] hover:text-[--text-secondary] transition-colors"
                       >
                         Not yet

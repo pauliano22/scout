@@ -47,8 +47,6 @@ async function logAuditEvent(
 }
 
 export async function POST(request: NextRequest) {
-  console.log('=== RESET PASSWORD POST ===')
-
   try {
     // ── Rate limit: public tier (30 req/min) keyed by IP ──
     const rl = checkRateLimit(`reset-password:${getClientIp(request)}`, 'public')
@@ -56,8 +54,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { token, password } = body
-
-    console.log('Token received:', token ? 'yes' : 'no')
 
     if (!token) {
       return NextResponse.json(
@@ -90,8 +86,6 @@ export async function POST(request: NextRequest) {
       .eq('used', false)
       .single()
 
-    console.log('Token lookup result:', resetToken ? 'found' : 'not found', tokenError?.message || '')
-
     if (tokenError || !resetToken) {
       return NextResponse.json(
         { error: 'Invalid or expired reset link' },
@@ -101,7 +95,6 @@ export async function POST(request: NextRequest) {
 
     // Check if token has expired
     if (new Date(resetToken.expires_at) < new Date()) {
-      console.log('Token expired')
       return NextResponse.json(
         { error: 'Reset link has expired. Please request a new one.' },
         { status: 400 }
@@ -113,7 +106,6 @@ export async function POST(request: NextRequest) {
       type: 'recovery',
       email: resetToken.email,
     })
-    console.log('User found:', linkData?.user ? 'yes' : 'no')
 
     if (userError || !linkData?.user) {
       console.error('Error finding user:', userError)
@@ -152,8 +144,6 @@ export async function POST(request: NextRequest) {
       request.headers.get('user-agent'),
       { success: true },
     )
-
-    console.log('Password reset successful')
     return addRateLimitHeaders(NextResponse.json({ success: true }), rl)
   } catch (error) {
     console.error('Error in reset-password:', error)
@@ -166,8 +156,6 @@ export async function POST(request: NextRequest) {
 
 // GET endpoint to verify token validity (used by the frontend to check before showing form)
 export async function GET(request: NextRequest) {
-  console.log('=== RESET PASSWORD GET (verify token) ===')
-
   try {
     // ── Rate limit: public tier (30 req/min) keyed by IP ──
     const rl = checkRateLimit(`reset-password-verify:${getClientIp(request)}`, 'public')
@@ -175,8 +163,6 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const token = searchParams.get('token')
-
-    console.log('Verifying token:', token ? 'present' : 'missing')
 
     if (!token) {
       return NextResponse.json(
@@ -194,8 +180,6 @@ export async function GET(request: NextRequest) {
       .eq('token', token)
       .single()
 
-    console.log('Token lookup:', resetToken ? 'found' : 'not found', tokenError?.message || '')
-
     if (tokenError || !resetToken) {
       return NextResponse.json(
         { valid: false, error: 'Invalid reset link' },
@@ -204,7 +188,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (resetToken.used) {
-      console.log('Token already used')
       return NextResponse.json(
         { valid: false, error: 'This reset link has already been used' },
         { status: 400 }
@@ -212,14 +195,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (new Date(resetToken.expires_at) < new Date()) {
-      console.log('Token expired')
       return NextResponse.json(
         { valid: false, error: 'Reset link has expired' },
         { status: 400 }
       )
     }
 
-    console.log('Token valid')
     return addRateLimitHeaders(NextResponse.json({ valid: true }), rl)
   } catch (error) {
     console.error('Error verifying token:', error)

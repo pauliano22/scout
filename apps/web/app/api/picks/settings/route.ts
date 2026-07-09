@@ -25,17 +25,22 @@ export async function PATCH(request: Request) {
     profileUpdate.preferred_locations = city ? [city] : []
     profileUpdate.geography_preference = city ? 'city' : 'doesnt_matter'
   }
-  if (Object.keys(profileUpdate).length) {
-    await auth.db.from('profiles').update(profileUpdate).eq('id', auth.userId)
-  }
+  try {
+    if (Object.keys(profileUpdate).length) {
+      await auth.db.from('profiles').update(profileUpdate).eq('id', auth.userId)
+    }
 
-  if (typeof body.paused === 'boolean') {
-    await auth.db.from('networking_plans')
-      .update({ sourcing_enabled: !body.paused })
-      .eq('user_id', auth.userId)
-      .eq('is_active', true)
-  }
+    if (typeof body.paused === 'boolean') {
+      await auth.db.from('networking_plans')
+        .update({ sourcing_enabled: !body.paused })
+        .eq('user_id', auth.userId)
+        .eq('is_active', true)
+    }
 
-  await ensureAgentState(auth.db, auth.userId)
-  return NextResponse.json({ ok: true })
+    await ensureAgentState(auth.db, auth.userId)
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('picks/settings update error', err)
+    return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
+  }
 }

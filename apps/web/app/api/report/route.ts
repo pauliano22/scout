@@ -1,6 +1,11 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { ok, fail } from '@/lib/api/respond'
+import { notifyTelegram } from '@/lib/notify/telegram'
+
+// notifyTelegram sends with parse_mode HTML — escape user-supplied text so a
+// report reason (or a scraped name) can't inject markup.
+const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 /**
  * POST /api/report
@@ -40,6 +45,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) throw error
+
+    // Real-time moderation alert to Telegram (best-effort; never blocks/breaks
+    // the report). Resolve the alum's name so the message is readable.
+    const { data: alum } = await supabase
+      .from('alumni')
+      .select('full_name, company')
+      .eq('id', alumniId)
+      .maybeSingle()
+    const who = alum
+      ? `${alum.full_name}${alum.company ? ` · ${alum.company}` : ''}`
+      : alumniId
+    await notifyTelegram(
+      `🚩 Profile flagged on Scout\n${escapeHtml(who)}\nReason: ${escapeHtml(reason.trim())}`,
+    )
 
     return ok(data, 201)
   } catch (e) {

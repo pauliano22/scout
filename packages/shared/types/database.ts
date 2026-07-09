@@ -54,6 +54,9 @@ export interface Alumni {
   profile_reviewed_by_alumni:   boolean
   // Why the alum is here (mig 056); null = unknown (unclaimed/scraped rows)
   engagement_intent:            AlumniEngagementIntent | null
+  // Freshness engine (migration 060) — when/at-what-confidence this row was last auto-enriched.
+  enriched_at?:                 string | null
+  enrichment_confidence?:       number | null
 }
 
 export type AlumniEngagementIntent = 'seeking_employment' | 'here_to_help' | 'both'

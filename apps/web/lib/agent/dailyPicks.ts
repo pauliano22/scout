@@ -1,9 +1,11 @@
-// The daily-picks engine. Picks accrue BETWEEN logins — never on a cron — so a
-// student who logs in weekly costs a week's worth of nothing and gets up to the
-// card cap waiting. Rules:
+// The daily-picks engine. Picks mint on page load — never on a cron — so an
+// inactive student costs nothing. The rhythm is a daily loop:
 //   · first ever visit seeds SEED_PICKS immediately (home is never empty)
-//   · afterwards, 1 new pick per elapsed day since the last materialization
-//   · unactioned picks roll forward; beyond CARD_CAP the oldest expire
+//   · every NEW day (Ithaca time) the shelf refreshes to the cap; if it's
+//     already full, the oldest card rotates out so each unique day the student
+//     logs in brings at least one new face
+//   · same-day revisits mint nothing — "come back tomorrow" IS the loop
+//   · unactioned picks rotate out at PICK_TTL_DAYS regardless (long absences)
 //   · drafts are NOT pre-written — they generate on first open (see /api/picks/draft)
 // Picks live in outreach_queue (status queued_for_approval) so the existing
 // send path — approval gate, cross-user outreach ledger — applies unchanged,
@@ -33,6 +35,11 @@ export const CARD_CAP = 3
 export const PICK_TTL_DAYS = 14
 const MS_PER_DAY = 86_400_000
 
+// Day boundary in campus time — "come back tomorrow" should mean tomorrow in
+// Ithaca, not tomorrow in UTC.
+const DAY_TZ = 'America/New_York'
+const dayKey = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: DAY_TZ })
+
 export interface PickCard {
   queueId: string
   alumnus: Alumni
@@ -42,6 +49,9 @@ export interface PickCard {
   createdAt: string
   // Days until this pick rotates out (TTL); the client warns when it's low.
   expiresInDays: number
+  // True for the card tomorrow's daily refresh will rotate out (oldest on a
+  // full shelf) — the client shows "leaves tomorrow" on exactly this one.
+  rotatesTomorrow: boolean
 }
 
 export interface PicksPayload {
@@ -150,20 +160,27 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('message_type', 'introduction')
-  const lastSourced = plan?.last_sourced_at ? new Date(plan.last_sourced_at).getTime() : null
+  const lastSourced = plan?.last_sourced_at ? new Date(plan.last_sourced_at) : null
   // Seed = "this student has never had a pick", full stop. (A stamp without
   // rows can happen when a seeding run dies mid-write — they must still seed.)
   const isFirstVisit = (everCount ?? 0) === 0
+  const isNewDay = !lastSourced || dayKey(lastSourced) !== dayKey(new Date())
 
   let grant = 0
   if (!paused) {
     if (isFirstVisit) {
       grant = SEED_PICKS
-    } else if (lastSourced !== null) {
-      const elapsedDays = Math.floor((Date.now() - lastSourced) / MS_PER_DAY)
-      grant = Math.max(0, Math.min(elapsedDays, CARD_CAP - pending.length))
+    } else if (isNewDay) {
+      // Daily refresh: fill open slots to the cap. If the shelf is full,
+      // rotate the oldest card out so every unique day brings a new face.
+      if (pending.length >= CARD_CAP) {
+        const oldest = pending.shift()!
+        await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
+      }
+      grant = CARD_CAP - pending.length
     }
-    // (rows exist but no stamp: pilot-cron era — clock starts today, grant 0)
+    // Same-day revisits mint nothing — freed slots refill tomorrow. That is
+    // the comeback loop; the empty state says so.
   }
 
   if (grant > 0 && plan) {
@@ -192,6 +209,9 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     coverage = count ?? null
   }
 
+  // Tomorrow's refresh rotates the oldest card iff the shelf is full then.
+  const rotatesNextId = pending.length >= CARD_CAP ? (pending[0].id as string) : null
+
   return {
     // Newest suggestions first so freshly-sourced alumni surface at the top.
     // (pending stays oldest-first above for the CARD_CAP expiry; only this
@@ -205,6 +225,7 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
         warm: warm[r.alumni_id as string] ?? null,
         createdAt: r.created_at as string,
         expiresInDays: Math.max(0, PICK_TTL_DAYS - Math.floor((Date.now() - new Date(r.created_at as string).getTime()) / MS_PER_DAY)),
+        rotatesTomorrow: (r.id as string) === rotatesNextId,
       }))
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     paused,

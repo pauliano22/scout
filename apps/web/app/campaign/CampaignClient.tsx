@@ -25,9 +25,11 @@ interface Pick {
   warm: WarmPath | null
   createdAt: string
   expiresInDays?: number
+  rotatesTomorrow?: boolean
 }
 
-// Warn this many days before an unactioned pick rotates out.
+// Warn this many days before an unactioned pick rotates out (TTL fallback;
+// on a full shelf the oldest card gets the sharper "leaves tomorrow" note).
 const EXPIRY_WARN_DAYS = 3
 
 /** "Suggested today" (fresh) / "Suggested 3 days ago" for a pick card. */
@@ -315,8 +317,14 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
               {(() => {
                 const s = suggestedLabel(pick.createdAt)
                 const d = pick.expiresInDays
-                const expiring = typeof d === 'number' && d <= EXPIRY_WARN_DAYS
-                if (!s.text && !expiring) return null
+                const warn = pick.rotatesTomorrow
+                  ? 'Leaves tomorrow — save or message them to keep'
+                  : typeof d === 'number' && d <= EXPIRY_WARN_DAYS
+                    ? d <= 0
+                      ? 'Last day — save or message them to keep'
+                      : `Gone in ${d} day${d === 1 ? '' : 's'} — save or message them to keep`
+                    : null
+                if (!s.text && !warn) return null
                 return (
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                     {s.text && (
@@ -325,9 +333,9 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                         {s.text}
                       </span>
                     )}
-                    {expiring && (
+                    {warn && (
                       <span className="inline-flex items-center gap-1 text-[12px] font-medium text-amber-500">
-                        {d! <= 0 ? 'Last day — save or message them to keep' : `Gone in ${d} day${d === 1 ? '' : 's'} — save or message them to keep`}
+                        {warn}
                       </span>
                     )}
                   </div>
@@ -410,6 +418,12 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
           {data.paused
             ? 'Picks are paused. Resume in Preferences when you’re ready.'
             : 'All caught up. New picks land tomorrow.'}
+        </p>
+      )}
+
+      {data.picks.length > 0 && !data.paused && (
+        <p className="mt-6 text-center text-xs text-[--text-quaternary]">
+          Scout keeps scouting — fresh picks tomorrow.
         </p>
       )}
 

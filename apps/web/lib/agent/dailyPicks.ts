@@ -29,7 +29,8 @@ export const CARD_CAP = 3
 // Unactioned picks rotate out after this many days. Without a TTL, a full
 // shelf blocks new mints forever and the home shows the same stale cards on
 // every visit — found live 2026-07-09 (5 cards from Jun 30, nothing new since).
-export const PICK_TTL_DAYS = 7
+// Two weeks, with the card warning "rotates out soon" in its final days.
+export const PICK_TTL_DAYS = 14
 const MS_PER_DAY = 86_400_000
 
 export interface PickCard {
@@ -39,6 +40,8 @@ export interface PickCard {
   draftReady: boolean
   warm: WarmPathSummary | null
   createdAt: string
+  // Days until this pick rotates out (TTL); the client warns when it's low.
+  expiresInDays: number
 }
 
 export interface PicksPayload {
@@ -201,6 +204,7 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
         draftReady: !!(r.draft_body as string)?.trim(),
         warm: warm[r.alumni_id as string] ?? null,
         createdAt: r.created_at as string,
+        expiresInDays: Math.max(0, PICK_TTL_DAYS - Math.floor((Date.now() - new Date(r.created_at as string).getTime()) / MS_PER_DAY)),
       }))
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     paused,

@@ -24,7 +24,11 @@ interface Pick {
   draftReady: boolean
   warm: WarmPath | null
   createdAt: string
+  expiresInDays?: number
 }
+
+// Warn this many days before an unactioned pick rotates out.
+const EXPIRY_WARN_DAYS = 3
 
 /** "Suggested today" (fresh) / "Suggested 3 days ago" for a pick card. */
 function suggestedLabel(iso: string): { text: string; fresh: boolean } {
@@ -310,11 +314,22 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
               {/* When Scout suggested this alum — fresh picks stand out */}
               {(() => {
                 const s = suggestedLabel(pick.createdAt)
-                if (!s.text) return null
+                const d = pick.expiresInDays
+                const expiring = typeof d === 'number' && d <= EXPIRY_WARN_DAYS
+                if (!s.text && !expiring) return null
                 return (
-                  <div className={`mt-2 inline-flex items-center gap-1.5 text-[12px] ${s.fresh ? 'font-semibold text-[--school-primary]' : 'font-medium text-[--text-quaternary]'}`}>
-                    {s.fresh && <span className="w-1.5 h-1.5 rounded-full bg-[--school-primary]" />}
-                    {s.text}
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    {s.text && (
+                      <span className={`inline-flex items-center gap-1.5 text-[12px] ${s.fresh ? 'font-semibold text-[--school-primary]' : 'font-medium text-[--text-quaternary]'}`}>
+                        {s.fresh && <span className="w-1.5 h-1.5 rounded-full bg-[--school-primary]" />}
+                        {s.text}
+                      </span>
+                    )}
+                    {expiring && (
+                      <span className="inline-flex items-center gap-1 text-[12px] font-medium text-amber-500">
+                        {d! <= 0 ? 'Last day — save or message them to keep' : `Gone in ${d} day${d === 1 ? '' : 's'} — save or message them to keep`}
+                      </span>
+                    )}
                   </div>
                 )
               })()}

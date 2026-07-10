@@ -330,7 +330,7 @@ export default function AlumniOnboardingClient({
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-5">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm mb-5">
               {error}
             </div>
           )}
@@ -417,7 +417,7 @@ export default function AlumniOnboardingClient({
         </div>
 
         {/* High-confidence: name, sport, year */}
-        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 mb-4 overflow-hidden">
+        <div className="relative bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-5 mb-4 overflow-hidden">
           <p className="text-xs uppercase tracking-wide text-[--text-quaternary] mb-3 relative z-10">Match identifiers</p>
           <div className="space-y-2 relative z-10">
             <Row label="Name" value={match.full_name} />
@@ -428,7 +428,7 @@ export default function AlumniOnboardingClient({
 
         {/* Low-confidence: existing role/company */}
         {(match.role || match.company || match.location) && (
-          <div className="bg-[--bg-primary] border border-[--border-primary] rounded-xl p-5 mb-5">
+          <div className="bg-[--bg-primary] shadow-[var(--shadow-soft)] rounded-xl p-5 mb-5">
             <p className="text-xs uppercase tracking-wide text-[--text-quaternary] mb-1">
               Existing info on Scout
             </p>
@@ -449,7 +449,7 @@ export default function AlumniOnboardingClient({
         </p>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-4">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm mb-4">
             {error}
           </div>
         )}
@@ -513,10 +513,10 @@ export default function AlumniOnboardingClient({
           </p>
         </div>
 
-        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-6 md:p-8 overflow-hidden">
+        <div className="relative bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-6 md:p-8 overflow-hidden">
           <div className="relative z-10">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-red-400 text-sm mb-5">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-400 text-sm mb-5">
               {error}
             </div>
           )}

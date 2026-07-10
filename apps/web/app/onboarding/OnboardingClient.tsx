@@ -196,7 +196,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
             <ScoutLogo size="lg" href="/" />
           </div>
 
-          <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+          <div className="relative bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-8 overflow-hidden">
             {/* Cornell 'C' watermark */}
             <div
               className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
@@ -262,10 +262,10 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
           </div>
         </div>
 
-        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+        <div className="relative bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-8 overflow-hidden">
           <div className="relative z-10">
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm mb-4">
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm mb-4">
               {error}
             </div>
           )}
@@ -352,7 +352,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
                           key={ind}
                           type="button"
                           onClick={() => toggleIndustry(ind)}
-                          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-sm border transition-all active:scale-[0.97] ${
+                          className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border transition-all active:scale-[0.97] ${
                             isPrimary
                               ? 'bg-[--school-primary] border-[--school-primary] text-white'
                               : isSecondary
@@ -362,7 +362,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
                         >
                           {ind}
                           {isPrimary && (
-                            <span className="text-[10px] font-bold tracking-wider uppercase opacity-90">Primary</span>
+                            <span className="text-xs font-bold tracking-wider uppercase opacity-90">Primary</span>
                           )}
                         </button>
                       )
@@ -390,7 +390,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
                       {targetRoles.map((r, i) => (
                         <span
                           key={r}
-                          className="inline-flex items-center gap-2 pl-3 pr-2 py-2 rounded-[9px] text-sm bg-[--school-primary]/10 border border-[--school-primary]/30 text-[--school-primary]"
+                          className="inline-flex items-center gap-2 pl-3 pr-2 py-2 rounded-xl text-sm bg-[--school-primary]/10 border border-[--school-primary]/30 text-[--school-primary]"
                         >
                           {r}
                           <button
@@ -446,7 +446,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
                 ].map(option => (
                   <label
                     key={option.value}
-                    className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                    className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
                       currentStage === option.value
                         ? 'border-[--school-primary] bg-[--school-primary]/5'
                         : 'border-[--border-primary] hover:border-[--border-secondary]'

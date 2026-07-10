@@ -31,12 +31,14 @@ interface NetworkClientProps {
 
 type StatusFilter = 'all' | CRMStatus
 
+// One accent: neutral dots everywhere, red reserved for the state that needs
+// the student's attention. The filter tabs carry the rest of the meaning.
 const STATUS_DOT: Record<CRMStatus, string> = {
-  interested:        'bg-blue-400',
-  awaiting_reply:    'bg-amber-400',
-  response_needed:   'bg-red-400',
-  meeting_scheduled: 'bg-purple-400',
-  met:               'bg-emerald-400',
+  interested:        'bg-[--border-secondary]',
+  awaiting_reply:    'bg-[--text-quaternary]',
+  response_needed:   'bg-[--school-primary]',
+  meeting_scheduled: 'bg-[--text-quaternary]',
+  met:               'bg-[--text-tertiary]',
 }
 
 const NEXT_ACTION: Record<CRMStatus, string> = {
@@ -271,7 +273,7 @@ export default function NetworkClient({
             placeholder="Search..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-[--bg-secondary] border border-[--border-primary] rounded-lg pl-9 pr-3 py-2 text-sm text-[--text-primary] placeholder:text-[--text-quaternary] focus:outline-none focus:border-[--school-primary] focus:ring-1 focus:ring-[--school-primary]/30 transition-colors"
+            className="w-full bg-[--bg-secondary] border border-[--border-primary] rounded-xl pl-9 pr-3 py-2 text-sm text-[--text-primary] placeholder:text-[--text-quaternary] focus:outline-none focus:border-[--school-primary] focus:ring-1 focus:ring-[--school-primary]/30 transition-colors"
           />
         </div>
       </div>
@@ -317,7 +319,7 @@ export default function NetworkClient({
           )}
         </div>
       ) : (
-        <div className="divide-y divide-[--border-primary]">
+        <div className="space-y-1">
           {filteredNetwork.map(connection => {
             const status = getStatus(connection)
             const role = cleanField(connection.alumni?.role)
@@ -333,7 +335,7 @@ export default function NetworkClient({
                 key={connection.id}
                 ref={el => setRowRef(connection.id, el)}
                 onClick={() => setDetailConnection(connection)}
-                className={`group flex items-center gap-3.5 px-1 py-3.5 cursor-pointer transition-colors hover:bg-[--bg-secondary] rounded-xl -mx-1 ${
+                className={`group flex items-center gap-3.5 px-3 py-4 cursor-pointer transition-colors hover:bg-[--bg-secondary] rounded-xl -mx-1 ${
                   highlightedId === connection.id ? 'ring-2 ring-[--school-primary] rounded-xl bg-[--bg-secondary]' : ''
                 }`}
               >
@@ -377,7 +379,7 @@ export default function NetworkClient({
                       </span>
                       <button
                         onClick={e => handleMarkReplied(e, connection.id)}
-                        className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+                        className="text-xs font-medium text-[--school-primary] hover:opacity-80 transition-colors"
                       >
                         Yes
                       </button>
@@ -399,7 +401,7 @@ export default function NetworkClient({
                         <button
                           key={opt.value}
                           onClick={e => handleLogOutcome(e, connection.id, opt.value)}
-                          className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
+                          className="text-xs font-medium text-[--school-primary] hover:opacity-80 transition-colors"
                         >
                           {opt.label}
                         </button>
@@ -418,7 +420,7 @@ export default function NetworkClient({
                 {/* CTA */}
                 <button
                   onClick={e => handleNextAction(e, connection)}
-                  className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
+                  className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-xl font-medium transition-all ${
                     isUrgent
                       ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
                       : 'text-[--text-quaternary] hover:text-[--text-secondary] hover:bg-[--bg-tertiary]'
@@ -449,7 +451,7 @@ export default function NetworkClient({
         </div>
 
         {showAddContact && (
-          <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-4 mb-4">
+          <div className="bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-4 mb-4">
             <div className="grid grid-cols-2 gap-2.5 mb-2.5">
               <input type="text" placeholder="Name *" value={contactForm.name} onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))} className="input-field text-sm" />
               <input type="text" placeholder="Company" value={contactForm.company} onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))} className="input-field text-sm" />
@@ -469,7 +471,7 @@ export default function NetworkClient({
         )}
 
         {customContacts.length > 0 ? (
-          <div className="divide-y divide-[--border-primary]">
+          <div className="space-y-1">
             {customContacts.map(contact => (
               <div key={contact.id} className="flex items-center gap-3 py-3">
                 <Avatar name={contact.name} size="sm" />

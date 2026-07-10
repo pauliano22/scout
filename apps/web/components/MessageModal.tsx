@@ -171,7 +171,7 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
       onClick={onClose}
     >
       <div
-        className="bg-[--bg-primary] border border-[--border-primary] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] pb-[env(safe-area-inset-bottom)] overflow-auto animate-scale-in"
+        className="bg-[--bg-primary] shadow-[var(--shadow-soft)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] pb-[env(safe-area-inset-bottom)] overflow-auto animate-scale-in"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
@@ -194,9 +194,9 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
           <div className="flex gap-1 p-1 bg-[--bg-secondary] rounded-xl">
             <button
               onClick={() => setPlatform('linkedin')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 min-h-10 rounded-lg text-xs font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 min-h-10 rounded-xl text-xs font-medium transition-colors ${
                 platform === 'linkedin'
-                  ? 'bg-[--bg-primary] text-[#0077b5] shadow-sm border border-[--border-primary]'
+                  ? 'bg-[--bg-primary] text-[#0077b5] shadow-sm shadow-[var(--shadow-soft)]'
                   : 'text-[--text-quaternary] hover:text-[--text-secondary]'
               }`}
             >
@@ -208,9 +208,9 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
             </button>
             <button
               onClick={() => setPlatform('email')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 min-h-10 rounded-lg text-xs font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 min-h-10 rounded-xl text-xs font-medium transition-colors ${
                 platform === 'email'
-                  ? 'bg-[--bg-primary] text-[--text-primary] shadow-sm border border-[--border-primary]'
+                  ? 'bg-[--bg-primary] text-[--text-primary] shadow-sm shadow-[var(--shadow-soft)]'
                   : 'text-[--text-quaternary] hover:text-[--text-secondary]'
               }`}
             >
@@ -235,7 +235,7 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
                   <button
                     key={key}
                     onClick={() => setSelectedType(key)}
-                    className={`text-left text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${
+                    className={`text-left text-xs px-3 py-1.5 rounded-xl transition-colors font-medium ${
                       selectedType === key
                         ? 'bg-[--school-primary] text-white'
                         : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
@@ -253,7 +253,7 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
                   <button
                     key={key}
                     onClick={() => setSelectedTone(key)}
-                    className={`text-left text-xs px-3 py-1.5 rounded-lg transition-colors font-medium ${
+                    className={`text-left text-xs px-3 py-1.5 rounded-xl transition-colors font-medium ${
                       selectedTone === key
                         ? 'bg-[--bg-tertiary] text-[--text-primary] border border-[--border-secondary]'
                         : 'text-[--text-secondary] hover:bg-[--bg-tertiary]'
@@ -382,7 +382,7 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
                   disabled={!currentMessage || isCurrentlyGenerating}
                   className="btn-secondary flex items-center gap-1.5 text-sm"
                 >
-                  {isCopied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+                  {isCopied ? <Check size={13} className="text-[--text-secondary]" /> : <Copy size={13} />}
                   {isCopied ? 'Copied' : 'Copy'}
                 </button>
               </div>

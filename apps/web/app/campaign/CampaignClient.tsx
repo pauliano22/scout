@@ -223,7 +223,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
   if (loading && !data) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-10 space-y-4">
-        <div className="skeleton h-8 w-1/2 rounded-lg" />
+        <div className="skeleton h-8 w-1/2 rounded-xl" />
         <div className="skeleton h-24 w-full rounded-2xl" />
         <div className="skeleton h-24 w-full rounded-2xl" />
         <div className="skeleton h-24 w-full rounded-2xl" />
@@ -261,7 +261,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       {notice && (
         <button
           onClick={() => setNotice(null)}
-          className="mt-4 w-full text-left rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-500"
+          className="mt-4 w-full text-left rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-500"
         >
           {notice}
         </button>
@@ -332,15 +332,15 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       )}
 
       {/* The picks — divider-separated, like Network */}
-      <div className="mt-6 divide-y divide-[--border-primary]">
+      <div className="mt-6 space-y-5">
         {data.picks.map(pick => {
           const a = pick.alumnus
           const exp = Array.isArray(a.work_history) ? a.work_history : []
           const expOpen = expandedExp.has(pick.queueId)
-          const shownExp = expOpen ? exp : exp.slice(0, 3)
+          const shownExp = expOpen ? exp : exp.slice(0, 2)
           const isSaved = saved.has(pick.queueId)
           return (
-            <div key={pick.queueId} className="py-7">
+            <div key={pick.queueId} className="bg-[--bg-secondary] rounded-2xl shadow-[var(--shadow-soft)] p-6 sm:p-7">
               {/* Identity */}
               <button onClick={() => setDetailAlum(a)} className="w-full flex items-start gap-3.5 text-left group">
                 <SportAvatar
@@ -376,58 +376,54 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                       : `Gone in ${d} day${d === 1 ? '' : 's'} — save or message them to keep`
                     : null
                 if (!s.text && !warn) return null
+                // One quiet status line per card — the warning outranks the age label.
                 return (
-                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    {s.text && (
-                      <span className={`inline-flex items-center gap-1.5 text-[12px] ${s.fresh ? 'font-semibold text-[--school-primary]' : 'font-medium text-[--text-quaternary]'}`}>
+                  <div className="mt-2.5">
+                    {warn ? (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600">{warn}</span>
+                    ) : (
+                      <span className={`inline-flex items-center gap-1.5 text-xs ${s.fresh ? 'font-semibold text-[--school-primary]' : 'font-medium text-[--text-quaternary]'}`}>
                         {s.fresh && <span className="w-1.5 h-1.5 rounded-full bg-[--school-primary]" />}
                         {s.text}
-                      </span>
-                    )}
-                    {warn && (
-                      <span className="inline-flex items-center gap-1 text-[12px] font-medium text-amber-500">
-                        {warn}
                       </span>
                     )}
                   </div>
                 )
               })()}
 
-              {/* Actions — draft + LinkedIn on one line, split in half */}
-              <div className="mt-4 flex gap-2.5">
+              {/* One primary action; everything else stays quiet */}
+              <div className="mt-5 flex items-center gap-4">
                 <button
                   onClick={() => openDraft(pick)}
                   disabled={busy === pick.queueId}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[--school-primary] text-white text-sm font-semibold transition hover:bg-[--school-primary-hover] disabled:opacity-60"
+                  className="btn-primary justify-center gap-2 px-6"
                 >
                   {busy === pick.queueId ? 'Writing…' : pick.draftReady ? 'Review & send' : 'Draft intro'}
+                </button>
+                <button
+                  onClick={() => save(pick)}
+                  disabled={busy === pick.queueId || isSaved}
+                  className={`text-sm font-medium transition ${isSaved ? 'text-[--text-secondary]' : 'text-[--text-tertiary] hover:text-[--text-primary]'}`}
+                >
+                  {isSaved ? '✓ Saved' : 'Save'}
                 </button>
                 {a.linkedin_url && (
                   <a
                     href={a.linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="btn-secondary flex-1 flex items-center justify-center gap-2 py-2"
+                    aria-label="Open LinkedIn profile"
+                    className="ml-auto p-2 text-[--text-quaternary] hover:text-[#0077b5] transition-colors"
                   >
-                    <Linkedin size={15} />
-                    LinkedIn
+                    <Linkedin size={17} />
                   </a>
                 )}
               </div>
 
-              {/* Add to network — small */}
-              <button
-                onClick={() => save(pick)}
-                disabled={busy === pick.queueId || isSaved}
-                className={`mt-2.5 inline-flex items-center gap-1.5 text-[13px] font-medium transition ${isSaved ? 'text-green-700' : 'text-[--text-tertiary] hover:text-[--text-primary]'}`}
-              >
-                {isSaved ? '✓ In your network' : '+ Add to network'}
-              </button>
-
               {/* Experience — below the CTA */}
               {exp.length > 0 && (
                 <div className="mt-5">
-                  <div className="text-[11px] font-bold tracking-[0.09em] text-[--text-quaternary] mb-2.5">EXPERIENCE</div>
+                  <div className="text-xs font-medium tracking-[0.08em] text-[--text-quaternary] mb-3">EXPERIENCE</div>
                   <div className="space-y-2.5">
                     {shownExp.map((w, i) => (
                       <div key={i} className="flex gap-2.5">
@@ -446,7 +442,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                     ))}
                   </div>
                   {exp.length > 3 && (
-                    <button onClick={() => toggleExp(pick.queueId)} className="mt-1 py-2 inline-block text-[13px] font-semibold text-[--school-primary] hover:underline">
+                    <button onClick={() => toggleExp(pick.queueId)} className="mt-1 py-2 inline-block text-sm font-semibold text-[--school-primary] hover:underline">
                       {expOpen ? 'Show less ↑' : `Show ${exp.length - 3} more ↓`}
                     </button>
                   )}
@@ -455,7 +451,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
 
               {/* Quiet dismiss */}
               <div className="mt-4">
-                <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="text-[13px] text-[--text-quaternary] hover:text-[--text-tertiary]">
+                <button onClick={() => skip(pick)} disabled={busy === pick.queueId} className="text-sm text-[--text-quaternary] hover:text-[--text-tertiary]">
                   Not a fit? Skip
                 </button>
               </div>

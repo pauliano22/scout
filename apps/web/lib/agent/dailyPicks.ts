@@ -40,6 +40,17 @@ const MS_PER_DAY = 86_400_000
 const DAY_TZ = 'America/New_York'
 const dayKey = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: DAY_TZ })
 
+/** ISO timestamp of today's midnight in campus time — the claim boundary. */
+function etMidnightIso(): string {
+  const now = new Date()
+  const offsetName = new Intl.DateTimeFormat('en-US', { timeZone: DAY_TZ, timeZoneName: 'shortOffset' })
+    .formatToParts(now).find(p => p.type === 'timeZoneName')?.value ?? 'GMT-5'
+  const m = offsetName.match(/GMT([+-]\d{1,2})/)
+  const h = m ? Number(m[1]) : -5
+  const hh = `${h < 0 ? '-' : '+'}${String(Math.abs(h)).padStart(2, '0')}:00`
+  return new Date(`${dayKey(now)}T00:00:00${hh}`).toISOString()
+}
+
 export interface PickCard {
   queueId: string
   alumnus: Alumni
@@ -167,26 +178,40 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
   const isNewDay = !lastSourced || dayKey(lastSourced) !== dayKey(new Date())
 
   let grant = 0
+  let rotateOldest = false
   if (!paused) {
     if (isFirstVisit) {
       grant = SEED_PICKS
     } else if (isNewDay) {
       // Daily refresh: fill open slots to the cap. If the shelf is full,
       // rotate the oldest card out so every unique day brings a new face.
-      if (pending.length >= CARD_CAP) {
-        const oldest = pending.shift()!
-        await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
-      }
-      grant = CARD_CAP - pending.length
+      rotateOldest = pending.length >= CARD_CAP
+      grant = rotateOldest ? 1 : CARD_CAP - pending.length
     }
     // Same-day revisits mint nothing — freed slots refill tomorrow. That is
     // the comeback loop; the empty state says so.
   }
 
   if (grant > 0 && plan) {
-    const minted = await mintPicks(db, userId, plan.id, profile, pending.map(r => r.alumni_id as string), grant)
-    pending = pending.concat(minted)
-    await db.from('networking_plans').update({ last_sourced_at: new Date().toISOString() }).eq('id', plan.id)
+    // Atomically claim today's mint before touching the queue: the stamp
+    // update only matches while last_sourced_at is still pre-today (or null),
+    // so of two concurrent requests (double-tap, two tabs, web+mobile) exactly
+    // one wins; the loser serves the existing shelf untouched. Without this,
+    // both would rotate AND both would mint — cap violations on launch day.
+    const { data: claimed } = await db
+      .from('networking_plans')
+      .update({ last_sourced_at: new Date().toISOString() })
+      .eq('id', plan.id)
+      .or(`last_sourced_at.is.null,last_sourced_at.lt.${etMidnightIso()}`)
+      .select('id')
+    if (claimed && claimed.length > 0) {
+      if (rotateOldest) {
+        const oldest = pending.shift()!
+        await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
+      }
+      const minted = await mintPicks(db, userId, plan.id, profile, pending.map(r => r.alumni_id as string), grant)
+      pending = pending.concat(minted)
+    }
   } else if (isFirstVisit && plan) {
     // Seed attempt happened (even if zero matched) — stamp so accrual starts
     await db.from('networking_plans').update({ last_sourced_at: new Date().toISOString() }).eq('id', plan.id)

@@ -321,7 +321,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
           {/* Step 2: Career Targeting */}
           {step === 2 && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">Career Targeting</h2>
+              <h2 className="text-xl font-semibold mb-6">What are you working toward?</h2>
 
               <div className="space-y-8">
                 {/* Industries — order-based: first tap is the primary, the rest secondary */}

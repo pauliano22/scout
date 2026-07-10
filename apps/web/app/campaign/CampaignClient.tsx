@@ -56,6 +56,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
   const [data, setData] = useState<PicksPayload | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [sendPick, setSendPick] = useState<{ pick: Pick; draft: string; channel: 'linkedin' | 'email' } | null>(null)
   const [detailAlum, setDetailAlum] = useState<Alumni | null>(null)
@@ -127,6 +128,15 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
 
   useEffect(() => { load() }, [load])
 
+  // Transient action-level errors (drafting, saving, skipping). The full-page
+  // `error` state is only for the initial load; these keep the shelf visible.
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  function flashNotice(msg: string) {
+    setNotice(msg)
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    noticeTimer.current = setTimeout(() => setNotice(null), 6000)
+  }
+
   async function openDraft(pick: Pick) {
     setBusy(pick.queueId)
     try {
@@ -139,7 +149,11 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       if (res.ok) {
         setSendPick({ pick, draft: body.draft ?? '', channel: body.channel ?? 'linkedin' })
         trackEvent('pick_draft_opened', { queue_id: pick.queueId, alumni_id: pick.alumnus.id, draft_was_ready: pick.draftReady })
+      } else {
+        flashNotice('Couldn’t write that draft. Give it another try.')
       }
+    } catch {
+      flashNotice('Couldn’t write that draft — check your connection and try again.')
     } finally {
       setBusy(null)
     }
@@ -156,6 +170,8 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     if (res.ok) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== sendPick.pick.queueId) } : d))
       trackEvent('pick_sent', { queue_id: sendPick.pick.queueId, alumni_id: sendPick.pick.alumnus.id, sent_via: sentVia })
+    } else {
+      flashNotice('That send didn’t record — try it again.')
     }
   }
 
@@ -169,6 +185,8 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     if (res.ok) {
       setSaved(s => new Set(s).add(pick.queueId))
       trackEvent('pick_saved', { queue_id: pick.queueId, alumni_id: pick.alumnus.id })
+    } else {
+      flashNotice('Couldn’t save them — try again.')
     }
     setBusy(null)
   }
@@ -183,6 +201,8 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     if (res.ok) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== pick.queueId) } : d))
       trackEvent('pick_skipped', { queue_id: pick.queueId, alumni_id: pick.alumnus.id })
+    } else {
+      flashNotice('Couldn’t skip that one — try again.')
     }
     setBusy(null)
   }
@@ -237,6 +257,15 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         . Everything you need to reach out, right here.
       </p>
 
+      {notice && (
+        <button
+          onClick={() => setNotice(null)}
+          className="mt-4 w-full text-left rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-500"
+        >
+          {notice}
+        </button>
+      )}
+
       {/* Onboarding progress bar — show for users who haven't completed all steps */}
       {!onboardingLoading && onboardingData && !onboardingData.isComplete && (
         <div className="mt-6">
@@ -251,7 +280,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       {/* Inline field capture — one tap, only when we have nothing to target on */}
       {data.needsField && (
         <div className="mt-4 card p-4">
-          <p className="text-sm text-[--text-secondary] mb-2.5">Looking at:</p>
+          <p className="text-sm text-[--text-secondary] mb-2.5">What field are you aiming for?</p>
           <div className="flex flex-wrap gap-2">
             {CORPUS_INDUSTRIES.map(ind => (
               <button key={ind} onClick={() => patchSettings({ field: ind })} className="btn-secondary text-sm">
@@ -320,10 +349,10 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                   size="lg"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="text-xl font-bold tracking-tight text-[--text-primary] leading-tight group-hover:underline">
+                  <div className="text-xl font-bold tracking-tight text-[--text-primary] leading-tight group-hover:underline line-clamp-2">
                     {a.full_name}
                   </div>
-                  <div className="text-base text-[--text-secondary] mt-1 leading-snug">
+                  <div className="text-base text-[--text-secondary] mt-1 leading-snug line-clamp-2">
                     {a.role}{a.role && a.company && ' · '}{a.company}
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-sm text-[--text-tertiary]">

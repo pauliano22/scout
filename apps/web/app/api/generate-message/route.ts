@@ -47,10 +47,13 @@ export async function POST(request: NextRequest) {
       .from('profiles').select('*').eq('id', user.id).single()
     if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
-    const hasRoleCompany = Boolean(alumni.role && alumni.company)
+    const hasRole = Boolean(alumni.role)
+    const hasCompany = Boolean(alumni.company)
     const recipientLines = [
       `- Name: ${alumni.full_name}`,
-      hasRoleCompany ? `- Current role: ${alumni.role} at ${alumni.company}` : null,
+      hasRole && hasCompany ? `- Current role: ${alumni.role} at ${alumni.company}` : null,
+      !hasRole && hasCompany ? `- Company: ${alumni.company} (role unknown — never guess a title)` : null,
+      hasRole && !hasCompany ? `- Role: ${alumni.role} (employer unknown — never guess one)` : null,
       alumni.industry ? `- Industry: ${alumni.industry}` : null,
       alumni.sport ? `- Played ${alumni.sport} at Cornell` : '- Cornell Athletics alum',
       alumni.graduation_year ? `- Class of ${alumni.graduation_year}` : null,
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
         senderContext: buildUserContext(profile),
         recipientLines,
         connectionNote: connectionNote(profile.sport, alumni.sport),
-        factNote: factNote(hasRoleCompany),
+        factNote: factNote(hasRole, hasCompany, Boolean(alumni.industry)),
         // Thank-yous reference what was actually discussed, when the client sends it
         extraContext: typeof context === 'string' && context.trim() ? context.trim().slice(0, 600) : null,
       },

@@ -52,7 +52,7 @@ export default function HomePage() {
       {!user && (
         <Link
           href="/login"
-          className={`btn-secondary fixed top-4 right-4 md:top-6 md:right-6 z-[60] gap-1.5 text-sm shadow-sm backdrop-blur-sm transition-all duration-300 ${
+          className={`btn-secondary fixed top-[max(1rem,env(safe-area-inset-top))] right-4 md:top-6 md:right-6 z-[60] gap-1.5 text-sm shadow-sm backdrop-blur-sm transition-all duration-300 ${
             showNavbar ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100'
           }`}
         >

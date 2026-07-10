@@ -32,8 +32,8 @@ export default function ReviewPendingPage() {
             Your account is under review
           </h1>
           <p className="text-[--text-secondary] leading-relaxed">
-            We couldn&apos;t match your name to the Cornell Athletics roster automatically,
-            so a real person is taking a quick look before your profile goes live.
+            We verify every profile against the Cornell Athletics roster, and yours
+            needs a quick human look. Most reviews wrap up within a day.
           </p>
           <p className="text-[--text-tertiary] text-sm mt-4 leading-relaxed">
             Nothing else to do. You can close this tab and sign back in once

@@ -49,6 +49,7 @@ export default function DiscoverClient({
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
   const [industryFilter, setIndustryFilter] = useState('All')
   const [sportFilter, setSportFilter] = useState<string | null>(null)
   const [locationFilter, setLocationFilter] = useState('')
@@ -185,8 +186,10 @@ export default function DiscoverClient({
       setNetworkIds((prev) => new Set([...prev, alumniId]))
       trackEvent('alumni_added_to_network', { alumni_id: alumniId, source: 'discover' })
     } catch (error) {
+      // alert() is unreliable inside Instagram's in-app browser — show inline.
       console.error('Error adding to network:', error)
-      alert('Failed to add to network. Please try again.')
+      setActionError('Couldn\u2019t add them to your network \u2014 try again.')
+      setTimeout(() => setActionError(null), 6000)
     } finally {
       setLoadingId(null)
     }
@@ -233,6 +236,14 @@ export default function DiscoverClient({
 
   return (
     <main className="px-4 md:px-8 py-6 max-w-5xl mx-auto">
+      {actionError && (
+        <button
+          onClick={() => setActionError(null)}
+          className="mb-4 w-full text-left rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-500"
+        >
+          {actionError}
+        </button>
+      )}
       {/* Search bar — hero element, no distracting headline */}
       <div className="mb-5">
         {/* Main search */}
@@ -369,7 +380,7 @@ export default function DiscoverClient({
         <div className="text-center py-20">
           <Search size={28} className="mx-auto text-[--text-quaternary] mb-3" />
           <p className="text-sm font-medium text-[--text-secondary] mb-1">No alumni found</p>
-          <p className="text-xs text-[--text-quaternary]">Try adjusting your search or filters</p>
+          <p className="text-xs text-[--text-quaternary]">No matches for those filters. Try removing one, or search by company, industry, or sport instead.</p>
         </div>
       ) : (
         <>

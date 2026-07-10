@@ -24,11 +24,12 @@ STRUCTURE (in order):
 4. EASY OUT — one short closing line that makes "no" easy ("If this is a busy stretch, no problem at all.").
 
 HARD RULES:
-- NEVER use these phrases or close variants: "I hope this finds you well", "I came across your profile", "I stumbled upon", "your journey", "pick your brain", "I was inspired", "really inspiring", "impressive", "resonated with me", "I'd be honored", "I would love the opportunity".
+- NEVER use these phrases or close variants: "I hope this finds you well", "I came across / found / discovered your profile", "I stumbled upon", "your journey", "pick your brain", "I was inspired", "really inspiring", "impressive", "resonated with me", "I'd be honored", "I would love the opportunity", "fascinated by", "amazed by", "would mean a lot / the world", "genuinely interested", "interested in learning from you", "any advice you might have".
 - No flattery openers. The hook states a FACT about them, not an opinion of them.
-- Maximum one "I'd love to" per message; prefer "Would you be open to".
+- Maximum ONE warmth phrase per message ("I'd love to" OR "I'd really appreciate" — never both); prefer "Would you be open to".
+- No formal sign-offs from a college student ("Warm regards", "Sincerely", "Respectfully") — "Best," "Thanks," or nothing, then first name.
 - No placeholder brackets, ever. Use the data given or omit gracefully.
-- Vary sentence openings; the message must not read as a template.
+- Vary sentence openings; the message must not read as a template. Never start three sentences with "I'm" or "I".
 - Sound human: contractions are fine, exclamation points almost never.`
 
 const HONESTY = `HONESTY — these override everything else:
@@ -51,7 +52,7 @@ const CHANNEL_RULES: Record<OutreachChannel, string> = {
 
 const TYPE_RULES: Record<OutreachType, string> = {
   introduction: 'TYPE: First outreach. Follow the four-part structure exactly.',
-  follow_up: 'TYPE: One gentle follow-up after no reply. It MUST open by acknowledging the earlier note ("Following up on my note from a couple weeks back —"). Then one NEW specific reason or detail (not a repeat of the first hook), then the same small ask. Two or three sentences total. Zero guilt, zero pressure.',
+  follow_up: 'TYPE: One gentle follow-up after no reply. It MUST open by acknowledging the earlier note naturally — vary the phrasing: "Circling back on my note from a couple weeks ago", "Wanted to bump my last message", "Following up on my note from earlier this month". Then one NEW specific reason or detail (not a repeat of the first hook), then the same small ask. Two or three sentences total. Zero guilt, zero pressure — never "I know you\'re busy, but".',
   thank_you: 'TYPE: Thank-you after a real conversation. Reference one or two specific things discussed (from the context given), state what the student is doing next because of it, offer to keep them posted. No new asks.',
 }
 
@@ -79,7 +80,10 @@ If this lands during a crunch, no problem at all.
 Best,
 Maya`,
   linkedin: `EXAMPLE (LinkedIn, same sport, 240 chars — hook, who+why, ask, compressed):
-Fellow Cornell wrestler here ('26). Your move from the team to leveraged finance at Citi is the path I'm working toward. Open to 15 minutes sometime? I have specific questions, not a pitch. No worries if you're slammed.`,
+Fellow Cornell wrestler here ('26). Your move from the team to leveraged finance at Citi is the path I'm working toward. Open to 15 minutes sometime? I have specific questions, not a pitch. No worries if you're slammed.
+
+EXAMPLE (LinkedIn, sparse data — industry only, note the honest hedge, no invented employer):
+Cornell hockey senior here, working toward a start in healthcare. You've built your career in that space since your Cornell days, and I want to understand how people actually break in. Open to 15 minutes? No worries at all if not.`,
 }
 
 // ── Builders ─────────────────────────────────────────────────────────────────
@@ -115,15 +119,21 @@ export function buildOutreachUser(f: OutreachFacts): string {
 
 export function connectionNote(studentSport: string | null | undefined, alumSport: string | null | undefined): string {
   const matched = Boolean(studentSport && alumSport && studentSport.toLowerCase() === alumSport.toLowerCase())
-  return matched
-    ? `Both played ${alumSport} at Cornell — the shared-sport tie is real and may lead the hook.`
-    : `Different sports (student: ${studentSport ?? 'unknown'}; alum: ${alumSport ?? 'unknown'}). "Fellow Cornell athlete" is allowed; claiming the same sport is NOT.`
+  if (matched) return `Both played ${alumSport} at Cornell — the shared-sport tie is real and may lead the hook.`
+  if (!studentSport) {
+    // No athlete language at all — "fellow athlete" from a student with no
+    // sport on file is exactly the kind of fabrication the honesty rules ban.
+    return 'The student has NO sport on file. Do not use athlete language ("fellow athlete", "as an athlete"). The bond is Cornell itself, the industry, or the era — nothing athletic.'
+  }
+  return `Different sports (student: ${studentSport}; alum: ${alumSport ?? 'unknown'}). "Fellow Cornell athlete" is allowed; claiming the same sport is NOT.`
 }
 
-export function factNote(hasRoleCompany: boolean): string {
-  return hasRoleCompany
-    ? 'Role and company are on file — the hook should use them specifically (unless the title is a non-literal fragment; then use company/industry).'
-    : 'Role/company NOT on file. Do not assert any employer, title, or specific fact. Hedge naturally.'
+export function factNote(hasRole: boolean, hasCompany: boolean, hasIndustry = false): string {
+  if (hasRole && hasCompany) return 'Role and company are on file — the hook should use them specifically (unless the title is a non-literal fragment; then use company/industry).'
+  if (hasCompany) return 'Company is on file but their role is NOT — you may name the company, but never guess or imply a title ("your work leading X at Y" is invention).'
+  if (hasRole) return 'A role is on file but no company — you may reference the kind of work, never an employer.'
+  if (hasIndustry) return 'Only their industry is on file — hedge to the industry ("what you\'ve been building in Finance"). Never name an employer or title.'
+  return 'NO career facts are on file. Do not invent an employer, title, or industry. The hook must come from the shared Cornell/sport tie alone.'
 }
 
 /** Build the mutual-contact line — call ONLY for contacts the student has actually met. */
@@ -137,6 +147,10 @@ const BANNED = [
   'i hope this finds you well', 'i came across', 'i stumbled', 'your journey',
   'pick your brain', 'inspired', 'inspiring', 'impressive', 'resonated',
   'i\'d be honored', 'i would be honored', 'i would love the opportunity',
+  'i found your profile', 'i discovered your', 'fascinated', 'amazed by',
+  'would mean a lot', 'would mean the world', 'genuinely interested',
+  'interested in learning from you', 'any advice you might have',
+  'warm regards', 'sincerely,',
 ]
 
 export function lintOutreach(draft: string, channel: OutreachChannel, type: OutreachType = 'introduction'): string[] {

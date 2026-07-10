@@ -37,11 +37,17 @@ export async function draftMessage(opts: {
   mutualNote?: string | null
 }): Promise<string> {
   const { alumni, profile, messageType, channel, tone = 'friendly', goalContext, mutualNote } = opts
-  const hasRoleCompany = Boolean(alumni.role && alumni.company)
+  const hasRole = Boolean(alumni.role)
+  const hasCompany = Boolean(alumni.company)
 
   const recipientLines = [
     `- Name: ${alumni.full_name}`,
-    hasRoleCompany ? `- Current role: ${alumni.role} at ${alumni.company}` : null,
+    // Give the model whatever is real: role+company, company alone, or role
+    // alone — dropping a known company just because the role is missing left
+    // the model hookless and prone to inventing one.
+    hasRole && hasCompany ? `- Current role: ${alumni.role} at ${alumni.company}` : null,
+    !hasRole && hasCompany ? `- Company: ${alumni.company} (role unknown — never guess a title)` : null,
+    hasRole && !hasCompany ? `- Role: ${alumni.role} (employer unknown — never guess one)` : null,
     alumni.industry ? `- Industry: ${alumni.industry}` : null,
     alumni.sport ? `- Played ${alumni.sport} at Cornell` : '- Cornell Athletics alum',
     alumni.graduation_year ? `- Class of ${alumni.graduation_year}` : null,
@@ -59,7 +65,7 @@ export async function draftMessage(opts: {
       senderContext: buildUserContext(profile),
       recipientLines,
       connectionNote: connectionNote(profile.sport, alumni.sport),
-      factNote: factNote(hasRoleCompany),
+      factNote: factNote(hasRole, hasCompany, Boolean(alumni.industry)),
       goalContext: goalContext ?? null,
       mutualNote: mutualNote ?? null,
     },

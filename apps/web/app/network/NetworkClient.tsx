@@ -184,14 +184,19 @@ export default function NetworkClient({
     setNetwork(prev => prev.map(c =>
       c.id === connectionId ? { ...c, outcome, outcome_at: now } : c
     ))
-    try {
-      await supabase
-        .from('user_networks')
-        .update({ outcome, outcome_at: now })
-        .eq('id', connectionId)
+    const { error } = await supabase
+      .from('user_networks')
+      .update({ outcome, outcome_at: now })
+      .eq('id', connectionId)
+    if (error) {
+      // Revert the optimistic update — a silently-lost outcome is worse than
+      // the prompt reappearing.
+      console.error('handleLogOutcome:', error.message)
+      setNetwork(prev => prev.map(c =>
+        c.id === connectionId ? { ...c, outcome: null, outcome_at: null } : c
+      ))
+    } else {
       trackEvent('outcome_logged', { connection_id: connectionId, outcome })
-    } catch (err) {
-      console.error('handleLogOutcome:', err)
     }
   }
 
@@ -259,7 +264,7 @@ export default function NetworkClient({
         </div>
 
         {/* Search */}
-        <div className="relative w-52 flex-shrink-0">
+        <div className="relative w-36 sm:w-52 flex-shrink-0">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-quaternary] pointer-events-none" />
           <input
             type="text"

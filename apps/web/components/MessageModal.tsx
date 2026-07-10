@@ -94,18 +94,48 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Clipboard + popups both fail inside Instagram/TikTok in-app browsers:
+  // navigator.clipboard throws NotAllowedError and window.open returns null.
+  // Fall back to the textarea trick and same-tab navigation so the actions
+  // never silently no-op.
+  const safeCopy = async (text: string): Promise<boolean> => {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch {
+      try {
+        const ta = document.createElement('textarea')
+        ta.value = text
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        const ok = document.execCommand('copy')
+        document.body.removeChild(ta)
+        return ok
+      } catch {
+        return false
+      }
+    }
+  }
+
+  const openExternal = (url: string) => {
+    const w = window.open(url, '_blank')
+    if (!w) window.location.href = url
+  }
+
   const handleCopyAndOpenLinkedIn = async () => {
     if (!currentMessage) return
-    await navigator.clipboard.writeText(currentMessage)
+    await safeCopy(currentMessage)
     await onSend(connection.id, currentMessage, 'linkedin')
-    if (alumni.linkedin_url) window.open(alumni.linkedin_url, '_blank')
+    if (alumni.linkedin_url) openExternal(alumni.linkedin_url)
     setIsCopied(true)
     setTimeout(() => { setIsCopied(false); onClose() }, 800)
   }
 
   const handleCopy = async () => {
     if (!currentMessage) return
-    await navigator.clipboard.writeText(currentMessage)
+    await safeCopy(currentMessage)
     await onSend(connection.id, currentMessage, 'copied')
     setIsCopied(true)
     setTimeout(() => setIsCopied(false), 2000)
@@ -120,7 +150,7 @@ export default function MessageModal({ connection, userSport, onClose, onSend, i
     const url = provider === 'gmail'
       ? `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`
       : `https://outlook.live.com/mail/0/deeplink/compose?to=${to}&subject=${subject}&body=${body}`
-    window.open(url, '_blank')
+    openExternal(url)
     setTimeout(() => onClose(), 500)
   }
 

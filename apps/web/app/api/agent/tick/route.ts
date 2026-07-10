@@ -139,14 +139,16 @@ export async function POST(request: NextRequest) {
         for (const s of sourced) {
           // GATE: write as 'proposed' (NOT via the plan_alumni trigger). The
           // student must approve before this becomes live outreach.
-          await sb.from('user_networks').upsert(
+          const { error: propErr } = await sb.from('user_networks').upsert(
             { user_id: userId, alumni_id: s.alumnus.id, status: 'proposed', contacted: false, notes: s.why },
             { onConflict: 'user_id,alumni_id', ignoreDuplicates: true },
           )
+          if (propErr) console.error('[tick] proposed upsert failed:', propErr.message)
         }
         out.sourced = sourced.length
         out.abstained = sourced.length === 0
-        await sb.from('networking_plans').update({ last_sourced_at: now.toISOString() }).eq('id', c.id)
+        const { error: srcStampErr } = await sb.from('networking_plans').update({ last_sourced_at: now.toISOString() }).eq('id', c.id)
+        if (srcStampErr) console.error('[tick] last_sourced_at stamp failed:', srcStampErr.message)
       }
 
       // ── DRAFT paced intros for approved-but-uncontacted (no send) ────────────
@@ -161,10 +163,11 @@ export async function POST(request: NextRequest) {
         const channel = channelForAlumni(alumnus)
         const body = await draftMessage({ alumni: alumnus, profile: profile as Profile, messageType: 'introduction', channel, goalContext })
         if (!body) continue
-        await sb.from('outreach_queue').upsert(
+        const { error: introErr } = await sb.from('outreach_queue').upsert(
           { user_id: userId, alumni_id: s.alumniId, plan_id: c.id, message_type: 'introduction', channel, draft_body: body, why: goalContext, status: 'queued_for_approval' },
           { onConflict: 'user_id,alumni_id,message_type', ignoreDuplicates: true },
         )
+        if (introErr) console.error('[tick] intro draft upsert failed:', introErr.message)
         out.introDrafts++
         introBudget--
       }
@@ -180,14 +183,16 @@ export async function POST(request: NextRequest) {
         const channel = channelForAlumni(alumnus)
         const body = await draftMessage({ alumni: alumnus, profile: profile as Profile, messageType: 'follow_up', channel, goalContext })
         if (!body) continue
-        await sb.from('outreach_queue').upsert(
+        const { error: fuErr } = await sb.from('outreach_queue').upsert(
           { user_id: userId, alumni_id: a.alumniId, plan_id: c.id, message_type: 'follow_up', channel, draft_body: body, why: a.reason, status: 'queued_for_approval' },
           { onConflict: 'user_id,alumni_id,message_type', ignoreDuplicates: true },
         )
+        if (fuErr) console.error('[tick] follow-up draft upsert failed:', fuErr.message)
         out.followupDrafts++
       }
 
-      await sb.from('networking_plans').update({ last_tick_at: now.toISOString() }).eq('id', c.id)
+      const { error: tickStampErr } = await sb.from('networking_plans').update({ last_tick_at: now.toISOString() }).eq('id', c.id)
+      if (tickStampErr) console.error('[tick] last_tick_at stamp failed:', tickStampErr.message)
     } catch (e: any) {
       ;(out as any).error = e?.message ?? String(e)
     }

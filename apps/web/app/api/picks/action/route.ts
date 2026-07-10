@@ -30,10 +30,14 @@ export async function POST(request: Request) {
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   if (action === 'save') {
-    // Already-in-network duplicates are fine — treat as saved.
-    await auth.db.from('user_networks')
+    // Already-in-network duplicates are fine — treat as saved. Anything else
+    // (RLS, FK, outage) must fail the request, not fake ok:true.
+    const { error: saveErr } = await auth.db.from('user_networks')
       .insert({ user_id: auth.userId, alumni_id: row.alumni_id })
-      .then(() => {}, () => {})
+    if (saveErr && saveErr.code !== '23505') {
+      console.error('[picks/action] save insert failed:', saveErr.message)
+      return NextResponse.json({ error: 'Save failed' }, { status: 500 })
+    }
     await auth.db.from('alumni_swipes')
       .insert({ user_id: auth.userId, alumni_id: row.alumni_id, action: 'save' })
       .then(() => {}, () => {})
@@ -43,7 +47,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true })
   }
 
-  await auth.db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', row.id)
+  const { error: skipErr } = await auth.db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', row.id)
+  if (skipErr) {
+    // A failed dismiss with ok:true leaves a zombie card blocking a cap slot.
+    console.error('[picks/action] skip dismiss failed:', skipErr.message)
+    return NextResponse.json({ error: 'Skip failed' }, { status: 500 })
+  }
   // Feed matching: a skip is a pass signal. alumni_swipes lands with migration
   // 028 (it was referenced but never created); user_events is the durable
   // fallback either way, and the dismissed queue row already prevents re-picks.

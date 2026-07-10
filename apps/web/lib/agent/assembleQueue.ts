@@ -59,10 +59,11 @@ export async function assembleConnections(supabase: DbClient, userId: string): P
   if (netErr) throw new Error(`user_networks: ${netErr.message}`)
 
   // Last outbound message per alumni → lastMessageAt.
-  const { data: msgs } = await supabase
+  const { data: msgs, error: msgsErr } = await supabase
     .from('messages')
     .select('alumni_id, created_at')
     .eq('user_id', userId)
+  if (msgsErr) console.warn('[assemble] messages read failed:', msgsErr.message)
   const lastMsg = new Map<string, string>()
   for (const m of msgs ?? []) {
     const prev = lastMsg.get(m.alumni_id as string)
@@ -70,10 +71,13 @@ export async function assembleConnections(supabase: DbClient, userId: string): P
     if (!prev || at > prev) lastMsg.set(m.alumni_id as string, at)
   }
 
-  const { data: ovr } = await supabase
+  const { data: ovr, error: ovrErr } = await supabase
     .from('connection_action_state')
     .select('alumni_id, action_type, state, snooze_until')
     .eq('user_id', userId)
+  // Soft-fail is intentional (overrides are advisory), but a persistent read
+  // failure silently resurrects dismissed/snoozed actions — make it visible.
+  if (ovrErr) console.warn('[assemble] overrides read failed:', ovrErr.message)
   const overrides: ActionOverride[] = (ovr ?? []).map((o: any) => ({
     alumniId: o.alumni_id,
     actionType: o.action_type,
@@ -81,7 +85,8 @@ export async function assembleConnections(supabase: DbClient, userId: string): P
     snoozeUntil: o.snooze_until,
   }))
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single()
+  const { data: profile, error: profErr } = await supabase.from('profiles').select('*').eq('id', userId).single()
+  if (profErr) console.warn('[assemble] profile read failed:', profErr.message)
   const prefs = profileToPrefs(profile as Profile | null)
 
   const display = new Map<string, { networkId: string; alumnus: Alumni }>()

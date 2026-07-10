@@ -55,12 +55,13 @@ export async function GET(request: Request) {
   try {
     // Explicit columns — alumni(*) would drag the pgvector embedding along
     // (1536 floats/row; see the warning on ALUMNI_COLS).
-    const { data: rows } = await supabase
+    const { data: rows, error: readyErr } = await supabase
       .from('outreach_queue')
       .select(`id, alumni_id, channel, message_type, draft_body, why, status, created_at, alumni:alumni(${ALUMNI_COLS})`)
       .eq('user_id', user.id)
       .eq('status', 'queued_for_approval')
       .order('created_at', { ascending: true })
+    if (readyErr) console.warn('[campaign] outreach_queue read failed (migration 026 applied?):', readyErr.message)
     ready = (rows ?? [])
       .map((r: any) => ({
         queueId: r.id,
@@ -78,12 +79,13 @@ export async function GET(request: Request) {
   // ── Campaign goal + progress (null → the client shows the goal-setting step) ─
   let campaign: any = null
   try {
-    const { data: plan } = await supabase
+    const { data: plan, error: planErr } = await supabase
       .from('networking_plans')
       .select('id, goal_metric, goal_count, deadline, campaign_status, current_count')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .maybeSingle()
+    if (planErr) console.warn('[campaign] plan read failed:', planErr.message)
     if (plan && plan.deadline) {
       const booked = signals.filter((s) => s.status === 'met').length
       const meetingsSet = signals.filter((s) => s.status === 'meeting_scheduled').length

@@ -43,8 +43,14 @@ const dayKey = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: DAY_TZ })
 /** ISO timestamp of today's midnight in campus time — the claim boundary. */
 function etMidnightIso(): string {
   const now = new Date()
+  // Sample the UTC offset AT this day's midnight, not at `now` — on DST-flip
+  // days now's offset puts the boundary an hour off (audit-verified: spring
+  // 2026-03-08 silently skipped a cohort's mint for the whole day). Anchor
+  // 05:00Z falls inside the ET day under both EST and EDT and strictly
+  // before either flip, so its offset IS midnight's offset.
+  const anchor = new Date(`${dayKey(now)}T05:00:00Z`)
   const offsetName = new Intl.DateTimeFormat('en-US', { timeZone: DAY_TZ, timeZoneName: 'shortOffset' })
-    .formatToParts(now).find(p => p.type === 'timeZoneName')?.value ?? 'GMT-5'
+    .formatToParts(anchor).find(p => p.type === 'timeZoneName')?.value ?? 'GMT-5'
   const m = offsetName.match(/GMT([+-]\d{1,2})/)
   const h = m ? Number(m[1]) : -5
   const hh = `${h < 0 ? '-' : '+'}${String(Math.abs(h)).padStart(2, '0')}:00`
@@ -101,19 +107,28 @@ function profilePrefs(profile: any): UserPreferences {
 export async function materializePicks(db: SupabaseClient, userId: string): Promise<PicksPayload> {
   await ensureAgentState(db, userId)
 
-  const { data: profile } = await db
+  const { data: profile, error: profErr } = await db
     .from('profiles')
     .select('primary_industry, secondary_industries, target_roles, preferred_locations, sport, graduation_year, full_name')
     .eq('id', userId)
     .single()
+  // A transient read failure must NOT render the "set your field" onboarding
+  // state to an onboarded student — fail loudly, the route 500s with a retry.
+  if (profErr && profErr.code !== 'PGRST116') throw new Error(`[picks] profile read failed: ${profErr.message}`)
   if (!profile) return { picks: [], paused: false, field: null, coverage: null, needsField: true }
 
-  let { data: plan } = await db
+  let { data: plan, error: planReadErr } = await db
     .from('networking_plans')
     .select('id, sourcing_enabled, last_sourced_at')
     .eq('user_id', userId)
     .eq('is_active', true)
     .maybeSingle()
+  // A failed read must never be treated as "no plan" — the self-heal below
+  // would insert a SECOND active plan whose null stamp wins the day-claim on
+  // every load (runaway mints). maybeSingle also errors on multiple active
+  // plans; surface that instead of compounding it (migration 062 adds the
+  // unique index that makes multiples impossible).
+  if (planReadErr) throw new Error(`[picks] plan read failed: ${planReadErr.message}`)
 
   // Self-heal: without an active plan nothing below can mint, and the home is
   // silently empty forever (found on a real account 2026-07). If onboarding's
@@ -147,7 +162,10 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     .eq('message_type', 'introduction')
     .eq('status', 'queued_for_approval')
     .order('created_at', { ascending: true })
-  if (qErr) console.error('[picks] queue select error:', qErr.message)
+  // Never proceed on a failed shelf read: pending=[] would over-mint up to a
+  // full extra shelf and the next healthy load would dismiss the student's
+  // real cards. Fail loudly; the route 500s with a retry.
+  if (qErr) throw new Error(`[picks] queue read failed: ${qErr.message}`)
   let pending = (queueRows ?? []).filter(r => r.alumni)
 
   // Rotation: picks the student never acted on go stale — expire them quietly
@@ -168,15 +186,17 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
   }
 
   // Accrual: ever-materialized? (any intro row, any status, or last_sourced_at set)
-  const { count: everCount } = await db
+  const { count: everCount, error: everErr } = await db
     .from('outreach_queue')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('message_type', 'introduction')
+  if (everErr) console.error('[picks] everCount read failed:', everErr.message)
   const lastSourced = plan?.last_sourced_at ? new Date(plan.last_sourced_at) : null
-  // Seed = "this student has never had a pick", full stop. (A stamp without
-  // rows can happen when a seeding run dies mid-write — they must still seed.)
-  const isFirstVisit = (everCount ?? 0) === 0
+  // Seed = "this student has never had a pick", full stop. A failed count must
+  // read as NOT-first-visit — a null count faking first-visit would seed 3 on
+  // top of a full shelf. pending.length is the extra guard for the same trap.
+  const isFirstVisit = !everErr && (everCount ?? 0) === 0 && pending.length === 0
   const isNewDay = !lastSourced || dayKey(lastSourced) !== dayKey(new Date())
 
   let grant = 0
@@ -216,19 +236,31 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     const { data: claimed, error: claimErr } = await claimQuery.select('id')
     if (claimErr) console.error('[picks] day-claim failed:', claimErr.message)
     if (claimed && claimed.length > 0) {
-      if (rotateOldest) {
-        const oldest = pending.shift()!
-        const { error: rotErr } = await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
-        if (rotErr) console.error('[picks] rotation dismiss failed:', rotErr.message)
-      }
+      // Mint BEFORE rotating: a zero mint (pool/exclude read failure, pool
+      // exhaustion) must not destroy a card the student still has. And if
+      // nothing minted, release the claim so a later load can retry today
+      // instead of burning the whole day.
       const minted = await mintPicks(db, userId, plan.id, profile, pending.map(r => r.alumni_id as string), grant)
-      pending = pending.concat(minted)
+      if (minted.length > 0) {
+        if (rotateOldest) {
+          const oldest = pending.shift()!
+          const { error: rotErr } = await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
+          if (rotErr) console.error('[picks] rotation dismiss failed:', rotErr.message)
+        }
+        pending = pending.concat(minted)
+      } else {
+        console.error('[picks] mint produced nothing — releasing today’s claim for retry')
+        const { error: releaseErr } = await db
+          .from('networking_plans')
+          .update({ last_sourced_at: plan.last_sourced_at ?? null })
+          .eq('id', plan.id)
+        if (releaseErr) console.error('[picks] claim release failed:', releaseErr.message)
+      }
     }
-  } else if (isFirstVisit && plan) {
-    // Seed attempt happened (even if zero matched) — stamp so accrual starts
-    const { error: stampErr } = await db.from('networking_plans').update({ last_sourced_at: new Date().toISOString() }).eq('id', plan.id)
-    if (stampErr) console.error('[picks] first-visit stamp failed:', stampErr.message)
   }
+  // (No paused-first-visit stamp: stamping without a seed attempt consumed the
+  // day-claim and blocked a same-day unpause from ever seeding. The claim
+  // itself is the stamp now — audit finding, 2026-07-10.)
 
   // Warm paths for display
   const { data: network } = await db
@@ -286,12 +318,21 @@ async function mintPicks(
   const prefs = profilePrefs(profile)
   const exclude = new Set(excludeAlumniIds)
 
-  // Everything the student has already acted on (any queue row, swipes, network)
-  const [{ data: priorQueue }, { data: swipes }, { data: net }] = await Promise.all([
+  // Everything the student has already acted on (any queue row, swipes, network).
+  // Fail closed: a failed exclude read could re-suggest someone the student
+  // skipped or already messaged — return nothing and let the caller release
+  // the day-claim instead.
+  const [pq, sw, nw] = await Promise.all([
     db.from('outreach_queue').select('alumni_id').eq('user_id', userId),
     db.from('alumni_swipes').select('alumni_id').eq('user_id', userId),
     db.from('user_networks').select('alumni_id, status').eq('user_id', userId),
   ])
+  const exclErr = pq.error ?? sw.error ?? nw.error
+  if (exclErr) {
+    console.error('[picks] exclude-set read failed:', exclErr.message)
+    return []
+  }
+  const priorQueue = pq.data, swipes = sw.data, net = nw.data
   for (const r of priorQueue ?? []) exclude.add(r.alumni_id as string)
   for (const r of swipes ?? []) exclude.add(r.alumni_id as string)
   const proposedIds: string[] = []
@@ -316,12 +357,14 @@ async function mintPicks(
     const targetIndustries = deriveTargetDbIndustries(prefs.industries)
     let pool: Alumni[] = []
     if (targetIndustries.length) {
-      const { data } = await db.from('alumni').select(ALUMNI_COLS).eq('is_public', true).in('industry', targetIndustries).limit(1000)
+      const { data, error } = await db.from('alumni').select(ALUMNI_COLS).eq('is_public', true).in('industry', targetIndustries).limit(1000)
+      if (error) console.error('[picks] industry pool read failed:', error.message)
       pool = (data ?? []) as Alumni[]
     }
     if (pool.length < 50) {
-      const { data } = await db.from('alumni').select(ALUMNI_COLS).eq('is_public', true)
+      const { data, error } = await db.from('alumni').select(ALUMNI_COLS).eq('is_public', true)
         .order('prestige_score', { ascending: false, nullsFirst: false }).limit(400)
+      if (error) console.error('[picks] prestige pool read failed:', error.message)
       pool = pool.concat(((data ?? []) as Alumni[]).filter(a => !pool.some(p => p.id === a.id)))
     }
     const candidates = pool.filter(a => !exclude.has(a.id))
@@ -356,6 +399,7 @@ async function mintPicks(
     if (chosen.length < grant && profile.sport) {
       for (const s of scored) {
         if (chosen.length >= grant) break
+        if (exclude.has(s.a.id)) continue // incl. anything tier 1+2 already chose
         if (s.a.sport && s.a.sport.toLowerCase() === String(profile.sport).toLowerCase()) {
           chosen.push(s.a); exclude.add(s.a.id)
         }
@@ -364,6 +408,7 @@ async function mintPicks(
     // Tier 4 — absolute floor: top-scored remainder
     for (const s of scored) {
       if (chosen.length >= grant) break
+      if (exclude.has(s.a.id)) continue
       chosen.push(s.a); exclude.add(s.a.id)
     }
   }

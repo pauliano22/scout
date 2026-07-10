@@ -66,13 +66,16 @@ export async function POST(request: Request) {
     })
     // Write only if still empty — a concurrent tap may have generated first;
     // serve whichever draft landed rather than overwriting it.
-    const { data: wrote } = await auth.db
+    const { data: wrote, error: writeErr } = await auth.db
       .from('outreach_queue')
       .update({ draft_body: draft })
       .eq('id', row.id)
       .eq('draft_body', '')
       .select('id')
-    if (!wrote?.length) {
+    // Persistence failure ≠ lost race: log it (the draft is still served, but
+    // every re-open regenerates at LLM cost until the write lands).
+    if (writeErr) console.error('[picks/draft] write-back failed:', writeErr.message)
+    if (!writeErr && !wrote?.length) {
       const { data: existing } = await auth.db
         .from('outreach_queue').select('draft_body').eq('id', row.id).single()
       const stored = (existing?.draft_body as string | undefined)?.trim()

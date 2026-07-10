@@ -66,6 +66,7 @@ export async function sourceAlumni(
     grad_year_max: null,
     match_count: VECTOR_TOP_K,
   })
+  if (error) console.error('[sourceAlumni] match_alumni_semantic rpc failed:', error.message)
   if (error || !data) return []
 
   const targetLocations = opts.prefs.locations ?? []

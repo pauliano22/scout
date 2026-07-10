@@ -26,15 +26,19 @@ export async function PATCH(request: Request) {
     profileUpdate.geography_preference = city ? 'city' : 'doesnt_matter'
   }
   try {
+    // supabase-js never throws — the surrounding try/catch is dead for these
+    // unless we check the results ourselves.
     if (Object.keys(profileUpdate).length) {
-      await auth.db.from('profiles').update(profileUpdate).eq('id', auth.userId)
+      const { error } = await auth.db.from('profiles').update(profileUpdate).eq('id', auth.userId)
+      if (error) throw new Error(`profile update failed: ${error.message}`)
     }
 
     if (typeof body.paused === 'boolean') {
-      await auth.db.from('networking_plans')
+      const { error } = await auth.db.from('networking_plans')
         .update({ sourcing_enabled: !body.paused })
         .eq('user_id', auth.userId)
         .eq('is_active', true)
+      if (error) throw new Error(`pause update failed: ${error.message}`)
     }
 
     await ensureAgentState(auth.db, auth.userId)

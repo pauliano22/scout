@@ -32,7 +32,10 @@ export async function resolveRequestUser(request: Request | NextRequest): Promis
 
   if (token) {
     const service = serviceClient()
-    const { data: { user } } = await service.auth.getUser(token)
+    const { data: { user }, error } = await service.auth.getUser(token)
+    // Transient GoTrue failures land here too (supabase-js never throws) —
+    // log them so an auth outage doesn't masquerade as a wave of bad tokens.
+    if (error) console.warn('[auth] bearer getUser failed:', error.message)
     return user ? { userId: user.id, db: service } : null
   }
 
@@ -42,6 +45,7 @@ export async function resolveRequestUser(request: Request | NextRequest): Promis
   // RLS client here silently no-ops the picks engine. Every consumer of this
   // helper scopes every query by the returned userId.
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
+  if (error) console.warn('[auth] cookie getUser failed:', error.message)
   return user ? { userId: user.id, db: serviceClient() } : null
 }

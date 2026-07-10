@@ -44,12 +44,15 @@ export async function applyCampaignGoal(
     updated_at: new Date().toISOString(),
   }
 
-  const { data: existing } = await supabase
+  const { data: existing, error: readErr } = await supabase
     .from('networking_plans')
     .select('id')
     .eq('user_id', userId)
     .eq('is_active', true)
     .maybeSingle()
+  // A failed read must not fall through to the insert branch — that mints a
+  // second active plan (duplicate-mutex corruption; audit 2026-07-10).
+  if (readErr) throw new Error(`plan read failed: ${readErr.message}`)
 
   let planId: string
   if (existing) {
@@ -123,12 +126,18 @@ export function deriveGoalFromProfile(profile: ProfileSlice): CampaignGoal | nul
  * goal fills in the moment a field arrives.
  */
 export async function ensureAgentState(supabase: SupabaseClient, userId: string): Promise<string | null> {
-  const { data: existing } = await supabase
+  const { data: existing, error: existErr } = await supabase
     .from('networking_plans')
     .select('id, deadline')
     .eq('user_id', userId)
     .eq('is_active', true)
     .maybeSingle()
+  // On a failed read, bail without creating anything — a second active plan
+  // is a fresh mint-mutex (audit 2026-07-10).
+  if (existErr) {
+    console.error('[agentState] plan read failed:', existErr.message)
+    return null
+  }
   if (existing?.deadline) return existing.id
 
   const { data: profile } = await supabase
@@ -145,10 +154,11 @@ export async function ensureAgentState(supabase: SupabaseClient, userId: string)
   }
 
   if (existing) return existing.id
-  const { data: created } = await supabase
+  const { data: created, error: createErr } = await supabase
     .from('networking_plans')
     .insert({ user_id: userId, title: 'Scout picks', is_active: true, campaign_status: 'active', sourcing_enabled: true })
     .select('id')
     .single()
+  if (createErr) console.error('[agentState] plan insert failed:', createErr.message)
   return created?.id ?? null
 }

@@ -48,10 +48,11 @@ export async function POST(request: NextRequest) {
     if (!data) return NextResponse.json({ error: 'Not found or already approved' }, { status: 404 })
     // Record the cross-user cap contact event at ADD-TO-OUTREACH (the send proxy):
     // the alum now counts toward the per-alum ceiling. Idempotent per (alum, user).
-    await sb.from('alumni_outreach_ledger').upsert(
+    const { error: ledgerErr } = await sb.from('alumni_outreach_ledger').upsert(
       { alumni_id: data.alumni_id, user_id: user.id },
       { onConflict: 'alumni_id,user_id', ignoreDuplicates: true },
     )
+    if (ledgerErr) console.error('today/approve: ledger upsert failed (cap may leak)', { alumni_id: data.alumni_id, user_id: user.id, error: ledgerErr.message })
     return NextResponse.json({ ok: true, approved: data.id })
   }
 
@@ -108,16 +109,19 @@ export async function POST(request: NextRequest) {
       sent_via: sentVia ?? (q.channel === 'email' ? 'email' : 'linkedin'),
     })
     if (msgErr) console.error('today/approve: messages insert failed', msgErr)
-    // 3. advance the connection
-    await sb.from('user_networks')
+    // 3. advance the connection — a silent failure here diverges the Network
+    // board from the queue (row stays 'interested' after a real send)
+    const { error: netErr } = await sb.from('user_networks')
       .update({ status: 'awaiting_reply', contacted: true, contacted_at: nowIso })
       .eq('user_id', user.id)
       .eq('alumni_id', q.alumni_id)
+    if (netErr) console.error('today/approve: user_networks advance failed', netErr.message)
     // 4. record the cross-user contact event (cap counts distinct students per alum)
-    await sb.from('alumni_outreach_ledger').upsert(
+    const { error: ledgerErr } = await sb.from('alumni_outreach_ledger').upsert(
       { alumni_id: q.alumni_id, user_id: user.id },
       { onConflict: 'alumni_id,user_id', ignoreDuplicates: true },
     )
+    if (ledgerErr) console.error('today/approve: ledger upsert failed (cap may leak)', { alumni_id: q.alumni_id, user_id: user.id, error: ledgerErr.message })
     return NextResponse.json({ ok: true, sent: queueId })
   }
 

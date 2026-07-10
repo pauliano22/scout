@@ -10,6 +10,7 @@ import { NextResponse } from 'next/server'
 import { resolveRequestUser } from '@/lib/requestAuth'
 import { rankActions, type SuggestedAction } from '@scout/shared/agent/nextBestAction'
 import { assembleConnections } from '@/lib/agent/assembleQueue'
+import { materializePicks, ALUMNI_COLS } from '@/lib/agent/dailyPicks'
 import type { Alumni } from '@scout/shared/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -21,6 +22,17 @@ export async function GET(request: Request) {
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { userId, db: supabase } = auth
   const user = { id: userId }
+
+  // Run the daily-picks accrual before assembling the payload. The mobile
+  // client only ever calls this route (never /api/picks), so without this a
+  // phone-only student never accrues picks — the queue read below just
+  // re-serves whatever an old web visit minted. Lazy + idempotent; failure
+  // must not take down the campaign screen.
+  try {
+    await materializePicks(supabase, user.id)
+  } catch (e: any) {
+    console.warn('[campaign] picks materialization failed:', e?.message ?? e)
+  }
 
   // ── Proposed shelf + waiting, via the shared assembly (the gate lives here) ─
   let assembled
@@ -41,9 +53,11 @@ export async function GET(request: Request) {
   // ── Ready-to-send: cron-prepared drafts awaiting the student's send ─────────
   let ready: any[] = []
   try {
+    // Explicit columns — alumni(*) would drag the pgvector embedding along
+    // (1536 floats/row; see the warning on ALUMNI_COLS).
     const { data: rows } = await supabase
       .from('outreach_queue')
-      .select('id, alumni_id, channel, message_type, draft_body, why, status, created_at, alumni:alumni(*)')
+      .select(`id, alumni_id, channel, message_type, draft_body, why, status, created_at, alumni:alumni(${ALUMNI_COLS})`)
       .eq('user_id', user.id)
       .eq('status', 'queued_for_approval')
       .order('created_at', { ascending: true })

@@ -26,6 +26,10 @@ export const SEED_PICKS = 3
 // 3 cards max: enough to act on without feeling like a queue to clear.
 // (Was 5; lowered 2026-07 — founders felt 5 read as homework.)
 export const CARD_CAP = 3
+// Unactioned picks rotate out after this many days. Without a TTL, a full
+// shelf blocks new mints forever and the home shows the same stale cards on
+// every visit — found live 2026-07-09 (5 cards from Jun 30, nothing new since).
+export const PICK_TTL_DAYS = 7
 const MS_PER_DAY = 86_400_000
 
 export interface PickCard {
@@ -121,6 +125,15 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     .order('created_at', { ascending: true })
   if (qErr) console.error('[picks] queue select error:', qErr.message)
   let pending = (queueRows ?? []).filter(r => r.alumni)
+
+  // Rotation: picks the student never acted on go stale — expire them quietly
+  // so fresh suggestions can mint. Same silent-dismiss path as the cap.
+  const ttlCutoff = Date.now() - PICK_TTL_DAYS * MS_PER_DAY
+  const stale = pending.filter(r => new Date(r.created_at as string).getTime() < ttlCutoff)
+  if (stale.length) {
+    await db.from('outreach_queue').update({ status: 'dismissed' }).in('id', stale.map(r => r.id))
+    pending = pending.filter(r => new Date(r.created_at as string).getTime() >= ttlCutoff)
+  }
 
   // Cap: oldest beyond CARD_CAP expire (dismissed quietly, not counted as a skip)
   while (pending.length > CARD_CAP) {

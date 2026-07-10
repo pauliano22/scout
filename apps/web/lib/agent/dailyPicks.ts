@@ -155,14 +155,16 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
   const ttlCutoff = Date.now() - PICK_TTL_DAYS * MS_PER_DAY
   const stale = pending.filter(r => new Date(r.created_at as string).getTime() < ttlCutoff)
   if (stale.length) {
-    await db.from('outreach_queue').update({ status: 'dismissed' }).in('id', stale.map(r => r.id))
-    pending = pending.filter(r => new Date(r.created_at as string).getTime() >= ttlCutoff)
+    const { error: ttlErr } = await db.from('outreach_queue').update({ status: 'dismissed' }).in('id', stale.map(r => r.id))
+    if (ttlErr) console.error('[picks] TTL dismiss failed:', ttlErr.message)
+    else pending = pending.filter(r => new Date(r.created_at as string).getTime() >= ttlCutoff)
   }
 
   // Cap: oldest beyond CARD_CAP expire (dismissed quietly, not counted as a skip)
   while (pending.length > CARD_CAP) {
     const oldest = pending.shift()!
-    await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
+    const { error: capErr } = await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
+    if (capErr) console.error('[picks] cap dismiss failed:', capErr.message)
   }
 
   // Accrual: ever-materialized? (any intro row, any status, or last_sourced_at set)
@@ -198,23 +200,34 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     // so of two concurrent requests (double-tap, two tabs, web+mobile) exactly
     // one wins; the loser serves the existing shelf untouched. Without this,
     // both would rotate AND both would mint — cap violations on launch day.
-    const { data: claimed } = await db
+    //
+    // NEVER use .or() on an UPDATE here: this PostgREST deployment 400s on
+    // update+or with a phantom "column does not exist" error (reproduced
+    // 2026-07-10 — it silently blocked every daily mint for a day). Plain
+    // filters work; branch on the value we just read. Still race-safe: the
+    // first writer flips the condition false for the loser either way.
+    let claimQuery = db
       .from('networking_plans')
       .update({ last_sourced_at: new Date().toISOString() })
       .eq('id', plan.id)
-      .or(`last_sourced_at.is.null,last_sourced_at.lt.${etMidnightIso()}`)
-      .select('id')
+    claimQuery = plan.last_sourced_at == null
+      ? claimQuery.is('last_sourced_at', null)
+      : claimQuery.lt('last_sourced_at', etMidnightIso())
+    const { data: claimed, error: claimErr } = await claimQuery.select('id')
+    if (claimErr) console.error('[picks] day-claim failed:', claimErr.message)
     if (claimed && claimed.length > 0) {
       if (rotateOldest) {
         const oldest = pending.shift()!
-        await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
+        const { error: rotErr } = await db.from('outreach_queue').update({ status: 'dismissed' }).eq('id', oldest.id)
+        if (rotErr) console.error('[picks] rotation dismiss failed:', rotErr.message)
       }
       const minted = await mintPicks(db, userId, plan.id, profile, pending.map(r => r.alumni_id as string), grant)
       pending = pending.concat(minted)
     }
   } else if (isFirstVisit && plan) {
     // Seed attempt happened (even if zero matched) — stamp so accrual starts
-    await db.from('networking_plans').update({ last_sourced_at: new Date().toISOString() }).eq('id', plan.id)
+    const { error: stampErr } = await db.from('networking_plans').update({ last_sourced_at: new Date().toISOString() }).eq('id', plan.id)
+    if (stampErr) console.error('[picks] first-visit stamp failed:', stampErr.message)
   }
 
   // Warm paths for display

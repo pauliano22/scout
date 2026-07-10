@@ -242,7 +242,7 @@ export default function DiscoverClient({
       {actionError && (
         <button
           onClick={() => setActionError(null)}
-          className="mb-4 w-full text-left rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-500"
+          className="mb-4 w-full text-left rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-500"
         >
           {actionError}
         </button>
@@ -257,7 +257,7 @@ export default function DiscoverClient({
             placeholder="Search alumni"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-3.5 pl-11 pr-10 text-sm bg-[--bg-secondary] border border-[--border-primary] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
+            className="w-full py-3.5 pl-11 pr-10 text-sm bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl focus:border-[--border-secondary] focus:outline-none transition-colors"
             autoFocus
           />
           {isSearching ? (
@@ -279,10 +279,10 @@ export default function DiscoverClient({
             <button
               key={industry}
               onClick={() => setIndustryFilter(industry)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                 industryFilter === industry
                   ? 'bg-[--school-primary] text-white'
-                  : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
+                  : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] shadow-[var(--shadow-soft)]'
               }`}
             >
               {industry}
@@ -296,7 +296,7 @@ export default function DiscoverClient({
           {userSport && (
             <button
               onClick={handleMySportFilter}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors flex items-center gap-1 ${
                 sportFilter === userSport
                   ? 'bg-[--school-primary] text-white'
                   : 'bg-[--bg-secondary] text-[--school-primary] hover:bg-[--bg-tertiary] border border-[--school-primary]/50'
@@ -312,10 +312,10 @@ export default function DiscoverClient({
             <select
               value={sportFilter || ''}
               onChange={(e) => setSportFilter(e.target.value || null)}
-              className={`px-3 py-1.5 pr-7 rounded-lg text-xs font-medium transition-colors cursor-pointer appearance-none ${
+              className={`px-3 py-1.5 pr-7 rounded-xl text-xs font-medium transition-colors cursor-pointer appearance-none ${
                 sportFilter && sportFilter !== userSport
                   ? 'bg-[--school-primary] text-white'
-                  : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary]'
+                  : 'bg-[--bg-secondary] text-[--text-secondary] hover:bg-[--bg-tertiary] shadow-[var(--shadow-soft)]'
               }`}
             >
               <option value="">All Sports</option>
@@ -339,7 +339,7 @@ export default function DiscoverClient({
               placeholder="Location"
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-              className={`pl-7 pr-6 py-1.5 rounded-lg text-xs font-medium transition-colors border focus:outline-none w-28 focus:w-36 ${
+              className={`pl-7 pr-6 py-1.5 rounded-xl text-xs font-medium transition-colors border focus:outline-none w-28 focus:w-36 ${
                 locationFilter
                   ? 'bg-[--school-primary] text-white border-[--school-primary] placeholder-white/60'
                   : 'bg-[--bg-secondary] text-[--text-secondary] border-[--border-primary] hover:bg-[--bg-tertiary]'

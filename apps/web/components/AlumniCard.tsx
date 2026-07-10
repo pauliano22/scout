@@ -11,15 +11,15 @@ import { cleanField } from '@/lib/cleanField'
 const INTENT_BADGES: Record<string, { label: string; className: string }> = {
   here_to_help: {
     label: 'Here to help',
-    className: 'bg-green-500/10 text-green-700 dark:text-green-500',
+    className: 'bg-[--bg-tertiary] text-[--text-secondary]',
   },
   seeking_employment: {
     label: 'Open to opportunities',
-    className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+    className: 'bg-[--bg-tertiary] text-[--text-secondary]',
   },
   both: {
     label: 'Here to help · Also looking',
-    className: 'bg-green-500/10 text-green-700 dark:text-green-500',
+    className: 'bg-[--bg-tertiary] text-[--text-secondary]',
   },
 }
 
@@ -82,7 +82,7 @@ export default function AlumniCard({
           : null
         if (!badge) return null
         return (
-          <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${badge.className}`}>
             {badge.label}
           </span>
         )
@@ -106,7 +106,7 @@ export default function AlumniCard({
       </div>
 
       {warmNote && (
-        <p className="text-[11px] font-semibold text-green-700 dark:text-green-500 leading-snug">
+        <p className="text-xs font-semibold text-[--text-secondary] leading-snug">
           {warmNote}
         </p>
       )}

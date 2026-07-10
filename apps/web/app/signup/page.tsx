@@ -121,15 +121,7 @@ function SignupForm() {
 
           <ScoutLogo size="lg" className="justify-center mb-10" />
 
-          <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
-            {/* Cornell 'C' watermark */}
-            <div
-              className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
-              aria-hidden="true"
-            >
-              C
-            </div>
-
+          <div className="relative p-2 sm:p-4">
             <div className="relative z-10">
             <h1 className="text-xl font-semibold text-center mb-8">How do you want to join?</h1>
 
@@ -137,7 +129,7 @@ function SignupForm() {
               <button
                 type="button"
                 onClick={() => setRole('student')}
-                className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
+                className="w-full text-left bg-[--bg-secondary] hover:bg-[--bg-tertiary] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elevated)] transition rounded-2xl p-5 flex items-start gap-4 group"
               >
                 <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
                   <GraduationCap size={20} className="text-[--school-primary]" />
@@ -154,7 +146,7 @@ function SignupForm() {
               <button
                 type="button"
                 onClick={() => setRole('alumni')}
-                className="w-full text-left bg-[--bg-primary] hover:bg-[--bg-tertiary] border border-[--border-primary] hover:border-[--school-primary] transition rounded-xl p-5 flex items-start gap-4 group"
+                className="w-full text-left bg-[--bg-secondary] hover:bg-[--bg-tertiary] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elevated)] transition rounded-2xl p-5 flex items-start gap-4 group"
               >
                 <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
                   <Briefcase size={20} className="text-[--school-primary]" />
@@ -191,7 +183,7 @@ function SignupForm() {
 
         <ScoutLogo size="lg" className="justify-center mb-10" />
 
-        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+        <div className="relative bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-8 overflow-hidden">
           {/* Cornell 'C' watermark */}
           <div
             className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
@@ -216,7 +208,7 @@ function SignupForm() {
 
           <form onSubmit={handleSignup} className="space-y-4">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm">
                 {error}
               </div>
             )}

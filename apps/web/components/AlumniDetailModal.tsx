@@ -134,11 +134,11 @@ export default function AlumniDetailModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal — sheet on mobile, centered card on desktop */}
-      <div className="relative bg-[--bg-primary] border border-[--border-primary] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-hidden animate-scale-in">
+      <div className="relative bg-[--bg-primary] shadow-[var(--shadow-soft)] rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] overflow-hidden animate-scale-in">
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-[--text-quaternary] hover:text-[--text-primary] hover:bg-[--bg-tertiary] rounded-lg transition-colors z-10"
+          className="absolute top-4 right-4 p-1.5 text-[--text-quaternary] hover:text-[--text-primary] hover:bg-[--bg-tertiary] rounded-xl transition-colors z-10"
         >
           <X size={18} />
         </button>
@@ -197,7 +197,7 @@ export default function AlumniDetailModal({
 
                 {/* Engagement intent */}
                 {alumni.engagement_intent && INTENT_LABELS[alumni.engagement_intent] && (
-                  <p className="mt-2 text-xs font-medium text-green-700 dark:text-green-500">
+                  <p className="mt-2 text-xs font-medium text-[--text-secondary]">
                     {INTENT_LABELS[alumni.engagement_intent]}
                   </p>
                 )}
@@ -208,7 +208,7 @@ export default function AlumniDetailModal({
           {/* Warm path — your way in through someone you already saved */}
           {warm && (
             <div className="px-6 pb-3">
-              <div className="flex items-start gap-2 text-xs bg-[--school-primary]/8 border border-[--school-primary]/20 rounded-lg px-3 py-2.5">
+              <div className="flex items-start gap-2 text-xs bg-[--school-primary]/8 border border-[--school-primary]/20 rounded-xl px-3 py-2.5">
                 <Users size={14} className="text-[--school-primary] flex-shrink-0 mt-0.5" />
                 <span className="text-[--text-secondary] leading-snug">
                   <span className="font-semibold text-[--text-primary]">{warm.topName}</span>
@@ -295,23 +295,23 @@ export default function AlumniDetailModal({
                 value={flagReason}
                 onChange={(e) => setFlagReason(e.target.value)}
                 placeholder="What's wrong with this profile?"
-                className="w-full text-xs p-2.5 rounded-lg bg-[--bg-primary] border border-[--border-primary] resize-none min-h-[70px] focus:outline-none focus:border-red-400"
+                className="w-full text-xs p-2.5 rounded-xl bg-[--bg-primary] shadow-[var(--shadow-soft)] resize-none min-h-[70px] focus:outline-none focus:border-red-400"
                 autoFocus
               />
               {flagError && (
-                <p className="text-[10px] text-red-400 mt-1">{flagError}</p>
+                <p className="text-xs text-red-400 mt-1">{flagError}</p>
               )}
               <div className="flex gap-2 mt-2">
                 <button
                   onClick={handleFlag}
                   disabled={flagLoading || flagReason.trim().length < 5}
-                  className="flex-1 text-xs py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-500 disabled:opacity-40 transition-colors"
+                  className="flex-1 text-xs py-1.5 rounded-xl bg-[--school-primary] text-white hover:bg-[--school-primary-hover] disabled:opacity-40 transition-colors"
                 >
                   {flagLoading ? 'Submitting...' : 'Submit Report'}
                 </button>
                 <button
                   onClick={() => { setShowFlagForm(false); setFlagError('') }}
-                  className="text-xs py-1.5 px-3 rounded-lg bg-[--bg-tertiary] text-[--text-tertiary] hover:text-[--text-secondary] transition-colors"
+                  className="text-xs py-1.5 px-3 rounded-xl bg-[--bg-tertiary] text-[--text-tertiary] hover:text-[--text-secondary] transition-colors"
                 >
                   Cancel
                 </button>
@@ -320,7 +320,7 @@ export default function AlumniDetailModal({
           )}
 
           {flagSubmitted && (
-            <p className="text-[11px] text-emerald-500 px-6 pb-4">Flag submitted — thanks for helping keep Scout accurate</p>
+            <p className="text-xs text-[--text-secondary] px-6 pb-4">Flag submitted — thanks for helping keep Scout accurate</p>
           )}
 
           {/* Career: headline, bio, work history (the full-profile expand) */}
@@ -376,7 +376,7 @@ export default function AlumniDetailModal({
                     <button
                       key={similar.id}
                       onClick={() => onSelectAlumni?.(similar)}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] transition-colors text-left group"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-[--bg-secondary] hover:bg-[--bg-tertiary] shadow-[var(--shadow-soft)] transition-colors text-left group"
                     >
                       <SportAvatar
                         name={similar.full_name}
@@ -390,7 +390,7 @@ export default function AlumniDetailModal({
                             {similar.full_name}
                           </span>
                           {networkIds.has(similar.id) && (
-                            <span className="text-xs text-emerald-400 flex-shrink-0">· Connected</span>
+                            <span className="text-xs text-[--text-secondary] flex-shrink-0">· Connected</span>
                           )}
                         </div>
                         <p className="text-xs text-[--text-tertiary] truncate">

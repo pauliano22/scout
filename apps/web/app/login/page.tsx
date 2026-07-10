@@ -72,7 +72,7 @@ export default function LoginPage() {
         <ScoutLogo size="lg" className="justify-center mb-10" />
 
         {/* Login Card */}
-        <div className="relative bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 overflow-hidden">
+        <div className="relative bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-8 overflow-hidden">
           {/* Cornell 'C' watermark */}
           <div
             className="absolute -bottom-4 -right-4 text-[--accent-warm-muted] select-none pointer-events-none text-[100px] font-bold leading-none opacity-30"
@@ -89,7 +89,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-red-400 text-sm">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm">
                 {error}
               </div>
             )}

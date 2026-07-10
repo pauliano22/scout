@@ -51,7 +51,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
   const navLink = (href: string, icon: React.ReactNode, label: string, count?: number) => (
     <Link
       href={href}
-      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
         isActive(href)
           ? 'bg-[--bg-tertiary] text-[--text-primary]'
           : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'
@@ -93,7 +93,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
                 {/* Profile is the alumni's primary surface */}
                 <Link
                   href="/profile"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
                     isActive('/profile')
                       ? 'bg-[--school-primary] text-white'
                       : 'text-[--school-primary] hover:bg-[--school-primary]/8'
@@ -110,7 +110,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
               <>
                 <Link
                   href={studentHome}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
                     isActive(studentHome)
                       ? 'bg-[--school-primary] text-white'
                       : 'text-[--school-primary] hover:bg-[--school-primary]/8'
@@ -131,7 +131,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
               <>
                 <Link
                   href="/admin"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                     pathname?.startsWith('/admin')
                       ? 'bg-[--bg-tertiary] text-[--text-primary]'
                       : 'text-[--text-secondary] hover:text-[--text-primary] hover:bg-[--bg-tertiary]'

@@ -78,7 +78,7 @@ export default function HomePage() {
 
             {/* Subheading */}
             <p className="text-lg md:text-xl text-[--text-secondary] max-w-xl mx-auto mb-10 leading-relaxed">
-              Connect with 18,000+ Cornell athlete alumni across every industry.
+              Connect with 16,000+ Cornell athlete alumni across every industry.
               Find mentors, land interviews, build your career.
             </p>
 
@@ -119,21 +119,21 @@ export default function HomePage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
+              <div className="bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
                 <p className="text-xs font-medium tracking-widest uppercase text-[--school-primary] mb-4">01</p>
                 <h3 className="text-lg font-semibold mb-3 tracking-tight">Discover</h3>
                 <p className="text-sm text-[--text-secondary] leading-relaxed">
                   Search 55 years of Cornell athlete alumni by industry, company, sport, or graduation year.
                 </p>
               </div>
-              <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
+              <div className="bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
                 <p className="text-xs font-medium tracking-widest uppercase text-[--school-primary] mb-4">02</p>
                 <h3 className="text-lg font-semibold mb-3 tracking-tight">Connect</h3>
                 <p className="text-sm text-[--text-secondary] leading-relaxed">
                   Draft outreach in seconds that leads with what you and the alum actually share.
                 </p>
               </div>
-              <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
+              <div className="bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-8 transition-colors hover:bg-[--bg-tertiary]">
                 <p className="text-xs font-medium tracking-widest uppercase text-[--school-primary] mb-4">03</p>
                 <h3 className="text-lg font-semibold mb-3 tracking-tight">Track</h3>
                 <p className="text-sm text-[--text-secondary] leading-relaxed">

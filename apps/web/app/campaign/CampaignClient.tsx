@@ -251,9 +251,18 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         </button>
       </div>
       <p className="text-sm text-[--text-tertiary] mt-2 leading-relaxed">
-        {data.picks.length > 0
-          ? `${data.picks.length} ${data.picks.length === 1 ? 'alum' : 'alumni'} your agent chose today`
-          : 'Your agent’s picks'}
+        {(() => {
+          // Count "today" the way the engine does — by Ithaca calendar day —
+          // so the header never claims carried-over cards were chosen today.
+          const etDay = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: 'America/New_York' })
+          const today = etDay(new Date())
+          const fresh = data.picks.filter(p => etDay(new Date(p.createdAt)) === today).length
+          const held = data.picks.length - fresh
+          if (data.picks.length === 0) return 'Your agent’s picks'
+          if (fresh === 0) return `${data.picks.length} ${data.picks.length === 1 ? 'pick' : 'picks'} waiting — fresh ones land tomorrow`
+          const freshBit = `${fresh} new ${fresh === 1 ? 'pick' : 'picks'} today`
+          return held > 0 ? `${freshBit}, ${held} carried over` : freshBit
+        })()}
         {data.coverage != null && data.field ? `, from ${data.coverage.toLocaleString()} ${data.field} alumni` : ''}
         . Everything you need to reach out, right here.
       </p>

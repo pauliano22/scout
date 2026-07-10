@@ -1,10 +1,11 @@
 'use client'
 
-// Home = today's picks. The agent chooses 3-5 alumni (accrued between logins,
-// 1/day), each with a one-line why and a draft that writes itself on first
-// open. Actions: send (through the ledger-writing approve gate), edit, skip
-// (feeds matching). No campaign form exists — targeting lives in a quiet
-// preferences sheet; goal/pacing are internal agent state.
+// Home = today's picks. The agent refreshes the shelf every new day (up to
+// CARD_CAP cards; oldest rotates when full), each with a one-line why and a
+// draft that writes itself on first open. Actions: send (through the
+// ledger-writing approve gate), edit, save, skip (feeds matching). No campaign
+// form exists — targeting lives in a quiet preferences sheet; goal/pacing are
+// internal agent state.
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Briefcase, Linkedin } from 'lucide-react'
@@ -13,6 +14,7 @@ import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import OnboardingProgressBar from '@/components/OnboardingProgressBar'
 import { createClient } from '@/lib/supabase/client'
+import { trackEvent } from '@/lib/track'
 import { CORPUS_INDUSTRIES } from '@/lib/campaign/industries'
 import type { Alumni, Profile, UserNetwork } from '@scout/shared/types/database'
 
@@ -103,6 +105,15 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       const payload = (await res.json()) as PicksPayload
       setData(payload)
       setError(null)
+      // The daily-loop health metric: how many cards were on the shelf, how
+      // many were fresh today, and whether one is about to rotate.
+      const dayMs = 86_400_000
+      trackEvent('picks_viewed', {
+        count: payload.picks.length,
+        fresh_today: payload.picks.filter(p => Date.now() - new Date(p.createdAt).getTime() < dayMs).length,
+        rotating_tomorrow: payload.picks.some(p => p.rotatesTomorrow),
+        paused: payload.paused,
+      })
       if (!cityInit.current) {
         cityInit.current = true
         setCityDraft((profile.preferred_locations?.[0] as string) ?? '')
@@ -125,7 +136,10 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
         body: JSON.stringify({ queueId: pick.queueId }),
       })
       const body = await res.json()
-      if (res.ok) setSendPick({ pick, draft: body.draft ?? '', channel: body.channel ?? 'linkedin' })
+      if (res.ok) {
+        setSendPick({ pick, draft: body.draft ?? '', channel: body.channel ?? 'linkedin' })
+        trackEvent('pick_draft_opened', { queue_id: pick.queueId, alumni_id: pick.alumnus.id, draft_was_ready: pick.draftReady })
+      }
     } finally {
       setBusy(null)
     }
@@ -141,6 +155,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     })
     if (res.ok) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== sendPick.pick.queueId) } : d))
+      trackEvent('pick_sent', { queue_id: sendPick.pick.queueId, alumni_id: sendPick.pick.alumnus.id, sent_via: sentVia })
     }
   }
 
@@ -151,7 +166,10 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ queueId: pick.queueId, action: 'save' }),
     })
-    if (res.ok) setSaved(s => new Set(s).add(pick.queueId))
+    if (res.ok) {
+      setSaved(s => new Set(s).add(pick.queueId))
+      trackEvent('pick_saved', { queue_id: pick.queueId, alumni_id: pick.alumnus.id })
+    }
     setBusy(null)
   }
 
@@ -162,7 +180,10 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ queueId: pick.queueId, action: 'skip' }),
     })
-    if (res.ok) setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== pick.queueId) } : d))
+    if (res.ok) {
+      setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== pick.queueId) } : d))
+      trackEvent('pick_skipped', { queue_id: pick.queueId, alumni_id: pick.alumnus.id })
+    }
     setBusy(null)
   }
 

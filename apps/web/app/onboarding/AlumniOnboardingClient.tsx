@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout'
 import { useRouter } from 'next/navigation'
 import Link from '@/components/Link'
 import { ArrowRight, ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react'
@@ -189,7 +190,7 @@ export default function AlumniOnboardingClient({
 
     setIsSubmitting(true)
     try {
-      const res = await fetch('/api/alumni/claim', {
+      const res = await fetchWithTimeout('/api/alumni/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -264,7 +265,7 @@ export default function AlumniOnboardingClient({
           </h1>
           <p className="text-lg text-[--text-secondary] leading-relaxed">
             Scout helps current Cornell athletes connect with alumni for career guidance.
-            We'll see if there's already a starter profile for you on Scout, and let you decide
+            We may already have a profile for you from the athletics directory — you decide
             what's shared.
           </p>
         </div>
@@ -407,7 +408,7 @@ export default function AlumniOnboardingClient({
             <Sparkles size={14} /> POSSIBLE MATCH
           </div>
           <h2 className="text-3xl font-semibold text-[--text-primary] mb-3 leading-tight">
-            We found a possible starter profile for you
+            We think we found your profile
           </h2>
           <p className="text-base text-[--text-tertiary] leading-relaxed">
             Please review it and update anything that looks outdated or incorrect.

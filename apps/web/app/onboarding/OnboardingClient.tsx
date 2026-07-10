@@ -207,7 +207,7 @@ export default function OnboardingClient({ userId, userName, prefill }: Onboardi
 
             <h2 className="text-2xl font-semibold mb-2 relative z-10">Welcome{userName ? `, ${userName.split(' ')[0]}` : ''}!</h2>
             <p className="text-[--text-tertiary] text-sm mb-6 relative z-10">
-              Before we get started, here&apos;s what you should know about Scout.
+              Three things to know about Scout:
             </p>
 
             <div className="space-y-5 mb-8 relative z-10">

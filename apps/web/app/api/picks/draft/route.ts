@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server'
 import { resolveRequestUser } from '@/lib/requestAuth'
 import { draftMessage, type DraftChannel } from '@/lib/agent/draftMessage'
+import { ALUMNI_COLS } from '@/lib/agent/dailyPicks'
 import { mutualNote } from '@/lib/agent/outreach'
 import { warmPathsFor } from '@/lib/alumni-circle'
 import type { Alumni, Profile } from '@scout/shared/types/database'
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
 
   const { data: row } = await auth.db
     .from('outreach_queue')
-    .select('id, draft_body, channel, message_type, alumni:alumni(*)')
+    .select(`id, draft_body, channel, message_type, alumni:alumni(${ALUMNI_COLS})`)
     .eq('id', queueId)
     .eq('user_id', auth.userId)
     .maybeSingle()
@@ -63,7 +64,20 @@ export async function POST(request: Request) {
       channel: row.channel as DraftChannel,
       mutualNote: mutual,
     })
-    await auth.db.from('outreach_queue').update({ draft_body: draft }).eq('id', row.id)
+    // Write only if still empty — a concurrent tap may have generated first;
+    // serve whichever draft landed rather than overwriting it.
+    const { data: wrote } = await auth.db
+      .from('outreach_queue')
+      .update({ draft_body: draft })
+      .eq('id', row.id)
+      .eq('draft_body', '')
+      .select('id')
+    if (!wrote?.length) {
+      const { data: existing } = await auth.db
+        .from('outreach_queue').select('draft_body').eq('id', row.id).single()
+      const stored = (existing?.draft_body as string | undefined)?.trim()
+      if (stored) return NextResponse.json({ draft: stored, channel: row.channel })
+    }
     return NextResponse.json({ draft, channel: row.channel })
   } catch (e: any) {
     console.error('[picks/draft]', e?.message ?? e)

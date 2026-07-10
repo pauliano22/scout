@@ -14,6 +14,7 @@ import MessageModal from '@/components/MessageModal'
 import AlumniDetailModal from '@/components/AlumniDetailModal'
 import OnboardingProgressBar from '@/components/OnboardingProgressBar'
 import { createClient } from '@/lib/supabase/client'
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout'
 import { trackEvent } from '@/lib/track'
 import { CORPUS_INDUSTRIES } from '@/lib/campaign/industries'
 import type { Alumni, Profile, UserNetwork } from '@scout/shared/types/database'
@@ -101,7 +102,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/picks')
+      const res = await fetchWithTimeout('/api/picks', {}, 15_000)
       if (!res.ok) throw new Error(String(res.status))
       const payload = (await res.json()) as PicksPayload
       setData(payload)
@@ -445,7 +446,7 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
                     ))}
                   </div>
                   {exp.length > 3 && (
-                    <button onClick={() => toggleExp(pick.queueId)} className="mt-2.5 text-[13px] font-semibold text-[--school-primary] hover:underline">
+                    <button onClick={() => toggleExp(pick.queueId)} className="mt-1 py-2 inline-block text-[13px] font-semibold text-[--school-primary] hover:underline">
                       {expOpen ? 'Show less ↑' : `Show ${exp.length - 3} more ↓`}
                     </button>
                   )}
@@ -464,11 +465,18 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       </div>
 
       {data.picks.length === 0 && !data.needsField && (
-        <p className="mt-6 text-center text-sm text-[--text-tertiary]">
-          {data.paused
-            ? 'Picks are paused. Resume in Preferences when you’re ready.'
-            : 'All caught up. New picks land tomorrow.'}
-        </p>
+        data.paused ? (
+          <div className="mt-6 text-center">
+            <p className="text-sm text-[--text-tertiary]">Picks are paused.</p>
+            <button onClick={() => patchSettings({ paused: false })} className="btn-primary text-sm mt-3">
+              Resume picks
+            </button>
+          </div>
+        ) : (
+          <p className="mt-6 text-center text-sm text-[--text-tertiary]">
+            All caught up. New picks land tomorrow.
+          </p>
+        )
       )}
 
       {data.picks.length > 0 && !data.paused && (

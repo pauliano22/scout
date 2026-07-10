@@ -282,7 +282,7 @@ export default function NetworkClient({
           <button
             key={tab.key}
             onClick={() => setStatusFilter(tab.key)}
-            className={`relative px-3 pb-2.5 text-sm font-medium transition-colors ${
+            className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
               statusFilter === tab.key
                 ? 'text-[--text-primary]'
                 : 'text-[--text-quaternary] hover:text-[--text-secondary]'

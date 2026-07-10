@@ -6,6 +6,7 @@ import AlumniDetailModal from '@/components/AlumniDetailModal'
 import AlumniCard from '@/components/AlumniCard'
 import { Search, Users, ChevronDown, X, Loader2, MapPin } from 'lucide-react'
 import { trackEvent } from '@/lib/track'
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout'
 import { SPORTS_LIST } from '@/lib/sportUtils'
 
 // Partial Alumni type for discover page (only fields we fetch)
@@ -93,7 +94,7 @@ export default function DiscoverClient({
     params.set('page', String(page))
     params.set('limit', String(ITEMS_PER_PAGE))
 
-    const res = await fetch(`/api/alumni/search?${params.toString()}`)
+    const res = await fetchWithTimeout(`/api/alumni/search?${params.toString()}`, {}, 12_000)
     if (!res.ok) throw new Error('Search failed')
 
     const data = await res.json()
@@ -132,6 +133,8 @@ export default function DiscoverClient({
         }
       } catch (err) {
         console.error('Search error:', err)
+        setActionError('Search didn\u2019t go through \u2014 check your connection and try again.')
+        setTimeout(() => setActionError(null), 6000)
       } finally {
         setIsSearching(false)
       }

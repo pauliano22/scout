@@ -15,7 +15,7 @@ import { scoreAlumnus, deriveTargetDbIndustries, type UserPreferences, type Warm
 import { sourcingConfidence, hasPersonalizationHook, locationMatch } from '@/lib/agent/sourceAlumniGate'
 import { channelForAlumni } from '@/lib/agent/draftMessage'
 import { warmPathsFor } from '@/lib/alumni-circle'
-import { ensureAgentState } from '@/lib/campaign/goal'
+import { ensureAgentState, defaultDeadline, DEFAULT_GOAL_COUNT } from '@/lib/campaign/goal'
 
 // Every alumni column EXCEPT the pgvector embedding (1536 floats/row — selecting
 // it via '*' made each candidate pool ~50MB and took the Supabase instance down
@@ -23,7 +23,9 @@ import { ensureAgentState } from '@/lib/campaign/goal'
 const ALUMNI_COLS = 'id, full_name, email, linkedin_url, sport, graduation_year, company, role, industry, location, avatar_url, photo_url, is_verified, is_public, source, school_id, created_at, updated_at, work_history, skills, education, display_headline, path_summary_stub, current_status_type, bio, advice, share_email_with_students, is_claimed, claimed_at, claim_source, claimed_by_user_id, profile_reviewed_by_alumni, engagement_intent, prestige_score'
 
 export const SEED_PICKS = 3
-export const CARD_CAP = 5
+// 3 cards max: enough to act on without feeling like a queue to clear.
+// (Was 5; lowered 2026-07 — founders felt 5 read as homework.)
+export const CARD_CAP = 3
 const MS_PER_DAY = 86_400_000
 
 export interface PickCard {
@@ -78,12 +80,35 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     .single()
   if (!profile) return { picks: [], paused: false, field: null, coverage: null, needsField: true }
 
-  const { data: plan } = await db
+  let { data: plan } = await db
     .from('networking_plans')
     .select('id, sourcing_enabled, last_sourced_at')
     .eq('user_id', userId)
     .eq('is_active', true)
     .maybeSingle()
+
+  // Self-heal: without an active plan nothing below can mint, and the home is
+  // silently empty forever (found on a real account 2026-07). If onboarding's
+  // autostart never created one, create the default here.
+  if (!plan) {
+    const { data: created, error: planErr } = await db
+      .from('networking_plans')
+      .insert({
+        user_id: userId,
+        title: 'Networking campaign',
+        is_active: true,
+        goal_metric: 'informational_interview',
+        goal_count: DEFAULT_GOAL_COUNT,
+        deadline: defaultDeadline(),
+        campaign_status: 'active',
+        sourcing_enabled: true,
+      })
+      .select('id, sourcing_enabled, last_sourced_at')
+      .single()
+    if (planErr) console.error('[picks] self-heal plan insert failed:', planErr.message)
+    else plan = created
+  }
+
   const paused = plan ? plan.sourcing_enabled === false : false
 
   // Current pending picks (intro drafts in the queue), oldest first

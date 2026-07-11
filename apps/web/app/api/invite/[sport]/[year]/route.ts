@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 import type { Alumni } from '@scout/shared/types/database'
 
 /**
@@ -50,12 +50,16 @@ export async function GET(
   const displaySport = normaliseSportSlug(sport)
 
   try {
-    const supabase = createClient()
+    // Public invite-landing stats — anonymous callers, so this must bypass
+    // the caller's (empty) session like the /invite page itself does. Only
+    // is_public rows, matching the page's exposure.
+    const supabase = serviceClient()
 
     // Count alumni matching sport + year
     const { count, error: countError } = await supabase
       .from('alumni')
       .select('*', { count: 'exact', head: true })
+      .eq('is_public', true)
       .ilike('sport', displaySport)
       .eq('graduation_year', graduationYear)
 
@@ -71,6 +75,7 @@ export async function GET(
     const { data: alumni, error: alumniError } = await supabase
       .from('alumni')
       .select('full_name, company, role')
+      .eq('is_public', true)
       .ilike('sport', displaySport)
       .eq('graduation_year', graduationYear)
       .order('full_name', { ascending: true })

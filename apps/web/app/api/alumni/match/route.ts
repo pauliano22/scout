@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 import { findAlumniMatch } from '@/lib/alumni/match'
 
 /**
@@ -37,7 +38,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ match: null })
     }
 
-    const matched = await findAlumniMatch(supabase, {
+    // Match + hydrate through the service client: a pre-approval alumni
+    // claimant (non-Cornell email, directory_access still false) gets zero
+    // alumni rows under migration 052 RLS, which would blank the prefill for
+    // exactly the people this wizard exists for. Auth stays cookie-scoped
+    // above, and the lookup is pinned to the caller's own profile name.
+    const service = serviceClient()
+    const matched = await findAlumniMatch(service, {
       full_name: fullName,
       email: profile?.email || user.email || null,
       sport,
@@ -49,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     // Hydrate the matched row so the claim screen can show "Existing info on Scout".
-    const { data: alumni } = await supabase
+    const { data: alumni } = await service
       .from('alumni')
       .select(
         'id, full_name, sport, graduation_year, company, role, industry, location, linkedin_url, photo_url, bio, advice, is_claimed',

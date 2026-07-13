@@ -44,19 +44,19 @@ const sports = [
   'Wrestling',
 ]
 
-const industries = [
-  'Finance',
-  'Technology',
-  'Consulting',
-  'Healthcare',
-  'Law',
-  'Media',
-  'Sports',
-  'Education',
-  'Real Estate',
-  'Government',
-  'Nonprofit',
-  'Other',
+// Mirror the onboarding wizard exactly (OnboardingClient.tsx) — the profile is
+// where students review and update the same answers they gave at signup.
+const INDUSTRIES = [
+  'Finance', 'Technology', 'Consulting', 'Healthcare', 'Law', 'Media',
+  'Education', 'Real Estate', 'Non-Profit', 'Government', 'Sports', 'Other',
+]
+
+const STAGE_OPTIONS = [
+  { value: 'exploring', label: 'Just exploring', desc: 'Not sure what I want yet' },
+  { value: 'recruiting', label: 'Actively recruiting', desc: 'Applying and interviewing' },
+  { value: 'interviewing', label: 'Preparing for interviews', desc: 'Have some leads, preparing for next steps' },
+  { value: 'referrals', label: 'Looking for referrals', desc: 'Know what I want, need introductions' },
+  { value: 'relationship_building', label: 'Long-term relationship building', desc: 'Building my professional network' },
 ]
 
 interface ProfileClientProps {
@@ -74,17 +74,51 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
   const [graduationYear, setGraduationYear] = useState(
     profile?.graduation_year?.toString() || ''
   )
-  const [interests, setInterests] = useState(profile?.interests || '')
-  const [company, setCompany] = useState(profile?.company || '')
-  const [role, setRole] = useState(profile?.role || '')
-  const [industry, setIndustry] = useState(profile?.industry || '')
-  const [location, setLocation] = useState(profile?.location || '')
-  const [linkedinUrl, setLinkedinUrl] = useState(profile?.linkedin_url || '')
+  // industries[0] is the primary, the rest are secondary — same convention as onboarding.
+  const [industries, setIndustries] = useState<string[]>(
+    [profile?.primary_industry, ...(profile?.secondary_industries || [])].filter(Boolean) as string[]
+  )
+  const [targetRoles, setTargetRoles] = useState<string[]>(profile?.target_roles || [])
+  const [roleInput, setRoleInput] = useState('')
+  const [currentStage, setCurrentStage] = useState<string>(profile?.current_stage || 'exploring')
+  const [preferredLocations, setPreferredLocations] = useState<string[]>(
+    profile?.preferred_locations && profile.preferred_locations.length > 0
+      ? profile.preferred_locations
+      : ['']
+  )
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '')
 
   const [isLoading, setIsLoading] = useState(false)
   const [saved, setSaved] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+
+  const toggleIndustry = (industry: string) => {
+    setIndustries(prev =>
+      prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry]
+    )
+  }
+
+  const addRole = () => {
+    const v = roleInput.trim()
+    if (!v || targetRoles.length >= 3 || targetRoles.includes(v)) return
+    setTargetRoles([...targetRoles, v])
+    setRoleInput('')
+  }
+  const removeRole = (index: number) => setTargetRoles(targetRoles.filter((_, i) => i !== index))
+
+  const addLocation = () => {
+    if (preferredLocations.length < 3) setPreferredLocations([...preferredLocations, ''])
+  }
+  const updateLocation = (index: number, value: string) => {
+    const updated = [...preferredLocations]
+    updated[index] = value
+    setPreferredLocations(updated)
+  }
+  const removeLocation = (index: number) => {
+    if (preferredLocations.length > 1) {
+      setPreferredLocations(preferredLocations.filter((_, i) => i !== index))
+    }
+  }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -96,28 +130,23 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
       const fileExt = file.name.split('.').pop()
       const filePath = `${userId}.${fileExt}`
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true })
 
       if (uploadError) throw uploadError
 
-      // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath)
 
-      // Add cache-busting param
       const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
       setAvatarUrl(urlWithCacheBust)
 
-      // Save to profile immediately
       await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
         .eq('id', userId)
-
     } catch (error) {
       console.error('Error uploading avatar:', error)
       alert('Failed to upload image. Please try again.')
@@ -132,38 +161,33 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
     setSaved(false)
 
     try {
-      // Update profiles table
+      const cleanedLocations = preferredLocations.filter(l => l.trim())
       const { error } = await supabase
         .from('profiles')
         .update({
           full_name: fullName,
           sport,
           graduation_year: graduationYear ? parseInt(graduationYear) : null,
-          interests,
-          company: company || null,
-          role: role || null,
-          industry: industry || null,
-          location: location || null,
-          linkedin_url: linkedinUrl || null,
+          primary_industry: industries[0] || null,
+          secondary_industries: industries.slice(1),
+          target_roles: targetRoles,
+          current_stage: currentStage,
+          preferred_locations: cleanedLocations,
+          geography_preference: cleanedLocations.length > 0 ? 'city' : 'doesnt_matter',
         })
         .eq('id', userId)
 
       if (error) throw error
 
-      // No alumni-table sync here: students don't write directory rows.
-      // RLS on alumni is SELECT-only, so the old sync silently did nothing;
-      // alumni rows are created/updated exclusively via the claim flow.
-
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
 
-      // Log profile update activity (best-effort)
       fetch('/api/activity/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'profile_update',
-          metadata: { full_name: fullName, sport, company },
+          metadata: { full_name: fullName, sport },
         }),
       }).catch(() => {})
     } catch (error) {
@@ -227,9 +251,9 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
           </div>
         </div>
 
-        {/* Personal Information */}
+        {/* About You — sport + graduation year */}
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-5">
-          <h2 className="text-base font-semibold">Personal Information</h2>
+          <h2 className="text-base font-semibold">About You</h2>
 
           <div>
             <label className="block text-sm text-[--text-tertiary] mb-2">Full Name</label>
@@ -242,7 +266,7 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
             />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-[--text-tertiary] mb-2">Sport</label>
               <select
@@ -252,17 +276,13 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
               >
                 <option value="">Select your sport</option>
                 {sports.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">
-                Graduation Year
-              </label>
+              <label className="block text-sm text-[--text-tertiary] mb-2">Graduation Year</label>
               <select
                 value={graduationYear}
                 onChange={(e) => setGraduationYear(e.target.value)}
@@ -270,111 +290,193 @@ export default function ProfileClient({ profile, userId, userEmail }: ProfileCli
               >
                 <option value="">Select year</option>
                 {years.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
+                  <option key={y} value={y}>{y}</option>
                 ))}
               </select>
             </div>
           </div>
         </div>
 
-        {/* Career Information */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-5">
+        {/* What you're working toward — industries + target roles */}
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-6">
+          <h2 className="text-base font-semibold">What you&apos;re working toward</h2>
+
           <div>
-            <h2 className="text-base font-semibold">Career Information</h2>
-          </div>
+            <label className="text-sm font-medium text-[--text-secondary] block">
+              Industries{' '}
+              <span className="text-[--text-quaternary] font-normal">— tap to pick. First is your primary.</span>
+            </label>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Company</label>
-              <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="e.g., Goldman Sachs"
-                className="input-field"
-              />
+            <div className="flex items-center gap-4 mt-2 mb-3 text-xs text-[--text-tertiary]">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-[3px] bg-[--school-primary]" />
+                Primary
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-[3px] bg-[--school-primary]/10 border border-[--school-primary]/30" />
+                Open to
+              </span>
             </div>
 
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Role</label>
-              <input
-                type="text"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="e.g., Analyst"
-                className="input-field"
-              />
+            <div className="flex flex-wrap gap-2">
+              {INDUSTRIES.map(ind => {
+                const idx = industries.indexOf(ind)
+                const isPrimary = idx === 0
+                const isSecondary = idx > 0
+                return (
+                  <button
+                    key={ind}
+                    type="button"
+                    onClick={() => toggleIndustry(ind)}
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border transition-all active:scale-[0.97] ${
+                      isPrimary
+                        ? 'bg-[--school-primary] border-[--school-primary] text-white'
+                        : isSecondary
+                          ? 'bg-[--school-primary]/10 border-[--school-primary]/30 text-[--school-primary]'
+                          : 'bg-[--bg-tertiary] border-[--border-primary] text-[--text-primary] hover:border-[--border-secondary]'
+                    }`}
+                  >
+                    {ind}
+                    {isPrimary && (
+                      <span className="text-xs font-bold tracking-wider uppercase opacity-90">Primary</span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
+
+            <p className="text-xs text-[--text-quaternary] mt-3 min-h-[18px]">
+              {industries.length === 0
+                ? 'Pick your primary industry first.'
+                : industries.length === 1
+                  ? `${industries[0]} · primary. Tap more if you're open to others.`
+                  : `${industries[0]} · primary. Also open to ${industries.length - 1} other${industries.length - 1 > 1 ? 's' : ''}.`}
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Industry</label>
-              <select
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
-                className="input-field cursor-pointer"
+          <div>
+            <label className="text-sm font-medium text-[--text-secondary] block mb-3">
+              Target roles{' '}
+              <span className="text-[--text-quaternary] font-normal">— up to 3</span>
+            </label>
+
+            {targetRoles.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2.5">
+                {targetRoles.map((r, i) => (
+                  <span
+                    key={r}
+                    className="inline-flex items-center gap-2 pl-3 pr-2 py-2 rounded-xl text-sm bg-[--school-primary]/10 border border-[--school-primary]/30 text-[--school-primary]"
+                  >
+                    {r}
+                    <button
+                      type="button"
+                      onClick={() => removeRole(i)}
+                      aria-label={`Remove ${r}`}
+                      className="leading-none text-base opacity-70 hover:opacity-100"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2.5">
+              <input
+                type="text"
+                value={roleInput}
+                onChange={(e) => setRoleInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addRole() } }}
+                disabled={targetRoles.length >= 3}
+                placeholder={targetRoles.length >= 3 ? '3 roles added' : 'e.g. Product Manager'}
+                autoComplete="off"
+                className="input-field flex-1"
+              />
+              <button
+                type="button"
+                onClick={addRole}
+                disabled={targetRoles.length >= 3 || !roleInput.trim()}
+                className="btn-secondary disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <option value="">Select industry</option>
-                {industries.map((i) => (
-                  <option key={i} value={i}>
-                    {i}
-                  </option>
-                ))}
-              </select>
+                Add
+              </button>
             </div>
-
-            <div>
-              <label className="block text-sm text-[--text-tertiary] mb-2">Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g., New York, NY"
-                className="input-field"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm text-[--text-tertiary] mb-2">LinkedIn URL</label>
-            <input
-              type="url"
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              placeholder="https://linkedin.com/in/yourprofile"
-              className="input-field"
-            />
           </div>
         </div>
 
-        {/* Resume Upload */}
+        {/* Where you're at — career stage */}
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5 space-y-4">
+          <h2 className="text-base font-semibold">Where you&apos;re at</h2>
+          <div className="space-y-3">
+            {STAGE_OPTIONS.map(option => (
+              <label
+                key={option.value}
+                className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${
+                  currentStage === option.value
+                    ? 'border-[--school-primary] bg-[--school-primary]/5'
+                    : 'border-[--border-primary] hover:border-[--border-secondary]'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="stage"
+                  value={option.value}
+                  checked={currentStage === option.value}
+                  onChange={(e) => setCurrentStage(e.target.value)}
+                  className="mt-0.5 accent-[--school-primary]"
+                />
+                <div>
+                  <div className="font-medium text-[--text-primary]">{option.label}</div>
+                  <div className="text-sm text-[--text-tertiary]">{option.desc}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Location preferences */}
         <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
-          <h2 className="text-base font-semibold mb-1">Resume</h2>
+          <h2 className="text-base font-semibold mb-1">Location preferences</h2>
+          <p className="text-[--text-tertiary] text-sm mb-4">
+            Where are you looking to work? Leave blank if you&apos;re open to anywhere.
+          </p>
+          {preferredLocations.map((loc, i) => (
+            <div key={i} className="flex gap-2 mb-2">
+              <input
+                type="text"
+                placeholder="e.g. New York, San Francisco, East Coast"
+                value={loc}
+                onChange={(e) => updateLocation(i, e.target.value)}
+                className="input-field flex-1"
+              />
+              {preferredLocations.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeLocation(i)}
+                  className="btn-ghost text-[--text-quaternary] px-2"
+                >
+                  &times;
+                </button>
+              )}
+            </div>
+          ))}
+          {preferredLocations.length < 3 && (
+            <button type="button" onClick={addLocation} className="text-[--school-primary] text-sm hover:underline">
+              + Add another location
+            </button>
+          )}
+        </div>
+
+        {/* Resume */}
+        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
+          <h2 className="text-base font-semibold mb-1">Résumé</h2>
           <p className="text-xs text-[--text-quaternary] mb-4">
             Never shared with alumni.
           </p>
           <ResumeUpload
             userId={userId}
+            existingResumePath={profile?.resume_url || null}
             compact
-          />
-        </div>
-
-        {/* Career Interests */}
-        <div className="bg-[--bg-secondary] border border-[--border-primary] rounded-xl p-5">
-          <h2 className="text-base font-semibold mb-2">Career Interests</h2>
-          <p className="text-[--text-tertiary] text-sm mb-4">
-            Used to personalize your AI-generated outreach messages.
-          </p>
-
-          <textarea
-            value={interests}
-            onChange={(e) => setInterests(e.target.value)}
-            placeholder="e.g., investment banking, private equity, product management, software engineering..."
-            rows={3}
-            className="input-field resize-none"
           />
         </div>
 

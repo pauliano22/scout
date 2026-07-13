@@ -539,6 +539,7 @@ export interface SecurityAlert {
   events: SecurityEvent[]
   acknowledged: boolean
   acknowledged_by: string | null
+  notified_at: string | null
   created_at: string
 }
 

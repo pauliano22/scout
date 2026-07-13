@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { logSecurityEvent, currentRequestIp } from '@/lib/security/events'
 import type { UserRole, TeamCode } from '@scout/shared/types/database'
 
 export type AuthContext = {
@@ -35,8 +36,26 @@ export async function requireUser(): Promise<AuthContext> {
 }
 
 export async function requireAdmin(): Promise<AuthContext> {
-  const ctx = await requireUser()
-  if (!ctx.isAdmin) throw new ApiAuthError('Forbidden', 403)
+  const ctx = await getAuthContext()
+  if (!ctx) {
+    logSecurityEvent({
+      event_type: 'auth_failure',
+      severity: 'warning',
+      source_ip: currentRequestIp(),
+      details: { gate: 'admin', reason: 'unauthenticated' },
+    })
+    throw new ApiAuthError('Unauthorized', 401)
+  }
+  if (!ctx.isAdmin) {
+    logSecurityEvent({
+      event_type: 'auth_failure',
+      severity: 'warning',
+      source_ip: currentRequestIp(),
+      user_id: ctx.userId,
+      details: { gate: 'admin', reason: 'not_admin' },
+    })
+    throw new ApiAuthError('Forbidden', 403)
+  }
   return ctx
 }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { logSecurityEvent } from '@/lib/security/events'
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
@@ -79,7 +80,12 @@ export function checkRateLimit(
   timestamps = timestamps.filter((t) => t > cutoff)
 
   if (timestamps.length >= limit) {
-    // Rate limit hit — compute reset time from the oldest surviving timestamp
+    logSecurityEvent({
+      event_type: 'rate_limit_hit',
+      severity: 'warning',
+      details: { identifier, tier, limit },
+    })
+    // Compute reset time from the oldest surviving timestamp
     const oldest = timestamps[0]
     return {
       success: false,

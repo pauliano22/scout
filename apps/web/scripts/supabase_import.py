@@ -132,6 +132,38 @@ def prepare_alumni_record(row):
     return record
 
 
+def fetch_suppression(supabase):
+    """
+    Loads alumni_suppression (migration 066) — people hard-deleted after a
+    removal request. They must never be re-imported. Roster CSVs carry no
+    email/LinkedIn, so full_name is matched too (imprecise, but erring toward
+    not resurrecting someone who asked to be deleted).
+    """
+    try:
+        result = supabase.table('alumni_suppression').select('email, linkedin_url, full_name').execute()
+        rows = result.data or []
+    except Exception as e:
+        print(f"   Warning: could not load suppression list ({e}) — continuing without it")
+        rows = []
+    emails = {r['email'].strip().lower() for r in rows if r.get('email')}
+    linkedins = {r['linkedin_url'].strip().lower().rstrip('/') for r in rows if r.get('linkedin_url')}
+    names = {r['full_name'].strip().lower() for r in rows if r.get('full_name')}
+    return emails, linkedins, names
+
+
+def is_suppressed(record, emails, linkedins, names):
+    email = (record.get('email') or '').strip().lower()
+    if email and email in emails:
+        return True
+    linkedin = (record.get('linkedin_url') or '').strip().lower().rstrip('/')
+    if linkedin and linkedin in linkedins:
+        return True
+    name = (record.get('full_name') or '').strip().lower()
+    if name and name in names:
+        return True
+    return False
+
+
 # ==========================================
 # MAIN EXECUTION
 # ==========================================
@@ -164,7 +196,14 @@ def main():
             skipped += 1
     
     print(f"   Prepared {len(records)} records ({skipped} skipped due to missing name)")
-    
+
+    # 3.5 Drop anyone on the do-not-reimport list
+    emails, linkedins, names = fetch_suppression(supabase)
+    before = len(records)
+    records = [r for r in records if not is_suppressed(r, emails, linkedins, names)]
+    if before != len(records):
+        print(f"   Skipped {before - len(records)} suppressed records (removal requests)")
+
     # 4. Show sample of what we're about to insert
     print("\n4. Sample records to insert:")
     for i, rec in enumerate(records[:3]):

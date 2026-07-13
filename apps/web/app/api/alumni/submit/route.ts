@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { getSuppressionSets, isSuppressed } from '@/lib/alumni/suppression'
 
 export async function POST(request: Request) {
   try {
@@ -26,6 +27,16 @@ export async function POST(request: Request) {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
+
+    // People hard-deleted via /admin/removals are suppressed from all import
+    // paths — including this unauthenticated opt-in form, which anyone could
+    // otherwise use to resurrect a deleted profile. A genuine re-opt-in needs
+    // an admin to remove the suppression row first.
+    const suppression = await getSuppressionSets(supabase)
+    if (isSuppressed(suppression, { email: email?.trim() || null, linkedin_url: linkedin_url || null })) {
+      console.warn('[alumni/submit] blocked submission matching suppression list')
+      return NextResponse.json({ success: true, claimed: false })
+    }
 
     const alumniData = {
       full_name: full_name.trim(),

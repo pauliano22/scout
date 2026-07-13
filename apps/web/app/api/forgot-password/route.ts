@@ -6,6 +6,7 @@ import {
   rateLimitExceeded,
   getClientIp,
 } from '@/lib/rate-limit'
+import { logSecurityEvent } from '@/lib/security/events'
 
 // ─── Per-email rate limit store (max 3 requests per email per hour) ──────
 const emailRateLimitStore = new Map<string, number[]>()
@@ -137,6 +138,12 @@ export async function POST(request: NextRequest) {
 
     if (linkError || !linkData?.user) {
       // No auth account — could be an alumni who submitted via /join but never signed up
+      logSecurityEvent({
+        event_type: 'auth_failure',
+        severity: 'warning',
+        source_ip: ipAddress,
+        details: { gate: 'password_reset', stage: 'request', reason: 'no_account' },
+      })
       return NextResponse.json(
         { error: 'No account found with this email. Please sign up first.' },
         { status: 404 }
@@ -170,6 +177,12 @@ export async function POST(request: NextRequest) {
     // Log the password reset request
     await logAuditEvent(supabase, 'request', normalizedEmail, ipAddress, userAgent, {
       token_created: true,
+    })
+    logSecurityEvent({
+      event_type: 'password_reset_request',
+      severity: 'info',
+      source_ip: ipAddress,
+      details: { stage: 'request' },
     })
 
     // Send email via Resend API

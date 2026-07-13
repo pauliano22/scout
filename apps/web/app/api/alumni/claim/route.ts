@@ -260,12 +260,12 @@ export async function POST(request: Request) {
       .eq('id', user.id)
 
     // Notify an admin (Telegram) about claims needing review. Best-effort.
+    // IDs only — no names/emails. Telegram is third-party, non-US infra with
+    // no DPA, so PII stays inside the app; details live at /admin/claims.
     if (!publish) {
       await notifyTelegram(
         `🟠 <b>New Scout claim needs review</b>\n` +
-        `${fullName || '(no name)'} · ${email || 'no email'}\n` +
-        `${sport} '${String(gradYear).slice(-2)} · ${currentRole} @ ${currentCompany}\n` +
-        `Name not found on the roster.\n` +
+        `id: ${alumniId}\n` +
         `Review: https://scoutcornell.com/admin/claims`,
       )
     }

@@ -17,6 +17,8 @@ export type SecurityEventType =
   | 'password_reset_request'  // forgot-password token issued (info audit)
   | 'password_reset_success'  // password actually changed (info audit)
   | 'alumni_removal_request'  // public opt-out endpoint
+  | 'admin_user_purge'        // institutional purge (/api/admin/users/purge)
+  | 'alumni_hard_delete'      // admin hard delete + suppression (/admin/removals)
 
 export function logSecurityEvent(event: {
   event_type: SecurityEventType

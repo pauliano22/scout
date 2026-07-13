@@ -15,6 +15,7 @@ import { createClient as createServiceClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { applyEnrichment, type AlumniForEnrichment } from '@/lib/agent/enrichAlumni'
 import { enrichmentPriority } from '@/lib/agent/enrichmentPolicy'
+import { getSuppressionSets, isSuppressed } from '@/lib/alumni/suppression'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
   // then re-rank "most-incomplete then stalest" and take the top runLimit.
   const { data, error } = await sb
     .from('alumni')
-    .select('id, full_name, role, company, location, sport, graduation_year, linkedin_url, enriched_at')
+    .select('id, full_name, email, role, company, location, sport, graduation_year, linkedin_url, enriched_at')
     .not('linkedin_url', 'is', null)
     .order('enriched_at', { ascending: true, nullsFirst: true })
     .limit(runLimit * 3)
@@ -51,8 +52,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Skip anyone on the do-not-reimport list (hard-deleted via /admin/removals).
+  const suppression = await getSuppressionSets(sb)
+  const pool = ((data ?? []) as (AlumniForEnrichment & { email?: string | null })[])
+    .filter((c) => !isSuppressed(suppression, c))
+
   const now = Date.now()
-  const candidates = ((data ?? []) as AlumniForEnrichment[])
+  const candidates = pool
     .sort((a, b) => enrichmentPriority(b, now) - enrichmentPriority(a, now))
     .slice(0, runLimit)
 

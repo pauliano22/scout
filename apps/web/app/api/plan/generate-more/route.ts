@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { buildUserContext } from '@/lib/ai/user-context'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -215,7 +216,12 @@ Respond ONLY with valid JSON.`
       return NextResponse.json({ error: 'Failed to save recommendations' }, { status: 500 })
     }
 
-    return NextResponse.json({ planAlumni: newPlanAlumni })
+    // Consent gate at egress: plan_alumni joins the full alumni row.
+    const sanitizedPlanAlumni = (newPlanAlumni ?? []).map((pa: any) =>
+      pa?.alumni ? { ...pa, alumni: sanitizeAlumniForStudent(pa.alumni) } : pa
+    )
+
+    return NextResponse.json({ planAlumni: sanitizedPlanAlumni })
   } catch (error) {
     console.error('Generate more error:', error)
     return NextResponse.json({ error: 'Failed to generate more recommendations' }, { status: 500 })

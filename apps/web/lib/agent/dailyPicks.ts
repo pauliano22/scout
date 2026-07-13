@@ -18,6 +18,7 @@ import { sourcingConfidence, hasPersonalizationHook, locationMatch } from '@/lib
 import { channelForAlumni } from '@/lib/agent/draftMessage'
 import { warmPathsFor } from '@/lib/alumni-circle'
 import { ensureAgentState, defaultDeadline, DEFAULT_GOAL_COUNT } from '@/lib/campaign/goal'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 // Every alumni column EXCEPT the pgvector embedding (1536 floats/row — selecting
 // it via '*' made each candidate pool ~50MB and took the Supabase instance down
@@ -289,7 +290,8 @@ export async function materializePicks(db: SupabaseClient, userId: string): Prom
     picks: pending
       .map(r => ({
         queueId: r.id as string,
-        alumnus: r.alumni as unknown as Alumni,
+        // Consent gate at egress: this payload goes straight to the student.
+        alumnus: sanitizeAlumniForStudent(r.alumni as unknown as Alumni),
         why: (r.why as string) || reasonLine(r.alumni as unknown as Alumni),
         draftReady: !!(r.draft_body as string)?.trim(),
         warm: warm[r.alumni_id as string] ?? null,

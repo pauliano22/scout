@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import NetworkClient from './NetworkClient'
 import { UserNetwork } from '@scout/shared/types/database'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export default async function NetworkPage() {
   const supabase = createClient()
@@ -39,7 +40,10 @@ export default async function NetworkPage() {
 
   // Drop rows whose alum RLS hid from this user (e.g. opted out via /remove):
   // they would render as empty "?" cards with no name or actions.
-  const visibleNetwork = (network || []).filter((n) => !n.alumni_id || n.alumni)
+  // Consent gate at egress: this page renders for a student session.
+  const visibleNetwork = (network || [])
+    .filter((n) => !n.alumni_id || n.alumni)
+    .map((n) => (n.alumni ? { ...n, alumni: sanitizeAlumniForStudent(n.alumni) } : n))
 
   // Fetch all custom contacts for this user (plan_id may be null for standalone contacts)
   const { data: customContacts } = await supabase

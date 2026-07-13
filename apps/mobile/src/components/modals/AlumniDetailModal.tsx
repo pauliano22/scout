@@ -368,7 +368,14 @@ export default function AlumniDetailModal({
               </View>
               {copyHint ? <Text style={styles.copyHint}>{copyHint}</Text> : null}
             </Section>
-          ) : null}
+          ) : (
+            <Section label="Contact">
+              <Text style={styles.bodyTextMuted}>
+                Contact available when this alum joins Scout. You can still save
+                them and draft a message.
+              </Text>
+            </Section>
+          )}
 
           <View style={{ height: 120 }} />
         </ScrollView>

@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server'
 import { resolveRequestUser } from '@/lib/requestAuth'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,7 +31,9 @@ export async function GET() {
         advice,
         avatar_url,
         headshot_url,
-        linkedin_url
+        linkedin_url,
+        is_claimed,
+        share_email_with_students
       )
     `)
     .eq('accepting_mentees', true)
@@ -43,7 +46,8 @@ export async function GET() {
   }
 
   const available = (mentorships || []).map((m: any) => ({
-    alumni: m.alumni,
+    // Consent gate at egress: this feed is student-facing.
+    alumni: m.alumni ? sanitizeAlumniForStudent(m.alumni) : m.alumni,
     mentorship: {
       accepting_mentees: m.accepting_mentees,
       capacity: m.capacity,

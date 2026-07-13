@@ -265,6 +265,12 @@ export default function AlumniDetailModal({
               </a>
             )}
 
+            {!alumni.linkedin_url && !alumni.email && (
+              <span className="flex items-center px-2 text-xs text-[--text-quaternary]">
+                Contact available when this alum joins Scout
+              </span>
+            )}
+
             {/* Share */}
             <ShareProfileButton
               alumni={{

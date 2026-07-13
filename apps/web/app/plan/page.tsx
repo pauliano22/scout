@@ -5,6 +5,7 @@ import PlanClient from './PlanClient'
 import SearchClient from './SearchClient'
 import { isInAlumniSearchTreatment } from '@scout/shared/featureFlags/alumniSearch'
 import { getSearchSuggestions } from '@/lib/search/suggestions'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export default async function PlanPage() {
   const supabase = createClient()
@@ -79,9 +80,12 @@ export default async function PlanPage() {
     ? await getSearchSuggestions({ userId: user.id, profile, supabase })
     : []
 
-  // Sort plan alumni by sort_order
+  // Sort plan alumni by sort_order; consent gate at egress (student page).
   if (activePlan?.plan_alumni) {
     activePlan.plan_alumni.sort((a: any, b: any) => a.sort_order - b.sort_order)
+    activePlan.plan_alumni = activePlan.plan_alumni.map((pa: any) =>
+      pa?.alumni ? { ...pa, alumni: sanitizeAlumniForStudent(pa.alumni) } : pa
+    )
   }
 
   return (

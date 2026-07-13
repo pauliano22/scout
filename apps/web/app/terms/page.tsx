@@ -47,10 +47,10 @@ export default function TermsPage() {
           warranties, and we are not liable for indirect or consequential damages. New
           York law governs. Questions:{' '}
           <a
-            href="mailto:contact@scoutcornell.com"
+            href="mailto:ian@scoutcornell.com"
             className="underline hover:text-[--text-primary]"
           >
-            contact@scoutcornell.com
+            ian@scoutcornell.com
           </a>
           .
         </p>

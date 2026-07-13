@@ -57,10 +57,10 @@ export default function PrivacyPage() {
           </Link>
           . Questions or requests:{' '}
           <a
-            href="mailto:contact@scoutcornell.com"
+            href="mailto:ian@scoutcornell.com"
             className="underline hover:text-[--text-primary]"
           >
-            contact@scoutcornell.com
+            ian@scoutcornell.com
           </a>
           .
         </p>

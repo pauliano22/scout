@@ -96,7 +96,13 @@ export async function POST(request: NextRequest) {
     const deleteRows = async (table: string, column: string, value: string) => {
       const q = db.from(table).delete({ count: 'exact' })
       const { count, error } = column === 'email' ? await q.ilike(column, value) : await q.eq(column, value)
-      if (error) throw new Error(`${table}: ${error.message}`)
+      if (error) {
+        // Tolerate schema drift: a table this prod doesn't have (e.g.
+        // user_preferences, absent in prod / declared by no migration) must
+        // not abort a real purge mid-run and leave a half-deleted user.
+        if (error.code === 'PGRST205' || /does not exist|find the table/i.test(error.message)) return 0
+        throw new Error(`${table}: ${error.message}`)
+      }
       return count ?? 0
     }
 

@@ -61,9 +61,9 @@ export async function middleware(request: NextRequest) {
 
 // Run on app pages only — skip API routes, static assets, auth surfaces, the
 // onboarding wizard (alumni finish their claim there), the /review page itself,
-// and referral redemption links.
+// referral redemption links, and the always-public legal pages.
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|login|signup|onboarding|review|auth|r/).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|login|signup|onboarding|review|auth|privacy|terms|accessibility|remove|r/).*)',
   ],
 }

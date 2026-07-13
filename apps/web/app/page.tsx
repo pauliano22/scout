@@ -178,8 +178,21 @@ export default function HomePage() {
       </main>
 
       <footer className="px-6 md:px-12 py-8 border-t border-[--border-primary] text-center">
-        <p className="text-xs text-[--text-quaternary]">© 2026 Scout. Built for Cornell Athletes. Not affiliated with Cornell University.</p>
+        <p className="text-xs text-[--text-quaternary]">© 2026 Scout. Built for Cornell Athletes.</p>
         <p className="text-xs text-[--text-quaternary] mt-2">
+          Scout is an independent platform and is not affiliated with, endorsed by, or
+          sponsored by Cornell University.
+        </p>
+        <p className="text-xs text-[--text-quaternary] mt-2 space-x-4">
+          <Link href="/privacy" className="hover:text-[--text-tertiary] hover:underline">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-[--text-tertiary] hover:underline">
+            Terms of Service
+          </Link>
+          <Link href="/accessibility" className="hover:text-[--text-tertiary] hover:underline">
+            Accessibility
+          </Link>
           <Link href="/remove" className="hover:text-[--text-tertiary] hover:underline">
             Remove my profile
           </Link>

@@ -40,6 +40,10 @@ export default function RootLayout({
         <PostHogProvider>
           {children}
         </PostHogProvider>
+        <footer className="px-6 py-4 text-center text-[11px] text-[--text-tertiary]">
+          Scout is an independent platform and is not affiliated with, endorsed by, or
+          sponsored by Cornell University.
+        </footer>
         <Analytics />
         <SpeedInsights />
       </body>

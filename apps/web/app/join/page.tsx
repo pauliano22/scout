@@ -74,6 +74,7 @@ export default function JoinPage() {
   const [location, setLocation] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
 
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -86,6 +87,10 @@ export default function JoinPage() {
 
     if (!fullName.trim() || !sport || !graduationYear) {
       setError('Please fill in your name, sport, and graduation year.')
+      return
+    }
+    if (!agreedToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy to continue.')
       return
     }
 
@@ -321,6 +326,28 @@ export default function JoinPage() {
                 />
               </div>
             </div>
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                required
+                disabled={isSubmitting}
+                className="mt-0.5 w-4 h-4 accent-[--school-primary] flex-shrink-0 cursor-pointer"
+              />
+              <span className="text-xs text-[--text-tertiary] leading-relaxed">
+                I agree to the{' '}
+                <Link href="/terms" className="text-[--school-primary] hover:underline">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" className="text-[--school-primary] hover:underline">
+                  Privacy Policy
+                </Link>
+                ; my profile will be visible to verified Cornell students.
+              </span>
+            </label>
 
             <button
               type="submit"

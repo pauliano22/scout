@@ -39,7 +39,7 @@ export async function sendEmail(
   subject: string,
   html: string,
 ): Promise<{ success: true; id?: string } | { success: false; error: string }> {
-  const from = process.env.FROM_EMAIL ?? 'noreply@scout.cornell.edu'
+  const from = process.env.FROM_EMAIL ?? 'Scout <noreply@scoutcornell.com>'
 
   if (initSendgrid()) {
     try {

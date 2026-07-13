@@ -190,9 +190,6 @@ export default function HomePage() {
           <Link href="/terms" className="hover:text-[--text-tertiary] hover:underline">
             Terms of Service
           </Link>
-          <Link href="/accessibility" className="hover:text-[--text-tertiary] hover:underline">
-            Accessibility
-          </Link>
           <Link href="/remove" className="hover:text-[--text-tertiary] hover:underline">
             Remove my profile
           </Link>

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
-// Server-component shell for the plain-prose legal pages (/privacy, /terms,
-// /accessibility). No client JS — these pages must stay readable and cheap.
+// Server-component shell for the plain-prose legal pages (/privacy, /terms).
+// No client JS — these pages must stay readable and cheap.
 
 export function LegalSection({
   title,
@@ -56,9 +56,6 @@ export default function LegalPageShell({
             </Link>
             <Link href="/terms" className="underline hover:text-[--text-secondary]">
               Terms of Service
-            </Link>
-            <Link href="/accessibility" className="underline hover:text-[--text-secondary]">
-              Accessibility
             </Link>
             <Link href="/remove" className="underline hover:text-[--text-secondary]">
               Remove my profile

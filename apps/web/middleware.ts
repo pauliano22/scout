@@ -64,6 +64,6 @@ export async function middleware(request: NextRequest) {
 // referral redemption links, and the always-public legal pages.
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|login|signup|onboarding|review|auth|privacy|terms|accessibility|remove|r/).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|favicon.svg|login|signup|onboarding|review|auth|privacy|terms|remove|r/).*)',
   ],
 }

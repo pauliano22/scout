@@ -2,15 +2,28 @@ import { NextRequest } from 'next/server'
 import { ApiAuthError, requireAdmin } from '@/lib/auth'
 import { ok, fail } from '@/lib/api/respond'
 import { buildAdReport, adReportToCsv } from '@/lib/reports/adReport'
+import { logSecurityEvent } from '@/lib/security/events'
+import { getClientIp } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAdmin()
+    const ctx = await requireAdmin()
 
     const days = Math.min(365, Math.max(7, parseInt(request.nextUrl.searchParams.get('days') ?? '30')))
     const report = await buildAdReport(days)
+    logSecurityEvent({
+      event_type: 'data_export',
+      severity: 'info',
+      source_ip: getClientIp(request),
+      user_id: ctx.userId,
+      details: {
+        endpoint: 'admin_reports_ad',
+        days,
+        format: request.nextUrl.searchParams.get('format') === 'csv' ? 'csv' : 'json',
+      },
+    })
 
     if (request.nextUrl.searchParams.get('format') === 'csv') {
       return new Response(adReportToCsv(report), {

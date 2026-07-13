@@ -6,6 +6,7 @@ import {
   rateLimitExceeded,
   getClientIp,
 } from '@/lib/rate-limit'
+import { logSecurityEvent } from '@/lib/security/events'
 
 function getSupabaseAdmin() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -87,6 +88,12 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (tokenError || !resetToken) {
+      logSecurityEvent({
+        event_type: 'auth_failure',
+        severity: 'warning',
+        source_ip: getClientIp(request),
+        details: { gate: 'password_reset', stage: 'reset', reason: 'invalid_token' },
+      })
       return NextResponse.json(
         { error: 'Invalid or expired reset link' },
         { status: 400 }
@@ -95,6 +102,12 @@ export async function POST(request: NextRequest) {
 
     // Check if token has expired
     if (new Date(resetToken.expires_at) < new Date()) {
+      logSecurityEvent({
+        event_type: 'auth_failure',
+        severity: 'warning',
+        source_ip: getClientIp(request),
+        details: { gate: 'password_reset', stage: 'reset', reason: 'expired_token' },
+      })
       return NextResponse.json(
         { error: 'Reset link has expired. Please request a new one.' },
         { status: 400 }
@@ -109,6 +122,12 @@ export async function POST(request: NextRequest) {
 
     if (userError || !linkData?.user) {
       console.error('Error finding user:', userError)
+      logSecurityEvent({
+        event_type: 'auth_failure',
+        severity: 'warning',
+        source_ip: getClientIp(request),
+        details: { gate: 'password_reset', stage: 'reset', reason: 'user_not_found' },
+      })
       return NextResponse.json(
         { error: 'User not found' },
         { status: 400 }
@@ -144,6 +163,13 @@ export async function POST(request: NextRequest) {
       request.headers.get('user-agent'),
       { success: true },
     )
+    logSecurityEvent({
+      event_type: 'password_reset_success',
+      severity: 'info',
+      source_ip: getClientIp(request),
+      user_id: linkData.user.id,
+      details: { stage: 'reset' },
+    })
     return addRateLimitHeaders(NextResponse.json({ success: true }), rl)
   } catch (error) {
     console.error('Error in reset-password:', error)
@@ -181,6 +207,14 @@ export async function GET(request: NextRequest) {
       .single()
 
     if (tokenError || !resetToken) {
+      // Token-guessing shows up here first — the verify endpoint is the
+      // cheapest place to enumerate tokens.
+      logSecurityEvent({
+        event_type: 'auth_failure',
+        severity: 'warning',
+        source_ip: getClientIp(request),
+        details: { gate: 'password_reset', stage: 'verify', reason: 'invalid_token' },
+      })
       return NextResponse.json(
         { valid: false, error: 'Invalid reset link' },
         { status: 400 }

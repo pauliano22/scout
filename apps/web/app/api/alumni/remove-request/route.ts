@@ -17,6 +17,7 @@ import { NextRequest } from 'next/server'
 import { serviceClient } from '@/lib/requestAuth'
 import { ok, fail } from '@/lib/api/respond'
 import { checkRateLimit, getClientIp, rateLimitExceeded } from '@/lib/rate-limit'
+import { logSecurityEvent } from '@/lib/security/events'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,6 +74,13 @@ export async function POST(request: NextRequest) {
       matched: ids.length > 0,
       status: ids.length > 0 ? 'actioned' : 'pending',
       actioned_at: ids.length > 0 ? new Date().toISOString() : null,
+    })
+
+    logSecurityEvent({
+      event_type: 'alumni_removal_request',
+      severity: 'info',
+      source_ip: ip,
+      details: { matched: ids.length > 0, hidden_count: ids.length },
     })
   } catch (e) {
     // Don't leak internal errors; the request is best-effort and generic by design.

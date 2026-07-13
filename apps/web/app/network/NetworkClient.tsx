@@ -452,7 +452,7 @@ export default function NetworkClient({
 
         {showAddContact && (
           <div className="bg-[--bg-secondary] shadow-[var(--shadow-soft)] rounded-xl p-4 mb-4">
-            <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-2.5">
               <input type="text" placeholder="Name *" value={contactForm.name} onChange={e => setContactForm(p => ({ ...p, name: e.target.value }))} className="input-field text-sm" />
               <input type="text" placeholder="Company" value={contactForm.company} onChange={e => setContactForm(p => ({ ...p, company: e.target.value }))} className="input-field text-sm" />
               <input type="text" placeholder="Role" value={contactForm.role} onChange={e => setContactForm(p => ({ ...p, role: e.target.value }))} className="input-field text-sm" />

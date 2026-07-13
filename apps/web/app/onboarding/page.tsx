@@ -4,6 +4,7 @@ import { postLoginPath } from '@/lib/auth/postLoginPath'
 import type { UserRole } from '@scout/shared/types/database'
 import OnboardingClient from './OnboardingClient'
 import AlumniOnboardingClient from './AlumniOnboardingClient'
+import DesktopNudge from '@/components/DesktopNudge'
 
 export default async function OnboardingPage() {
   const supabase = createClient()
@@ -39,31 +40,37 @@ export default async function OnboardingPage() {
     } | null
 
     return (
-      <AlumniOnboardingClient
-        userId={user.id}
-        userEmail={user.email || ''}
-        userName={profile?.full_name || ''}
-        prefillAlumniId={profile?.alumni_id || null}
-        prefill={linkedAlumni ? {
-          sport: linkedAlumni.sport || '',
-          graduationYear: linkedAlumni.graduation_year || null,
-          company: linkedAlumni.company || '',
-          role: linkedAlumni.role || '',
-          industry: linkedAlumni.industry || '',
-          location: linkedAlumni.location || '',
-          linkedinUrl: linkedAlumni.linkedin_url || '',
-        } : undefined}
-      />
+      <>
+        <DesktopNudge />
+        <AlumniOnboardingClient
+          userId={user.id}
+          userEmail={user.email || ''}
+          userName={profile?.full_name || ''}
+          prefillAlumniId={profile?.alumni_id || null}
+          prefill={linkedAlumni ? {
+            sport: linkedAlumni.sport || '',
+            graduationYear: linkedAlumni.graduation_year || null,
+            company: linkedAlumni.company || '',
+            role: linkedAlumni.role || '',
+            industry: linkedAlumni.industry || '',
+            location: linkedAlumni.location || '',
+            linkedinUrl: linkedAlumni.linkedin_url || '',
+          } : undefined}
+        />
+      </>
     )
   }
 
   // Students: full multi-step onboarding.
   return (
-    <OnboardingClient
-      userId={user.id}
-      userName={profile?.full_name || ''}
-      isAlumni={false}
-      prefill={undefined}
-    />
+    <>
+      <DesktopNudge />
+      <OnboardingClient
+        userId={user.id}
+        userName={profile?.full_name || ''}
+        isAlumni={false}
+        prefill={undefined}
+      />
+    </>
   )
 }

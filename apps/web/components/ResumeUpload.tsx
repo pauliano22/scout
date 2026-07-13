@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/track'
-import { Upload, FileText, Check, X, Loader, RefreshCw } from 'lucide-react'
+import { Upload, FileText, Check, X, Loader, RefreshCw, Eye } from 'lucide-react'
 
 interface ParsedResume {
   full_name?: string | null
@@ -29,6 +29,10 @@ interface ResumeUploadProps {
   userId: string
   onParsed?: (data: ParsedResume) => void
   compact?: boolean  // true = inline card style, false = full step style
+  // Storage path of a resume already on file (profiles.resume_url, e.g.
+  // "{userId}/resume.pdf"). When set, we surface it with a View link on load
+  // instead of showing an empty dropzone.
+  existingResumePath?: string | null
 }
 
 type UploadState = 'idle' | 'uploading' | 'parsing' | 'done' | 'applying' | 'error'
@@ -96,15 +100,35 @@ function computeDiffs(parsed: ParsedResume, previous: PreviousProfile): FieldDif
   return diffs
 }
 
-export default function ResumeUpload({ userId, onParsed, compact = false }: ResumeUploadProps) {
+export default function ResumeUpload({ userId, onParsed, compact = false, existingResumePath }: ResumeUploadProps) {
   const [state, setState] = useState<UploadState>('idle')
   const [parsed, setParsed] = useState<ParsedResume | null>(null)
   const [fileName, setFileName] = useState<string>('')
   const [errorMsg, setErrorMsg] = useState<string>('')
   const [diffs, setDiffs] = useState<FieldDiff[]>([])
   const [appliedFields, setAppliedFields] = useState<DiffField[] | null>(null)
+  const [replacing, setReplacing] = useState(false)
+  const [existingUrl, setExistingUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
+
+  const existingFileName = existingResumePath?.split('/').pop() || 'resume.pdf'
+
+  // Resolve a short-lived signed URL for a resume already on file. The bucket is
+  // private; RLS lets the owner read their own {userId}/… path.
+  useEffect(() => {
+    if (!existingResumePath) return
+    let cancelled = false
+    supabase.storage
+      .from('resumes')
+      .createSignedUrl(existingResumePath, 60 * 60)
+      .then(({ data }) => {
+        if (!cancelled) setExistingUrl(data?.signedUrl ?? null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [existingResumePath, supabase])
 
   async function handleFile(file: File) {
     if (file.type !== 'application/pdf') {
@@ -213,7 +237,49 @@ export default function ResumeUpload({ userId, onParsed, compact = false }: Resu
     setErrorMsg('')
     setDiffs([])
     setAppliedFields(null)
+    setReplacing(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  // A resume is already on file and the user hasn't chosen to replace it yet:
+  // show it with a View link instead of a blank dropzone. (Skipped once a fresh
+  // upload is in flight or done — those states render their own UI below.)
+  if ((state === 'idle' || state === 'error') && existingResumePath && !replacing) {
+    return (
+      <div className={`rounded-xl border border-[--border-primary] bg-[--bg-tertiary] ${compact ? 'p-4' : 'p-5'}`}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-[--school-primary]/10 flex items-center justify-center shrink-0">
+            <FileText size={17} className="text-[--school-primary]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="font-medium text-sm text-[--text-primary]">Résumé on file</div>
+            <div className="text-xs text-[--text-tertiary] truncate">{existingFileName}</div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {existingUrl && (
+              <a
+                href={existingUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1.5"
+              >
+                <Eye size={13} />
+                View
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => setReplacing(true)}
+              className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5"
+            >
+              <RefreshCw size={13} />
+              Replace
+            </button>
+          </div>
+        </div>
+        {errorMsg && <p className="text-xs text-red-500 mt-2">{errorMsg}</p>}
+      </div>
+    )
   }
 
   if ((state === 'done' || state === 'applying') && parsed) {

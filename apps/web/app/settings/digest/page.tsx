@@ -91,7 +91,7 @@ export default function DigestSettingsPage() {
       {/* Frequency selector */}
       <div className="mb-8">
         <h2 className="text-sm font-medium text-gray-700 mb-3">Digest Frequency</h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {FREQUENCIES.map(f => (
             <button
               key={f.value}

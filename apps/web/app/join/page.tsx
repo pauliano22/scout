@@ -214,7 +214,7 @@ export default function JoinPage() {
               <p className="text-xs text-[--text-quaternary] mt-1">Optional. Used to avoid duplicate entries.</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm text-[--text-tertiary] mb-2">
                   Sport <span className="text-red-400">*</span>
@@ -256,7 +256,7 @@ export default function JoinPage() {
             <div className="border-t border-[--border-primary] pt-5 mt-5">
               <p className="text-xs text-[--text-quaternary] uppercase tracking-wide mb-4">Career Info (Optional)</p>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm text-[--text-tertiary] mb-2">
                     <span className="flex items-center gap-1.5"><Building2 size={13} /> Company</span>
@@ -284,7 +284,7 @@ export default function JoinPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm text-[--text-tertiary] mb-2">Industry</label>
                   <select

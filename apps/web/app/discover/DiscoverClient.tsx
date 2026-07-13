@@ -339,7 +339,7 @@ export default function DiscoverClient({
               placeholder="Location"
               value={locationFilter}
               onChange={(e) => setLocationFilter(e.target.value)}
-              className={`pl-7 pr-6 py-1.5 rounded-xl text-xs font-medium transition-colors border focus:outline-none w-28 focus:w-36 ${
+              className={`pl-7 pr-6 py-1.5 rounded-xl text-xs font-medium transition-colors border focus:outline-none w-full sm:w-28 sm:focus:w-36 ${
                 locationFilter
                   ? 'bg-[--school-primary] text-white border-[--school-primary] placeholder-white/60'
                   : 'bg-[--bg-secondary] text-[--text-secondary] border-[--border-primary] hover:bg-[--bg-tertiary]'

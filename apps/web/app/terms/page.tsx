@@ -22,10 +22,7 @@ export default function TermsPage() {
       </LegalSection>
 
       <LegalSection title="Acceptable use">
-        <p>
-          Scout is for personal career networking between student-athletes and alumni.
-          You agree not to:
-        </p>
+        <p>Scout is for personal career networking. You agree not to:</p>
         <ul className="list-disc pl-5 space-y-1">
           <li>Scrape, bulk-export, resell, or redistribute the alumni directory</li>
           <li>Spam, harass, or misrepresent who you are</li>
@@ -43,24 +40,12 @@ export default function TermsPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="Termination">
+      <LegalSection title="The fine print">
         <p>
-          We may suspend accounts that violate these terms. You can delete your account
-          at any time from Settings.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Disclaimers">
-        <p>
-          Scout is provided &ldquo;as is,&rdquo; without warranties of any kind. To the
-          maximum extent permitted by law, we are not liable for indirect or
-          consequential damages. These terms are governed by New York law.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Changes and contact">
-        <p>
-          Material changes will be posted here with an updated date. Questions:{' '}
+          We may suspend accounts that violate these terms; you can delete your account
+          anytime from Settings. Scout is provided &ldquo;as is,&rdquo; without
+          warranties, and we are not liable for indirect or consequential damages. New
+          York law governs. Questions:{' '}
           <a
             href="mailto:contact@scoutcornell.com"
             className="underline hover:text-[--text-primary]"

@@ -75,6 +75,7 @@ export default function AlumniOnboardingClient({
   const [step, setStep] = useState<Step>('welcome')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   // Identify-step state.
   const [sport, setSport] = useState(prefill?.sport || '')
@@ -185,6 +186,10 @@ export default function AlumniOnboardingClient({
     const yearInt = parseInt(values.graduation_year, 10)
     if (!values.graduation_year || isNaN(yearInt) || yearInt < 1960 || yearInt > currentYear) {
       setError(`Please enter a valid graduation year (1960–${currentYear}).`)
+      return
+    }
+    if (!agreedToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy to publish your profile.')
       return
     }
 
@@ -524,6 +529,27 @@ export default function AlumniOnboardingClient({
           <AlumniProfileForm values={values} onChange={setValues} showReviewBanner fullName={userName} />
           </div>
         </div>
+
+        <label className="mt-6 flex items-start gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={agreedToTerms}
+            onChange={(e) => setAgreedToTerms(e.target.checked)}
+            disabled={isSubmitting}
+            className="mt-0.5 w-4 h-4 accent-[--school-primary] flex-shrink-0 cursor-pointer"
+          />
+          <span className="text-sm text-[--text-tertiary] leading-relaxed">
+            I agree to the{' '}
+            <Link href="/terms" className="text-[--school-primary] hover:underline">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-[--school-primary] hover:underline">
+              Privacy Policy
+            </Link>
+            ; my profile will be visible to verified Cornell students.
+          </span>
+        </label>
 
         <div className="mt-6 flex gap-3">
           <button onClick={() => setStep(match ? 'match' : 'identify')} className="btn-secondary px-5">

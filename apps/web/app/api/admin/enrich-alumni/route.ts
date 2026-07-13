@@ -1,11 +1,14 @@
 // Admin alumni enrichment — manual, whole-corpus pass. Shares the engine with the
 // incremental cron (/api/cron/enrich-alumni); this route is the big on-demand run.
-//   POST ?key=<ADMIN_API_TOKEN>&mode=cleanup|enrich|both&limit=5000  — run it
-//   GET  ?key=<ADMIN_API_TOKEN>&limit=50                              — dry-run preview
+//   POST ?mode=cleanup|enrich|both&limit=5000  — run it
+//   GET  ?limit=50                             — dry-run preview
+// Auth: CRON_SECRET header (same pattern as /api/cron/*) or a signed-in admin
+// session. Never a query-param token — those leak into access logs.
 
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/auth'
 import {
   GARBAGE_VALUES,
   BATCH_SIZE,
@@ -17,19 +20,28 @@ import {
   type AlumniForEnrichment,
 } from '@/lib/agent/enrichAlumni'
 
-function authCheck(request: Request): boolean {
-  const { searchParams } = new URL(request.url)
-  const adminKey = searchParams.get('key')
-  const token = process.env.ADMIN_API_TOKEN
-  if (!token || token.length < 32) return false
-  return adminKey === token
+async function authCheck(request: Request): Promise<boolean> {
+  const secret = process.env.CRON_SECRET
+  if (
+    secret &&
+    (request.headers.get('authorization') === `Bearer ${secret}` ||
+      request.headers.get('x-cron-secret') === secret)
+  ) {
+    return true
+  }
+  try {
+    await requireAdmin()
+    return true
+  } catch {
+    return false
+  }
 }
 
 const ENRICH_SELECT = 'id, full_name, role, company, location, sport, graduation_year, linkedin_url, enriched_at'
 
 /** POST: cleanup + enrichment (fill mode — only populates empty fields). */
 export async function POST(request: Request) {
-  if (!authCheck(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await authCheck(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const mode = searchParams.get('mode') ?? 'both' // 'cleanup' | 'enrich' | 'both'
@@ -59,7 +71,7 @@ export async function POST(request: Request) {
 
 /** GET: dry run — count cleanup/enrichment targets and preview inference on a sample. */
 export async function GET(request: Request) {
-  if (!authCheck(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await authCheck(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const limit = parseInt(searchParams.get('limit') ?? '50')

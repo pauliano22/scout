@@ -26,6 +26,7 @@ function SignupForm() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -61,6 +62,10 @@ function SignupForm() {
     // Students must use @cornell.edu so we can verify them. Alumni can use any email.
     if (role === 'student' && !email.toLowerCase().endsWith('@cornell.edu')) {
       setError('Please use your Cornell email address (@cornell.edu)')
+      return
+    }
+    if (!agreedToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy to continue.')
       return
     }
 
@@ -269,6 +274,27 @@ function SignupForm() {
               />
             </div>
 
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                required
+                disabled={isLoading}
+                className="mt-0.5 w-4 h-4 accent-[--school-primary] flex-shrink-0 cursor-pointer"
+              />
+              <span className="text-xs text-[--text-tertiary] leading-relaxed">
+                I agree to the{' '}
+                <Link href="/terms" className="text-[--school-primary] hover:underline">
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" className="text-[--school-primary] hover:underline">
+                  Privacy Policy
+                </Link>
+              </span>
+            </label>
+
             <button
               type="submit"
               disabled={isLoading}
@@ -298,7 +324,14 @@ function SignupForm() {
         </div>
 
         <p className="text-center text-[--text-quaternary] text-xs mt-6">
-          By signing up, you agree to our Terms of Service and Privacy Policy
+          By signing up, you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-[--text-tertiary]">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link href="/privacy" className="underline hover:text-[--text-tertiary]">
+            Privacy Policy
+          </Link>
         </p>
       </div>
     </main>

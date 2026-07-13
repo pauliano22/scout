@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import DiscoverClient from './DiscoverClient'
+import { sanitizeAlumniListForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,7 +28,7 @@ export default async function DiscoverPage() {
   // Fetch only the first page of alumni — sorted by prestige (big companies, finance first)
   const { data: alumni, count: totalCount } = await supabase
     .from('alumni')
-    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, photo_url, avatar_url, prestige_score, engagement_intent', { count: 'exact' })
+    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, photo_url, avatar_url, prestige_score, engagement_intent, is_claimed, share_email_with_students', { count: 'exact' })
     .eq('is_public', true)
     .or('company.not.is.null,role.not.is.null')
     .order('prestige_score', { ascending: false, nullsFirst: false })
@@ -53,7 +54,7 @@ export default async function DiscoverPage() {
         networkCount={networkCount}
       />
       <DiscoverClient
-        initialAlumni={alumni || []}
+        initialAlumni={sanitizeAlumniListForStudent(alumni || [])}
         networkAlumniIds={Array.from(networkAlumniIds)}
         userId={user.id}
         userSport={profile?.sport || null}

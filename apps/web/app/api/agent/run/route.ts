@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { runScoutNetworkingAgent } from '@/lib/agent/runScoutNetworkingAgent'
 import type { AgentAlumni, AgentInput } from '@/lib/agent/types'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
   // so the agent never recommends nearly-empty rows.
   const { data: rows, error } = await supabase
     .from('alumni')
-    .select('id, full_name, sport, graduation_year, company, role, industry, location, linkedin_url')
+    .select('id, full_name, sport, graduation_year, company, role, industry, location, linkedin_url, is_claimed, share_email_with_students')
     .eq('is_public', true)
     .or('company.not.is.null,role.not.is.null')
     .order('updated_at', { ascending: false })
@@ -42,7 +43,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to load alumni pool' }, { status: 500 })
   }
 
-  const pool: AgentAlumni[] = (rows ?? []).map((r) => ({
+  // Consent gate: the agent result (including these rows) goes back to the
+  // student, so strip non-consented contact info before it enters the pool.
+  const pool: AgentAlumni[] = (rows ?? []).map(sanitizeAlumniForStudent).map((r) => ({
     id: r.id,
     full_name: r.full_name,
     sport: r.sport ?? '',

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { buildUserContext } from '@/lib/ai/user-context'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -261,6 +262,13 @@ Respond ONLY with valid JSON.`
     if (fetchError) {
       console.error('[plan/generate] fetch complete plan error:', fetchError)
       return NextResponse.json({ error: 'Plan saved but failed to load' }, { status: 500 })
+    }
+
+    // Consent gate at egress: plan_alumni joins the full alumni row.
+    if (completePlan?.plan_alumni) {
+      completePlan.plan_alumni = completePlan.plan_alumni.map((pa: any) =>
+        pa?.alumni ? { ...pa, alumni: sanitizeAlumniForStudent(pa.alumni) } : pa
+      )
     }
 
     return NextResponse.json({ plan: completePlan })

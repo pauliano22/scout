@@ -30,6 +30,7 @@ import {
   addRateLimitHeaders,
   rateLimitExceeded,
 } from '@/lib/rate-limit'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export const dynamic = 'force-dynamic'
 
@@ -224,7 +225,9 @@ export async function POST(request: NextRequest) {
     const full = fullById.get(m.alumnus_id)
     if (!full) continue // belt-and-suspenders — rerank already filtered, but never trust the LLM
     matches.push({
-      alumnus: full as unknown as Alumni & { similarity?: number },
+      // Consent gate at egress. The RPC rows don't carry the consent fields,
+      // so with enforcement on this fails closed (contact fields stripped).
+      alumnus: sanitizeAlumniForStudent(full as unknown as Alumni & { similarity?: number }),
       reasoning: m.reasoning,
     })
   }

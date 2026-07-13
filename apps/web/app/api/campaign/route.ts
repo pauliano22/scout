@@ -11,6 +11,7 @@ import { resolveRequestUser } from '@/lib/requestAuth'
 import { rankActions, type SuggestedAction } from '@scout/shared/agent/nextBestAction'
 import { assembleConnections } from '@/lib/agent/assembleQueue'
 import { materializePicks, ALUMNI_COLS } from '@/lib/agent/dailyPicks'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 import type { Alumni } from '@scout/shared/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -44,11 +45,15 @@ export async function GET(request: Request) {
   }
   const { signals, overrides, display, proposed } = assembled
   const queue = rankActions(signals, new Date(), overrides)
-  const hydrate = (a: SuggestedAction) => ({
-    ...a,
-    networkId: display.get(a.alumniId)?.networkId ?? null,
-    alumnus: display.get(a.alumniId)?.alumnus ?? null,
-  })
+  // Consent gate at egress: every alumnus in this payload reaches a student.
+  const hydrate = (a: SuggestedAction) => {
+    const d = display.get(a.alumniId)
+    return {
+      ...a,
+      networkId: d?.networkId ?? null,
+      alumnus: d?.alumnus ? sanitizeAlumniForStudent(d.alumnus) : null,
+    }
+  }
 
   // ── Ready-to-send: cron-prepared drafts awaiting the student's send ─────────
   let ready: any[] = []
@@ -69,7 +74,7 @@ export async function GET(request: Request) {
         messageType: r.message_type,
         draftBody: r.draft_body,
         why: r.why ?? null,
-        alumnus: (r.alumni as Alumni) ?? null,
+        alumnus: r.alumni ? sanitizeAlumniForStudent(r.alumni as Alumni) : null,
       }))
       .filter((r: any) => r.alumnus)
   } catch (e: any) {
@@ -107,7 +112,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     campaign,
     ready,
-    proposed: proposed.map((p) => ({ networkId: p.networkId, alumnus: p.alumnus, why: p.why })),
+    proposed: proposed.map((p) => ({ networkId: p.networkId, alumnus: sanitizeAlumniForStudent(p.alumnus), why: p.why })),
     waiting: queue.waiting.map(hydrate),
   })
 }

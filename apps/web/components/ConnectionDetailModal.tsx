@@ -252,6 +252,11 @@ export default function ConnectionDetailModal({
                   {copiedEmail ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                 </button>
               )}
+              {!alumni?.linkedin_url && !alumni?.email && (
+                <span className="flex-1 text-center text-xs text-[--text-quaternary] py-2">
+                  Contact available when this alum joins Scout
+                </span>
+              )}
               {(status === 'meeting_scheduled' || status === 'met') && (
                 <button onClick={handleOpenCalendar}
                   className="flex-1 flex items-center justify-center gap-1.5 text-xs text-[--text-secondary] hover:text-[--text-primary] bg-[--bg-secondary] hover:bg-[--bg-tertiary] border border-[--border-primary] rounded-lg py-2 transition-colors">

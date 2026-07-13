@@ -25,7 +25,7 @@ import {
   type NormalizedAlumni,
 } from '../lib/alumniProfile';
 import type { Alumni } from '../types/database';
-import type { ScoredAlumni } from '../services/recommendations';
+import { ALUMNI_READ_COLS, type ScoredAlumni } from '../services/recommendations';
 
 interface NetworkEntry {
   id: string;
@@ -75,7 +75,7 @@ export default function NetworkScreen() {
           status,
           notes,
           created_at,
-          alumni (*)
+          alumni (${ALUMNI_READ_COLS})
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });

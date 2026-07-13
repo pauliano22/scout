@@ -23,6 +23,8 @@ export function serviceClient(): SupabaseClient {
 
 export interface RequestAuth {
   userId: string
+  /** Auth email of the caller (null if the provider returned none). */
+  email: string | null
   db: SupabaseClient
 }
 
@@ -36,7 +38,7 @@ export async function resolveRequestUser(request: Request | NextRequest): Promis
     // Transient GoTrue failures land here too (supabase-js never throws) —
     // log them so an auth outage doesn't masquerade as a wave of bad tokens.
     if (error) console.warn('[auth] bearer getUser failed:', error.message)
-    return user ? { userId: user.id, db: service } : null
+    return user ? { userId: user.id, email: user.email ?? null, db: service } : null
   }
 
   // Cookie path: the session only establishes IDENTITY. Work happens through
@@ -47,5 +49,5 @@ export async function resolveRequestUser(request: Request | NextRequest): Promis
   const supabase = createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error) console.warn('[auth] cookie getUser failed:', error.message)
-  return user ? { userId: user.id, db: serviceClient() } : null
+  return user ? { userId: user.id, email: user.email ?? null, db: serviceClient() } : null
 }

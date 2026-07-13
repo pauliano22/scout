@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeAlumniListForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export async function GET(request: NextRequest) {
   const supabase = createClient()
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'alumni_id required' }, { status: 400 })
   }
 
-  const fields = 'id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, avatar_url'
+  const fields = 'id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, avatar_url, is_claimed, share_email_with_students'
   const similar: any[] = []
   const seenIds = new Set([alumniId])
 
@@ -80,5 +81,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ similar: similar.slice(0, 4) })
+  // Consent gate at egress: this feed is student-facing.
+  return NextResponse.json({ similar: sanitizeAlumniListForStudent(similar.slice(0, 4)) })
 }

@@ -3,10 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { ok, fail } from '@/lib/api/respond'
 import { notifyTelegram } from '@/lib/notify/telegram'
 
-// notifyTelegram sends with parse_mode HTML — escape user-supplied text so a
-// report reason (or a scraped name) can't inject markup.
-const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
 /**
  * POST /api/report
  * Students flag an alumni profile as incorrect / problematic.
@@ -47,17 +43,11 @@ export async function POST(request: NextRequest) {
     if (error) throw error
 
     // Real-time moderation alert to Telegram (best-effort; never blocks/breaks
-    // the report). Resolve the alum's name so the message is readable.
-    const { data: alum } = await supabase
-      .from('alumni')
-      .select('full_name, company')
-      .eq('id', alumniId)
-      .maybeSingle()
-    const who = alum
-      ? `${alum.full_name}${alum.company ? ` · ${alum.company}` : ''}`
-      : alumniId
+    // the report). IDs only — no names or report text. Telegram is third-party,
+    // non-US infra with no DPA, so PII stays inside the app; details live at
+    // /admin/reports.
     await notifyTelegram(
-      `🚩 Profile flagged on Scout\n${escapeHtml(who)}\nReason: ${escapeHtml(reason.trim())}`,
+      `🚩 Profile flagged on Scout\nreport id: ${data.id}\nReview: https://scoutcornell.com/admin/reports`,
     )
 
     return ok(data, 201)

@@ -156,7 +156,14 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-[--text-quaternary] text-xs mt-6">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-[--text-tertiary]">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link href="/privacy" className="underline hover:text-[--text-tertiary]">
+            Privacy Policy
+          </Link>
         </p>
       </div>
     </main>

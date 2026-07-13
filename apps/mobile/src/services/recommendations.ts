@@ -10,6 +10,14 @@ import {
   type WarmPathSummary,
 } from '@scout/shared/scoring/recommendationScoring';
 
+// Explicit alumni columns for direct reads — never select('*') on alumni.
+// Two reasons: '*' drags the pgvector embedding (1536 floats/row), and it
+// ships contact info (email, linkedin_url) the alum may not have consented to
+// share with students. Contact info must only reach mobile through the
+// consent-gated web API payloads, never a direct table read.
+export const ALUMNI_READ_COLS =
+  'id, full_name, sport, graduation_year, company, role, industry, location, avatar_url, photo_url, is_verified, is_public, source, school_id, created_at, updated_at, work_history, skills, education, display_headline, path_summary_stub, current_status_type, bio, advice, engagement_intent, prestige_score';
+
 // Warm paths for a candidate shortlist: who in the student's saved network was
 // on campus with each candidate. Server-computed; empty map on any failure so
 // the deck never depends on it.
@@ -129,15 +137,17 @@ export async function fetchRecommendations(
     if (targetDbIndustries.length > 0) {
       const { data } = await supabase
         .from('alumni')
-        .select('*')
+        .select(ALUMNI_READ_COLS)
         .eq('is_public', true)
         .in('industry', targetDbIndustries);
-      pass1 = (data ?? []) as Alumni[];
+      // Narrower row than Alumni by design: contact + consent columns are
+      // intentionally never selected on this client.
+      pass1 = (data ?? []) as unknown as Alumni[];
     }
 
     const { data: pass2Data, error } = await supabase
       .from('alumni')
-      .select('*')
+      .select(ALUMNI_READ_COLS)
       .eq('is_public', true)
       .order('prestige_score', { ascending: false, nullsFirst: false })
       .order('updated_at', { ascending: false })
@@ -149,7 +159,7 @@ export async function fetchRecommendations(
 
     const base = {
       pass1,
-      pass2: (pass2Data ?? []) as Alumni[],
+      pass2: (pass2Data ?? []) as unknown as Alumni[],
       excludeIds,
       prefs,
       swipeWeights,

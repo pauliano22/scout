@@ -1,6 +1,26 @@
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/auth'
+
+// Auth: CRON_SECRET header (same pattern as /api/cron/*) or a signed-in admin
+// session. Never a query-param token — those leak into access logs.
+async function authCheck(request: Request): Promise<boolean> {
+  const secret = process.env.CRON_SECRET
+  if (
+    secret &&
+    (request.headers.get('authorization') === `Bearer ${secret}` ||
+      request.headers.get('x-cron-secret') === secret)
+  ) {
+    return true
+  }
+  try {
+    await requireAdmin()
+    return true
+  } catch {
+    return false
+  }
+}
 
 const VALID_INDUSTRIES = [
   'Finance',
@@ -95,11 +115,7 @@ Return ONLY the JSON array, no other text.`
 
 export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const adminKey = searchParams.get('key')
-    const token = process.env.ADMIN_API_TOKEN
-
-    if (!token || token.length < 32 || adminKey !== token) {
+    if (!(await authCheck(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -193,14 +209,12 @@ export async function POST(request: Request) {
 // GET endpoint to preview changes without applying
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const adminKey = searchParams.get('key')
-    const limit = parseInt(searchParams.get('limit') || '100')
-    const token = process.env.ADMIN_API_TOKEN
-
-    if (!token || token.length < 32 || adminKey !== token) {
+    if (!(await authCheck(request))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { searchParams } = new URL(request.url)
+    const limit = parseInt(searchParams.get('limit') || '100')
 
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY

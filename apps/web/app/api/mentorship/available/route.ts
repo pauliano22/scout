@@ -3,12 +3,28 @@
 
 import { NextResponse } from 'next/server'
 import { resolveRequestUser } from '@/lib/requestAuth'
+import { sanitizeAlumniForStudent } from '@/lib/privacy/sanitizeAlumni'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  const auth = await resolveRequestUser(new Request('http://localhost'))
+export async function GET(request: Request) {
+  const auth = await resolveRequestUser(request)
   if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Directory gate, mirroring the migration-052 RLS policy on `alumni`: this
+  // route reads through the service client (RLS bypass), so enforce the same
+  // rule in app code. Cornell students pass on email domain; alumni/admins
+  // pass once directory_access is granted (claim accepted / admin review).
+  const isCornellStudent = (auth.email ?? '').toLowerCase().endsWith('@cornell.edu')
+  if (!isCornellStudent) {
+    const { data: profile } = await auth.db
+      .from('profiles')
+      .select('directory_access, account_role')
+      .eq('id', auth.userId)
+      .maybeSingle()
+    const allowed = profile?.directory_access === true || profile?.account_role === 'admin'
+    if (!allowed) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   // Fetch alumni who are accepting mentees, ordered by most available spots first.
   const { data: mentorships, error } = await auth.db
@@ -30,7 +46,9 @@ export async function GET() {
         advice,
         avatar_url,
         headshot_url,
-        linkedin_url
+        linkedin_url,
+        is_claimed,
+        share_email_with_students
       )
     `)
     .eq('accepting_mentees', true)
@@ -43,7 +61,8 @@ export async function GET() {
   }
 
   const available = (mentorships || []).map((m: any) => ({
-    alumni: m.alumni,
+    // Consent gate at egress: this feed is student-facing.
+    alumni: m.alumni ? sanitizeAlumniForStudent(m.alumni) : m.alumni,
     mentorship: {
       accepting_mentees: m.accepting_mentees,
       capacity: m.capacity,

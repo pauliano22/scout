@@ -8,6 +8,7 @@ import { Search, Users, ChevronDown, X, Loader2, MapPin } from 'lucide-react'
 import { trackEvent } from '@/lib/track'
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout'
 import { SPORTS_LIST } from '@/lib/sportUtils'
+import type { WorkHistoryEntry } from '@scout/shared/types/database'
 
 // Partial Alumni type for discover page (only fields we fetch)
 export interface DiscoverAlumni {
@@ -24,6 +25,8 @@ export interface DiscoverAlumni {
   avatar_url?: string | null
   prestige_score?: number | null
   engagement_intent?: string | null
+  display_headline?: string | null
+  work_history?: WorkHistoryEntry[] | null
 }
 
 interface DiscoverClientProps {

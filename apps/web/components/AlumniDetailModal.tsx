@@ -117,8 +117,9 @@ export default function AlumniDetailModal({
   const company = cleanField(alumni.company)
   const headline = cleanField(alumni.display_headline)
 
-  // Experience list — collapse long histories to the 4 most recent by default.
-  const jobs = alumni.work_history ?? []
+  // Experience list — drop contentless entries (mirrors alumniProfile.ts), then
+  // collapse long histories to the 4 most recent by default.
+  const jobs = (alumni.work_history ?? []).filter((w) => w && (w.title || w.company))
   const visibleJobs = showAllJobs ? jobs : jobs.slice(0, 4)
 
   const handleAddToNetwork = async () => {

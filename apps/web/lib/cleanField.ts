@@ -1,6 +1,6 @@
 // Text a scraper captured off a captcha / login / security-check wall instead of
 // the real profile field — never a legitimate role, company, or headline.
-const SCRAPE_ARTIFACT = /^(re)?captcha$|^security verification$|^sign in$|^join linkedin/i
+const SCRAPE_ARTIFACT = /^(re)?captcha$|^security verification$|^sign in$|^join linkedin$/i
 
 /**
  * Normalizes an alumni field value scraped from LinkedIn/public records.

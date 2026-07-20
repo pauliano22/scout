@@ -19,6 +19,26 @@ import ShareProfileButton from '@/components/ShareProfileButton'
 import { cleanField } from '@/lib/cleanField'
 import type { WorkHistoryEntry } from '@scout/shared/types/database'
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function formatDatePart(d: { year: number; month?: number } | null | undefined): string | null {
+  if (!d?.year) return null
+  const m = d.month && d.month >= 1 && d.month <= 12 ? `${MONTHS[d.month - 1]} ` : ''
+  return `${m}${d.year}`
+}
+
+// Human tenure line from an entry's start/end, e.g. "Apr 2022 – Present" or
+// "2018 – 2021". A null end means the role is ongoing. Returns null when no
+// dates are known (Apollo omits duration/location, so this is the timeframe).
+function formatTenure(w: WorkHistoryEntry): string | null {
+  const start = formatDatePart(w.start)
+  const end = w.end ? formatDatePart(w.end) : null
+  if (!start && !end) return null
+  if (start && !w.end) return `${start} – Present`
+  if (start && end) return `${start} – ${end}`
+  return start || end
+}
+
 // Base alumni type with only fields used by this modal. The richer career
 // fields are optional so search callers passing a lightweight object still work;
 // the campaign home passes the fully-hydrated alum so they render.
@@ -72,6 +92,7 @@ export default function AlumniDetailModal({
   const [addedToNetwork, setAddedToNetwork] = useState(isInNetwork)
   const [warm, setWarm] = useState<{ count: number; topName: string; topRelation: string; topSeasons?: number; topSports?: string[] } | null>(null)
   const [showFlagForm, setShowFlagForm] = useState(false)
+  const [showAllJobs, setShowAllJobs] = useState(false)
   const [flagReason, setFlagReason] = useState('')
   const [flagSubmitted, setFlagSubmitted] = useState(false)
   const [flagError, setFlagError] = useState('')
@@ -94,6 +115,12 @@ export default function AlumniDetailModal({
 
   const role = cleanField(alumni.role)
   const company = cleanField(alumni.company)
+  const headline = cleanField(alumni.display_headline)
+
+  // Experience list — drop contentless entries (mirrors alumniProfile.ts), then
+  // collapse long histories to the 4 most recent by default.
+  const jobs = (alumni.work_history ?? []).filter((w) => w && (w.title || w.company))
+  const visibleJobs = showAllJobs ? jobs : jobs.slice(0, 4)
 
   const handleAddToNetwork = async () => {
     setIsAdding(true)
@@ -330,10 +357,10 @@ export default function AlumniDetailModal({
           )}
 
           {/* Career: headline, bio, work history (the full-profile expand) */}
-          {(alumni.display_headline || alumni.bio || (alumni.work_history && alumni.work_history.length > 0)) && (
+          {(headline || alumni.bio || jobs.length > 0) && (
             <div className="border-t border-[--border-primary] px-6 py-5 space-y-4">
-              {alumni.display_headline && (
-                <p className="text-sm text-[--text-secondary] leading-snug">{alumni.display_headline}</p>
+              {headline && (
+                <p className="text-sm text-[--text-secondary] leading-snug">{headline}</p>
               )}
 
               {alumni.bio && (
@@ -343,26 +370,35 @@ export default function AlumniDetailModal({
                 </div>
               )}
 
-              {alumni.work_history && alumni.work_history.length > 0 && (
+              {jobs.length > 0 && (
                 <div>
                   <h3 className="text-xs font-semibold text-[--text-quaternary] uppercase tracking-wide mb-2.5">Experience</h3>
                   <div className="space-y-3">
-                    {alumni.work_history.map((w, i) => (
-                      <div key={i} className="flex gap-3">
-                        <Briefcase size={13} className="text-[--text-quaternary] mt-0.5 flex-shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-sm text-[--text-primary] leading-snug">
-                            {w.title || '—'}{w.title && w.company && ' · '}{w.company || ''}
-                          </p>
-                          {(w.duration || w.location) && (
-                            <p className="text-xs text-[--text-quaternary] mt-0.5">
-                              {[w.duration, w.location].filter(Boolean).join(' · ')}
+                    {visibleJobs.map((w, i) => {
+                      const meta = [formatTenure(w) || w.duration, w.location].filter(Boolean).join(' · ')
+                      return (
+                        <div key={i} className="flex gap-3">
+                          <Briefcase size={13} className="text-[--text-quaternary] mt-0.5 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm text-[--text-primary] leading-snug">
+                              {w.title || '—'}{w.title && w.company && ' · '}{w.company || ''}
                             </p>
-                          )}
+                            {meta && (
+                              <p className="text-xs text-[--text-quaternary] mt-0.5">{meta}</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
+                  {jobs.length > 4 && (
+                    <button
+                      onClick={() => setShowAllJobs(v => !v)}
+                      className="text-xs text-[--text-tertiary] hover:text-[--text-secondary] transition-colors mt-2.5"
+                    >
+                      {showAllJobs ? 'Show less' : `Show ${jobs.length - 4} more`}
+                    </button>
+                  )}
                 </div>
               )}
             </div>

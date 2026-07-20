@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
   // Build the query for data
   let query = supabase
     .from('alumni')
-    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, photo_url, avatar_url, prestige_score, engagement_intent, is_claimed, share_email_with_students', { count: 'exact' })
+    .select('id, full_name, company, role, industry, sport, graduation_year, linkedin_url, location, photo_url, avatar_url, prestige_score, engagement_intent, is_claimed, share_email_with_students, display_headline, work_history', { count: 'exact' })
     .eq('is_public', true)
 
   // Apply search filter

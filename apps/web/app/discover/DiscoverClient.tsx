@@ -365,11 +365,6 @@ export default function DiscoverClient({
               Clear
             </button>
           )}
-
-          {/* Results count — right-aligned */}
-          <span className="ml-auto text-xs text-[--text-quaternary]">
-            {totalCount.toLocaleString()} alumni
-          </span>
         </div>
       </div>
 
@@ -421,7 +416,7 @@ export default function DiscoverClient({
                     Loading...
                   </span>
                 ) : (
-                  `Load More (${(totalCount - alumni.length).toLocaleString()} remaining)`
+                  'Load More'
                 )}
               </button>
             </div>

@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 import { checkRateLimit, getClientIp, rateLimitExceeded } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
@@ -30,16 +31,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'step and session_id are required' }, { status: 400 })
     }
 
-    const validSteps = ['landing', 'form', 'submit', 'verify', 'complete']
+    const validSteps = ['landing', 'form', 'form_engaged', 'submit_blocked', 'submit', 'verify', 'complete']
     if (!validSteps.includes(step)) {
       return NextResponse.json({ error: `step must be one of: ${validSteps.join(', ')}` }, { status: 400 })
     }
+
+    // Landing gets the user agent stamped server-side (the client can lie, but
+    // this is analytics, not auth) so IG in-app-WebView traffic is attributable.
+    const enriched = step === 'landing'
+      ? { ...metadata, ua: request.headers.get('user-agent')?.slice(0, 300) ?? undefined }
+      : metadata
 
     const { error } = await supabase.from('signup_events').insert({
       session_id,
       step,
       user_id: user?.id ?? null,
-      metadata,
+      metadata: enriched,
     })
 
     if (error) {
@@ -76,10 +83,12 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Count unique sessions per step
-    const { data: stepCounts, error: countError } = await supabase
+    // Count unique sessions per step. The select must run as service role:
+    // funnel rows are inserted pre-auth with user_id NULL, so the session
+    // client's own-row RLS policy sees almost nothing.
+    const { data: stepCounts, error: countError } = await serviceClient()
       .from('signup_events')
-      .select('step, session_id')
+      .select('step, session_id, metadata')
 
     if (countError) {
       console.error('[signup] stats query error:', countError)
@@ -87,19 +96,35 @@ export async function GET() {
     }
 
     const sessionsByStep = new Map<string, Set<string>>()
+    const blockedSessionsByReason = new Map<string, Set<string>>()
     for (const row of stepCounts ?? []) {
       if (!sessionsByStep.has(row.step)) sessionsByStep.set(row.step, new Set())
       sessionsByStep.get(row.step)!.add(row.session_id)
+      if (row.step === 'submit_blocked') {
+        const reason = ((row.metadata as Record<string, unknown>)?.reason as string) ?? 'unknown'
+        if (!blockedSessionsByReason.has(reason)) blockedSessionsByReason.set(reason, new Set())
+        blockedSessionsByReason.get(reason)!.add(row.session_id)
+      }
     }
+    const blockedReasons: Record<string, number> = {}
+    for (const [reason, sessions] of blockedSessionsByReason) blockedReasons[reason] = sessions.size
 
     const totalSessions = sessionsByStep.get('landing')?.size ?? 0
-    const steps = ['landing', 'form', 'submit', 'verify', 'complete'].map((step) => {
+    // submit_blocked is a diagnostic, not a funnel stage — reported separately.
+    const steps = ['landing', 'form', 'form_engaged', 'submit', 'verify', 'complete'].map((step) => {
       const count = sessionsByStep.get(step)?.size ?? 0
       const dropoffPct = totalSessions > 0 ? Math.round(((totalSessions - count) / totalSessions) * 100) : 0
       return { step, count, dropoff_pct: dropoffPct }
     })
 
-    return NextResponse.json({ total_sessions: totalSessions, steps })
+    return NextResponse.json({
+      total_sessions: totalSessions,
+      steps,
+      submit_blocked: {
+        sessions: sessionsByStep.get('submit_blocked')?.size ?? 0,
+        by_reason: blockedReasons,
+      },
+    })
   } catch (e: any) {
     console.error('[signup] GET error:', e?.message ?? e)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

@@ -101,31 +101,31 @@ export async function GET(request: NextRequest) {
       .in('session_id', newAbandoned)
       .order('created_at', { ascending: false })
 
-    // Build recovery records grouped by session (take the most recent event per session)
-    const seen = new Set<string>()
+    // Build recovery records grouped by session. last_step = the most recent
+    // event, but the email comes from the most recent event that CARRIES one —
+    // a trailing diagnostic (submit_blocked/auth_error, migration 068) has no
+    // email and must not shadow the submit event's real address.
+    const lastStepBySession = new Map<string, string>()
+    const emailBySession = new Map<string, string>()
+    for (const event of lastEvents ?? []) {
+      if (!lastStepBySession.has(event.session_id)) lastStepBySession.set(event.session_id, event.step)
+      if (!emailBySession.has(event.session_id)) {
+        const meta = (event.metadata ?? {}) as Record<string, unknown>
+        if (typeof meta.email === 'string' && meta.email) emailBySession.set(event.session_id, meta.email)
+      }
+    }
+
     const recoveryRecords: Array<{
       email: string
       session_id: string
       last_step: string
       recovery_sent_at: string
-    }> = []
-
-    for (const event of lastEvents ?? []) {
-      if (seen.has(event.session_id)) continue
-      seen.add(event.session_id)
-
-      const meta = (event.metadata ?? {}) as Record<string, unknown>
-      const email = typeof meta.email === 'string' && meta.email
-        ? meta.email
-        : `${event.session_id}@unknown.scout`
-
-      recoveryRecords.push({
-        email,
-        session_id: event.session_id,
-        last_step: event.step,
-        recovery_sent_at: new Date().toISOString(),
-      })
-    }
+    }> = Array.from(lastStepBySession.entries()).map(([session_id, last_step]) => ({
+      email: emailBySession.get(session_id) ?? `${session_id}@unknown.scout`,
+      session_id,
+      last_step,
+      recovery_sent_at: new Date().toISOString(),
+    }))
 
     if (recoveryRecords.length > 0) {
       const { error: insertError } = await supabase

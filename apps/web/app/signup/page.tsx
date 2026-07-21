@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import Link from '@/components/Link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -29,6 +29,21 @@ function SignupForm() {
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  // Early, non-blocking nudge for students typing a non-Cornell address —
+  // the hard gate at submit was invisible until they tapped Create Account.
+  const [showCornellHint, setShowCornellHint] = useState(false)
+
+  // Once-per-mount diagnostic emits (see migration 068).
+  const engagedLogged = useRef(false)
+  const nativeBlockLogged = useRef(false)
+  // Whether the current role came from the URL (?role= deep link) or a click —
+  // the URL param lingers after "Change", so it can't be read at log time.
+  const roleSource = useRef<'url' | 'click'>(initialRole ? 'url' : 'click')
+  const markEngaged = () => {
+    if (engagedLogged.current) return
+    engagedLogged.current = true
+    logSignupStep('form_engaged', { role })
+  }
 
   useEffect(() => {
     const next: Role | null =
@@ -37,34 +52,45 @@ function SignupForm() {
         : searchParams?.get('role') === 'student'
           ? 'student'
           : null
-    if (next && next !== role) setRole(next)
+    if (next && next !== role) {
+      roleSource.current = 'url'
+      setRole(next)
+    }
     // Only react to URL changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
   // Funnel: page reached, then form shown once a role is picked. Duplicate
   // step events are fine — funnel stats count unique sessions per step.
+  // 'form' fires on mount for ?role= deep links (all ad traffic), so
+  // metadata.source distinguishes a deep-link pageview from a real role click;
+  // form_engaged (first field focus) is the actual engagement signal.
   useEffect(() => {
-    logSignupStep('landing')
+    logSignupStep('landing', { referrer: document.referrer.slice(0, 300) || undefined })
   }, [])
   useEffect(() => {
-    if (role) logSignupStep('form', { role })
+    if (role) logSignupStep('form', { role, source: roleSource.current })
   }, [role])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
+    // Every rejected attempt logs submit_blocked — before this, validation
+    // failures were indistinguishable from bounces in the funnel.
     if (!role) {
+      logSignupStep('submit_blocked', { reason: 'role_missing' })
       setError('Please choose how you want to join.')
       return
     }
     // Students must use @cornell.edu so we can verify them. Alumni can use any email.
     if (role === 'student' && !email.toLowerCase().endsWith('@cornell.edu')) {
+      logSignupStep('submit_blocked', { role, reason: 'cornell_email', email_domain: email.split('@')[1]?.toLowerCase() ?? '' })
       setError('Please use your Cornell email address (@cornell.edu)')
       return
     }
     if (!agreedToTerms) {
+      logSignupStep('submit_blocked', { role, reason: 'terms_unchecked' })
       setError('Please agree to the Terms of Service and Privacy Policy to continue.')
       return
     }
@@ -111,6 +137,7 @@ function SignupForm() {
       logSignupStep('complete', { role })
       router.push('/onboarding')
     } catch (err: any) {
+      logSignupStep('submit_blocked', { role, reason: 'auth_error', message: String(err?.message ?? '').slice(0, 120) })
       setError(err.message || 'Failed to sign up')
       setIsLoading(false)
     }
@@ -133,7 +160,7 @@ function SignupForm() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => setRole('student')}
+                onClick={() => { roleSource.current = 'click'; setRole('student') }}
                 className="w-full text-left bg-[--bg-secondary] hover:bg-[--bg-tertiary] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elevated)] transition rounded-2xl p-5 flex items-start gap-4 group"
               >
                 <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
@@ -150,7 +177,7 @@ function SignupForm() {
 
               <button
                 type="button"
-                onClick={() => setRole('alumni')}
+                onClick={() => { roleSource.current = 'click'; setRole('alumni') }}
                 className="w-full text-left bg-[--bg-secondary] hover:bg-[--bg-tertiary] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elevated)] transition rounded-2xl p-5 flex items-start gap-4 group"
               >
                 <div className="w-10 h-10 rounded-xl bg-[--school-primary]/10 flex items-center justify-center flex-shrink-0">
@@ -211,7 +238,20 @@ function SignupForm() {
             </button>
           </div>
 
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form
+            onSubmit={handleSignup}
+            // First focus on any field = real engagement (vs the mount-fired
+            // 'form' step); native validation bubbles (required/minLength)
+            // block submission before handleSignup, so log those too.
+            onFocusCapture={markEngaged}
+            onInvalidCapture={(e) => {
+              if (nativeBlockLogged.current) return
+              nativeBlockLogged.current = true
+              const t = e.target as HTMLInputElement
+              logSignupStep('submit_blocked', { role, reason: 'native_validation', field: t?.name || t?.type || 'unknown' })
+            }}
+            className="space-y-4"
+          >
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm">
                 {error}
@@ -225,6 +265,7 @@ function SignupForm() {
               />
               <input
                 type="text"
+                name="full_name"
                 placeholder="Full name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
@@ -242,19 +283,27 @@ function SignupForm() {
                 />
                 <input
                   type="email"
+                  name="email"
                   placeholder="Email address"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setShowCornellHint(false) }}
+                  onBlur={() => setShowCornellHint(role === 'student' && email.includes('@') && !email.toLowerCase().endsWith('@cornell.edu'))}
                   required
                   disabled={isLoading}
                   className="input-field !pl-11"
                 />
               </div>
-              <p className="text-xs text-[--text-quaternary] mt-1 ml-1">
-                {role === 'alumni'
-                  ? 'Personal or work email is fine.'
-                  : 'Use your Cornell email (@cornell.edu)'}
-              </p>
+              {role === 'student' && showCornellHint ? (
+                <p className="text-xs text-amber-500 mt-1 ml-1">
+                  Students sign up with their @cornell.edu email — it&apos;s how we match you to your team.
+                </p>
+              ) : (
+                <p className="text-xs text-[--text-quaternary] mt-1 ml-1">
+                  {role === 'alumni'
+                    ? 'Personal or work email is fine.'
+                    : 'Use your Cornell email (@cornell.edu)'}
+                </p>
+              )}
             </div>
 
             <div className="relative">
@@ -264,6 +313,7 @@ function SignupForm() {
               />
               <input
                 type="password"
+                name="password"
                 placeholder="Password (min. 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -274,24 +324,32 @@ function SignupForm() {
               />
             </div>
 
-            <label className="flex items-start gap-2.5 cursor-pointer">
+            {/* Legal links open in a new tab with plain anchors: the custom
+                Link client-navigates away and destroys everything typed. The
+                padded label keeps the tap target ≥44px on narrow WebViews. */}
+            <label className="flex items-start gap-3 cursor-pointer py-2">
+              {/* Deliberately NOT `required`: the native bubble would block
+                  submission before handleSignup, hiding the styled error and
+                  misfiling the block as native_validation instead of
+                  terms_unchecked in the funnel diagnostics. */}
               <input
                 type="checkbox"
+                name="terms"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                required
+                aria-required="true"
                 disabled={isLoading}
-                className="mt-0.5 w-4 h-4 accent-[--school-primary] flex-shrink-0 cursor-pointer"
+                className="mt-0.5 w-5 h-5 accent-[--school-primary] flex-shrink-0 cursor-pointer"
               />
               <span className="text-xs text-[--text-tertiary] leading-relaxed">
                 I agree to the{' '}
-                <Link href="/terms" className="text-[--school-primary] hover:underline">
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[--school-primary] hover:underline">
                   Terms of Service
-                </Link>{' '}
+                </a>{' '}
                 and{' '}
-                <Link href="/privacy" className="text-[--school-primary] hover:underline">
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[--school-primary] hover:underline">
                   Privacy Policy
-                </Link>
+                </a>
               </span>
             </label>
 
@@ -325,13 +383,13 @@ function SignupForm() {
 
         <p className="text-center text-[--text-quaternary] text-xs mt-6">
           By signing up, you agree to our{' '}
-          <Link href="/terms" className="underline hover:text-[--text-tertiary]">
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[--text-tertiary]">
             Terms of Service
-          </Link>{' '}
+          </a>{' '}
           and{' '}
-          <Link href="/privacy" className="underline hover:text-[--text-tertiary]">
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[--text-tertiary]">
             Privacy Policy
-          </Link>
+          </a>
         </p>
       </div>
     </main>

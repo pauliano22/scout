@@ -4,7 +4,14 @@
 
 const STORAGE_KEY = 'scout-signup-session'
 
-export type SignupStep = 'landing' | 'form' | 'submit' | 'verify' | 'complete'
+export type SignupStep =
+  | 'landing'
+  | 'form'          // form rendered (fires on mount for ?role= deep links — see metadata.source)
+  | 'form_engaged'  // first focus on any field: real engagement, not a pageview
+  | 'submit_blocked' // submit attempt rejected pre-'submit'; metadata.reason says why
+  | 'submit'
+  | 'verify'
+  | 'complete'
 
 function sessionId(): string {
   try {

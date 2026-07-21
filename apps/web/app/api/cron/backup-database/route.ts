@@ -176,13 +176,20 @@ async function dumpAuthUsers(db: Db): Promise<{ rows: number; body: string }> {
 }
 
 async function ensureBucket(db: Db): Promise<void> {
-  const { error } = await db.storage.createBucket(BUCKET, { public: false, fileSizeLimit: '500MB' })
-  if (!error) return
-  // 409 = bucket already exists (every night after the first). Match the
-  // status code, not just the server's message text, which can be reworded.
-  const status = (error as { status?: number }).status
-  if (status === 409 || /already exists/i.test(error.message)) return
-  throw new Error(`bucket create failed: ${error.message}`)
+  // A per-bucket fileSizeLimit above the project's GLOBAL upload cap (50MB on
+  // Supabase Free tier) makes createBucket reject — fatal to the whole run —
+  // so fall back to the project default cap, which our single-digit-MB
+  // nightly files fit comfortably. 409 = bucket already exists (every night
+  // after the first); match the status code, not just the reword-able text.
+  let lastErr: { message: string } | null = null
+  for (const opts of [{ public: false, fileSizeLimit: '500MB' }, { public: false }]) {
+    const { error } = await db.storage.createBucket(BUCKET, opts)
+    if (!error) return
+    const status = (error as { status?: number }).status
+    if (status === 409 || /already exists/i.test(error.message)) return
+    lastErr = error
+  }
+  throw new Error(`bucket create failed: ${lastErr?.message}`)
 }
 
 async function prune(db: Db): Promise<{ pruned_days: number; prune_errors: string[] }> {

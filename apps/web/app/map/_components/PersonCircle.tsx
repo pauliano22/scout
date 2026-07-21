@@ -11,6 +11,8 @@ interface Props {
   saved: SavedContact[]
   onSave: (alumniId: string) => void
   onPick: (p: Person) => void
+  /** Viewing your own circle: second-person copy, no save-yourself action. */
+  self?: boolean
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -21,7 +23,7 @@ const STATUS_LABEL: Record<string, string> = {
   met: 'you met',
 }
 
-export default function PersonCircle({ ds, person: p, saved, onSave, onPick }: Props) {
+export default function PersonCircle({ ds, person: p, saved, onSave, onPick, self = false }: Props) {
   const isSaved = saved.some(s => s.alumniId === p.id)
   const mates = useMemo(
     () => teammates(ds, p).sort((a, b) => seasonsShared(p, b) - seasonsShared(p, a) || (b.y ?? 0) - (a.y ?? 0)),
@@ -57,11 +59,11 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick }: P
           <p className="pc-meta">{[p.in != null ? ds.data.industries[p.in] : null, p.lo].filter(Boolean).join(' · ')}</p>
         </div>
         <div className="pc-actions">
-          {isSaved ? (
+          {!self && (isSaved ? (
             <span className="pc-saved">✓ Saved</span>
           ) : (
             <button className="pc-save" onClick={() => onSave(p.id)}>Save</button>
-          )}
+          ))}
           {p.li && (
             <a className="pc-linkedin" href={p.li} target="_blank" rel="noopener noreferrer">LinkedIn</a>
           )}
@@ -70,7 +72,7 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick }: P
 
       {p.a != null && mates.length > 0 ? (
         <div className="pc-timeline">
-          <h3>Who they played with</h3>
+          <h3>{self ? 'Who you played with' : 'Who they played with'}</h3>
           <TeamTimeline ds={ds} ego={p} mates={mates} onPick={onPick} />
           <p className="pc-era muted">
             {mates.length.toLocaleString()} teammates · {eraCount.toLocaleString()} more on campus at the same time

@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server'
  *
  * Response: { id, code, url }
  */
-export async function POST() {
+export async function POST(request: Request) {
   try {
     const supabase = createClient()
 
@@ -17,6 +17,11 @@ export async function POST() {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // Fall back to the request origin, not a hardcoded domain: the old
+    // scout.cornell.edu fallback generated dead links whenever
+    // NEXT_PUBLIC_APP_URL was unset (prod is scoutcornell.com).
+    const origin = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
 
     // Check if user already has an active referral link
     const { data: existing } = await supabase
@@ -30,7 +35,7 @@ export async function POST() {
       return NextResponse.json({
         id: existing.id,
         code: existing.code,
-        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://scout.cornell.edu'}/r/${existing.code}`,
+        url: `${origin}/r/${existing.code}`,
       })
     }
 
@@ -73,7 +78,7 @@ export async function POST() {
     return NextResponse.json({
       id: data.id,
       code: data.code,
-      url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://scout.cornell.edu'}/r/${data.code}`,
+      url: `${origin}/r/${data.code}`,
     })
   } catch (err) {
     console.error('[referral/create] error:', err)

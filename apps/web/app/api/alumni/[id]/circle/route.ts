@@ -34,7 +34,19 @@ export async function GET(
     .map(n => ({ alumniId: n.alumni_id as string, status: (n.status as string) ?? null }))
 
   try {
-    const circle = await buildCircle(params.id, saved, limit)
+    // The dataset is a static bake: filter people who opted out or were merged
+    // away since, and refuse to serve a circle for an opted-out person at all.
+    const { data: hiddenRows } = await db
+      .from('alumni')
+      .select('id')
+      .or('is_public.eq.false,is_duplicate.eq.true')
+      .limit(5000)
+    const exclude = new Set((hiddenRows ?? []).map(r => r.id as string))
+    if (exclude.has(params.id)) {
+      return NextResponse.json({ error: 'Unknown alumni id' }, { status: 404 })
+    }
+
+    const circle = await buildCircle(params.id, saved, limit, { exclude })
     if (!circle) return NextResponse.json({ error: 'Unknown alumni id' }, { status: 404 })
     return NextResponse.json(circle, {
       headers: { 'Cache-Control': 'private, max-age=300' },

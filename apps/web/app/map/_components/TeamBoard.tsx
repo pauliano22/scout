@@ -116,20 +116,25 @@ export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: P
                     </span>
                     <span className="bd-prole">{nowLine(p)}</span>
                   </span>
-                  {/* Siblings, not nested: buttons inside buttons are invalid
-                      DOM and unreachable by keyboard. */}
+                  {/* Saved state is an inline chip (flex sibling) so it never
+                      overlaps the name; the actionable Save stays an absolute
+                      hover/focus-revealed button. Siblings, not nested:
+                      buttons inside buttons are invalid DOM. */}
+                  {savedIds.has(p.id) && <span className="bd-savedchip">Saved ✓</span>}
                   <button
                     className="bd-card-open"
                     aria-label={`View ${p.n}’s circle`}
                     onClick={() => onPick(p)}
                   />
-                  <button
-                    className={`bd-save${savedIds.has(p.id) ? ' bd-saved' : ''}`}
-                    aria-label={savedIds.has(p.id) ? `${p.n} saved` : `Save ${p.n}`}
-                    onClick={() => { if (!savedIds.has(p.id)) onSave(p.id) }}
-                  >
-                    {savedIds.has(p.id) ? 'Saved ✓' : 'Save'}
-                  </button>
+                  {!savedIds.has(p.id) && (
+                    <button
+                      className="bd-save"
+                      aria-label={`Save ${p.n}`}
+                      onClick={() => onSave(p.id)}
+                    >
+                      Save
+                    </button>
+                  )}
                 </div>
               ))}
               {col.people.length > CARDS_PER_COLUMN && (

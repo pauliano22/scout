@@ -392,9 +392,8 @@
   font-size: 11px; font-weight: 500; color: var(--ink-soft);
   background: var(--bg-primary); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
 }
-.bd-card:hover .bd-save, .bd-save.bd-saved { opacity: 1; pointer-events: auto; }
+.bd-card:hover .bd-save { opacity: 1; pointer-events: auto; }
 .bd-save:hover { border-color: var(--accent); color: var(--accent); }
-.bd-save.bd-saved { color: var(--accent-text); border-color: transparent; background: var(--tint-soft); }
 .bd-col-foot { margin-top: auto; padding: 13px 6px 4px; }
 .bd-col-foot button { font-size: 12px; font-weight: 500; color: var(--muted); }
 .bd-col-foot button:hover { color: var(--ink); }
@@ -426,3 +425,10 @@
 .bd-card-open { position: absolute; inset: 0; border-radius: 11px; z-index: 0; }
 .bd-save:focus-visible, .bd-card:focus-within .bd-save { opacity: 1; pointer-events: auto; }
 .bd-card:focus-within::after { opacity: 1; }
+
+/* Saved is a passive inline chip beside the text — never overlaps the name. */
+.bd-savedchip {
+  flex: none; align-self: center;
+  font-size: 11px; font-weight: 500; color: var(--accent-text);
+  background: var(--tint-soft); border-radius: 999px; padding: 4px 10px;
+}

@@ -1,11 +1,11 @@
 # Alumni map data report
-Generated 2026-07-21T18:12:01.886Z
+Generated 2026-07-21T23:05:37.723Z
 
-- Rows pulled: 16808
-- After dedupe: 16762 (46 duplicate clusters merged)
-- Geocoded: 15809 / 16762 (94.3%)
+- Rows pulled: 16807
+- After dedupe: 16761 (46 duplicate clusters merged)
+- Geocoded: 15809 / 16761 (94.3%)
 - Class years: 1952–2029; 5 missing a year
-- Rows with no sport: 1
+- Rows with no sport: 0
 
 ## Geocoding failures (169 locations) — fix these in Supabase
 - Douaman, Wisconsin (1 alumni)

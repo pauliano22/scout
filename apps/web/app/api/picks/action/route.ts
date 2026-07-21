@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       .insert({ user_id: auth.userId, alumni_id: row.alumni_id, action: 'save' })
       .then(() => {}, () => {})
     await auth.db.from('user_events')
-      .insert({ user_id: auth.userId, event_type: 'pick_saved', event_data: { alumni_id: row.alumni_id } })
+      .insert({ user_id: auth.userId, event_type: 'pick_saved', event_data: { queue_id: row.id, alumni_id: row.alumni_id } })
       .then(() => {}, () => {})
     return NextResponse.json({ ok: true })
   }
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     .insert({ user_id: auth.userId, alumni_id: row.alumni_id, action: 'pass' })
     .then(() => {}, () => {})
   await auth.db.from('user_events')
-    .insert({ user_id: auth.userId, event_type: 'pick_skipped', event_data: { alumni_id: row.alumni_id } })
+    .insert({ user_id: auth.userId, event_type: 'pick_skipped', event_data: { queue_id: row.id, alumni_id: row.alumni_id } })
     .then(() => {}, () => {})
 
   return NextResponse.json({ ok: true })

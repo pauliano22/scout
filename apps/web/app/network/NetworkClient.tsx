@@ -145,10 +145,13 @@ export default function NetworkClient({
     try {
       const connection = network.find(c => c.id === connectionId)
       if (!connection) return
-      const now = new Date().toISOString()
-      await supabase.from('user_networks').update({ contacted: true, contacted_at: now, status: 'awaiting_reply' }).eq('id', connectionId)
+      // contacted_at is a first-touch marker: a repeat send must not reset the
+      // reply-time clock (adReport's median depends on it).
+      const patch: { contacted: true; status: 'awaiting_reply'; contacted_at?: string } = { contacted: true, status: 'awaiting_reply' }
+      if (!connection.contacted_at) patch.contacted_at = new Date().toISOString()
+      await supabase.from('user_networks').update(patch).eq('id', connectionId)
       await supabase.from('messages').insert({ user_id: userId, alumni_id: connection.alumni_id, message_content: message, sent_via: sentVia })
-      setNetwork(prev => prev.map(c => c.id === connectionId ? { ...c, contacted: true, contacted_at: now, status: 'awaiting_reply' as const } : c))
+      setNetwork(prev => prev.map(c => c.id === connectionId ? { ...c, ...patch } : c))
     } catch (err) { console.error('handleSendMessage:', err) }
     if (sentVia === 'marked') setSelectedConnection(null)
   }
@@ -158,15 +161,19 @@ export default function NetworkClient({
   // metric Scout can capture, since sends happen off-platform).
   const handleMarkReplied = async (e: React.MouseEvent, connectionId: string) => {
     e.stopPropagation()
-    const now = new Date().toISOString()
+    // replied_at is a first-touch marker: re-marking after a follow-up send
+    // must not move it (it would inflate days-to-reply).
+    const existing = network.find(c => c.id === connectionId)
+    const patch: { status: 'response_needed'; replied_at?: string } = { status: 'response_needed' }
+    if (!existing?.replied_at) patch.replied_at = new Date().toISOString()
     // Optimistic update; own-row RLS on user_networks permits this write.
     setNetwork(prev => prev.map(c =>
-      c.id === connectionId ? { ...c, status: 'response_needed' as const, replied_at: now } : c
+      c.id === connectionId ? { ...c, ...patch } : c
     ))
     try {
       await supabase
         .from('user_networks')
-        .update({ status: 'response_needed', replied_at: now })
+        .update(patch)
         .eq('id', connectionId)
     } catch (err) {
       console.error('handleMarkReplied:', err)

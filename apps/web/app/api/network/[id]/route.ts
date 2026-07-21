@@ -21,6 +21,8 @@ const STATUS_NORMALIZE: Record<string, string> = {
 }
 // Statuses that imply the alum has already been contacted.
 const CONTACTED_STATUSES = new Set(['awaiting_reply', 'response_needed', 'meeting_scheduled', 'met'])
+// Statuses that imply the alum has replied (powers reply-rate metrics, migration 054).
+const REPLIED_STATUSES = new Set(['response_needed', 'meeting_scheduled', 'met'])
 
 export async function PATCH(
   request: NextRequest,
@@ -56,12 +58,7 @@ export async function PATCH(
     if (typeof body.status !== 'string' || !(body.status in STATUS_NORMALIZE)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
-    const canonical = STATUS_NORMALIZE[body.status]
-    updates.status = canonical
-    if (CONTACTED_STATUSES.has(canonical)) {
-      updates.contacted = true
-      updates.contacted_at = new Date().toISOString()
-    }
+    updates.status = STATUS_NORMALIZE[body.status]
   }
 
   // Manual meeting-date affordance (Component C). Setting a date implies the
@@ -73,7 +70,6 @@ export async function PATCH(
     updates.meeting_at = body.meeting_at
     if (body.meeting_at) {
       updates.status = 'meeting_scheduled'
-      updates.contacted = true
     }
   }
 
@@ -88,12 +84,37 @@ export async function PATCH(
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
 
+  // Stamp the first-touch timestamps the (possibly meeting_at-derived) status
+  // implies. This route used to overwrite contacted_at on every status write
+  // and never set replied_at at all, which blinded the AD report's reply
+  // metrics — timestamps only move null → now, never later.
+  if (typeof updates.status === 'string' && CONTACTED_STATUSES.has(updates.status)) {
+    const { data: current, error: curErr } = await serviceClient
+      .from('user_networks')
+      .select('contacted_at, replied_at')
+      .eq('id', params.id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (curErr) {
+      console.error('[network/patch] pre-select error:', curErr)
+      return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+    }
+    if (!current) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+    updates.contacted = true
+    if (!current.contacted_at) updates.contacted_at = new Date().toISOString()
+    if (REPLIED_STATUSES.has(updates.status) && !current.replied_at) {
+      updates.replied_at = new Date().toISOString()
+    }
+  }
+
   const { data, error } = await serviceClient
     .from('user_networks')
     .update(updates)
     .eq('id', params.id)
     .eq('user_id', user.id) // ownership check via filter, not separate query
-    .select('id, status, notes, contacted, contacted_at, meeting_at')
+    .select('id, status, notes, contacted, contacted_at, replied_at, meeting_at')
     .single()
 
   if (error) {

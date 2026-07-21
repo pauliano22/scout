@@ -149,7 +149,8 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       const body = await res.json()
       if (res.ok) {
         setSendPick({ pick, draft: body.draft ?? '', channel: body.channel ?? 'linkedin' })
-        trackEvent('pick_draft_opened', { queue_id: pick.queueId, alumni_id: pick.alumnus.id, draft_was_ready: pick.draftReady })
+        // durable row inserted server-side in /api/picks/draft
+        trackEvent('pick_draft_opened', { queue_id: pick.queueId, alumni_id: pick.alumnus.id, draft_was_ready: pick.draftReady }, { posthogOnly: true })
       } else {
         flashNotice('Couldn’t write that draft. Give it another try.')
       }
@@ -170,7 +171,8 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     })
     if (res.ok) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== sendPick.pick.queueId) } : d))
-      trackEvent('pick_sent', { queue_id: sendPick.pick.queueId, alumni_id: sendPick.pick.alumnus.id, sent_via: sentVia })
+      // durable row inserted server-side in /api/today/approve
+      trackEvent('pick_sent', { queue_id: sendPick.pick.queueId, alumni_id: sendPick.pick.alumnus.id, sent_via: sentVia }, { posthogOnly: true })
     } else {
       flashNotice('That send didn’t record — try it again.')
     }
@@ -185,7 +187,8 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     })
     if (res.ok) {
       setSaved(s => new Set(s).add(pick.queueId))
-      trackEvent('pick_saved', { queue_id: pick.queueId, alumni_id: pick.alumnus.id })
+      // durable row inserted server-side in /api/picks/action
+      trackEvent('pick_saved', { queue_id: pick.queueId, alumni_id: pick.alumnus.id }, { posthogOnly: true })
     } else {
       flashNotice('Couldn’t save them — try again.')
     }
@@ -201,7 +204,8 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
     })
     if (res.ok) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== pick.queueId) } : d))
-      trackEvent('pick_skipped', { queue_id: pick.queueId, alumni_id: pick.alumnus.id })
+      // durable row inserted server-side in /api/picks/action
+      trackEvent('pick_skipped', { queue_id: pick.queueId, alumni_id: pick.alumnus.id }, { posthogOnly: true })
     } else {
       flashNotice('Couldn’t skip that one — try again.')
     }

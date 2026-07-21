@@ -17823,5 +17823,431 @@
  "mexico city, mexico city": [
   -99.1277,
   19.4285
- ]
+ ],
+ "dubai, dubai": [
+  55.3093,
+  25.0773
+ ],
+ "blissfield, michigan": [
+  -83.8624,
+  41.8326
+ ],
+ "thiensville, wisconsin": [
+  -87.9787,
+  43.2375
+ ],
+ "frost valley ymca": [
+  -74.5217,
+  41.9859
+ ],
+ "madison, ohio": [
+  -81.0498,
+  41.7712
+ ],
+ "clermont, florida": [
+  -81.7728,
+  28.5494
+ ],
+ "trabuco canyon, california": [
+  -117.5903,
+  33.6625
+ ],
+ "southwest harbor, maine": [
+  -68.325,
+  44.2798
+ ],
+ "belews creek, north carolina": [
+  -80.0698,
+  36.2446
+ ],
+ "twinsburg, ohio": [
+  -81.4401,
+  41.3126
+ ],
+ "tisbury, massachusetts": [
+  -70.6012,
+  41.454
+ ],
+ "north palm beach, florida": [
+  -80.082,
+  26.8176
+ ],
+ "pewee valley, kentucky": [
+  -85.4875,
+  38.3106
+ ],
+ "del monte forest, california": [
+  -121.9475,
+  36.5864
+ ],
+ "millersville, pennsylvania": [
+  -76.3541,
+  39.9979
+ ],
+ "fredericksburg, virginia": [
+  -77.4605,
+  38.3032
+ ],
+ "westchester": [
+  -73.7908,
+  41.1763
+ ],
+ "zagreb": [
+  15.978,
+  45.8144
+ ],
+ "southampton township, new jersey": [
+  -74.7381,
+  39.9315
+ ],
+ "port saint lucie, florida": [
+  -80.3503,
+  27.2939
+ ],
+ "staff landscape architect asla": null,
+ "water mill, new york": [
+  -72.3427,
+  40.9196
+ ],
+ "lutherville-timonium, maryland": [
+  -76.611,
+  39.44
+ ],
+ "west des moines, iowa": [
+  -93.7113,
+  41.5772
+ ],
+ "nvidia": [
+  -122.8863,
+  45.5345
+ ],
+ "c - orthopedic surgery pa": null,
+ "naples": [
+  14.2681,
+  40.8522
+ ],
+ "former president of the nflpa": null,
+ "east amwell township, new jersey": [
+  -74.8143,
+  40.4432
+ ],
+ "east berlin, pennsylvania": [
+  -76.9786,
+  39.9376
+ ],
+ "actor": [
+  135.2416,
+  34.7129
+ ],
+ "lexington, north carolina": [
+  -80.2534,
+  35.824
+ ],
+ "england": [
+  -1.2649,
+  52.531
+ ],
+ "gatineau, quebec": [
+  -75.7016,
+  45.4772
+ ],
+ "nairobi, nairobi": [
+  36.8173,
+  -1.289
+ ],
+ "elizabeth city, north carolina": [
+  -76.2511,
+  36.2946
+ ],
+ "lincoln, ontario": [
+  -80.5066,
+  43.4953
+ ],
+ "williamstown, massachusetts": [
+  -73.2037,
+  42.712
+ ],
+ "olympic esd": null,
+ "retired md": null,
+ "east providence, rhode island": [
+  -71.3701,
+  41.8137
+ ],
+ "goodyear, arizona": [
+  -112.3582,
+  33.4353
+ ],
+ "mccarthy ferguson cpa": null,
+ "vice president, alaska": null,
+ "upper freehold, new jersey": [
+  -74.4929,
+  40.1909
+ ],
+ "plymouth, new hampshire": [
+  -71.6881,
+  43.757
+ ],
+ "lithia springs, georgia": [
+  -84.6605,
+  33.794
+ ],
+ "la crescent, minnesota": [
+  -91.304,
+  43.828
+ ],
+ "edinburgh, scotland": [
+  -3.1965,
+  55.9521
+ ],
+ "haven, kansas": [
+  -97.7828,
+  37.8989
+ ],
+ "duluth, united states": [
+  -92.1066,
+  46.7833
+ ],
+ "saint petersburg, florida": [
+  -82.6793,
+  27.7709
+ ],
+ "libertyville, illinois": [
+  -87.9531,
+  42.2831
+ ],
+ "munich, bavaria": [
+  11.5755,
+  48.1374
+ ],
+ "gloucester, massachusetts": [
+  -70.6631,
+  42.6141
+ ],
+ "urogyn md": null,
+ "gloucester, england": [
+  -2.2431,
+  51.8657
+ ],
+ "oceanside, california": [
+  -117.3795,
+  33.1959
+ ],
+ "litchfield park, arizona": [
+  -112.3579,
+  33.4934
+ ],
+ "siva": [
+  25.5192,
+  29.2035
+ ],
+ "saint albans, vermont": [
+  -73.0832,
+  44.8109
+ ],
+ "deutschlandsberg, styria": [
+  15.2222,
+  46.8153
+ ],
+ "marshall, virginia": [
+  -77.8578,
+  38.8648
+ ],
+ "pontiac, illinois": [
+  -88.6298,
+  40.8809
+ ],
+ "east norwich, new york": [
+  -73.5351,
+  40.8468
+ ],
+ "do, mississippi": [
+  10.5158,
+  57.3568
+ ],
+ "ann arbor, united states": [
+  -83.7409,
+  42.2776
+ ],
+ "elko, nevada": [
+  -115.7631,
+  40.8324
+ ],
+ "west columbia, south carolina": [
+  -81.074,
+  33.9935
+ ],
+ "barcelona, catalonia": [
+  2.159,
+  41.3888
+ ],
+ "brisbane, queensland": [
+  153.0281,
+  -27.4679
+ ],
+ "rutgers njms": null,
+ "belle haven, virginia": [
+  -77.0469,
+  38.8048
+ ],
+ "big sky, montana": [
+  -111.3683,
+  45.2847
+ ],
+ "nice, provence-alpes-cote d'azur": [
+  7.2661,
+  43.7031
+ ],
+ "laurel, maryland": [
+  -76.8483,
+  39.0993
+ ],
+ "citymd": [
+  -73.994,
+  40.7518
+ ],
+ "dublin, county dublin": [
+  -6.2606,
+  53.3494
+ ],
+ "shorewood, illinois": [
+  -88.2017,
+  41.52
+ ],
+ "port neches, texas": [
+  -93.9585,
+  29.9913
+ ],
+ "central islip, new york": [
+  -73.2018,
+  40.7907
+ ],
+ "bettendorf, iowa": [
+  -90.5157,
+  41.5245
+ ],
+ "pen argyl, pennsylvania": [
+  -75.2549,
+  40.8687
+ ],
+ "broomfield, colorado": [
+  -105.0866,
+  39.9205
+ ],
+ "mission, texas": [
+  -98.3253,
+  26.2159
+ ],
+ "berlin, berlin": [
+  13.3387,
+  52.5034
+ ],
+ "zephyr cove-round hill village, nevada": null,
+ "holden, maine": [
+  -68.6789,
+  44.7529
+ ],
+ "north port, florida": [
+  -82.2359,
+  27.0442
+ ],
+ "linwood, new jersey": [
+  -74.5752,
+  39.3398
+ ],
+ "school district of manatee county, florida": null,
+ "philadelphia ymca": [
+  -74.9751,
+  40.0843
+ ],
+ "mechanicville, new york": [
+  -73.2454,
+  40.7251
+ ],
+ "pmo": [
+  13.3636,
+  38.1166
+ ],
+ "chur, grisons": [
+  9.5329,
+  46.8499
+ ],
+ "huger, south carolina": [
+  -79.8034,
+  33.0966
+ ],
+ "stockholm, stockholm county": [
+  18.0711,
+  59.3251
+ ],
+ "founder and director": null,
+ "saint augustine, florida": [
+  -81.3145,
+  29.8947
+ ],
+ "saint catharines, ontario": [
+  -79.2441,
+  43.158
+ ],
+ "bay terrace medical": null,
+ "la mesa, california": [
+  -117.0231,
+  32.7678
+ ],
+ "leeds, alabama": [
+  -86.5444,
+  33.5482
+ ],
+ "moss landing, california": [
+  -121.7863,
+  36.8036
+ ],
+ "weinheim, baden-wuerttemberg": [
+  8.6717,
+  49.5462
+ ],
+ "revere, massachusetts": [
+  -71.012,
+  42.4084
+ ],
+ "bolivar, missouri": [
+  -93.4105,
+  37.6145
+ ],
+ "da nang, da nang": [
+  108.2093,
+  16.0716
+ ],
+ "stoutsville, missouri": [
+  -91.8578,
+  39.5516
+ ],
+ "sterling, colorado": [
+  -103.2077,
+  40.6255
+ ],
+ "lmi": [
+  121.4425,
+  31.2147
+ ],
+ "cardiff, wales": [
+  -3.18,
+  51.48
+ ],
+ "northfield, minnesota": [
+  -93.1616,
+  44.4583
+ ],
+ "internists of central pa": [
+  -76.8841,
+  40.2441
+ ],
+ "tamworth, new hampshire": [
+  -71.2631,
+  43.8598
+ ],
+ "eagle, colorado": [
+  -106.8286,
+  39.6553
+ ],
+ "vegetable farmer in eden, new york": null
 }

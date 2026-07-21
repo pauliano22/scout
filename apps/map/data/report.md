@@ -1,13 +1,13 @@
 # Alumni map data report
-Generated 2026-06-11T15:40:43.072Z
+Generated 2026-07-21T18:12:01.886Z
 
-- Rows pulled: 16970
-- After dedupe: 16801 (169 duplicate clusters merged)
-- Geocoded: 15942 / 16801 (94.9%)
+- Rows pulled: 16808
+- After dedupe: 16762 (46 duplicate clusters merged)
+- Geocoded: 15809 / 16762 (94.3%)
 - Class years: 1952–2029; 5 missing a year
 - Rows with no sport: 1
 
-## Geocoding failures (164 locations) — fix these in Supabase
+## Geocoding failures (169 locations) — fix these in Supabase
 - Douaman, Wisconsin (1 alumni)
 - Guilford, CY (1 alumni)
 - Glen Garder, New Jersey (1 alumni)
@@ -38,13 +38,13 @@ Generated 2026-06-11T15:40:43.072Z
 - Burtonville, Maryland (1 alumni)
 - Willston Park, New York (1 alumni)
 - Glen Coe, Illinois (1 alumni)
+- Staff Landscape Architect ASLA (1 alumni)
 - Clarkesville, Maryland (1 alumni)
 - Shawville, Ontario (1 alumni)
 - Stony Btook, New York (1 alumni)
 - Vinolhaven, Maine (1 alumni)
 - Dotham, Alabama (1 alumni)
 - Fox Associates, PC (1 alumni)
-- Bathesda, Maryland (1 alumni)
 - Saint-Maur Des Foss�s, France (1 alumni)
 - Colombus, Missouri (1 alumni)
 - Greewich, Connecticut (1 alumni)
@@ -53,12 +53,12 @@ Generated 2026-06-11T15:40:43.072Z
 - Gatesville, Ohio (1 alumni)
 - Cortland Manor, New York (1 alumni)
 - Belle Meade, New Jersey (1 alumni)
+- C - Orthopedic Surgery PA (1 alumni)
 - Paltatine, Illinois (1 alumni)
+- Former President of the NFLPA (1 alumni)
 - Merchandise Manager, WW (1 alumni)
 - Glenville, Illinois (1 alumni)
-- Moranga, California (2 alumni)
 - Varsity Rowing, VP (1 alumni)
-- Annaford, Wales (1 alumni)
 - Benesov, Czech Rep. (1 alumni)
 - Bayanon, Puerto Rico (1 alumni)
 - Petersborough, New Hampshire (1 alumni)
@@ -72,9 +72,12 @@ Generated 2026-06-11T15:40:43.072Z
 - Cohutta, California (1 alumni)
 - Westborough, New York (1 alumni)
 - Chesire, England (1 alumni)
+- Olympic ESD (1 alumni)
+- Retired MD (1 alumni)
 - Lovton, Virginia (1 alumni)
+- McCarthy Ferguson CPA (1 alumni)
 - Pound Ridge, New Jersey (1 alumni)
-- Spenser Souza, Maryland (1 alumni)
+- Vice President, Alaska (1 alumni)
 - Camilllus, New York (1 alumni)
 - Woodbourn, New York (1 alumni)
 - Lezington, MA (1 alumni)
@@ -93,7 +96,6 @@ Generated 2026-06-11T15:40:43.072Z
 - Mighigan CIty, Indiana (1 alumni)
 - Track Team, BA (1 alumni)
 - Aubrun, New York (1 alumni)
-- Ford Edward, New York (1 alumni)
 - Dubi, Czech. (1 alumni)
 - Plateekill, New York (1 alumni)
 - Maxillofacial Surgery, PC (1 alumni)
@@ -102,6 +104,7 @@ Generated 2026-06-11T15:40:43.072Z
 - Frederiction, New Brunswick (1 alumni)
 - Dumrobin, On (1 alumni)
 - Manhassot, New York (1 alumni)
+- Urogyn MD (1 alumni)
 - Machester, Maine (1 alumni)
 - Vinas, Pennsylvania (1 alumni)
 - Gaza Garcia, Mexico (1 alumni)
@@ -115,8 +118,9 @@ Generated 2026-06-11T15:40:43.072Z
 - Winninpeg, Manitoba (1 alumni)
 - Gnaden, Ohio (1 alumni)
 - Ladenberg, Pennsylvania (1 alumni)
-- Blanes Girona, SP (2 alumni)
+- Moranga, California (1 alumni)
 - Orange Villiage, Ohio (1 alumni)
+- RUTGERS NJMS (1 alumni)
 - Framington, Massachusetts (1 alumni)
 - Kitchener-Cambridge-Waterloo Metropolitan (1 alumni)
 - Hindsdale, Illinois (1 alumni)
@@ -126,14 +130,13 @@ Generated 2026-06-11T15:40:43.072Z
 - Ridgewook, New Jersey (1 alumni)
 - Londonberry, New Hampshire (2 alumni)
 - Norht Providence, Rhode Island (1 alumni)
-- North Babylon, Massachusetts (1 alumni)
 - Plattsbrurgh, New York (1 alumni)
 - Tewksburym MA (1 alumni)
 - Pepper Pike, PH (1 alumni)
 - Glatsonbury, Connecticut (1 alumni)
 - Scholarie, New York (1 alumni)
-- Wesfield, New Jersey (1 alumni)
 - Casadaga, New York (1 alumni)
+- Zephyr Cove-Round Hill Village, Nevada (1 alumni)
 - Basking Ride, New Jersey (1 alumni)
 - Capinteria, California (1 alumni)
 - Reistertown, Maryland (1 alumni)
@@ -142,27 +145,28 @@ Generated 2026-06-11T15:40:43.072Z
 - Sahamore Hills, Ohio (1 alumni)
 - Pluckmin, New Jersey (1 alumni)
 - CoIorado Springs, Colorado (1 alumni)
+- School District of Manatee County, Florida (1 alumni)
 - Macugnie, Pennsylvania (1 alumni)
 - Christopher Hove, Maryland (1 alumni)
 - Julie Lorber, Maryland (1 alumni)
+- FOUNDER and DIRECTOR (1 alumni)
 - Magttydale, New York (1 alumni)
 - Spruce Grove, Atla. (1 alumni)
 - Centerpoint, New York (1 alumni)
 - Torrean, Mexico (1 alumni)
 - Columia, Maryland (1 alumni)
 - Ventner, New Jersey (1 alumni)
+- BAY TERRACE MEDICAL (1 alumni)
 - Glenmount, New York (1 alumni)
 - Gorgam, Maine (1 alumni)
 - Eden Praire, Minnesota (1 alumni)
 - Halvern, Pennsylvania (1 alumni)
 - Miani, Florida (1 alumni)
 - Sciuate, Massachusetts (1 alumni)
-- Exter, New Hampshire (1 alumni)
 - East Hempstead, New Hampshire (1 alumni)
 - North Olmstead, Ohio (1 alumni)
 - Colorodo Springs, Colorado (1 alumni)
 - Encitas, California (1 alumni)
-- Ottowa, Canada (1 alumni)
 - Plymouth Mtg., Pennsylvania (1 alumni)
 - Honeoyo Falls, New York (1 alumni)
 - Frisca, Texas (1 alumni)
@@ -170,20 +174,23 @@ Generated 2026-06-11T15:40:43.072Z
 - Pughkeepsie, New York (1 alumni)
 - Account Executive, Nebraska (1 alumni)
 - Ottowa, On (1 alumni)
+- Vegetable Farmer In Eden, New York (1 alumni)
 - Shewsbury, Massachusetts (1 alumni)
 - Bornia Center, New York (1 alumni)
 
-## Un-normalizable location strings (170)
+## Un-normalizable location strings (182)
 - Deb Rine: "United States"
 - Danielle Dunn: "United States"
 - Pam Orsi: "United States"
 - Douglas Famularo: "United States"
 - Clara Hall: "United States"
 - Ashley Johnson: "United States"
+- Jennifer Dilles Kuhns: "Pennsylvania"
 - Brian Mathias: "United States"
 - Bob Annear: "United States"
 - Jordan Caines: "United States"
 - Andy O'Brien: "United States"
+- Brinda Karmakar: "North Carolina"
 - Andy Miller: "United States"
 - George Oliver: "United States"
 - Chris Finn: "United States"
@@ -203,7 +210,6 @@ Generated 2026-06-11T15:40:43.072Z
 - Diana Piovanetti: "United States"
 - Grant Stephanz: "United States"
 - Ben Davis: "United States"
-- Deon Harris: "United States"
 - Alex Hill: "United States"
 - Erica Crump: "United States"
 - Brittany Camp: "United States"
@@ -220,23 +226,26 @@ Generated 2026-06-11T15:40:43.072Z
 - Drew Mccann: "United States"
 - Garth Fuller: "United States"
 - Jim King: "United States"
+- Gabe Newell: "California"
 - Alan Riffkin: "United States"
 - Tameka Royal: "United States"
 - Joe Lando: "United States"
 - Madeline Avery: "United States"
 - Joseph Bruce: "United States"
 - Andrew Broom: "United States"
+- Kirk Blaschke: "California"
 - Jonathan Chamberlain: "United States"
+- Nathan Henderson: "Massachusetts"
 - Eric King: "United States"
 - Timur Ozekcin: "United States"
-- Brendan Furman: "United States"
 - Matt Devitt: "United States"
 - Daniel O'Neill: "United States"
 - Hillary Dole: "United States"
 - Nick Carbone: "United States"
 - Amanda Chirlin: "United States"
 - Chris Cochrane: "United States"
-- Katie Watts: "United States"
+- Katie Watts Bosak: "United States"
+- Tricia Kammerer: "Rhode Island"
 - Michelle Collins: "United States"
 - Drew Martin: "United States"
 - Lauren Stein: "United States"
@@ -251,7 +260,7 @@ Generated 2026-06-11T15:40:43.072Z
 - Cody Gault: "United States"
 - Dahlia Townsend: "United States"
 - Michelle Kubasek: "United States"
-- Carlos Cancela: "United States"
+- Carloscancela: "United States"
 - David Frankel: "United States"
 - Kamran Murray: "United States"
 - Wayne Waz: "United States"
@@ -260,21 +269,23 @@ Generated 2026-06-11T15:40:43.072Z
 - Max Jones: "United States"
 - Lew Kibling: "United States"
 - Megan Buteau: "United States"
+- Christine Hamori: "Massachusetts"
 - Bella Davis: "United States"
 - Daniel Choi: "United States"
 - Hannah Hardaway: "United States"
 - Cody Toppert: "United States"
 - Warren Liao: "United States"
 - Alexa Rose: "United States"
+- Ben Calder: "Pennsylvania"
 - Kristen Hughes: "United States"
 - John Mackintosh: "United States"
 - Drew Lessard: "United States"
+- Kris Green: "California"
 - Chris Hahn: "United States"
 - Ron Mccurdy: "United States"
 - John Carillo: "United States"
 - Erin Roberts: "United States"
 - Timothy Shea: "United States"
-- Richard Bell: "United States"
 - George Hall: "United States"
 - John Scullin: "United States"
 - Ryan Mcgarry: "United States"
@@ -295,24 +306,27 @@ Generated 2026-06-11T15:40:43.072Z
 - Mike Bolton: "United States"
 - Jonathan Loew: "United States"
 - Chris Schoenherr: "United States"
+- Anne Berlin: "Massachusetts"
 - Emily Rhodes: "United States"
 - Scott Blake: "United States"
+- Andy Davidson: "North Carolina"
+- William Mcnamara: "California"
 - Austin Fingar: "United States"
 - John Hage: "United States"
 - Tomasina Leska: "United States"
-- Scott Hansen: "United States"
 - Michael Battaglia: "United States"
 - Evelyn Gurvich: "United States"
 - Casey Gibbons: "United States"
 - Shaun Hannah: "Connecticut"
 - Lilly Bjerke: "United States"
+- Thomas Bickett: "New Jersey"
 - Praduman Singh: "United States"
-- Paul Gillard: "United States"
 - Andrew Hohlt: "United States"
+- Jeeter Ishida: "Hawaii"
 - Marc Pearlman: "United States"
 - Alysa Ali: "United States"
 - Brent Jones: "United States"
-- Matt Chang: "United States"
+- Matthew Chang Md Rpvi: "United States"
 - Declan Abernethy: "United States"
 - Kimo Bertram: "United States"
 - Sean Donaldson: "United States"
@@ -321,14 +335,16 @@ Generated 2026-06-11T15:40:43.072Z
 - Brittany Sutton: "United States"
 - Sammie Engel: "United States"
 - Matt Cairns: "United States"
-- Larry Pierce: "United States"
-- Tom Holland: "United States"
 - Cody Vitez: "United States"
 - Amanda Stone: "United States"
+- Laura Leigh Tallent: "Oregon"
 - Ashley Robinson: "United States"
 - Matt Connors: "United States"
+- Craig Esposito: "North Carolina"
 - Kayleen Fitzsimmons: "United States"
 - Hunter Sloan: "United States"
+- Brendan Furman: "United States"
+- Hunter Celkupa: "New Jersey"
 - Meredith Criner: "United States"
 - Scott Albrecht: "United States"
 - Robert Douglas: "United States"
@@ -336,6 +352,7 @@ Generated 2026-06-11T15:40:43.072Z
 - Carlee Roberts: "United States"
 - Dan Holodnik: "United States"
 - Jimmy Putko: "United States"
+- Scott Perelstein: "Florida"
 - Jessica Cho: "United States"
 - Julianne Mangano: "United States"
 - Mitchell Meyer: "United States"
@@ -348,202 +365,66 @@ Generated 2026-06-11T15:40:43.072Z
 ## Implausible class years (0)
 - none
 
-## Merged duplicate clusters (169)
-- Thomas Foster (Men's Track & Field/Men's Cross Country '24 + Men's Cross Country '24) → 1
-- Courtney Gallagher (Women's Lacrosse '14 + Women's Lacrosse '14) → 1
-- Zach Beadle (Football/Men's Track & Field '05 + Football '05) → 1
-- Sarah DeMoully (Women's Rowing '18 + Women's Rowing '18) → 1
-- Austin  McGrath (Men's Ice Hockey '21 + Men's Ice Hockey '21) → 1
-- Zach Hammond (Wrestling '08 + Wrestling '09) → 1
+## Merged duplicate clusters (46)
 - Jesse Shanaman (Wrestling '15 + Wrestling '14) → 1
-- Steven True (Men's Polo '12 + Men's Polo '11) → 1
-- Bradley Paliska (Men's Tennis '24 + Men's Tennis '25) → 1
-- Ali Hoffman (Women's Polo '12 + Women's Polo '13) → 1
 - Genevieve Horvath (Women's Polo '07 + Women's Polo '08) → 1
-- Dylan Van Duyne (Men's Rowing '18 + Men's Rowing '18) → 1
 - Taylor Flynn (Women's Basketball '13 + Women's Basketball '13) → 1
 - Mary Lang (Women's Rowing '13 + Women's Rowing '13) → 1
-- Jenny Wong (Women's Tennis '25 + Women's Tennis '24) → 1
-- Christian DiGiacomo (Rowing '17 + Rowing '17) → 1
-- Nick Arujau (Wrestling '15 + Wrestling '14) → 1
-- Michael Lovier (Men's Polo '24 + Men's Polo '23) → 1
 - Sascha Gidron (Men's Polo '16 + Men's Polo '17) → 1
 - Conner David (Wrestling '14 + Wrestling '13) → 1
-- Chris Villalonga (Wrestling '15 + Wrestling '14) → 1
-- Genevieve DeWinter (Women's Lacrosse '23 + Women's Lacrosse '23) → 1
-- Cassie Quinlan (Women's Polo '08 + Women's Polo '07) → 1
-- Genevieve Collins (Field Hockey '13 + Field Hockey '13) → 1
-- Basia  Sudol (Women's Rowing '19 + Women's Rowing '19) → 1
-- Nicholas  Ridenour (Rowing '17 + Rowing '17) → 1
-- Chase Chandler (Men's Track & Field '23 + Men's Track & Field '23) → 1
-- Brenden Locke (Men's Ice Hockey '21 + Men's Ice Hockey '21) → 1
-- Troy Nickerson (Wrestling '09 + Wrestling '10) → 1
-- Emeka  Eneli (Men's Soccer '22 + Men's Soccer '22) → 1
 - Jacqui Gossard (Women's Rowing '19 + Women's Rowing '19) → 1
-- Maicie Levitt (Softball '24 + Softball '23) → 1
-- Taylor Palacios (Men's Polo '23 + Men's Polo '24) → 1
 - Alexander Ter Weele (Men's Polo '18 + Men's Polo '17) → 1
-- Ryan Dunphy (Wrestling '15 + Wrestling '14) → 1
-- Alva  Taylor (Football '82 + Football '82) → 1
 - Max Martinez (Football '13 + Football '13) → 1
-- Malick Diomande (Men's Track & Field '20 + Men's Track & Field '20) → 1
-- Abigail Benkert (Women's Swimming & Diving '19 + Women's Swimming & Diving '19) → 1
-- Kristin  O'Neill (Women's Ice Hockey '20 + Women's Ice Hockey '20) → 1
-- Sheehan Gotsch (Women's Rowing '19 + Women's Rowing '19) → 1
-- Michael  Fowler (Men's Soccer '10 + Men's Soccer '10) → 1
-- Andrew Hevener (Men's Soccer '22 + Men's Soccer '22) → 1
+- Kristin O'Neill (Women's Ice Hockey '20 + Women's Ice Hockey '20) → 1
 - Will Ronchetti (Men's Track & Field/Men's Cross Country '18 + Men's Cross Country '18) → 1
-- Sawyer Tierney (Sprint Football '25 + Sprint Football '25) → 1
 - Mia Burd (Softball '24 + Softball '23) → 1
-- Morgan Axenfeld (Women's Lacrosse '14 + Women's Lacrosse '14) → 1
-- Chris Foca (Wrestling '25 + Wrestling '24) → 1
 - Spencer Lane (Women's Basketball '13 + Women's Basketball '13) → 1
-- Josh Arnone (Wrestling '09 + Wrestling '10) → 1
-- Drew Flynn (Wrestling '22 + Wrestling '23) → 1
-- Courtney Spitzer (Women's Gymnastics '18 + Women's Gymnastics '18) → 1
 - Claire Stieg (Women's Polo '16 + Women's Polo '17) → 1
-- Geneva  Lee (Women's Cross Country '20 + Women's Cross Country '20) → 1
-- Bryan Beach (Sprint Football '16 + Sprint Football '16) → 1
-- John Sullivan (Rowing '16 + Rowing '16) → 1
-- Linnea  Begley (Women's Lacrosse '22 + Women's Lacrosse '22) → 1
-- Edward Foote (Men's Polo '21 + Men's Polo '20) → 1
-- Stephanie  Umeh (Women's Basketball '20 + Women's Basketball '20) → 1
 - Jeff Markle (Men's Polo '04 + Men's Polo '05) → 1
-- Taylor Sullivan (Women's Polo '10 + Women's Polo '11) → 1
 - Molly Buck (Women's Polo '05 + Women's Polo '04) → 1
 - Ben Darmstadt (Wrestling '22 + Wrestling '21) → 1
 - Nick Allen (Men's Soccer '22 + Men's Soccer '22) → 1
-- Elizabeth Antczak (Women's Polo '02 + Women's Polo '03) → 1
 - Maka Anyanwu (Women's Basketball '12 + Women's Basketball '12) → 1
-- Timothy Lee (Rowing '17 + Rowing '17) → 1
-- Zsofia Szegletes (Women's Rowing '19 + Women's Rowing '19) → 1
-- Anthony Gatlin (Men's Basketball '12 + Men's Basketball '11) → 1
-- Jacob Levy (Sprint Football '22 + Sprint Football '22) → 1
-- Lilly Travieso (Softball '25 + Softball '24) → 1
-- Daniel Gala (Baseball '05 + Baseball '06) → 1
 - Gabrielle Maday (Softball '24 + Softball '23) → 1
-- Cameron  Ryan (Football '20 + Football '20) → 1
 - Jane Malter (Field Hockey '79 + Field Hockey '79) → 1
 - Katie Carlson (Field Hockey '18 + Field Hockey '18) → 1
 - Harriet Antczak (Women's Polo '05 + Women's Polo '04) → 1
-- Elizabeth Loftus (Women's Polo '10 + Women's Polo '11) → 1
-- Eric  Gaffey (Men's Swimming & Diving '08 + Men's Swimming & Diving '08) → 1
 - Aurelia Rus (Women's Polo '10 + Women's Polo '11) → 1
-- Charlie  Walters (Men's Rowing '14 + Men's Rowing '14) → 1
-- Theresa Grace  Mbanefo (Women's Basketball '22 + Women's Basketball '22) → 1
-- Rob Schroeder (Football '91 + Football '91) → 1
-- Nnamdi Abalihi (Football '14 + Football '14) → 1
-- Muhammad-Ali Kobo (Football '25 + Football '25) → 1
-- Allison Franz (Women's Gymnastics '18 + Women's Gymnastics '18) → 1
-- Quentin Llop (Men's Polo '10 + Men's Polo '09) → 1
 - Taylor Knibb (Women's Cross Country '20 + Women's Cross Country '20) → 1
-- Isaiah  Hogan (Football '22 + Football '22) → 1
-- Elizabeth  Barnett (Women's Rowing '17 + Women's Rowing '17) → 1
-- Brendan Furman (Wrestling '23 + Wrestling '22) → 1
-- James Glebocki (Men's Cross Country '26 + Men's Cross Country '26) → 1
-- Spencer  Wirtheim (Men's Lacrosse '24 + Men's Lacrosse '24) → 1
-- Georgia  Lord (Field Hockey '17 + Field Hockey '17) → 1
-- Robert Whitney (Men's Track & Field/Men's Cross Country '20 + Men's Cross Country '20) → 1
-- Alex Mocarski (Men's Track & Field/Men's Cross Country '22 + Men's Cross Country '22) → 1
-- Chelsea Sincox (Women's Volleyball '18 + Women's Volleyball '18) → 1
-- Michael Hudson (Baseball '07 + Baseball '07) → 1
+- Georgia Lord (Field Hockey '17 + Field Hockey '17) → 1
 - Evan Zittel (Sprint Football '16 + Sprint Football '15) → 1
-- Spenser  Souza (Baseball '14 + Baseball '14) → 1
-- Jessica O'Brien (Women's Gymnastics '18 + Women's Gymnastics '18) → 1
-- Kiley  McPeek (Women's Volleyball '18 + Women's Volleyball '18) → 1
 - Henry Houghton (Sprint Football '25 + Sprint Football '25) → 1
-- Pietro Rimondini (Men's Tennis '21 + Men's Tennis '20) → 1
+- Pietro Rimondini (Men's Tennis '20 + Men's Tennis '21) → 1
 - Craig Scott (Wrestling '17 + Wrestling '16) → 1
-- Steven  Julian (Men's Basketball '19 + Men's Basketball '19) → 1
-- Victoria Houser (Women's Polo '17 + Women's Polo '18) → 1
 - Sarah Ruben (Softball '07 + Softball '07) → 1
-- Delphi Cleaveland (Women's Cross Country '17 + Women's Cross Country '17) → 1
-- Chelsea  Rowe (Women's Lacrosse '15 + Women's Lacrosse '15) → 1
 - Friesel, Lexi (Women's Polo '28 + Women's Polo '27) → 1
-- Evan Bynoe (Men's Tennis '22 + Men's Tennis '21) → 1
-- Jordan Leen (Wrestling '08 + Wrestling '09) → 1
-- Yelizaveta Sapozhnikov (Fencing '19 + Fencing '19) → 1
-- Julohn Teixeira (Women's Gymnastics '16 + Women's Gymnastics '16) → 1
-- Rachel Padula (Women's Rowing '19 + Women's Rowing '19) → 1
 - Will Seidel (Men's Cross Country '07 + Men's Cross Country '07) → 1
 - Darren James (Men's Polo '03 + Men's Polo '02) → 1
 - Hyung  Ahn (Sprint Football '21 + Sprint Football '21) → 1
-- Senter Johnson (Men's Polo '04 + Men's Polo '05) → 1
-- Meredith Glenning (Women's Rowing '18 + Women's Rowing '18) → 1
-- Anastasia Turin (Fencing '17 + Fencing '17) → 1
 - Jack Campbell (Football '11 + Football '11) → 1
-- Evan Bernstein (Men's Tennis '11 + Men's Tennis '12) → 1
-- Connor Lapresi (Wrestling '18 + Wrestling '17) → 1
-- Maya  Hutchinson (Women's Track & Field '20 + Women's Track & Field '20) → 1
-- Chris Hahn (Baseball/Football '88 + Baseball '89) → 1
-- Samanta Arenas (Women's Volleyball '20 + Women's Volleyball '20) → 1
-- Baturay Turkmen (Men's Polo '17 + Men's Polo '16) → 1
-- Seth Gordon (Baseball '07 + Baseball '07) → 1
-- Brett Wilderman (Football/Men's Lacrosse '99 + Men's Lacrosse '00) → 1
-- Oseoba Airewele (Men's Track & Field '18 + Men's Track & Field '18) → 1
-- Reena Olsen (Women's Basketball '20 + Women's Basketball '20) → 1
-- Erin Bold (Women's Polo '10 + Women's Polo '09) → 1
+- Maya Hutchinson (Women's Track & Field '20 + Women's Track & Field '20) → 1
 - Alafia Ayeni (Men's Tennis '22 + Men's Tennis '21) → 1
 - Amy Miles (Women's Rowing '18 + Women's Rowing '18) → 1
 - Mike Bronzino (Men's Lacrosse '14 + Men's Lacrosse '14) → 1
-- Hunter Richard (Wrestling '22 + Wrestling '21) → 1
-- Taylor Moore (Wrestling '09 + Wrestling '10) → 1
-- Maya Hiebert (Women's Swimming & Diving '19 + Women's Swimming & Diving '19) → 1
-- Taylor Pietrowski (Women's Ice Hockey '22 + Women's Ice Hockey '22) → 1
-- Phillip Moomey (Wrestling '24 + Wrestling '23) → 1
-- Jake Taylor (Wrestling '19 + Wrestling '18) → 1
-- Amanda Krakauer (Women's Rowing '19 + Women's Rowing '19) → 1
 - Jed Cogan (Men's Polo '22 + Men's Polo '21) → 1
-- Michael Moore (Wrestling '09 + Wrestling '10) → 1
 - Nick Paciorek (Men's Polo '24 + Men's Polo '23) → 1
-- Paige Mollineaux (Field Hockey '13 + Field Hockey '13) → 1
 - Santiago Valenzuela (Men's Polo '24 + Men's Polo '23) → 1
-- Jonathan Loew (Wrestling '24 + Wrestling '23) → 1
-- Taylor  Lust (Women's Rowing '20 + Women's Rowing '20) → 1
-- Isabella Palde (Field Hockey '23 + Field Hockey '23) → 1
 - Liz Briggs (Equestrian '11 + Equestrian '10) → 1
-- Isabelle Braden (Women's Polo '24 + Women's Polo '25) → 1
 - Lindsey Scheer (Women's Polo '04 + Women's Polo '05) → 1
-- Caroline  Motzer (Women's Rowing '19 + Women's Rowing '19) → 1
-- Caleb  McCurdy (Men's Cross Country/Men's Track & Field '22 + Men's Track & Field/Men's Cross Country '22) → 1
 - Robert Solomon (Rowing '12 + Rowing '12) → 1
-- Marisa Zorrilla (Softball '25 + Softball '24) → 1
-- Sam Duggan (Men's Lacrosse '21 + Men's Lacrosse '21) → 1
-- Justin Kerber (Wrestling '10 + Wrestling '11) → 1
-- Ricardo Kiblisky (Men's Soccer '22 + Men's Soccer '22) → 1
-- Steve Bosak (Wrestling '13 + Wrestling '12) → 1
-- Sophia Neis (Women's Polo '23 + Women's Polo '22) → 1
-- Krystin Chiellini (Women's Gymnastics '17 + Women's Gymnastics '17) → 1
-- Ryan  Murphy (Sprint Football '24 + Sprint Football '24) → 1
-- John  Scearce (Men's Soccer '20 + Men's Soccer '20) → 1
-- Owen Scott (Wrestling '17 + Wrestling '16) → 1
-- Jake Howard (Sprint Football '19 + Sprint Football '19) → 1
 
-## Same name, NOT merged (different sport/era — verify manually) (27)
-- Mike Payne: Football/Wrestling 1990 vs Football 1998
+## Same name, NOT merged (different sport/era — verify manually) (14)
 - Liam Palacios: Men's Polo 2019 vs Men's Polo 2017
-- Hannah Roman: Women's Polo 2022 vs Equestrian 2021
 - Amy Meldrim: Women's Lacrosse 1996 vs Field Hockey 1995
-- Claire Glashan: Women's Polo 2011 vs Women's Polo 2008
-- Edgar Thielens: Men's Cross Country 2029 vs Men's Track & Field 2029
 - Tiffany Chen: Women's Polo 2022 vs Women's Gymnastics 2012
 - Fiona Bishop: Women's Polo 2024 vs Women's Polo 2021
 - Steven Sanford: Men's Soccer 1973 vs Men's Lacrosse 1975
 - Rachel Demming: Women's Polo 2007 vs Women's Polo 2004
-- Casey O'Malley: Sprint Football 2017 vs Wrestling 2016
-- Patty Wilson: Field Hockey 1975 vs Field Hockey 1978
 - J.P. O'Brien: Men's Lacrosse 1996 vs Football 1995
-- Griffin  Cords: Men's Cross Country 2029 vs Men's Track & Field 2029
 - Emily Green: Women's Polo 2018 vs Women's Polo 2020
-- Shannon Crane: Women's Cross Country 2009 vs Softball 2012
-- Katherine Davis: Women's Rowing 2024 vs Women's Polo 2009
 - Cyndy Schlaepfer: Field Hockey 1978 vs Women's Ice Hockey 1977
-- Grace Dwyer: Women's Rowing 2018 vs Women's Ice Hockey 2026
 - Dan Grew: Men's Polo 2012 vs Men's Polo 2010
-- Yianni Diakomihalis: Wrestling 2023 vs Wrestling 2021
-- Vito Arujau: Wrestling 2022 vs Wrestling 2024
 - Jacqueline Webb: Equestrian 2015 vs Women's Polo 2016
 - Gina Bebensee: Women's Polo 2011 vs Women's Polo 2008
-- Becky Posner: Fencing/Women's Polo 1990 vs Women's Polo 1995
 - Lauren Woods: Field Hockey 1981 vs Women's Track & Field 2019
 - Brandon Anderson: Men's Polo/Wrestling 2006 vs Wrestling 2003

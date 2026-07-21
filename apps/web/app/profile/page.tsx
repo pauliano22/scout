@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import ProfileClient from './ProfileClient'
 import AlumniProfileClient from './AlumniProfileClient'
+import { buildCircle, type Circle } from '@/lib/alumni-circle'
+import { serviceClient } from '@/lib/requestAuth'
 import type { Alumni, AmbassadorProfile, UserRole } from '@scout/shared/types/database'
 
 export default async function ProfilePage() {
@@ -52,6 +54,34 @@ export default async function ProfilePage() {
       .maybeSingle()
     ambassador = (ambData as AmbassadorProfile | null) ?? null
 
+    // The alum's own circle: teammates from the pre-baked dataset. Warm paths
+    // don't apply to viewing your own circle, so saved contacts stay empty.
+    // The live overlay (service client — these rows aren't readable under RLS)
+    // drops people who opted out or were merged since the bake, and lifts
+    // claimed members so "On Scout" teammates actually surface in the top 6.
+    let circle: Circle | null = null
+    if (profile?.alumni_id) {
+      try {
+        const svc = serviceClient()
+        const [{ data: hiddenRows }, { data: claimedRows }] = await Promise.all([
+          svc.from('alumni').select('id').or('is_public.eq.false,is_duplicate.eq.true').limit(5000),
+          svc.from('alumni').select('id').eq('is_claimed', true).limit(5000),
+        ])
+        const hidden = new Set((hiddenRows ?? []).map(r => r.id as string))
+        // An opted-out ego gets no section: the circle API and /map both
+        // refuse hidden egos, so its links would dead-end.
+        if (!hidden.has(profile.alumni_id)) {
+          circle = await buildCircle(profile.alumni_id, [], 6, {
+            exclude: hidden,
+            prioritize: new Set((claimedRows ?? []).map(r => r.id as string)),
+          })
+        }
+      } catch (e) {
+        // A missing/corrupt dataset must never take down the profile page.
+        console.error('[profile] circle unavailable:', e instanceof Error ? e.message : e)
+      }
+    }
+
     return (
       <>
         <Navbar
@@ -65,6 +95,7 @@ export default async function ProfilePage() {
           alumni={alumni}
           major={profile?.major ?? null}
           ambassador={ambassador}
+          circle={circle}
         />
       </>
     )

@@ -2,17 +2,22 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   Mail, MapPin, Briefcase, GraduationCap, Award, Pencil, Check,
   Loader2, EyeOff, Linkedin,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { Alumni, AmbassadorProfile, AmbassadorTier, AmbassadorBadgeType, WorkHistoryEntry } from '@scout/shared/types/database'
+import type { Circle } from '@/lib/alumni-circle'
+import { formatGradYearShort } from '@scout/shared/profile/alumniProfile'
+import { trackEvent } from '@/lib/track'
 import AlumniProfileForm, {
   AlumniProfileFormValues,
   emptyAlumniProfileValues,
 } from '@/components/AlumniProfileForm'
 import LinkedInImport from '@/components/LinkedInImport'
+import Avatar from '@/components/Avatar'
 import SportAvatar from '@/components/SportAvatar'
 import VarsityBadge from '@/components/VarsityBadge'
 import ReferralProgressTracker from '@/components/ReferralProgressTracker'
@@ -23,6 +28,7 @@ interface Props {
   alumni: Alumni | null
   major: string | null
   ambassador: AmbassadorProfile | null
+  circle: Circle | null
 }
 
 const VIEW = 'view' as const
@@ -35,6 +41,7 @@ export default function AlumniProfileClient({
   alumni,
   major,
   ambassador,
+  circle,
 }: Props) {
   const router = useRouter()
   const [mode, setMode] = useState<Mode>(VIEW)
@@ -300,6 +307,9 @@ export default function AlumniProfileClient({
           </div>
         )}
 
+        {/* Your circle: teammates from the alum's own playing years */}
+        {circle && <CircleSection circle={circle} />}
+
         {/* Advice */}
         {alumni?.advice && (
           <Section title="Advice for student-athletes">
@@ -384,6 +394,95 @@ export default function AlumniProfileClient({
         </p>
       </div>
     </main>
+  )
+}
+
+function CircleSection({ circle }: { circle: Circle }) {
+  const { person, teammates, teammatesCount, eraCount } = circle
+
+  const hasContent = teammates.length > 0 || (person.campusStart != null && eraCount > 0)
+
+  useEffect(() => {
+    if (!hasContent) return
+    trackEvent('circle_section_viewed', {
+      teammates_count: teammatesCount,
+      on_scout_count: teammates.filter(t => t.onScout).length,
+      era_count: eraCount,
+    })
+    // Mount-only: the section renders once per page load with a fixed circle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Nothing useful to show: no campus window on record, or truly no overlaps.
+  if (!hasContent) return null
+
+  const fullCircleHref = `/map?sel=${person.id}`
+
+  if (teammates.length === 0) {
+    return (
+      <Section title="Your circle">
+        <p className="text-sm text-[--text-tertiary]">
+          No direct teammates in our records, but {eraCount.toLocaleString()} athletes were on
+          campus during your years.
+        </p>
+        <Link href={fullCircleHref} className="inline-block mt-3 text-sm text-[--school-primary] hover:underline">
+          View your full circle →
+        </Link>
+      </Section>
+    )
+  }
+
+  return (
+    <Section title="Your circle">
+      <p className="text-sm text-[--text-tertiary] mb-4">
+        {teammatesCount.toLocaleString()} teammate{teammatesCount === 1 ? '' : 's'}
+        {eraCount > 0 && <> · {eraCount.toLocaleString()} more on campus in your era</>}
+      </p>
+      <div className="divide-y divide-[--border-primary]">
+        {teammates.map((t) => (
+          <Link
+            key={t.id}
+            href={`/map?sel=${t.id}`}
+            onClick={() => trackEvent('circle_teammate_clicked', { alumni_id: t.id, on_scout: t.onScout })}
+            className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-lg hover:bg-[--bg-tertiary] transition-colors"
+          >
+            <Avatar name={t.name} imageUrl={t.avatar} size="md" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-[--text-primary] truncate">
+                {t.name}
+                {t.gradYear && (
+                  <span className="text-[--text-quaternary] font-normal"> {formatGradYearShort(t.gradYear)}</span>
+                )}
+              </p>
+              <p className="text-xs text-[--text-tertiary] truncate">
+                {t.seasons > 0
+                  ? `Played together ${t.seasons} season${t.seasons === 1 ? '' : 's'}`
+                  : 'On campus together'}
+                {(() => {
+                  const work = t.role && t.company ? `${t.role} at ${t.company}` : t.role || t.company || t.location
+                  return work ? <> · {work}</> : null
+                })()}
+              </p>
+            </div>
+            {t.onScout && (
+              <span className="flex-shrink-0 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-[--text-tertiary]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                On Scout
+              </span>
+            )}
+          </Link>
+        ))}
+      </div>
+      <Link
+        href={fullCircleHref}
+        onClick={() => trackEvent('circle_view_all_clicked')}
+        className="inline-block mt-4 text-sm text-[--school-primary] hover:underline"
+      >
+        {teammatesCount > teammates.length
+          ? `View all ${teammatesCount.toLocaleString()} teammates →`
+          : 'View your full circle →'}
+      </Link>
+    </Section>
   )
 }
 

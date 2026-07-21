@@ -21,6 +21,7 @@ interface RawPerson {
   ro?: string
   in?: number
   lo?: string
+  av?: string
 }
 
 interface RawData {
@@ -106,6 +107,19 @@ export interface CirclePersonSummary {
   company: string | null
   role: string | null
   location: string | null
+  avatar: string | null
+  onScout: boolean
+}
+
+export interface CircleOptions {
+  /**
+   * Live ids to drop entirely. The dataset is a static bake, so rows that have
+   * since opted out (is_public=false) or been merged away (is_duplicate) must
+   * be filtered at read time or the bake shows people who withdrew consent.
+   */
+  exclude?: Set<string>
+  /** Live ids of claimed members: lifted above the teammate slice and flagged onScout. */
+  prioritize?: Set<string>
 }
 
 export interface WarmPath {
@@ -133,7 +147,7 @@ export interface Circle {
   warmPaths: WarmPath[]
 }
 
-function summarize(ds: CircleDataset, ego: RawPerson, q: RawPerson): CirclePersonSummary {
+function summarize(ds: CircleDataset, ego: RawPerson, q: RawPerson, onScout = false): CirclePersonSummary {
   return {
     id: q.id,
     name: q.n,
@@ -143,6 +157,8 @@ function summarize(ds: CircleDataset, ego: RawPerson, q: RawPerson): CirclePerso
     company: q.co ?? null,
     role: q.ro ?? null,
     location: q.lo ?? null,
+    avatar: q.av ?? null,
+    onScout,
   }
 }
 
@@ -161,11 +177,12 @@ export interface WarmPathSummaryOut {
  * then more shared seasons, then recency — recent grads are the warm bridges to
  * older alumni and respond far more often, so they get lifted within a tier.
  */
-const WARM_NOW = new Date().getFullYear()
 export function warmScore(relation: 'teammate' | 'same_era', seasons: number, gradYear: number | null): number {
   const rel = relation === 'teammate' ? 100 : 0
   const seasonPts = Math.min(Math.max(seasons, 0), 6) * 4
-  const age = gradYear == null ? 40 : Math.max(0, WARM_NOW - gradYear)
+  // Current year computed per call, not at module load — a long-lived server
+  // process crossing a year boundary would otherwise misscore recency.
+  const age = gradYear == null ? 40 : Math.max(0, new Date().getFullYear() - gradYear)
   const recency = age <= 3 ? 12 : age <= 6 ? 8 : age <= 12 ? 3 : 0
   return rel + seasonPts + recency
 }
@@ -215,25 +232,37 @@ export async function warmPathsFor(
 export async function buildCircle(
   alumniId: string,
   saved: { alumniId: string; status: string | null }[],
-  teammateLimit = 12
+  teammateLimit = 12,
+  opts: CircleOptions = {}
 ): Promise<Circle | null> {
   const ds = await getCircleDataset()
   const ego = ds.byId.get(alumniId)
   if (!ego) return null
 
-  const mates = teammatesOf(ds, ego)
+  const excluded = opts.exclude
+  const claimed = opts.prioritize
+
+  let mates = teammatesOf(ds, ego)
+  if (excluded?.size) mates = mates.filter(m => !excluded.has(m.id))
   const mateIds = new Set(mates.map(m => m.id))
+
+  // Claimed teammates surface above the slice: with few members, a
+  // seasons-only top-N would essentially never show anyone actually on Scout.
+  // Order within each group stays seasons-based.
+  if (claimed?.size) {
+    mates = [...mates.filter(m => claimed.has(m.id)), ...mates.filter(m => !claimed.has(m.id))]
+  }
 
   let eraCount = 0
   if (ego.a != null) {
     for (const q of ds.raw.alumni) {
-      if (q.id !== ego.id && overlaps(ego, q)) eraCount++
+      if (q.id !== ego.id && !excluded?.has(q.id) && overlaps(ego, q)) eraCount++
     }
   }
 
   const warmPaths: WarmPath[] = []
   for (const s of saved) {
-    if (s.alumniId === alumniId) continue
+    if (s.alumniId === alumniId || excluded?.has(s.alumniId)) continue
     const contact = ds.byId.get(s.alumniId)
     if (!contact || !overlaps(ego, contact)) continue
     warmPaths.push({
@@ -261,7 +290,7 @@ export async function buildCircle(
     },
     teammatesCount: mates.length,
     eraCount: eraCount - mates.length,
-    teammates: mates.slice(0, teammateLimit).map(m => summarize(ds, ego, m)),
+    teammates: mates.slice(0, teammateLimit).map(m => summarize(ds, ego, m, claimed?.has(m.id) ?? false)),
     warmPaths: warmPaths.slice(0, 10),
   }
 }

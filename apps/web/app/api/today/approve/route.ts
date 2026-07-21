@@ -94,13 +94,18 @@ export async function POST(request: NextRequest) {
 
     const nowIso = new Date().toISOString()
     // 1. mark the queue row sent — gating write; fail loudly if it doesn't land so
-    //    we never report a send that wasn't recorded.
-    const { error: queueErr } = await sb
+    //    we never report a send that wasn't recorded. The status filter re-checks
+    //    atomically: of two concurrent sends (double-click), exactly one row
+    //    comes back here, so the messages insert and pick_sent event fire once.
+    const { data: sentRows, error: queueErr } = await sb
       .from('outreach_queue')
       .update({ status: 'approved_sent', sent_at: nowIso })
       .eq('id', queueId)
       .eq('user_id', user.id)
+      .eq('status', 'queued_for_approval')
+      .select('id')
     if (queueErr) return NextResponse.json({ error: 'Failed to record send' }, { status: 500 })
+    if (!sentRows?.length) return NextResponse.json({ error: 'Already actioned' }, { status: 409 })
     // 2. log the outbound (authoritative loop state regardless of channel observability)
     const { error: msgErr } = await sb.from('messages').insert({
       user_id: user.id,
@@ -110,9 +115,18 @@ export async function POST(request: NextRequest) {
     })
     if (msgErr) console.error('today/approve: messages insert failed', msgErr)
     // 3. advance the connection — a silent failure here diverges the Network
-    // board from the queue (row stays 'interested' after a real send)
+    // board from the queue (row stays 'interested' after a real send).
+    // contacted_at is a first-touch marker: preserve an existing value so a
+    // repeat send never resets the reply-time clock.
+    const { data: net } = await sb.from('user_networks')
+      .select('contacted_at')
+      .eq('user_id', user.id)
+      .eq('alumni_id', q.alumni_id)
+      .maybeSingle()
+    const advance: Record<string, unknown> = { status: 'awaiting_reply', contacted: true }
+    if (!net?.contacted_at) advance.contacted_at = nowIso
     const { error: netErr } = await sb.from('user_networks')
-      .update({ status: 'awaiting_reply', contacted: true, contacted_at: nowIso })
+      .update(advance)
       .eq('user_id', user.id)
       .eq('alumni_id', q.alumni_id)
     if (netErr) console.error('today/approve: user_networks advance failed', netErr.message)
@@ -122,6 +136,11 @@ export async function POST(request: NextRequest) {
       { onConflict: 'alumni_id,user_id', ignoreDuplicates: true },
     )
     if (ledgerErr) console.error('today/approve: ledger upsert failed (cap may leak)', { alumni_id: q.alumni_id, user_id: user.id, error: ledgerErr.message })
+    // 5. funnel event — emitted here (not the client) so web and mobile sends
+    // both land exactly once, even if the tab closes mid-response.
+    await sb.from('user_events')
+      .insert({ user_id: user.id, event_type: 'pick_sent', event_data: { queue_id: queueId, alumni_id: q.alumni_id, sent_via: sentVia ?? (q.channel === 'email' ? 'email' : 'linkedin') } })
+      .then(({ error }) => { if (error) console.error('today/approve: pick_sent event insert failed', error.message) })
     return NextResponse.json({ ok: true, sent: queueId })
   }
 

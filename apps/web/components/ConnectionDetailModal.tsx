@@ -91,10 +91,23 @@ export default function ConnectionDetailModal({
 
   const handleStatusChange = async (newStatus: ConnectionStatus) => {
     setStatus(newStatus)
+    // Stamp the first-touch timestamps the status implies — this dropdown used
+    // to write status alone, which left contacted_at/replied_at forever null
+    // and blinded the AD report's reply metrics. Conditions live in JS and the
+    // mutation stays a plain .eq update (.or() on mutations 400s here).
+    const patch: Partial<UserNetwork> = { status: newStatus }
+    const nowIso = new Date().toISOString()
+    if (['awaiting_reply', 'response_needed', 'meeting_scheduled', 'met'].includes(newStatus) && !connection.contacted_at) {
+      patch.contacted = true
+      patch.contacted_at = nowIso
+    }
+    if (['response_needed', 'meeting_scheduled', 'met'].includes(newStatus) && !connection.replied_at) {
+      patch.replied_at = nowIso
+    }
     try {
-      const { error } = await supabase.from('user_networks').update({ status: newStatus }).eq('id', connection.id)
+      const { error } = await supabase.from('user_networks').update(patch).eq('id', connection.id)
       if (error) throw error
-      onUpdate({ ...connection, status: newStatus })
+      onUpdate({ ...connection, ...patch })
     } catch (err) { console.error('status update:', err) }
   }
 

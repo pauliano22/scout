@@ -29,14 +29,24 @@ export async function POST(request: Request) {
     .eq('user_id', auth.userId)
     .maybeSingle()
   if (!row || !row.alumni) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  const alum = row.alumni as unknown as Alumni
+
+  // Funnel events are emitted here (not the client) so every web draft open
+  // lands exactly once in user_events regardless of tab lifecycle. (Mobile
+  // never hits this route — its drafts arrive inline via /api/campaign — so
+  // mobile draft opens remain untracked for now.)
+  const emit = (eventType: string, extra: Record<string, unknown> = {}) =>
+    auth.db.from('user_events')
+      .insert({ user_id: auth.userId, event_type: eventType, event_data: { queue_id: row.id, alumni_id: alum.id, ...extra } })
+      .then(({ error }) => { if (error) console.error('[picks/draft] event insert failed:', eventType, error.message) })
 
   if ((row.draft_body as string)?.trim()) {
+    await emit('pick_draft_opened', { draft_was_ready: true })
     return NextResponse.json({ draft: row.draft_body, channel: row.channel })
   }
 
   const { data: profile } = await auth.db
     .from('profiles').select('*').eq('id', auth.userId).single()
-  const alum = row.alumni as unknown as Alumni
 
   // Honest name-drop: only contacts the student has actually MET, and only
   // when that contact genuinely overlapped with this alum at Cornell.
@@ -64,6 +74,7 @@ export async function POST(request: Request) {
       channel: row.channel as DraftChannel,
       mutualNote: mutual,
     })
+    await emit('pick_draft_opened', { draft_was_ready: false })
     // Write only if still empty — a concurrent tap may have generated first;
     // serve whichever draft landed rather than overwriting it.
     const { data: wrote, error: writeErr } = await auth.db
@@ -84,6 +95,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ draft, channel: row.channel })
   } catch (e: any) {
     console.error('[picks/draft]', e?.message ?? e)
+    // Failed generations previously left no artifact anywhere but Vercel logs.
+    await emit('pick_draft_failed', {})
     return NextResponse.json({ error: 'Draft generation failed' }, { status: 500 })
   }
 }

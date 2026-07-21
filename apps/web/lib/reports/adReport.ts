@@ -75,8 +75,15 @@ export async function buildAdReport(windowDays = 30): Promise<AdReport> {
     db.from('user_events').select('user_id').gte('created_at', since).limit(20000),
     db.from('messages').select('user_id').limit(20000),
     db.from('user_networks').select('id', { count: 'exact', head: true }),
-    db.from('user_networks').select('id', { count: 'exact', head: true }).not('contacted_at', 'is', null),
-    db.from('user_networks').select('id', { count: 'exact', head: true }).not('replied_at', 'is', null),
+    // Contacted/replied are DERIVED from status as well as timestamps: rows
+    // moved via the modal dropdown or mobile stepper before 2026-07-20 carry a
+    // reply-implying status but no timestamp, so timestamp-only counts blind
+    // the report (it showed 0 replies against 14 status-implied ones).
+    // (.or() is safe on SELECTs — the PostgREST 400 rule only hits mutations.)
+    db.from('user_networks').select('id', { count: 'exact', head: true })
+      .or('contacted_at.not.is.null,contacted.eq.true,status.in.(awaiting_reply,response_needed,meeting_scheduled,met)'),
+    db.from('user_networks').select('id', { count: 'exact', head: true })
+      .or('replied_at.not.is.null,status.in.(response_needed,meeting_scheduled,met)'),
     db.from('user_networks').select('id', { count: 'exact', head: true }).in('status', ['meeting_scheduled', 'met']),
     db.from('user_networks').select('id', { count: 'exact', head: true }).eq('status', 'met'),
     db.from('user_networks').select('contacted_at, replied_at').not('replied_at', 'is', null).not('contacted_at', 'is', null).limit(10000),
@@ -96,7 +103,11 @@ export async function buildAdReport(windowDays = 30): Promise<AdReport> {
       const row = r as { contacted_at: string; replied_at: string }
       return (new Date(row.replied_at).getTime() - new Date(row.contacted_at).getTime()) / 86_400_000
     })
-    .filter(d => d >= 0)
+    // Same-instant pairs are stamping artifacts, not real reply latency: when a
+    // student jumps straight to a reply-implying status, contacted_at and
+    // replied_at get the same first-touch timestamp. Excluding them (and the
+    // negative deltas from legacy clobbered rows) keeps the median honest.
+    .filter(d => d > 0.001)
     .sort((a, b) => a - b)
   const medianDaysToReply = replyDays.length
     ? Math.round(replyDays[Math.floor(replyDays.length / 2)] * 10) / 10

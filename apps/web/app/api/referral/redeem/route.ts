@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { serviceClient } from '@/lib/requestAuth'
 
 /**
  * POST /api/referral/redeem
@@ -33,8 +34,14 @@ export async function POST(request: NextRequest) {
 
     const code = body.code.toUpperCase().trim()
 
+    // Data ops use the service client: RLS lets only the OWNER read a
+    // referral_links row, so the cookie client 404'd every redemption by
+    // anyone except the referrer themselves (i.e., all real redemptions).
+    // Identity stays cookie-verified above; every write is scoped to user.id.
+    const db = serviceClient()
+
     // Find the referral link
-    const { data: referralLink, error: linkError } = await supabase
+    const { data: referralLink, error: linkError } = await db
       .from('referral_links')
       .select('id, user_id')
       .eq('code', code)
@@ -51,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if this user has already redeemed this code
-    const { data: existingRedemption } = await supabase
+    const { data: existingRedemption } = await db
       .from('referral_redemptions')
       .select('id')
       .eq('referral_link_id', referralLink.id)
@@ -63,14 +70,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the referrer's name for the response
-    const { data: referrerProfile } = await supabase
+    const { data: referrerProfile } = await db
       .from('profiles')
       .select('full_name')
       .eq('id', referralLink.user_id)
       .single()
 
     // Create the redemption record
-    const { error: redemptionError } = await supabase
+    const { error: redemptionError } = await db
       .from('referral_redemptions')
       .insert({
         referral_link_id: referralLink.id,
@@ -84,12 +91,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Increment the redemption count on the referral link
-    await supabase.rpc('increment_referral_count', { link_id: referralLink.id })
+    await db.rpc('increment_referral_count', { link_id: referralLink.id })
 
     // If a connected alumni ID was provided, create a network connection
     if (body.connected_alumni_id) {
       // Check if connection already exists
-      const { data: existingConn } = await supabase
+      const { data: existingConn } = await db
         .from('user_networks')
         .select('id')
         .eq('user_id', user.id)
@@ -97,7 +104,7 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       if (!existingConn) {
-        await supabase
+        await db
           .from('user_networks')
           .insert({
             user_id: user.id,

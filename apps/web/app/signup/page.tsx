@@ -20,7 +20,9 @@ function SignupForm() {
       ? 'alumni'
       : searchParams?.get('role') === 'student'
         ? 'student'
-        : null
+        : searchParams?.get('for')
+          ? 'alumni' // claim links are alumni by definition
+          : null
 
   const [role, setRole] = useState<Role | null>(initialRole)
   const [fullName, setFullName] = useState('')
@@ -68,6 +70,24 @@ function SignupForm() {
   useEffect(() => {
     logSignupStep('landing', { referrer: document.referrer.slice(0, 300) || undefined })
   }, [])
+
+  // Referral relay: /r/[code] passes ?ref= (and ?for= on prefilled claim
+  // links). Stash them for the post-signup flow — sessionStorage survives the
+  // /onboarding redirect. Redemption fires after signup (students) or after a
+  // completed claim (alumni, with connected_alumni_id attached).
+  useEffect(() => {
+    const ref = searchParams?.get('ref')?.trim()
+    const forAlumniId = searchParams?.get('for')?.trim()
+    if (!ref && !forAlumniId) return
+    try {
+      const prev = JSON.parse(sessionStorage.getItem('scout-referral') ?? '{}')
+      sessionStorage.setItem('scout-referral', JSON.stringify({
+        code: ref || prev.code || null,
+        forAlumniId: forAlumniId || prev.forAlumniId || null,
+      }))
+    } catch { /* storage unavailable — flow degrades to the normal wizard */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
   useEffect(() => {
     if (role) logSignupStep('form', { role, source: roleSource.current })
   }, [role])
@@ -135,6 +155,24 @@ function SignupForm() {
       }).catch(() => {})
 
       logSignupStep('complete', { role })
+
+      // Students redeem the referral now; alumni redeem after a completed
+      // claim so the redemption carries connected_alumni_id. Fire-and-forget:
+      // self/duplicate codes 4xx harmlessly and never block signup.
+      if (role === 'student') {
+        try {
+          const stored = JSON.parse(sessionStorage.getItem('scout-referral') ?? '{}')
+          if (stored.code) {
+            fetch('/api/referral/redeem', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: stored.code }),
+            }).catch(() => {})
+            sessionStorage.removeItem('scout-referral')
+          }
+        } catch { /* ignore */ }
+      }
+
       router.push('/onboarding')
     } catch (err: any) {
       logSignupStep('submit_blocked', { role, reason: 'auth_error', message: String(err?.message ?? '').slice(0, 120) })

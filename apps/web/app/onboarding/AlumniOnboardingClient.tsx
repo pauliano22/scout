@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from '@/components/Link'
 import { ArrowRight, ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react'
 import { trackEvent } from '@/lib/track'
@@ -25,7 +25,17 @@ interface MatchedAlumni {
   photo_url: string | null
   bio: string | null
   advice: string | null
-  match_strategy: 'email' | 'name_sport_year' | 'name_year'
+  match_strategy: 'email' | 'name_sport_year' | 'name_year' | 'direct_link'
+}
+
+// Referral relay stashed by /signup (from /r/[code]?for= claim links).
+function readReferralRelay(): { code: string | null; forAlumniId: string | null } {
+  try {
+    const raw = JSON.parse(sessionStorage.getItem('scout-referral') ?? '{}')
+    return { code: raw.code ?? null, forAlumniId: raw.forAlumniId ?? null }
+  } catch {
+    return { code: null, forAlumniId: null }
+  }
 }
 
 interface AlumniOnboardingClientProps {
@@ -70,6 +80,7 @@ export default function AlumniOnboardingClient({
   prefill,
 }: AlumniOnboardingClientProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const firstName = userName?.split(' ')[0] || ''
 
   const [step, setStep] = useState<Step>('welcome')
@@ -98,6 +109,37 @@ export default function AlumniOnboardingClient({
     city: prefill?.location || '',
     linkedin_url: prefill?.linkedinUrl || '',
   }))
+
+  // ─── Prefilled claim links: jump straight to "is this you?" ─────────
+  // /r/[code]?for=<id> → signup stashes the id → we fetch that exact row and
+  // skip the identify wizard. Any failure falls back to the normal flow.
+  const claimJumpTried = useRef(false)
+  useEffect(() => {
+    if (claimJumpTried.current || prefillAlumniId) return
+    const claimId = searchParams?.get('claim')?.trim() || readReferralRelay().forAlumniId
+    if (!claimId) return
+    claimJumpTried.current = true
+    ;(async () => {
+      try {
+        const res = await fetch('/api/alumni/match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ alumni_id: claimId }),
+        })
+        const data = await res.json()
+        if (!res.ok || !data.match) return
+        const m = data.match as MatchedAlumni
+        setMatch(m)
+        setMatchedAlumniId(m.id)
+        if (m.sport) setSport(m.sport)
+        if (m.graduation_year) setGraduationYear(String(m.graduation_year))
+        setStep('match')
+        trackEvent('claim_link_prefilled', { alumni_id: m.id })
+      } catch { /* normal wizard */ }
+    })()
+    // Mount-only jump.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ─── Identify: look up a possible starter profile ──────────────────
   const handleIdentifyNext = async () => {
@@ -220,6 +262,24 @@ export default function AlumniOnboardingClient({
       trackEvent('alumni_profile_claimed', {
         had_match: Boolean(matchedAlumniId),
       })
+
+      // A completed claim is the referral conversion: redeem now with the
+      // claimed alumni id attached. Fire-and-forget — never blocks the claim.
+      try {
+        const relay = readReferralRelay()
+        if (relay.code) {
+          fetch('/api/referral/redeem', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code: relay.code,
+              connected_alumni_id: data.alumni_id ?? matchedAlumniId ?? null,
+            }),
+          }).catch(() => {})
+        }
+        sessionStorage.removeItem('scout-referral')
+      } catch { /* ignore */ }
+
       if (data.status === 'pending_review') {
         // Account is pending admin approval — the /review page is the single
         // "under review" surface, and middleware keeps them there until approved.

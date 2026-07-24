@@ -8,6 +8,8 @@ import { NextRequest } from 'next/server'
 import { ApiAuthError, requireAdmin } from '@/lib/auth'
 import { serviceClient } from '@/lib/requestAuth'
 import { ok, fail } from '@/lib/api/respond'
+import { sendEmail } from '@/lib/emails/send'
+import { alumniAcceptanceEmail } from '@/lib/emails/alumniAcceptance'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
     // Load the pending row to find the claimant.
     const { data: row, error: loadErr } = await db
       .from('alumni')
-      .select('id, claimed_by_user_id, claim_review_status')
+      .select('id, full_name, email, claimed_by_user_id, claim_review_status')
       .eq('id', alumni_id)
       .single()
     if (loadErr || !row) return fail('Claim not found', 404)
@@ -65,6 +67,21 @@ export async function POST(request: NextRequest) {
           .from('profiles')
           .update({ directory_access: true })
           .eq('id', row.claimed_by_user_id)
+
+        // Acceptance email is best-effort: the approval stands even if it fails.
+        const { data: prof } = await db
+          .from('profiles')
+          .select('email, full_name')
+          .eq('id', row.claimed_by_user_id)
+          .single()
+        const to = prof?.email || row.email
+        if (to) {
+          const { subject, html } = alumniAcceptanceEmail(prof?.full_name || row.full_name)
+          const sent = await sendEmail(to, subject, html)
+          if (!sent.success) console.error('[admin/claims] acceptance email failed:', sent.error)
+        } else {
+          console.warn(`[admin/claims] approved ${alumni_id} but no email on profile or alumni row`)
+        }
         return ok({ status: 'approved' })
       }
       // Shouldn't happen (the claim API always links an account), but surface

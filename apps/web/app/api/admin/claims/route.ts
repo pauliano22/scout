@@ -8,8 +8,8 @@ import { NextRequest } from 'next/server'
 import { ApiAuthError, requireAdmin } from '@/lib/auth'
 import { serviceClient } from '@/lib/requestAuth'
 import { ok, fail } from '@/lib/api/respond'
-import { sendEmail } from '@/lib/emails/send'
-import { alumniAcceptanceEmail } from '@/lib/emails/alumniAcceptance'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
+import { welcomeAlumniHtml, welcomeAlumniSubject, welcomeAlumniText } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +56,13 @@ export async function POST(request: NextRequest) {
     if (loadErr || !row) return fail('Claim not found', 404)
 
     if (action === 'approve') {
+      // Load the full alumni record for the email
+      const { data: alumniRow } = await db
+        .from('alumni')
+        .select('full_name, email')
+        .eq('id', alumni_id)
+        .single()
+
       const { error: upErr } = await db
         .from('alumni')
         .update({ is_public: true, is_verified: true, claim_review_status: 'approved' })
@@ -68,20 +75,19 @@ export async function POST(request: NextRequest) {
           .update({ directory_access: true })
           .eq('id', row.claimed_by_user_id)
 
-        // Acceptance email is best-effort: the approval stands even if it fails.
-        const { data: prof } = await db
-          .from('profiles')
-          .select('email, full_name')
-          .eq('id', row.claimed_by_user_id)
-          .single()
-        const to = prof?.email || row.email
-        if (to) {
-          const { subject, html } = alumniAcceptanceEmail(prof?.full_name || row.full_name)
-          const sent = await sendEmail(to, subject, html)
-          if (!sent.success) console.error('[admin/claims] acceptance email failed:', sent.error)
-        } else {
-          console.warn(`[admin/claims] approved ${alumni_id} but no email on profile or alumni row`)
+        // Send welcome email — best-effort, won't block the response
+        if (alumniRow?.email && isEmailConfigured()) {
+          const name = alumniRow.full_name?.split(' ')[0] || 'there'
+          sendEmail({
+            to: alumniRow.email,
+            subject: welcomeAlumniSubject(),
+            htmlBody: welcomeAlumniHtml({ name }),
+            textBody: welcomeAlumniText({ name }),
+          }).then(result => {
+            if (!result.success) console.error('[claims] Welcome email failed:', result.error)
+          })
         }
+
         return ok({ status: 'approved' })
       }
       // Shouldn't happen (the claim API always links an account), but surface

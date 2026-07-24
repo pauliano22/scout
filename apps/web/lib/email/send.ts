@@ -14,7 +14,7 @@ import { google } from 'googleapis'
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || ''
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || ''
 const GOOGLE_REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN || ''
-const GOOGLE_EMAIL = process.env.GOOGLE_EMAIL || 'team@scoutcornell.com'
+const GOOGLE_EMAIL = process.env.GOOGLE_EMAIL || 'ian@scoutcornell.com'
 
 /** Returns true if the email service is configured with valid credentials */
 export function isEmailConfigured(): boolean {

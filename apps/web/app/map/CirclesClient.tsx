@@ -1,10 +1,11 @@
 'use client'
 
 // Circles — role-aware browsing home.
-// Students: "Where your team went" board (their sport's alumni by destination)
-//   plus search; picking a person opens the standard alumni detail modal (same
-//   as Discover). Alumni: "Your locker room" (their teammates by class cohort);
-//   picking a person opens their season circle.
+// Students land on the "Where your team went" board; alumni land on their
+// locker room. Picking ANY person opens the standard alumni detail modal
+// (same as Discover/Campaign), hydrated with the live DB row — the baked map
+// dataset carries no linkedin_url or fresh career fields. The one exception:
+// an alum opening their own circle (?sel=self) still gets the season view.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -46,6 +47,16 @@ function toAlumniBase(ds: Dataset, p: Person): AlumniBase {
     display_headline: p.hl ?? null,
     work_history: work.length ? work : null,
   }
+}
+
+// Live row wins field-by-field; bake values only fill fields the DB has blank.
+function mergeAlum(base: AlumniBase, fresh?: Partial<AlumniBase>): AlumniBase {
+  if (!fresh) return base
+  const out: AlumniBase = { ...base }
+  for (const [k, v] of Object.entries(fresh)) {
+    if (v != null && v !== '') (out as unknown as Record<string, unknown>)[k] = v
+  }
+  return out
 }
 
 export default function CirclesClient({
@@ -125,9 +136,27 @@ export default function CirclesClient({
   }, [ds, studentIndices])
 
   const person = ds && selectedId ? ds.byId.get(selectedId) ?? null : null
-  const showLocker = !!ds && !person && role === 'alumni' && lockerViable
-  // Students keep the board mounted — their person view is a modal over it.
+  // Only the self view replaces the page; every other person is a modal, so
+  // the landing (board / locker room) stays mounted underneath.
+  const selfView = !!person && !!selfAlumniId && person.id === selfAlumniId
+  const showLocker = !!ds && role === 'alumni' && lockerViable && !selfView
   const showBoard = !!ds && role === 'student' && boardViable
+
+  // Hydrate the modal with the live alumni row (linkedin, fresh role/company,
+  // dated work history) — cached per id for the session.
+  const [liveAlum, setLiveAlum] = useState<Record<string, Partial<AlumniBase>>>({})
+  const detailId = person && !selfView ? person.id : null
+  useEffect(() => {
+    if (!detailId || liveAlum[detailId]) return
+    let cancelled = false
+    fetch(`/api/alumni/${detailId}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(body => {
+        if (!cancelled && body?.alumni) setLiveAlum(m => ({ ...m, [detailId]: body.alumni }))
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [detailId, liveAlum])
 
   useEffect(() => {
     if (showLocker) trackEvent('circles_lockerroom_viewed')
@@ -166,18 +195,18 @@ export default function CirclesClient({
         )}
       </div>
 
-      {person && role !== 'student' ? (
+      {selfView ? (
         <div className="circles-narrow">
           <button className="circles-back" onClick={() => setSelectedId(null)}>
             ← Back
           </button>
           <PersonCircle
             ds={ds}
-            person={person}
+            person={person!}
             saved={savedList}
             onSave={save}
             onPick={p => setSelectedId(p.id)}
-            self={person.id === selfAlumniId}
+            self
           />
         </div>
       ) : showLocker ? (
@@ -198,9 +227,10 @@ export default function CirclesClient({
         </div>
       )}
 
-      {person && role === 'student' && (
+      {person && !selfView && (
         <AlumniDetailModal
-          alumni={toAlumniBase(ds, person)}
+          key={person.id}
+          alumni={mergeAlum(toAlumniBase(ds, person), liveAlum[person.id])}
           isInNetwork={savedList.some(s => s.alumniId === person.id)}
           onAddToNetwork={save}
           onClose={() => setSelectedId(null)}

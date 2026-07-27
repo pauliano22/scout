@@ -6,6 +6,10 @@ export interface WelcomeAlumniProps {
 
 const FONT_STACK = `Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`
 
+// Absolute URL — email clients can't resolve relative paths. www avoids the
+// apex 307 redirect, which some clients refuse to follow for images.
+const LOGO_URL = 'https://www.scoutcornell.com/brand/scout-logo-email.png'
+
 export function welcomeAlumniHtml({ name }: WelcomeAlumniProps): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -26,7 +30,10 @@ export function welcomeAlumniHtml({ name }: WelcomeAlumniProps): string {
             <td style="padding:40px 40px 0;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td>
+                  <td style="padding-right:12px;vertical-align:middle;">
+                    <img src="${LOGO_URL}" width="36" height="36" alt="Scout" style="display:block;border:0;" />
+                  </td>
+                  <td style="vertical-align:middle;">
                     <span style="font-family:${FONT_STACK};font-size:20px;font-weight:700;color:#09090b;letter-spacing:-0.03em;line-height:1.3;">Scout</span>
                     <br>
                     <span style="font-family:${FONT_STACK};font-size:11px;font-weight:500;color:#a1a1aa;letter-spacing:0.1em;text-transform:uppercase;">CORNELL</span>

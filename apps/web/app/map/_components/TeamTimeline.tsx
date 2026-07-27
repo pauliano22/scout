@@ -1,13 +1,10 @@
 import { useMemo, useState } from 'react'
-import type { Dataset } from '../_lib/data'
 import type { Person } from '../_lib/types'
 import { seasonsShared } from '../_lib/overlap'
-import PersonHoverCard from './PersonHoverCard'
 
 const ROWS_STEP = 12
 
 interface Props {
-  ds: Dataset
   ego: Person
   mates: Person[]   // pre-sorted by seasons shared desc
   onPick: (p: Person) => void
@@ -17,9 +14,8 @@ interface Props {
  * "Seasons together" chart: one row per teammate, a bar for their years at
  * Cornell, with the stretch they shared with the selected person highlighted.
  */
-export default function TeamTimeline({ ds, ego, mates, onPick }: Props) {
+export default function TeamTimeline({ ego, mates, onPick }: Props) {
   const [rows, setRows] = useState(ROWS_STEP)
-  const [hover, setHover] = useState<{ p: Person; row: number } | null>(null)
 
   const { lo, hi, ticks } = useMemo(() => {
     const visible = mates.slice(0, rows)
@@ -57,7 +53,7 @@ export default function TeamTimeline({ ds, ego, mates, onPick }: Props) {
         </div>
       </div>
 
-      {mates.slice(0, rows).map((m, idx) => {
+      {mates.slice(0, rows).map(m => {
         const shared = seasonsShared(ego, m)
         const oLo = Math.max(ego.a!, m.a!)
         const oHi = Math.min(ego.b!, m.b!)
@@ -66,8 +62,6 @@ export default function TeamTimeline({ ds, ego, mates, onPick }: Props) {
             key={m.id}
             className="tl-row"
             onClick={() => onPick(m)}
-            onMouseEnter={() => setHover({ p: m, row: idx })}
-            onMouseLeave={() => setHover(h => (h?.p.id === m.id ? null : h))}
           >
             <span className="tl-name">{shortName(m.n)}{m.y ? ` '${String(m.y).slice(2)}` : ''}</span>
             <div className="tl-track">
@@ -80,17 +74,6 @@ export default function TeamTimeline({ ds, ego, mates, onPick }: Props) {
           </button>
         )
       })}
-
-      {hover && (
-        <div className="tl-card-anchor" style={{ top: `${44 + (hover.row + 1) * 32}px` }}>
-          <PersonHoverCard
-            ds={ds}
-            person={hover.p}
-            note={`${seasonsShared(ego, hover.p)} season${seasonsShared(ego, hover.p) === 1 ? '' : 's'} with ${ego.n.split(' ')[0]}`}
-            onViewCircle={() => onPick(hover.p)}
-          />
-        </div>
-      )}
 
       <div className="tl-foot">
         <span className="tl-legend">

@@ -173,6 +173,9 @@ export default function CampaignClient({ profile }: { profile: Profile }) {
       setData(d => (d ? { ...d, picks: d.picks.filter(p => p.queueId !== sendPick.pick.queueId) } : d))
       // durable row inserted server-side in /api/today/approve
       trackEvent('pick_sent', { queue_id: sendPick.pick.queueId, alumni_id: sendPick.pick.alumnus.id, sent_via: sentVia }, { posthogOnly: true })
+      // pick_sent is posthog-only; message_sent is the durable user_events
+      // metric and otherwise only fires from the retired /plan page.
+      trackEvent('message_sent', { sent_via: sentVia, alumni_id: sendPick.pick.alumnus.id, source: 'campaign' })
     } else {
       flashNotice('That send didn’t record — try it again.')
     }

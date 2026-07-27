@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
+import Link from 'next/link'
 import type { Dataset } from '../_lib/data'
 import type { Person, SavedContact } from '../_lib/types'
-import { sameEra, seasonsShared, teammates, yearsOverlap } from '../_lib/overlap'
+import { sameEra, seasonsShared, teammates } from '../_lib/overlap'
+import { trackEvent } from '@/lib/track'
 import Avatar from '@/components/Avatar'
 import TeamTimeline from './TeamTimeline'
 
@@ -15,14 +17,6 @@ interface Props {
   self?: boolean
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  interested: 'saved',
-  awaiting_reply: 'you reached out',
-  response_needed: 'they replied',
-  meeting_scheduled: 'meeting set',
-  met: 'you met',
-}
-
 export default function PersonCircle({ ds, person: p, saved, onSave, onPick, self = false }: Props) {
   const isSaved = saved.some(s => s.alumniId === p.id)
   const mates = useMemo(
@@ -30,18 +24,6 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick, sel
     [ds, p]
   )
   const eraCount = useMemo(() => (p.a != null ? sameEra(ds, p).length : 0), [ds, p])
-
-  const warm = useMemo(() => {
-    const mateIds = new Set(mates.map(m => m.id))
-    return saved
-      .filter(s => s.alumniId !== p.id)
-      .flatMap(s => {
-        const c = ds.byId.get(s.alumniId)
-        if (!c || !yearsOverlap(p, c)) return []
-        return [{ contact: c, status: s.status, teammate: mateIds.has(c.id), seasons: seasonsShared(p, c) }]
-      })
-      .sort((a, b) => Number(b.teammate) - Number(a.teammate) || b.seasons - a.seasons)
-  }, [ds, p, saved, mates])
 
   const work = [p.ro, p.co].filter(Boolean).join(' @ ')
 
@@ -60,7 +42,13 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick, sel
         </div>
         <div className="pc-actions">
           {!self && (isSaved ? (
-            <span className="pc-saved">✓ Saved</span>
+            <Link
+              className="pc-saved"
+              href={`/network?highlight=${p.id}`}
+              onClick={() => trackEvent('circles_outreach_clicked', { alumni_id: p.id })}
+            >
+              ✓ Saved · Draft outreach →
+            </Link>
           ) : (
             <button className="pc-save" onClick={() => onSave(p.id)}>Save</button>
           ))}
@@ -73,7 +61,7 @@ export default function PersonCircle({ ds, person: p, saved, onSave, onPick, sel
       {p.a != null && mates.length > 0 ? (
         <div className="pc-timeline">
           <h3>{self ? 'Who you played with' : 'Who they played with'}</h3>
-          <TeamTimeline ds={ds} ego={p} mates={mates} onPick={onPick} />
+          <TeamTimeline ego={p} mates={mates} onPick={onPick} />
           <p className="pc-era muted">
             {mates.length.toLocaleString()} teammates · {eraCount.toLocaleString()} more on campus at the same time
           </p>

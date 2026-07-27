@@ -151,6 +151,9 @@ export default function NetworkClient({
       if (!connection.contacted_at) patch.contacted_at = new Date().toISOString()
       await supabase.from('user_networks').update(patch).eq('id', connectionId)
       await supabase.from('messages').insert({ user_id: userId, alumni_id: connection.alumni_id, message_content: message, sent_via: sentVia })
+      // message_sent otherwise only fires from the retired /plan page — without
+      // this the save→outreach half of the funnel is invisible in user_events.
+      trackEvent('message_sent', { sent_via: sentVia, alumni_id: connection.alumni_id, source: 'network' })
       setNetwork(prev => prev.map(c => c.id === connectionId ? { ...c, ...patch } : c))
     } catch (err) { console.error('handleSendMessage:', err) }
     if (sentVia === 'marked') setSelectedConnection(null)

@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import type { Dataset } from '../_lib/data'
 import type { Person, SavedContact } from '../_lib/types'
+import { warmFor } from '../_lib/overlap'
+import { trackEvent } from '@/lib/track'
 import { initials, nowLine, shortYear } from '../_lib/now'
 
 interface Props {
@@ -13,11 +16,11 @@ interface Props {
 
 const COLUMNS = 4
 const CARDS_PER_COLUMN = 6
-const CHIPS_SHOWN = 7
+const EXPAND_STEP = 12
 
 export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: Props) {
-  const [openColumns, setOpenColumns] = useState<Set<number>>(new Set())
-  const [chipsOpen, setChipsOpen] = useState({ industries: false, cities: false })
+  // Per-column visible-card count; columns expand in steps, not all at once.
+  const [colRows, setColRows] = useState<Record<number, number>>({})
 
   const board = useMemo(() => {
     // sportIndices is already the family/gender-compatible set — expanding it
@@ -42,41 +45,14 @@ export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: P
       industry: ds.data.industries[ind],
       people: members.sort((p, q) => (q.y ?? 0) - (p.y ?? 0) || (q.av ? 1 : 0) - (p.av ? 1 : 0)),
     }))
-    const restIndustries = ranked.slice(COLUMNS).map(([ind, members]) => [ds.data.industries[ind], members.length] as const)
 
-    // "New York, New York" → "New York"; aggregate on the short name.
-    const cityCounts = new Map<string, number>()
-    for (const p of people) {
-      if (!p.lo) continue
-      const city = p.lo.split(',')[0].trim()
-      if (city) cityCounts.set(city, (cityCounts.get(city) ?? 0) + 1)
-    }
-    const cities = [...cityCounts.entries()].sort((a, b) => b[1] - a[1])
-
-    const withNow = people.filter(p => p.ro || p.co).length
-    return { total: people.length, withNow, columns, restIndustries, cities }
+    return { total: people.length, columns }
   }, [ds, sportIndices])
 
   if (board.columns.length === 0) return null
 
   const savedIds = new Set(saved.map(s => s.alumniId))
   const sportLabel = ds.data.sportMeta[sportIndices[0]]?.f ?? ds.data.sports[sportIndices[0]] ?? 'team'
-
-  const chipRow = (items: readonly (readonly [string, number])[], open: boolean, toggle: () => void, className: string) => {
-    const shown = open ? items : items.slice(0, CHIPS_SHOWN)
-    return (
-      <div className={`bd-chips ${className}`}>
-        {shown.map(([name, count]) => (
-          <span className="bd-chip" key={name}>{name}<small>{count}</small></span>
-        ))}
-        {items.length > CHIPS_SHOWN && (
-          <button className="bd-chip bd-more" aria-expanded={open} onClick={toggle}>
-            {open ? 'Show fewer' : `+${items.length - CHIPS_SHOWN} more`}
-          </button>
-        )}
-      </div>
-    )
-  }
 
   return (
     <section aria-label="Where your team went">
@@ -89,8 +65,9 @@ export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: P
       <p className="bd-note">Newest first — they reply.</p>
       <div className="bd-board">
         {board.columns.map((col, ci) => {
-          const open = openColumns.has(ci)
-          const shown = open ? col.people : col.people.slice(0, CARDS_PER_COLUMN)
+          const shownCount = colRows[ci] ?? CARDS_PER_COLUMN
+          const shown = col.people.slice(0, shownCount)
+          const remaining = col.people.length - shown.length
           return (
             <div className={`bd-col${ci === 0 ? ' bd-lead' : ''}`} key={col.industry}>
               <div className="bd-col-head">
@@ -98,68 +75,97 @@ export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: P
                 <span className="bd-count">{col.people.length}</span>
               </div>
               {shown.map(p => (
-                <div className="bd-card" key={p.id}>
-                  <span className="bd-ava">
-                    <span className="bd-init">{initials(p.n)}</span>
-                    {p.av && (
-                      <img
-                        src={p.av}
-                        alt=""
-                        loading="lazy"
-                        onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                      />
-                    )}
-                  </span>
-                  <span className="bd-text">
-                    <span className="bd-pname">
-                      {p.n} {p.y && <span>{shortYear(p.y)}</span>}
-                    </span>
-                    <span className="bd-prole">{nowLine(p)}</span>
-                  </span>
-                  {/* Saved state is an inline chip (flex sibling) so it never
-                      overlaps the name; the actionable Save stays an absolute
-                      hover/focus-revealed button. Siblings, not nested:
-                      buttons inside buttons are invalid DOM. */}
-                  {savedIds.has(p.id) && <span className="bd-savedchip">Saved ✓</span>}
-                  <button
-                    className="bd-card-open"
-                    aria-label={`View ${p.n}’s circle`}
-                    onClick={() => onPick(p)}
-                  />
-                  {!savedIds.has(p.id) && (
-                    <button
-                      className="bd-save"
-                      aria-label={`Save ${p.n}`}
-                      onClick={() => onSave(p.id)}
-                    >
-                      Save
+                <BoardCard
+                  key={p.id}
+                  ds={ds}
+                  person={p}
+                  isSaved={savedIds.has(p.id)}
+                  saved={saved}
+                  onSave={onSave}
+                  onPick={onPick}
+                />
+              ))}
+              {(remaining > 0 || shownCount > CARDS_PER_COLUMN) && (
+                <div className="bd-col-foot">
+                  {remaining > 0 ? (
+                    <button onClick={() => setColRows(prev => ({ ...prev, [ci]: shownCount + EXPAND_STEP }))}>
+                      Show {Math.min(EXPAND_STEP, remaining)} more
+                    </button>
+                  ) : (
+                    <button onClick={() => setColRows(prev => ({ ...prev, [ci]: CARDS_PER_COLUMN }))}>
+                      Show fewer
                     </button>
                   )}
-                </div>
-              ))}
-              {col.people.length > CARDS_PER_COLUMN && (
-                <div className="bd-col-foot">
-                  <button
-                    onClick={() => setOpenColumns(prev => {
-                      const next = new Set(prev)
-                      if (next.has(ci)) next.delete(ci)
-                      else next.add(ci)
-                      return next
-                    })}
-                  >
-                    {open ? 'Show fewer' : `All ${col.people.length} →`}
-                  </button>
                 </div>
               )}
             </div>
           )
         })}
       </div>
-
-      {board.restIndustries.length > 0 &&
-        chipRow(board.restIndustries, chipsOpen.industries, () => setChipsOpen(c => ({ ...c, industries: !c.industries })), 'bd-chips-ind')}
-      {board.cities.length > 0 &&
-        chipRow(board.cities, chipsOpen.cities, () => setChipsOpen(c => ({ ...c, cities: !c.cities })), 'bd-chips-city')}
     </section>
+  )
+}
+
+function BoardCard({ ds, person: p, isSaved, saved, onSave, onPick }: {
+  ds: Dataset
+  person: Person
+  isSaved: boolean
+  saved: SavedContact[]
+  onSave: (alumniId: string) => void
+  onPick: (p: Person) => void
+}) {
+  const warm = useMemo(() => warmFor(ds, p, saved), [ds, p, saved])
+
+  return (
+    <div className="bd-card">
+      <span className="bd-ava">
+        <span className="bd-init">{initials(p.n)}</span>
+        {p.av && (
+          <img
+            src={p.av}
+            alt=""
+            loading="lazy"
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+        )}
+      </span>
+      <span className="bd-text">
+        <span className="bd-pname">
+          {p.n} {p.y && <span>{shortYear(p.y)}</span>}
+        </span>
+        <span className="bd-prole">{nowLine(p)}</span>
+        {warm.length > 0 && !isSaved && (
+          <span className="bd-warm">
+            {warm[0].contact.n}{warm.length > 1 ? ` +${warm.length - 1}` : ''} can introduce you
+          </span>
+        )}
+      </span>
+      {/* Card open + Save/Saved are sibling elements (nested interactives are
+          invalid DOM). The overlay makes the whole card the click target; the
+          always-visible pill sits above it via z-index. */}
+      <button
+        className="bd-card-open"
+        aria-label={`View ${p.n}’s circle`}
+        onClick={() => onPick(p)}
+      />
+      {isSaved ? (
+        <Link
+          className="bd-savedchip"
+          href={`/network?highlight=${p.id}`}
+          aria-label={`${p.n} saved — draft outreach`}
+          onClick={() => trackEvent('circles_outreach_clicked', { alumni_id: p.id })}
+        >
+          Saved ✓
+        </Link>
+      ) : (
+        <button
+          className="bd-save"
+          aria-label={`Save ${p.n}`}
+          onClick={() => onSave(p.id)}
+        >
+          Save
+        </button>
+      )}
+    </div>
   )
 }

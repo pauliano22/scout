@@ -1,23 +1,52 @@
 'use client'
 
 // Circles — role-aware browsing home.
-// Students: "Where your team went" board (their sport's alumni by destination),
-//   search, and their saved-network web. Alumni: "Your locker room" (their
-//   teammates by class cohort). Picking any person opens their season circle.
+// Students: "Where your team went" board (their sport's alumni by destination)
+//   plus search; picking a person opens the standard alumni detail modal (same
+//   as Discover). Alumni: "Your locker room" (their teammates by class cohort);
+//   picking a person opens their season circle.
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { trackEvent } from '@/lib/track'
+import AlumniDetailModal, { type AlumniBase } from '@/components/AlumniDetailModal'
+import type { WorkHistoryEntry } from '@scout/shared/types/database'
 import { loadDataset, type Dataset } from './_lib/data'
-import type { SavedContact } from './_lib/types'
+import type { Person, SavedContact } from './_lib/types'
 import { sportIndicesFor } from './_lib/sportMatch'
 import { teammates } from './_lib/overlap'
 import SearchHero from './_components/SearchHero'
 import PersonCircle from './_components/PersonCircle'
-import NetworkWeb from './_components/NetworkWeb'
 import LockerRoom from './_components/LockerRoom'
 import TeamBoard from './_components/TeamBoard'
 import './circles.css'
+
+// The board runs on the baked map dataset; the shared detail modal expects a
+// DB-shaped alumni row. Bridge the field names (condensed keys → row keys).
+function toAlumniBase(ds: Dataset, p: Person): AlumniBase {
+  const work: WorkHistoryEntry[] = (p.wh ?? []).map(w => ({
+    title: w.t ?? null,
+    company: w.c ?? null,
+    start: w.s ? { year: w.s } : null,
+    end: w.e ? { year: w.e } : null,
+    duration: null,
+    location: null,
+  }))
+  return {
+    id: p.id,
+    full_name: p.n,
+    company: p.co ?? null,
+    role: p.ro ?? null,
+    industry: p.in != null ? ds.data.industries[p.in] : null,
+    sport: ds.data.sports[p.sp[0]] ?? '',
+    graduation_year: p.y ?? 0,
+    linkedin_url: p.li ?? null,
+    location: p.lo ?? null,
+    photo_url: p.av ?? null,
+    display_headline: p.hl ?? null,
+    work_history: work.length ? work : null,
+  }
+}
 
 export default function CirclesClient({
   userId,
@@ -36,8 +65,9 @@ export default function CirclesClient({
   const [error, setError] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [savedList, setSavedList] = useState<SavedContact[]>(saved)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const saveErrorTimer = useRef<number>()
 
-  // Saving from a circle adds to the network and grows the web in place.
   // Upsert, not insert: agent-proposed / not-interested rows are filtered out
   // of `saved` server-side, so they render as unsaved here — saving one is an
   // approval (proposed → interested), and a bare insert would hit the
@@ -49,6 +79,9 @@ export default function CirclesClient({
       .upsert({ user_id: userId, alumni_id: alumniId, status: 'interested' }, { onConflict: 'user_id,alumni_id' })
     if (error) {
       setSavedList(list => list.filter(s => s.alumniId !== alumniId))
+      setSaveError("Couldn't save — tap Save to retry.")
+      window.clearTimeout(saveErrorTimer.current)
+      saveErrorTimer.current = window.setTimeout(() => setSaveError(null), 6000)
     } else {
       trackEvent('alumni_added_to_network', { alumni_id: alumniId, source: 'circles' })
     }
@@ -93,7 +126,8 @@ export default function CirclesClient({
 
   const person = ds && selectedId ? ds.byId.get(selectedId) ?? null : null
   const showLocker = !!ds && !person && role === 'alumni' && lockerViable
-  const showBoard = !!ds && !person && role === 'student' && boardViable
+  // Students keep the board mounted — their person view is a modal over it.
+  const showBoard = !!ds && role === 'student' && boardViable
 
   useEffect(() => {
     if (showLocker) trackEvent('circles_lockerroom_viewed')
@@ -109,10 +143,6 @@ export default function CirclesClient({
     return <div className="circles"><p className="circles-status">Loading alumni…</p></div>
   }
 
-  // The 4-step "build your network" walkthrough is student framing for the
-  // search-first landing; skip it whenever a richer landing is available.
-  const showOnboarding = !person && savedList.length < 1 && !selfAlumniId && !boardViable
-
   return (
     <div className={`circles${showLocker || showBoard ? ' circles-wide' : ''}`}>
       <div className="circles-narrow">
@@ -122,38 +152,24 @@ export default function CirclesClient({
         </header>
 
         <SearchHero ds={ds} onPick={p => setSelectedId(p.id)} />
+
+        {saveError && (
+          <button className="circles-savefail" onClick={() => setSaveError(null)}>
+            {saveError}
+          </button>
+        )}
+
+        {role === 'student' && savedList.length === 0 && !person && (
+          <p className="circles-nudge" role="status">
+            Save anyone you&apos;d want an intro to — each save unlocks warm intro paths on every profile.
+          </p>
+        )}
       </div>
 
-      {showOnboarding && (
-        <div className="circles-onboarding" role="status">
-          <div className="onboarding-steps">
-            <div className="onboarding-step">
-              <span className="onboarding-num">1</span>
-              <span>Search any Cornell athlete above by name or company</span>
-            </div>
-            <div className="onboarding-step">
-              <span className="onboarding-num">2</span>
-              <span>See who they played with, season by season</span>
-            </div>
-            <div className="onboarding-step">
-              <span className="onboarding-num">3</span>
-              <span><strong>Save</strong> contacts you want to connect with and your network&apos;s web builds itself</span>
-            </div>
-            <div className="onboarding-step">
-              <span className="onboarding-num">4</span>
-              <span>Find <strong>warm intro paths</strong> through people you already know</span>
-            </div>
-          </div>
-          <p className="onboarding-hint">
-            Already have saved contacts? <em>Select one from above to see their circle.</em>
-          </p>
-        </div>
-      )}
-
-      {person ? (
+      {person && role !== 'student' ? (
         <div className="circles-narrow">
           <button className="circles-back" onClick={() => setSelectedId(null)}>
-            ← {role === 'alumni' || boardViable || savedList.length < 2 ? 'Back' : 'Back to your web'}
+            ← Back
           </button>
           <PersonCircle
             ds={ds}
@@ -167,22 +183,28 @@ export default function CirclesClient({
       ) : showLocker ? (
         <LockerRoom ds={ds} self={selfPerson!} onPick={p => setSelectedId(p.id)} />
       ) : showBoard ? (
-        <>
-          <TeamBoard
-            ds={ds}
-            sportIndices={studentIndices}
-            saved={savedList}
-            onSave={save}
-            onPick={p => setSelectedId(p.id)}
-          />
-          {savedList.length >= 2 && (
-            <div className="circles-narrow" style={{ marginTop: 48 }}>
-              <NetworkWeb ds={ds} saved={savedList} onPick={p => setSelectedId(p.id)} />
-            </div>
-          )}
-        </>
+        <TeamBoard
+          ds={ds}
+          sportIndices={studentIndices}
+          saved={savedList}
+          onSave={save}
+          onPick={p => setSelectedId(p.id)}
+        />
       ) : (
-        <NetworkWeb ds={ds} saved={savedList} onPick={p => setSelectedId(p.id)} />
+        <div className="circles-narrow">
+          <div className="web-empty">
+            <p>Search any Cornell athlete above to see who they played with, season by season.</p>
+          </div>
+        </div>
+      )}
+
+      {person && role === 'student' && (
+        <AlumniDetailModal
+          alumni={toAlumniBase(ds, person)}
+          isInNetwork={savedList.some(s => s.alumniId === person.id)}
+          onAddToNetwork={save}
+          onClose={() => setSelectedId(null)}
+        />
       )}
     </div>
   )

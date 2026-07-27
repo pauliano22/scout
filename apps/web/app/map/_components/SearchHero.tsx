@@ -47,7 +47,7 @@ export default function SearchHero({ ds, onPick }: Props) {
         <input
           type="search"
           value={text}
-          placeholder="Search a name or company"
+          placeholder="Search a name, company, industry, or city"
           aria-label="Search alumni"
           aria-autocomplete="list"
           aria-controls={listId}

@@ -21,8 +21,11 @@ export async function loadDataset(): Promise<Dataset> {
 
   const fuse = new Fuse(data.alumni, {
     keys: [
-      { name: 'n', weight: 0.8 },
+      { name: 'n', weight: 0.55 },
       { name: 'co', weight: 0.2 },
+      { name: 'ro', weight: 0.1 },
+      { name: 'industry', weight: 0.1, getFn: (p: Person) => (p.in != null ? data.industries[p.in] : '') },
+      { name: 'lo', weight: 0.05 },
     ],
     threshold: 0.32,
     ignoreLocation: true,

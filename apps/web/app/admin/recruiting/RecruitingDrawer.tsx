@@ -13,6 +13,7 @@ import {
   Linkedin,
   Loader2,
   Lock,
+  Mail,
   MessageSquare,
   Star,
   UserPlus,
@@ -59,6 +60,7 @@ const KIND_ICONS: Record<RecruitingActivityKind, LucideIcon> = {
   teammate_intro: UserPlus,
   captain_intro: Star,
   event: Calendar,
+  email: Mail,
   other: MessageSquare,
 }
 
@@ -100,6 +102,7 @@ export default function RecruitingDrawer({
   const [notes, setNotes] = useState('')
   const [savedNotes, setSavedNotes] = useState('')
   const [igHandle, setIgHandle] = useState('')
+  const [contactEmail, setContactEmail] = useState('')
   const [nextAction, setNextAction] = useState('')
   const [nextActionDue, setNextActionDue] = useState('')
 
@@ -132,6 +135,7 @@ export default function RecruitingDrawer({
           setNotes(crm?.notes ?? '')
           setSavedNotes(crm?.notes ?? '')
           setIgHandle(crm?.instagram_handle ?? '')
+          setContactEmail(crm?.contact_email ?? '')
           setNextAction(crm?.next_action ?? '')
           setNextActionDue(crm?.next_action_due ?? '')
         }
@@ -220,6 +224,14 @@ export default function RecruitingDrawer({
     if (next === baseline) return
     const p = await patchProspect({ instagram_handle: next || null }, 'instagram')
     if (p) setIgHandle(p.instagram_handle ?? '')
+  }
+
+  async function handleEmailBlur() {
+    const baseline = crm?.contact_email ?? ''
+    const next = contactEmail.trim().toLowerCase()
+    if (next === baseline) return
+    const p = await patchProspect({ contact_email: next || null }, 'contact_email')
+    if (p) setContactEmail(p.contact_email ?? '')
   }
 
   function handleNextActionBlur() {
@@ -451,6 +463,30 @@ export default function RecruitingDrawer({
                     placeholder="handle"
                     className={`${INPUT_CLASSES} pl-7`}
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-[--text-tertiary] mb-1">Email</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={e => setContactEmail(e.target.value)}
+                    onBlur={() => void handleEmailBlur()}
+                    disabled={!writable}
+                    placeholder="netid@cornell.edu"
+                    className={`${INPUT_CLASSES} flex-1`}
+                  />
+                  {crm?.contact_email && (
+                    <a
+                      href={`mailto:${crm.contact_email}`}
+                      className="p-1.5 rounded text-[--text-tertiary] hover:text-[--text-primary] hover:bg-[--bg-hover]"
+                      title={`Email ${row.full_name}`}
+                    >
+                      <Mail size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
 

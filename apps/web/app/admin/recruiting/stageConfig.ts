@@ -91,6 +91,7 @@ export const ACTIVITY_KIND_LABELS: Record<string, string> = {
   teammate_intro: 'Teammate intro',
   captain_intro: 'Captain intro',
   event: 'Event',
+  email: 'Email',
   other: 'Other',
 }
 

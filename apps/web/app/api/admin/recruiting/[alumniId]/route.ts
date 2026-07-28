@@ -65,6 +65,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { alumni
       is_captain?: boolean
       notes?: string | null
       instagram_handle?: string | null
+      contact_email?: string | null
       next_action?: string | null
       next_action_due?: string | null
       confirm_profile_id?: string
@@ -109,6 +110,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { alumni
     if (body.notes !== undefined) patch.notes = body.notes || null
     if (body.instagram_handle !== undefined) {
       patch.instagram_handle = body.instagram_handle?.replace(/^@/, '').trim() || null
+    }
+    if (body.contact_email !== undefined) {
+      const cleaned = body.contact_email?.trim().toLowerCase() || null
+      if (cleaned && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleaned)) {
+        return fail('contact_email is not a valid email address', 400)
+      }
+      patch.contact_email = cleaned
     }
     if (body.next_action !== undefined) patch.next_action = body.next_action || null
     if (body.next_action_due !== undefined) patch.next_action_due = body.next_action_due || null

@@ -13,7 +13,7 @@ import type { RecruitingActivityKind, RecruitingActivityOutcome } from '@scout/s
 
 export const dynamic = 'force-dynamic'
 
-const KINDS: RecruitingActivityKind[] = ['ig_dm', 'in_person', 'teammate_intro', 'captain_intro', 'event', 'other']
+const KINDS: RecruitingActivityKind[] = ['ig_dm', 'in_person', 'teammate_intro', 'captain_intro', 'event', 'email', 'other']
 const OUTCOMES: RecruitingActivityOutcome[] = ['no_reply', 'replied_positive', 'replied_negative', 'agreed_to_join', 'met']
 const REPLY_OUTCOMES: RecruitingActivityOutcome[] = ['replied_positive', 'replied_negative', 'agreed_to_join', 'met']
 

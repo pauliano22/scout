@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     })
 
     const header = [
-      'team', 'name', 'year', 'stage', 'captain', 'instagram', 'last_touch',
+      'team', 'name', 'year', 'stage', 'captain', 'instagram', 'email', 'last_touch',
       'next_action', 'next_action_due', 'signed_up_at', 'activated', 'notes',
     ].join(',')
     const lines = rows.map(r =>
@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
         esc(r.effective_stage),
         esc(r.crm?.is_captain ? 'yes' : ''),
         esc(r.crm?.instagram_handle ?? ''),
+        esc(r.crm?.contact_email ?? ''),
         esc(r.last_activity?.occurred_at?.slice(0, 10) ?? ''),
         esc(r.crm?.next_action ?? ''),
         esc(r.crm?.next_action_due ?? ''),

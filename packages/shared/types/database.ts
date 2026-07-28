@@ -692,7 +692,7 @@ export interface AbandonedRegistration {
 // =====================================================================
 
 export type RecruitingProspectStatus = 'untouched' | 'targeted' | 'reached_out' | 'responded' | 'not_now'
-export type RecruitingActivityKind = 'ig_dm' | 'in_person' | 'teammate_intro' | 'captain_intro' | 'event' | 'other'
+export type RecruitingActivityKind = 'ig_dm' | 'in_person' | 'teammate_intro' | 'captain_intro' | 'event' | 'email' | 'other'
 export type RecruitingActivityOutcome = 'no_reply' | 'replied_positive' | 'replied_negative' | 'agreed_to_join' | 'met'
 
 export interface RecruitingProspect {
@@ -701,6 +701,7 @@ export interface RecruitingProspect {
   status: RecruitingProspectStatus
   is_captain: boolean
   instagram_handle: string | null
+  contact_email: string | null // hand-collected; never the scraped alumni.email (migration 071)
   notes: string | null
   next_action: string | null
   next_action_due: string | null

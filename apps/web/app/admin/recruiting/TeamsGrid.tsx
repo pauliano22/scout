@@ -82,7 +82,7 @@ export default function TeamsGrid({
             </div>
 
             <div className="mt-2 text-xs text-[--text-secondary]">
-              {team.penetration}% on Scout · {team.activated} activated
+              {team.penetration}% on Scout · {team.activated} activated · {team.emails}/{team.roster} emails
             </div>
 
             {team.strategy_notes && (

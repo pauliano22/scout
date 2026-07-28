@@ -55,6 +55,7 @@ apps/web/scripts/*
 # Exception: root-level CI/CD helper scripts
 !scripts/smoke-test.sh
 !scripts/restore-from-backup.mjs
+!scripts/recruiting-emails.mjs
 .env*
 
 # local backup snapshots (PII — never commit; repo is public)

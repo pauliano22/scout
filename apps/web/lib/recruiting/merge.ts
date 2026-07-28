@@ -55,6 +55,8 @@ export interface TeamRollup {
   signed_up: number
   activated: number
   not_now: number
+  /** Prospects with a hand-collected contact_email — collection progress. */
+  emails: number
   penetration: number
   last_touch_at: string | null
   is_focus: boolean
@@ -293,6 +295,7 @@ export function computeSummary(rows: ProspectRow[], teamsState: Map<string, Recr
         team_key: r.team_key,
         roster: 0,
         untouched: 0, targeted: 0, reached_out: 0, responded: 0, signed_up: 0, activated: 0, not_now: 0,
+        emails: 0,
         penetration: 0,
         last_touch_at: null,
         is_focus: state?.is_focus ?? false,
@@ -302,6 +305,7 @@ export function computeSummary(rows: ProspectRow[], teamsState: Map<string, Recr
     }
     t.roster++
     t[r.effective_stage]++
+    if (r.crm?.contact_email) t.emails++
     const touch = r.last_activity?.occurred_at ?? null
     if (touch && (!t.last_touch_at || touch > t.last_touch_at)) t.last_touch_at = touch
   }

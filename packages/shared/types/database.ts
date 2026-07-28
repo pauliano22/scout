@@ -684,3 +684,50 @@ export interface AbandonedRegistration {
   recovered: boolean
   created_at: string
 }
+
+// =====================================================================
+// Recruiting CRM (migration 070) — deliberate student-athlete onboarding.
+// status holds MANUAL stages only; signed_up/activated are derived at read
+// time from profiles/user_events and are never stored.
+// =====================================================================
+
+export type RecruitingProspectStatus = 'untouched' | 'targeted' | 'reached_out' | 'responded' | 'not_now'
+export type RecruitingActivityKind = 'ig_dm' | 'in_person' | 'teammate_intro' | 'captain_intro' | 'event' | 'other'
+export type RecruitingActivityOutcome = 'no_reply' | 'replied_positive' | 'replied_negative' | 'agreed_to_join' | 'met'
+
+export interface RecruitingProspect {
+  id: string
+  alumni_id: string
+  status: RecruitingProspectStatus
+  is_captain: boolean
+  instagram_handle: string | null
+  notes: string | null
+  next_action: string | null
+  next_action_due: string | null
+  reached_out_at: string | null
+  responded_at: string | null
+  matched_profile_id: string | null
+  matched_at: string | null
+  rejected_profile_ids: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface RecruitingActivity {
+  id: string
+  prospect_id: string
+  kind: RecruitingActivityKind
+  outcome: RecruitingActivityOutcome | null
+  body: string | null
+  occurred_at: string
+  created_by: string | null
+  created_at: string
+}
+
+export interface RecruitingTeamState {
+  team_key: string
+  is_focus: boolean
+  strategy_notes: string | null
+  created_at: string
+  updated_at: string
+}

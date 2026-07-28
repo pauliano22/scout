@@ -12,6 +12,7 @@ import {
   BarChart3,
   ArrowLeft,
   Loader2,
+  Target,
   ToggleLeft,
   UserCheck,
   UserX,
@@ -20,6 +21,7 @@ import {
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/recruiting', label: 'Recruiting', icon: Target },
   { href: '/admin/data', label: 'Data', icon: BarChart3 },
   { href: '/admin/ad-report', label: 'AD Report', icon: GraduationCap },
   { href: '/admin/users', label: 'Users', icon: Users },

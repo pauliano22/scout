@@ -14,6 +14,15 @@ interface Report {
   resolved_at: string | null
   resolved_by: string | null
   profiles: { full_name: string | null; email: string } | null
+  reported_alumni: {
+    full_name: string | null
+    sport: string | null
+    graduation_year: number | null
+    company: string | null
+    role: string | null
+    linkedin_url: string | null
+    source: string | null
+  } | null
 }
 
 interface ReportsResponse {
@@ -147,12 +156,41 @@ export default function AdminReportsPage() {
                       <div className="flex items-center gap-2 mb-2">
                         {contentTypeBadge(report.content_type)}
                         <span className="text-xs text-[--text-tertiary]">
-                          ID: {report.content_id.slice(0, 8)}...
-                        </span>
-                        <span className="text-xs text-[--text-tertiary]">
                           {new Date(report.created_at).toLocaleString()}
                         </span>
                       </div>
+
+                      {report.reported_alumni ? (
+                        <div className="mb-2">
+                          <p className="text-base font-semibold text-[--text-primary]">
+                            {report.reported_alumni.full_name || 'Unnamed'}
+                            <span className="font-normal text-[--text-tertiary] text-sm">
+                              {report.reported_alumni.sport ? ` · ${report.reported_alumni.sport}` : ''}
+                              {report.reported_alumni.graduation_year ? ` '${String(report.reported_alumni.graduation_year).slice(2)}` : ''}
+                            </span>
+                          </p>
+                          {(report.reported_alumni.role || report.reported_alumni.company) && (
+                            <p className="text-sm text-[--text-secondary]">
+                              {[report.reported_alumni.role, report.reported_alumni.company].filter(Boolean).join(' · ')}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 mt-1 text-xs">
+                            {report.reported_alumni.linkedin_url && (
+                              <a href={report.reported_alumni.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-[--school-primary] hover:underline">
+                                LinkedIn ↗
+                              </a>
+                            )}
+                            {report.reported_alumni.source && (
+                              <span className="text-[--text-quaternary]">source: {report.reported_alumni.source}</span>
+                            )}
+                            <span className="text-[--text-quaternary]">id: {report.content_id.slice(0, 8)}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-[--text-tertiary] mb-1">
+                          {report.content_type} · id {report.content_id.slice(0, 8)}…
+                        </p>
+                      )}
 
                       <p className="text-sm text-[--text-primary] mb-1">
                         Reported by{' '}

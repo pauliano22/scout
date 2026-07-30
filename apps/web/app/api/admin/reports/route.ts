@@ -14,9 +14,12 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') ?? 'flagged'
     const offset = (page - 1) * limit
 
+    // reported_content has TWO fks to profiles (user_id = reporter,
+    // resolved_by = admin) — the embed must name the one we want (reporter),
+    // else PostgREST errors PGRST201 and the whole list fails to load.
     let query = db
       .from('reported_content')
-      .select('*, profiles(full_name, email)', { count: 'exact' })
+      .select('*, profiles!reported_content_user_id_fkey(full_name, email)', { count: 'exact' })
 
     if (status) {
       query = query.eq('status', status)
@@ -28,8 +31,26 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error
 
+    // content_id is polymorphic (no FK), so resolve the reported alumni by hand
+    // — admins need to see WHO was flagged, not a raw UUID.
+    const alumniIds = [...new Set(
+      (reports ?? []).filter(r => r.content_type === 'alumni').map(r => r.content_id),
+    )]
+    let alumniById: Record<string, unknown> = {}
+    if (alumniIds.length) {
+      const { data: al } = await db
+        .from('alumni')
+        .select('id, full_name, sport, graduation_year, company, role, linkedin_url, source')
+        .in('id', alumniIds)
+      alumniById = Object.fromEntries((al ?? []).map(a => [a.id, a]))
+    }
+    const enriched = (reports ?? []).map(r => ({
+      ...r,
+      reported_alumni: r.content_type === 'alumni' ? (alumniById[r.content_id] ?? null) : null,
+    }))
+
     return ok({
-      reports: reports ?? [],
+      reports: enriched,
       total: count ?? 0,
       page,
       limit,

@@ -5,6 +5,7 @@ import type { Person, SavedContact } from '../_lib/types'
 import { warmFor } from '../_lib/overlap'
 import { trackEvent } from '@/lib/track'
 import { initials, nowLine, shortYear } from '../_lib/now'
+import { useSchoolName } from '@/lib/schoolConfig'
 
 interface Props {
   ds: Dataset
@@ -12,13 +13,23 @@ interface Props {
   saved: SavedContact[]
   onSave: (alumniId: string) => void
   onPick: (p: Person) => void
+  /**
+   * 'team' groups by the student's sport — right for a university, where one
+   * roster is already hundreds of alumni deep. 'class' widens to the whole
+   * form: a prep-school team is ~15 people, so the class is the unit that
+   * actually has a network in it.
+   */
+  mode?: 'team' | 'class'
+  /** Student's class year, used to order classmates by proximity in class mode. */
+  classYear?: number | null
 }
 
 const COLUMNS = 4
 const CARDS_PER_COLUMN = 6
 const EXPAND_STEP = 12
 
-export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: Props) {
+export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick, mode = 'team', classYear = null }: Props) {
+  const schoolName = useSchoolName()
   // Per-column visible-card count; columns expand in steps, not all at once.
   const [colRows, setColRows] = useState<Record<number, number>>({})
 
@@ -28,9 +39,20 @@ export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: P
     // via the generic (ungendered) entry.
     const seen = new Set<number>()
     const people: Person[] = []
-    for (const s of sportIndices) {
-      for (const i of ds.sportBuckets[s]) {
-        if (!seen.has(i)) { seen.add(i); people.push(ds.data.alumni[i]) }
+    if (mode === 'class') {
+      // Nearest classes first: someone two forms above you is a far warmer
+      // intro than someone from forty years ago.
+      const ref = classYear ?? new Date().getFullYear()
+      for (const p of ds.data.alumni) {
+        if (p.y == null) continue
+        seen.add(p.i); people.push(p)
+      }
+      people.sort((a, b) => Math.abs((a.y ?? 0) - ref) - Math.abs((b.y ?? 0) - ref))
+    } else {
+      for (const s of sportIndices) {
+        for (const i of ds.sportBuckets[s]) {
+          if (!seen.has(i)) { seen.add(i); people.push(ds.data.alumni[i]) }
+        }
       }
     }
 
@@ -43,26 +65,35 @@ export default function TeamBoard({ ds, sportIndices, saved, onSave, onPick }: P
     const ranked = [...byIndustry.entries()].sort(([, a], [, b]) => b.length - a.length)
     const columns = ranked.slice(0, COLUMNS).map(([ind, members]) => ({
       industry: ds.data.industries[ind],
-      people: members.sort((p, q) => (q.y ?? 0) - (p.y ?? 0) || (q.av ? 1 : 0) - (p.av ? 1 : 0)),
+      people: mode === 'class'
+        ? members
+        : members.sort((p, q) => (q.y ?? 0) - (p.y ?? 0) || (q.av ? 1 : 0) - (p.av ? 1 : 0)),
     }))
 
     return { total: people.length, columns }
-  }, [ds, sportIndices])
+  }, [ds, sportIndices, mode, classYear])
 
   if (board.columns.length === 0) return null
 
   const savedIds = new Set(saved.map(s => s.alumniId))
   const sportLabel = ds.data.sportMeta[sportIndices[0]]?.f ?? ds.data.sports[sportIndices[0]] ?? 'team'
 
+  const isClass = mode === 'class'
+  const yearLabel = classYear ? `Class of '${String(classYear).slice(2)}` : 'Your class'
+
   return (
-    <section aria-label="Where your team went">
+    <section aria-label={isClass ? 'Where your class went' : 'Where your team went'}>
       <div className="ld-head">
-        <p className="ld-eyebrow">Cornell {sportLabel}</p>
-        <h2>Where your team went</h2>
-        <p className="ld-sub">{board.total.toLocaleString()} {sportLabel} alumni came before you.</p>
+        <p className="ld-eyebrow">{schoolName} · {isClass ? yearLabel : sportLabel}</p>
+        <h2>{isClass ? 'Where your class went' : 'Where your team went'}</h2>
+        <p className="ld-sub">
+          {isClass
+            ? `${board.total.toLocaleString()} alumni came before you — closest classes first.`
+            : `${board.total.toLocaleString()} ${sportLabel} alumni came before you.`}
+        </p>
       </div>
 
-      <p className="bd-note">Newest first — they reply.</p>
+      {!isClass && <p className="bd-note">Newest first — they reply.</p>}
       <div className="bd-board">
         {board.columns.map((col, ci) => {
           const shownCount = colRows[ci] ?? CARDS_PER_COLUMN

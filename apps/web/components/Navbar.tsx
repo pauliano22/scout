@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from '@/components/Link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Users, LogOut, User, Home, Waypoints, Shield } from 'lucide-react'
+import { Search, Users, LogOut, User, Home, Shield } from 'lucide-react'
+import { useSchoolConfig } from '@/lib/schoolConfig'
 import { createClient } from '@/lib/supabase/client'
 import type { UserRole } from '@scout/shared/types/database'
 
@@ -12,11 +13,19 @@ interface NavbarProps {
   networkCount?: number
   /** Optional — when omitted, Navbar fetches the role itself. */
   role?: UserRole | null
+  /** School wordmark beside the logo. Defaults to Cornell. */
+  schoolName?: string
+  /** Logo mark. Defaults to the Cornell-red Scout mark. */
+  logoSrc?: string
+  /** School crest shown beside the wordmark. Omitted for Cornell. */
+  schoolLogoSrc?: string
 }
 
-export default function Navbar({ user, networkCount = 0, role: roleProp }: NavbarProps) {
+export default function Navbar({ user, networkCount = 0, role: roleProp, schoolName = 'CORNELL', logoSrc = '/favicon.svg', schoolLogoSrc }: NavbarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const school = useSchoolConfig()
+  const CirclesIcon = school.circlesIcon
   const supabase = createClient()
   const [role, setRole] = useState<UserRole | null>(roleProp ?? null)
 
@@ -76,11 +85,17 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
       {/* Logo */}
       <div className="flex items-center gap-2.5">
         <Link href={homeHref} className="flex items-center gap-2">
-          <img src="/favicon.svg" alt="Scout" className="w-6 h-6" />
+          <img src={logoSrc} alt="Scout" className="w-6 h-6" />
           <span className="logo-text hidden sm:block">Scout</span>
         </Link>
-        <span className="hidden sm:block text-[--text-quaternary] text-xs font-medium tracking-widest">
-          CORNELL
+        {/* Rule only where a school crest sits beside the wordmark — Cornell
+            has no crest, so its nav is unchanged. */}
+        {schoolLogoSrc && <span className="hidden sm:block w-px h-5 bg-[--border-primary]" />}
+        <span className="hidden sm:flex items-center gap-2 text-[--text-quaternary] text-xs font-medium tracking-widest">
+          {schoolLogoSrc && (
+            <img src={schoolLogoSrc} alt="" aria-hidden className="h-6 w-auto" />
+          )}
+          {schoolName}
         </span>
       </div>
 
@@ -104,7 +119,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
                 </Link>
                 {navLink('/discover', <Search size={14} />, 'Discover')}
                 {navLink('/network', <Users size={14} />, 'Network', networkCount > 0 ? networkCount : undefined)}
-                {navLink('/map', <Waypoints size={14} />, 'Circles')}
+                {navLink('/map', <CirclesIcon size={14} />, school.circlesLabel)}
               </>
             ) : (
               <>
@@ -122,7 +137,7 @@ export default function Navbar({ user, networkCount = 0, role: roleProp }: Navba
 
                 {navLink('/discover', <Search size={14} />, 'Discover')}
                 {navLink('/network',  <Users  size={14} />, 'Network', networkCount > 0 ? networkCount : undefined)}
-                {navLink('/map', <Waypoints size={14} />, 'Circles')}
+                {navLink('/map', <CirclesIcon size={14} />, school.circlesLabel)}
               </>
             )}
 

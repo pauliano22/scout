@@ -186,10 +186,6 @@ export default function CirclesClient({
   return (
     <div className={`circles${showLocker || showBoard ? ' circles-wide' : ''}`}>
       <div className="circles-narrow">
-        <header className="circles-head">
-          <h1>{school.circlesLabel}</h1>
-        </header>
-
         {saveError && (
           <button className="circles-savefail" onClick={() => setSaveError(null)}>
             {saveError}
@@ -232,7 +228,7 @@ export default function CirclesClient({
       ) : (
         <div className="circles-narrow">
           <div className="web-empty">
-            <p>We don&rsquo;t have enough on your {schoolName} teammates yet to build your circles.</p>
+            <p>We don&rsquo;t have enough on your {schoolName} teammates yet to show where they landed.</p>
           </div>
         </div>
       )}

@@ -14,7 +14,7 @@ import { Waypoints, BookMarked, type LucideIcon } from 'lucide-react'
 export interface SchoolConfig {
   /** Inline in copy: "Cornell Ice Hockey", "Search any Cornell athlete". */
   name: string
-  /** The teammate-graph surface. Cornell calls it Circles; a prep school's
+  /** The teammate-graph surface. Cornell calls it Team; a prep school's
    *  version is class-based, so Hill calls it the Yearbook. */
   circlesLabel: string
   circlesIcon: LucideIcon
@@ -23,7 +23,7 @@ export interface SchoolConfig {
 
 const CORNELL: SchoolConfig = {
   name: 'Cornell',
-  circlesLabel: 'Circles',
+  circlesLabel: 'Team',
   circlesIcon: Waypoints,
   circlesTagline: 'Who played with whom, season by season.',
 }

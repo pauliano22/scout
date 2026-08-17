@@ -3,6 +3,7 @@ import type { Dataset } from '../_lib/data'
 import type { Person } from '../_lib/types'
 import { sameEra, seasonsShared, teammates } from '../_lib/overlap'
 import { initials, nowLine, shortYear } from '../_lib/now'
+import { useSchoolName } from '@/lib/schoolConfig'
 
 interface Props {
   ds: Dataset
@@ -20,6 +21,7 @@ interface Group {
 const INITIAL_CARDS = 24
 
 export default function LockerRoom({ ds, self, onPick }: Props) {
+  const schoolName = useSchoolName()
   const [expanded, setExpanded] = useState(false)
   const [showRest, setShowRest] = useState(false)
 
@@ -28,7 +30,7 @@ export default function LockerRoom({ ds, self, onPick }: Props) {
   // used to answer "who was on my team", which the alum already knows — the
   // interesting half is the destinations. Same people, same cards, sorted into
   // industry circles instead of class cohorts.
-  const { groups, rest, mateCount, eraCount, placedCount, circleCount } = useMemo(() => {
+  const { groups, rest, mateCount, eraCount } = useMemo(() => {
     const mates = teammates(ds, self)
 
     const byIndustry = new Map<number, Person[]>()
@@ -66,8 +68,6 @@ export default function LockerRoom({ ds, self, onPick }: Props) {
       rest: unplaced.sort(byRecency),
       mateCount: mates.length,
       eraCount: sameEra(ds, self).length,
-      placedCount: mates.length - unplaced.length,
-      circleCount: groups.length,
     }
   }, [ds, self])
 
@@ -89,7 +89,6 @@ export default function LockerRoom({ ds, self, onPick }: Props) {
   const hiddenLabels = groups.slice(collapsed.length).map(g => g.label)
 
   const sport = ds.data.sports[self.sp[0]] ?? 'team'
-  const years = self.a != null ? `${self.a}–${self.b}` : null
 
   const card = (p: Person) => {
     const shared = seasonsShared(self, p)
@@ -123,22 +122,8 @@ export default function LockerRoom({ ds, self, onPick }: Props) {
   return (
     <section aria-label="Where your locker room went">
       <div className="ld-head">
-        <p className="ld-eyebrow">Cornell {sport}</p>
+        <p className="ld-eyebrow">{schoolName} {sport}</p>
         <h2>Where your locker room went</h2>
-        <p className="ld-sub">
-          {placedCount > 0 ? (
-            <>
-              {placedCount.toLocaleString()} of your {mateCount.toLocaleString()} teammates from
-              {years ? ` your ${years} seasons` : ' your seasons'} landed in{' '}
-              {circleCount.toLocaleString()} {circleCount === 1 ? 'field' : 'fields'}.
-            </>
-          ) : (
-            <>
-              The {mateCount.toLocaleString()} teammates from your
-              {years ? ` ${years} seasons` : ' seasons'} — and what they&rsquo;re doing now.
-            </>
-          )}
-        </p>
       </div>
 
       {visible.map(group => (

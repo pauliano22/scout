@@ -16,11 +16,11 @@ import { loadDataset, type Dataset } from './_lib/data'
 import type { Person, SavedContact } from './_lib/types'
 import { sportIndicesFor } from './_lib/sportMatch'
 import { teammates } from './_lib/overlap'
-import SearchHero from './_components/SearchHero'
 import PersonCircle from './_components/PersonCircle'
 import LockerRoom from './_components/LockerRoom'
 import TeamBoard from './_components/TeamBoard'
 import './circles.css'
+import { useSchoolConfig } from '@/lib/schoolConfig'
 
 // The board runs on the baked map dataset; the shared detail modal expects a
 // DB-shaped alumni row. Bridge the field names (condensed keys → row keys).
@@ -65,13 +65,20 @@ export default function CirclesClient({
   selfAlumniId = null,
   role = 'student',
   studentSport = null,
+  circleBy = 'team',
+  studentYear = null,
 }: {
   userId: string
   saved: SavedContact[]
   selfAlumniId?: string | null
   role?: 'student' | 'alumni' | 'admin'
   studentSport?: string | null
+  /** Prep schools group by form, not by roster — a Hill team is ~15 people. */
+  circleBy?: 'team' | 'class'
+  studentYear?: number | null
 }) {
+  const school = useSchoolConfig()
+  const schoolName = school.name
   const [ds, setDs] = useState<Dataset | null>(null)
   const [error, setError] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -125,7 +132,11 @@ export default function CirclesClient({
     [ds, selfPerson],
   )
   const boardViable = useMemo(() => {
-    if (!ds || !studentIndices.length) return false
+    if (!ds) return false
+    if (circleBy === 'class') {
+      return ds.data.alumni.some(p => p.y != null && p.in != null && (p.ro || p.co))
+    }
+    if (!studentIndices.length) return false
     for (const s of studentIndices) {
       for (const i of ds.sportBuckets[s]) {
         const p = ds.data.alumni[i]
@@ -133,7 +144,7 @@ export default function CirclesClient({
       }
     }
     return false
-  }, [ds, studentIndices])
+  }, [ds, studentIndices, circleBy])
 
   const person = ds && selectedId ? ds.byId.get(selectedId) ?? null : null
   // Only the self view replaces the page; every other person is a modal, so
@@ -176,11 +187,8 @@ export default function CirclesClient({
     <div className={`circles${showLocker || showBoard ? ' circles-wide' : ''}`}>
       <div className="circles-narrow">
         <header className="circles-head">
-          <h1>Circles</h1>
-          <p className="circles-sub">Who played with whom, season by season.</p>
+          <h1>{school.circlesLabel}</h1>
         </header>
-
-        <SearchHero ds={ds} onPick={p => setSelectedId(p.id)} />
 
         {saveError && (
           <button className="circles-savefail" onClick={() => setSaveError(null)}>
@@ -218,11 +226,13 @@ export default function CirclesClient({
           saved={savedList}
           onSave={save}
           onPick={p => setSelectedId(p.id)}
+          mode={circleBy}
+          classYear={studentYear}
         />
       ) : (
         <div className="circles-narrow">
           <div className="web-empty">
-            <p>Search any Cornell athlete above to see who they played with, season by season.</p>
+            <p>We don&rsquo;t have enough on your {schoolName} teammates yet to build your circles.</p>
           </div>
         </div>
       )}

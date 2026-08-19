@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { notifyTelegram } from '@/lib/notify/telegram'
 import { linkedinSlug, findAlumniByLinkedInSlug } from '@/lib/alumni/linkedin'
+import { sendEmail, isEmailConfigured } from '@/lib/email'
+import { welcomeAlumniHtml, welcomeAlumniSubject, welcomeAlumniText } from '@/lib/email'
 
 interface ClaimPayload {
   alumni_id?: string | null
@@ -268,6 +270,21 @@ export async function POST(request: Request) {
         `id: ${alumniId}\n` +
         `Review: https://scoutcornell.com/admin/claims`,
       )
+    }
+
+    // Send the welcome email when the claim is published (auto-accepted).
+    // Best-effort, non-blocking: a missing/misconfigured email provider must
+    // never fail the claim itself.
+    if (publish && email && isEmailConfigured()) {
+      const first = (fullName || '').trim().split(/\s+/)[0] || 'there'
+      sendEmail({
+        to: email,
+        subject: welcomeAlumniSubject(),
+        htmlBody: welcomeAlumniHtml({ name: first }),
+        textBody: welcomeAlumniText({ name: first }),
+      }).then(result => {
+        if (!result.success) console.error('[alumni/claim] Welcome email failed:', result.error)
+      })
     }
 
     return NextResponse.json({

@@ -96,7 +96,7 @@ export async function POST(request: Request) {
   } catch (e: any) {
     console.error('[picks/draft]', e?.message ?? e)
     // Failed generations previously left no artifact anywhere but Vercel logs.
-    await emit('pick_draft_failed', {})
+    await emit('pick_draft_failed', { reason: String(e?.message ?? e).slice(0, 300) })
     return NextResponse.json({ error: 'Draft generation failed' }, { status: 500 })
   }
 }

@@ -36,6 +36,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to download resume' }, { status: 500 })
     }
 
+    // Record the upload before parsing so a parse failure (API outage, bad
+    // JSON) never hides a résumé that is already in storage.
+    const { error: recordError } = await supabase
+      .from('profiles').update({ resume_url: storagePath }).eq('id', user.id)
+    if (recordError) console.error('Resume record error:', recordError)
+
     // Convert to base64 for Claude's document API
     const arrayBuffer = await fileData.arrayBuffer()
     const base64 = Buffer.from(arrayBuffer).toString('base64')

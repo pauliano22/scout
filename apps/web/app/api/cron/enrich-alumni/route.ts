@@ -5,10 +5,11 @@
 // stamping enriched_at so the next run moves on to different rows. Bounded per
 // run for cost + Vercel time. Protected by CRON_SECRET.
 //
-// Query: ?limit=100 (max 300), ?dry=1 (preview candidates, no Claude, no writes).
+// Query: ?limit=50 (max 300), ?dry=1 (preview candidates, no Claude, no writes).
+// 50 = two Claude batches of 25, which is what fits in the 60s Vercel window;
+// at 100 the run got cut off mid-batch with a 504 every morning.
 //
-// NOTE: not scheduled in vercel.json yet — enable that deliberately once the
-// Supabase/Anthropic keys are rotated and you've reviewed a dry run.
+// Scheduled in vercel.json (daily 08:00 UTC).
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
-  const runLimit = Math.min(Math.max(parseInt(searchParams.get('limit') ?? '100') || 100, 1), 300)
+  const runLimit = Math.min(Math.max(parseInt(searchParams.get('limit') ?? '50') || 50, 1), 300)
   const dryRun = searchParams.get('dry') === '1'
 
   const sb = createServiceClient(

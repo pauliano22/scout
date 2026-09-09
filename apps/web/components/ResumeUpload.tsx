@@ -109,26 +109,30 @@ export default function ResumeUpload({ userId, onParsed, compact = false, existi
   const [appliedFields, setAppliedFields] = useState<DiffField[] | null>(null)
   const [replacing, setReplacing] = useState(false)
   const [existingUrl, setExistingUrl] = useState<string | null>(null)
+  // Path recorded by THIS session's upload: shows the "on file" card right
+  // after uploading (before any reload) and even when parsing fails.
+  const [savedPath, setSavedPath] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
-  const existingFileName = existingResumePath?.split('/').pop() || 'resume.pdf'
+  const onFilePath = existingResumePath ?? savedPath
+  const existingFileName = onFilePath?.split('/').pop() || 'resume.pdf'
 
   // Resolve a short-lived signed URL for a resume already on file. The bucket is
   // private; RLS lets the owner read their own {userId}/… path.
   useEffect(() => {
-    if (!existingResumePath) return
+    if (!onFilePath) return
     let cancelled = false
     supabase.storage
       .from('resumes')
-      .createSignedUrl(existingResumePath, 60 * 60)
+      .createSignedUrl(onFilePath, 60 * 60)
       .then(({ data }) => {
         if (!cancelled) setExistingUrl(data?.signedUrl ?? null)
       })
     return () => {
       cancelled = true
     }
-  }, [existingResumePath, supabase])
+  }, [onFilePath, supabase])
 
   async function handleFile(file: File) {
     if (file.type !== 'application/pdf') {
@@ -160,6 +164,14 @@ export default function ResumeUpload({ userId, onParsed, compact = false, existi
 
     setState('parsing')
 
+    // Record the file on the profile NOW, before parsing. A failed or slow
+    // parse must never leave an uploaded résumé unrecorded (28 students hit
+    // exactly that during the Aug 2026 API outage and saw an empty dropzone on
+    // every visit). The parse route writes it too; this covers a lost request.
+    await supabase.from('profiles').update({ resume_url: storagePath }).eq('id', userId)
+    setSavedPath(storagePath)
+    setReplacing(false)
+
     // Call the parse API
     const res = await fetch('/api/resume/parse', {
       method: 'POST',
@@ -168,7 +180,7 @@ export default function ResumeUpload({ userId, onParsed, compact = false, existi
     })
 
     if (!res.ok) {
-      setErrorMsg('Could not read resume. Try again or skip.')
+      setErrorMsg('Saved, but we couldn\'t read it automatically. You can view or replace it below.')
       setState('error')
       return
     }
@@ -244,7 +256,7 @@ export default function ResumeUpload({ userId, onParsed, compact = false, existi
   // A resume is already on file and the user hasn't chosen to replace it yet:
   // show it with a View link instead of a blank dropzone. (Skipped once a fresh
   // upload is in flight or done — those states render their own UI below.)
-  if ((state === 'idle' || state === 'error') && existingResumePath && !replacing) {
+  if ((state === 'idle' || state === 'error') && onFilePath && !replacing) {
     return (
       <div className={`rounded-xl border border-[--border-primary] bg-[--bg-tertiary] ${compact ? 'p-4' : 'p-5'}`}>
         <div className="flex items-center gap-3">
